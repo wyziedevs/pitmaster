@@ -1,5 +1,6 @@
 <script lang="ts">
   import { currencySymbol, money } from "$lib/util";
+  import { t } from "$lib/i18n";
 
   // a tournament's house cut: a flat fee, a percent of what's left, or both.
   // the same fields, in the same words, for the default (Settings > Your Game)
@@ -18,15 +19,8 @@
 
 <div class="vstack cut">
   <div class="row">
-    <label><span>Flat Fee per Entry {sym}</span><input type="number" min="0" step="any" max={buyIn} bind:value={fee} {onchange} /></label>
-    <label><span>% of the Rest</span><input type="number" min="0" max="100" step="any" bind:value={pct} {onchange} /></label>
+    <label class="m-0"><span>{t("gamePlay.houseCut.flatFeeLabel", { sym })}</span><input type="number" min="0" step="any" max={buyIn} bind:value={fee} {onchange} /></label>
+    <label class="m-0"><span>{t("gamePlay.houseCut.pctOfRestLabel")}</span><input type="number" min="0" max="100" step="any" bind:value={pct} {onchange} /></label>
   </div>
-  <p class="small muted">It comes out of each buy-in and rebuy before the prize pool: a {money(eg)} fee on a {money(buyIn)} buy-in puts {money(Math.max(0, buyIn - eg))} of it in the pool.</p>
+  <p class="small muted m-0">{t("gamePlay.houseCut.exampleNote", { fee: money(eg), buyIn: money(buyIn), net: money(Math.max(0, buyIn - eg)) })}</p>
 </div>
-
-<style>
-  .cut label,
-  .cut p {
-    margin: 0;
-  }
-</style>

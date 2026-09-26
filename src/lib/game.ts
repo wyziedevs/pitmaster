@@ -1,7 +1,8 @@
-import type { CashSettings, Game, GameChip, GameType, Level, Player, Seat, TourneySettings } from "./types";
+import type { CashSettings, EventKind, Game, GameChip, GameType, Level, Player, Seat, TourneySettings } from "./types";
 import { newClock } from "./clock";
 import { defaultPayouts, payoutAmounts } from "./blinds";
 import { money, nameKey, ordinal, round2, uid } from "./util";
+import { t, tp } from "./i18n";
 
 export function newGame(p: {
   name: string;
@@ -38,7 +39,7 @@ export function newGame(p: {
     finished: false,
   };
   for (const name of p.players) addPlayer(game, name, true);
-  logEvent(game, `Game created`);
+  logEvent(game, t("gameEvents.created"));
   return game;
 }
 
@@ -51,8 +52,8 @@ export function logEvent(game: Game, text: string) {
   game.log = game.log.slice(0, 300);
 }
 
-export function flash(game: Game, text: string) {
-  game.flash = { text, at: Date.now() };
+export function flash(game: Game, text: string, kind: EventKind = "note") {
+  game.flash = { text, at: Date.now(), kind };
 }
 
 export function addPlayer(game: Game, name: string, quiet = false) {
@@ -66,8 +67,11 @@ export function addPlayer(game: Game, name: string, quiet = false) {
   seatNewcomer(game, p);
   game.players.push(p);
   if (!quiet) {
-    logEvent(game, game.type === "cash" ? `${p.name} sat down (${money(p.cashIn)})` : `${p.name} registered`);
-    flash(game, game.type === "cash" ? `${p.name} sat down` : `${p.name} is in`);
+    logEvent(
+      game,
+      game.type === "cash" ? t("gameEvents.satDownWithAmount", { name: p.name, amount: money(p.cashIn) }) : t("gameEvents.registered", { name: p.name }),
+    );
+    flash(game, game.type === "cash" ? t("gameEvents.satDownFlash", { name: p.name }) : t("gameEvents.isInFlash", { name: p.name }), "chips");
   }
   return p;
 }
@@ -110,22 +114,22 @@ export function bust(game: Game, playerId: string) {
   // would skip the reactive copy the game actually keeps
   if (!game.kos) game.kos = [];
   game.kos.push({ out: p.id, by: null, at: p.bustedAt });
-  logEvent(game, `${p.name} busted in ${ordinal(left)}`);
-  flash(game, `${p.name} is out in ${ordinal(left)}`);
+  logEvent(game, t("gameEvents.bustedLog", { name: p.name, place: ordinal(left) }));
+  flash(game, t("gameEvents.bustedFlash", { name: p.name, place: ordinal(left) }), "bust");
 
   const alive = game.players.filter((x) => !x.out);
   // the bubble bursts: everyone still sitting gets paid
   const paid = tourneyStats(game).paid;
   if (alive.length > 1 && alive.length === paid && game.players.length > paid) {
-    logEvent(game, `${p.name} went out on the bubble`);
-    flash(game, `${p.name} is out on the bubble. Everyone left gets paid!`);
+    logEvent(game, t("gameEvents.bubbleLog", { name: p.name }));
+    flash(game, t("gameEvents.bubbleFlash", { name: p.name }), "money");
   }
   if (alive.length === 1) {
     alive[0].place = 1;
     game.finished = true;
     game.endedAt = Date.now();
-    logEvent(game, `${alive[0].name} wins!`);
-    flash(game, `${alive[0].name} wins!`);
+    logEvent(game, t("gameEvents.wins", { name: alive[0].name }));
+    flash(game, t("gameEvents.wins", { name: alive[0].name }), "win");
   }
 }
 
@@ -147,7 +151,7 @@ export function unbust(game: Game, playerId: string, rebuy = false) {
   game.finished = false;
   game.endedAt = undefined;
   reseat(game, p);
-  if (!rebuy) logEvent(game, `${p.name}'s bust undone`);
+  if (!rebuy) logEvent(game, t("gameEvents.unbustLog", { name: p.name }));
 }
 
 /**
@@ -168,8 +172,8 @@ export function takeDeal(game: Game, kind: "icm" | "chop", amounts: Record<strin
   game.finished = true;
   game.endedAt = now;
   const list = alive.map((p) => `${p.name} ${money(amounts[p.id] ?? 0)}`).join(", ");
-  logEvent(game, `Deal (${kind === "icm" ? "ICM" : "chip chop"}): ${list}`);
-  flash(game, `It's a deal! ${alive.map((p) => p.name).join(", ")}`);
+  logEvent(game, t("gameEvents.dealLog", { kind: kind === "icm" ? t("gameEvents.dealKindIcm") : t("gameEvents.dealKindChop"), list }));
+  flash(game, t("gameEvents.dealFlash", { names: alive.map((p) => p.name).join(", ") }), "deal");
 }
 
 /** what a finishing place pays in this game: the deal if there was one, else the payout table */
@@ -186,14 +190,15 @@ export function creditKo(game: Game, outId: string, byId: string | null) {
   k.by = byId;
   const out = game.players.find((p) => p.id === outId);
   const by = game.players.find((p) => p.id === byId);
-  if (out && by) logEvent(game, `${by.name} knocked out ${out.name}`);
+  if (out && by) logEvent(game, t("gameEvents.knockoutLog", { by: by.name, out: out.name }));
 }
 
 export const koCount = (game: Game, playerId: string) => game.kos?.filter((k) => k.by === playerId).length ?? 0;
 
 // ---------- cash ----------
 
-export const HOUSE = "The House";
+/** who rake and fees are owed to when the host hasn't named a house */
+export const HOUSE = () => t("gameEvents.defaultHouseName");
 
 /** the cash game's rake setup (a tournament has none) */
 export const cashRake = (game: Game) => game.cash?.rake ?? { mode: "none" as const, pct: 0, cap: 0, fee: 0 };
@@ -220,7 +225,7 @@ export function cashStats(game: Game) {
 export function cashSettle(game: Game) {
   const r = cashRake(game);
   const done = game.players.filter((p) => p.cashOut !== null);
-  const house = game.house?.trim() || HOUSE;
+  const house = game.house?.trim() || HOUSE();
   const fee = r.mode === "seat" ? r.fee : 0;
   const nets = done.map((p) => ({ name: p.name, net: round2((p.cashOut ?? 0) - p.cashIn - fee) }));
   const owed = round2((r.mode === "pot" ? (game.rakeBox ?? 0) : 0) + fee * done.length);
@@ -277,8 +282,8 @@ export function drawSeats(game: Game, perTable = seatsPer(game)) {
   ps.forEach((p, i) => (p.seat = { table: (i % tables) + 1, seat: chairs[i % tables].pop()! }));
   const ids = new Set(ps.map((p) => p.id));
   for (const p of game.players) if (!ids.has(p.id)) p.seat = null;
-  logEvent(game, `Seats drawn: ${ps.length} players at ${tables} table${tables > 1 ? "s" : ""}`);
-  flash(game, "Seats are drawn");
+  logEvent(game, tp("gameEvents.seatsDrawnLog", tables, { n: ps.length }));
+  flash(game, t("gameEvents.seatsDrawnFlash"), "shuffle");
 }
 
 export function clearSeats(game: Game) {
@@ -368,15 +373,16 @@ export function applyAdvice(game: Game, a: TableAdvice) {
     const p = game.players.find((x) => x.id === a.id);
     if (!p) return;
     p.seat = a.to;
-    logEvent(game, `${p.name} moved to table ${a.to.table}, seat ${a.to.seat}`);
-    flash(game, `${p.name}: table ${a.to.table}, seat ${a.to.seat}`);
+    logEvent(game, t("gameEvents.movedLog", { name: p.name, table: a.to.table, seat: a.to.seat }));
+    flash(game, t("gameEvents.movedFlash", { name: p.name, table: a.to.table, seat: a.to.seat }), "seat");
   } else {
     for (const m of a.moves) {
       const p = game.players.find((x) => x.id === m.id);
       if (p) p.seat = m.to;
     }
-    logEvent(game, `Table ${a.table} broke: ${a.moves.map((m) => `${name(m.id)} to T${m.to.table} S${m.to.seat}`).join(", ")}`);
-    flash(game, `Table ${a.table} is breaking`);
+    const details = a.moves.map((m) => `${name(m.id)} to T${m.to.table} S${m.to.seat}`).join(", ");
+    logEvent(game, t("gameEvents.tableBrokeLog", { table: a.table, details }));
+    flash(game, t("gameEvents.tableBreakingFlash", { table: a.table }), "seat");
   }
 }
 

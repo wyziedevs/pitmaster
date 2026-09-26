@@ -23,6 +23,7 @@
   import { keyLabel, DEFAULT_PALETTE_KEY } from "$lib/keys";
   import { time } from "$lib/now.svelte";
   import { toast } from "$lib/toast.svelte";
+  import { t, tp } from "$lib/i18n";
   import type { Game } from "$lib/types";
   import Chip from "$lib/components/Chip.svelte";
   import Intro from "$lib/components/Intro.svelte";
@@ -76,6 +77,8 @@
   const board = $derived(leaderboard(done).slice(0, 5));
   const chipCount = chipSet ? totalCount(chipSet.chips) : 0;
   const paletteKey = $derived(keyLabel(settings.paletteKey || DEFAULT_PALETTE_KEY));
+  // "No games running. Start one above, or {link}." split around the inline link
+  const noGamesParts = $derived(t("toys.now.empty.text").split("{link}"));
 
   function openCalc() {
     play("open");
@@ -90,16 +93,18 @@
     if (g.clock.status === "idle") return "";
     if (g.type === "tournament" && g.levels.length) {
       const d = derive(g, time.now);
-      const lvl = d.level.isBreak ? "Break" : `Level ${d.level.num ?? d.index + 1} · ${amt(d.level.sb)}/${amt(d.level.bb)}`;
-      return `${lvl} · ${clock(d.remainingMs)} left`;
+      const lvl = d.level.isBreak
+        ? t("toys.now.break")
+        : t("toys.now.level", { num: String(d.level.num ?? d.index + 1), sb: amt(d.level.sb), bb: amt(d.level.bb) });
+      return t("toys.now.left", { status: lvl, time: clock(d.remainingMs) });
     }
-    return `${clock(cashElapsed(g, time.now))} played · ${money(cashStats(g).onTable)} on the table`;
+    return t("toys.now.cashStatus", { time: clock(cashElapsed(g, time.now)), money: money(cashStats(g).onTable) });
   }
 
   function runItBack(g: Game) {
     const n = rerun(g);
     saveGame(n);
-    toast(`Running “${g.name}” back`);
+    toast(t("toys.toastRunningBack", { name: g.name }));
     goto(`/game/${n.id}`);
   }
 
@@ -107,19 +112,19 @@
   function summary(g: Game, running = false) {
     if (g.type === "tournament") {
       const s = tourneyStats(g);
-      return `${s.entrants} players · ${money(g.tourney!.buyIn)} buy-in · pool ${money(s.pool)}`;
+      return t("toys.summary.tournament", { players: tp("toys.summary.players", s.entrants), buyIn: money(g.tourney!.buyIn), pool: money(s.pool) });
     }
-    const blinds = `${g.players.length} players · ${money(g.cash!.sb)}/${money(g.cash!.bb)}`;
-    return running ? blinds : `${blinds} · ${money(cashStats(g).bank)} in play`;
+    const blinds = t("toys.summary.cashBlinds", { players: tp("toys.summary.players", g.players.length), sb: money(g.cash!.sb), bb: money(g.cash!.bb) });
+    return running ? blinds : t("toys.summary.inPlay", { blinds, bank: money(cashStats(g).bank) });
   }
 
   function status(g: Game) {
-    if (g.finished) return "Finished";
-    return g.clock.status === "running" ? "Running" : g.clock.status === "paused" ? "Paused" : "Not Started";
+    if (g.finished) return t("toys.now.status.finished");
+    return g.clock.status === "running" ? t("toys.now.status.running") : g.clock.status === "paused" ? t("toys.now.status.paused") : t("toys.now.status.notStarted");
   }
 
   function remove(g: Game) {
-    if (!confirm(`Delete “${g.name}”? This can't be undone.`)) return;
+    if (!confirm(t("toys.confirmDeleteGame", { name: g.name }))) return;
     deleteGame(g.id);
     games = getGames();
   }
@@ -128,47 +133,47 @@
 <svelte:head><title>{HOME_TITLE}</title></svelte:head>
 
 <div class="home">
-<section class="hero block">
-  {#if settings.toys}<div class="fidget"><Toys /></div>{/if}
-  <h1>Run Your Game.</h1>
-  <p>Set your chips, blinds and buy-ins, then put the game up on the TV or any screen.</p>
+<section class="hero slab pt-5 px-5 pb-[22px]">
+  {#if settings.toys}<div class="fidget -mt-[6px] mx-0 mb-[6px]"><Toys /></div>{/if}
+  <h1>{t("toys.hero.title")}</h1>
+  <p class="mt-0 mx-0 mb-4 max-w-[60ch]">{t("toys.hero.subtitle")}</p>
   <div class="row">
-    <a class="btn big" href="/new?type=cash"><Icon icon={Plus} />New Cash Game</a>
-    <a class="btn big" href="/new?type=tournament"><Icon icon={Plus} />New Tournament</a>
+    <a class="btn big max-[480px]:flex-[1_1_100%]" href="/new?type=cash"><Icon icon={Plus} />{t("toys.hero.newCash")}</a>
+    <a class="btn big max-[480px]:flex-[1_1_100%]" href="/new?type=tournament"><Icon icon={Plus} />{t("toys.hero.newTournament")}</a>
   </div>
 </section>
 
 <section class="now">
   {#if evictable}
-    <p class="warn small backup" transition:slide={reveal()}>
-      Safari deletes a site's saved games after 7 days without a visit.
-      <a href="/settings#data">Export a Backup</a>, or add PitMaster to your Home Screen to keep them.
+    <p class="warn small mt-0 mx-0 mb-[18px]" transition:slide={reveal()}>
+      {t("toys.evict.text")}
+      <a href="/settings#data">{t("toys.evict.exportLink")}</a>{t("toys.evict.suffix")}
     </p>
   {/if}
-  <h2>Games in Progress</h2>
+  <h2>{t("toys.now.heading")}</h2>
   {#if live.length}
     <ul class="list bare">
       {#each live as g (g.id)}
         <!-- the name and where it's at on top; the details and the way out underneath -->
-        <li out:slide={leave()}>
+        <li class="py-[10px] border-b-[length:var(--hair)] border-solid border-line" out:slide={leave()}>
           <div class="spread">
-            <span><span class="pill">{g.type === "cash" ? "Cash" : "Tournament"}</span> <a class="game" href="/game/{g.id}">{g.name}</a></span>
+            <span><span class="pill">{g.type === "cash" ? t("toys.gameType.cash") : t("toys.gameType.tournament")}</span> <a class="game" href="/game/{g.id}">{g.name}</a></span>
             <span class="pill" data-s={g.clock.status}>{status(g)}</span>
           </div>
-          <div class="small muted">
-            {#if now(g)}<span class="tick">{now(g)}</span>{:else}Made {ago(g.createdAt)}{/if} · {summary(g, !!now(g))}
+          <div class="small muted mt-[2px]">
+            {#if now(g)}<span class="tabular-nums">{now(g)}</span>{:else}{t("toys.now.made", { time: ago(g.createdAt) })}{/if} · {summary(g, !!now(g))}
           </div>
-          <div class="small links">
-            <a href="/game/{g.id}/tv" target="_blank">TV View <Icon icon={ExternalLink} size="1em" /></a>
-            <button class="link muted" data-sound="thud" onclick={() => remove(g)}>Delete</button>
+          <div class="small links mt-[2px]">
+            <a href="/game/{g.id}/tv" target="_blank">{t("toys.now.tvView")} <Icon icon={ExternalLink} size="1em" /></a>
+            <button class="link muted" data-sound="thud" onclick={() => remove(g)}>{t("common.delete")}</button>
           </div>
         </li>
       {/each}
     </ul>
   {:else}
-    <div class="empty idle">
-      {#if chipSet?.chips[0]}<Chip chip={chipSet.chips[0]} size={30} text="" />{/if}
-      <p>No games running. Start one above, or <a href="/settings#data">import one</a> from another device.</p>
+    <div class="empty flex items-center gap-3">
+      {#if chipSet?.chips[0]}<Chip chip={chipSet.chips[0]} size={30} />{/if}
+      <p class="m-0">{noGamesParts[0]}<a href="/settings#data">{t("toys.now.empty.importLink")}</a>{noGamesParts[1]}</p>
     </div>
   {/if}
 </section>
@@ -176,103 +181,103 @@
 {#if done.length}
   <section class="past">
     <div class="spread">
-      <h2>Past Games</h2>
-      <span class="small"><a href="/players">Player Stats <Icon icon={ArrowRight} size="1em" /></a></span>
+      <h2>{t("toys.past.heading")}</h2>
+      <span class="small"><a href="/players">{t("toys.past.playerStats")} <Icon icon={ArrowRight} size="1em" /></a></span>
     </div>
-    <div class="row filters">
-      <input type="search" bind:value={q} placeholder="Search Games or Players" aria-label="Search past games" />
-      <select bind:value={kind} aria-label="Game type">
-        <option value="all">All Games</option>
-        <option value="cash">Cash Games</option>
-        <option value="tournament">Tournaments</option>
+    <div class="row mb-2">
+      <input class="w-[min(280px,100%)]" type="search" bind:value={q} placeholder={t("toys.past.searchPlaceholder")} aria-label={t("toys.past.searchAria")} />
+      <select bind:value={kind} aria-label={t("toys.past.typeAria")}>
+        <option value="all">{t("toys.past.allGames")}</option>
+        <option value="cash">{t("toys.past.cashGames")}</option>
+        <option value="tournament">{t("toys.past.tournaments")}</option>
       </select>
-      <span class="small muted">{found.length} of {done.length}</span>
+      <span class="small muted">{t("toys.past.countOf", { shown: String(found.length), total: String(done.length) })}</span>
     </div>
-    <table>
-      <thead>
-        <tr><th>Date</th><th>Game</th><th>Result</th><th class="hide-sm">Setup</th><th></th></tr>
+    <table class="max-[600px]:block">
+      <thead class="max-[600px]:hidden">
+        <tr><th>{t("toys.past.table.date")}</th><th>{t("toys.past.table.game")}</th><th>{t("toys.past.table.result")}</th><th class="hide-sm">{t("toys.past.table.setup")}</th><th></th></tr>
       </thead>
-      <tbody>
+      <tbody class="max-[600px]:block">
         {#each shown as g (g.id)}
           <!-- rows can't slide (a table row won't shrink below its text), so they fade -->
-          <tr in:fade={reveal()} out:fade={leave()}>
-            <td class="mono nowrap">{day(g.clock.startedAt ?? g.createdAt)}</td>
-            <td><span class="pill">{g.type === "cash" ? "Cash" : "Tournament"}</span> <a href="/game/{g.id}">{g.name}</a></td>
-            <td class="res">{headline(g)}</td>
+          <tr class="max-[600px]:grid max-[600px]:grid-cols-[auto_minmax(0,1fr)] max-[600px]:gap-x-[10px] max-[600px]:gap-y-[2px] max-[600px]:py-2 max-[600px]:border-b-[length:var(--hair)] max-[600px]:border-solid max-[600px]:border-line" in:fade={reveal()} out:fade={leave()}>
+            <td class="mono nowrap max-[600px]:p-0 max-[600px]:border-0">{day(g.clock.startedAt ?? g.createdAt)}</td>
+            <td class="max-[600px]:p-0 max-[600px]:border-0"><span class="pill">{g.type === "cash" ? t("toys.gameType.cash") : t("toys.gameType.tournament")}</span> <a href="/game/{g.id}">{g.name}</a></td>
+            <td class="res max-[600px]:p-0 max-[600px]:border-0 max-[600px]:col-start-2">{headline(g)}</td>
             <td class="small muted hide-sm">{summary(g)}</td>
-            <td class="nowrap small acts">
+            <td class="nowrap small acts max-[600px]:p-0 max-[600px]:border-0 max-[600px]:col-start-2">
               <span class="links">
-                <button class="link" data-sound="riffle" onclick={() => runItBack(g)}>Run It Back</button>
-                <button class="link muted" data-sound="thud" onclick={() => remove(g)}>Delete</button>
+                <button class="link" data-sound="riffle" onclick={() => runItBack(g)}>{t("toys.past.runItBack")}</button>
+                <button class="link muted" data-sound="thud" onclick={() => remove(g)}>{t("common.delete")}</button>
               </span>
             </td>
           </tr>
         {:else}
-          <tr><td colspan="5" class="empty">No past games match.</td></tr>
+          <tr class="max-[600px]:grid max-[600px]:grid-cols-[auto_minmax(0,1fr)] max-[600px]:gap-x-[10px] max-[600px]:gap-y-[2px] max-[600px]:py-2 max-[600px]:border-b-[length:var(--hair)] max-[600px]:border-solid max-[600px]:border-line"><td colspan="5" class="empty max-[600px]:p-0 max-[600px]:border-0 max-[600px]:col-span-full">{t("toys.past.table.empty")}</td></tr>
         {/each}
       </tbody>
     </table>
     {#if found.length > shown.length}
-      <p class="small"><button class="link" data-sound="open" onclick={() => (showAll = true)}>Show All {found.length}</button></p>
+      <p class="small"><button class="link" data-sound="open" onclick={() => (showAll = true)}>{t("toys.past.showAll", { count: String(found.length) })}</button></p>
     {/if}
   </section>
 {/if}
 
 <aside class="side">
   <section>
-    <h2>Quick Start</h2>
+    <h2 class="pb-[4px] mb-[2px]">{t("toys.quickStart.heading")}</h2>
     {#if templates.length || recent.length}
       <ul class="rows bare">
-        {#each templates as t (t.id)}
-          <li>
-            <span class="ic muted" aria-hidden="true"><Icon icon={Bookmark} size="1em" /></span>
-            <a href="/new?type={t.type}&template={t.id}">{t.name}</a>
-            <span class="small muted">{t.type === "cash" ? "Cash" : "Tournament"}</span>
+        {#each templates as tpl (tpl.id)}
+          <li class="grid grid-cols-[20px_minmax(0,1fr)_auto] items-center gap-2 min-h-[30px] py-[2px] border-b-[length:var(--hair)] border-solid border-line">
+            <span class="muted inline-flex justify-self-center" aria-hidden="true"><Icon icon={Bookmark} size="1em" /></span>
+            <a class="justify-self-start max-w-full truncate text-left" href="/new?type={tpl.type}&template={tpl.id}">{tpl.name}</a>
+            <span class="small muted">{tpl.type === "cash" ? t("toys.gameType.cash") : t("toys.gameType.tournament")}</span>
           </li>
         {/each}
         {#each recent as g (g.id)}
-          <li>
-            <span class="ic muted" aria-hidden="true"><Icon icon={RotateCw} size="1em" /></span>
-            <button class="link" data-sound="riffle" title="Run “{g.name}” back: same setup, same players" onclick={() => runItBack(g)}>{g.name}</button>
+          <li class="grid grid-cols-[20px_minmax(0,1fr)_auto] items-center gap-2 min-h-[30px] py-[2px] border-b-[length:var(--hair)] border-solid border-line">
+            <span class="muted inline-flex justify-self-center" aria-hidden="true"><Icon icon={RotateCw} size="1em" /></span>
+            <button class="link justify-self-start max-w-full truncate text-left" data-sound="riffle" title={t("toys.quickStart.runBackTitle", { name: g.name })} onclick={() => runItBack(g)}>{g.name}</button>
             <span class="small muted nowrap">{day(g.clock.startedAt ?? g.createdAt)}</span>
           </li>
         {/each}
       </ul>
     {:else}
-      <p class="empty small">Templates and past games land here.</p>
+      <p class="empty small mt-[6px] mx-0 mb-0">{t("toys.quickStart.empty")}</p>
     {/if}
   </section>
 
   {#if chipSet}
     <section>
-      <div class="spread">
-        <h2>Your Chips</h2>
-        <a class="small" href="/settings#chips">Change</a>
+      <div class="spread pb-[4px] mb-[2px]">
+        <h2>{t("toys.chips.heading")}</h2>
+        <a class="small" href="/settings#chips">{t("toys.chips.change")}</a>
       </div>
-      <ul class="rows bare chips">
+      <ul class="rows bare chips max-[599px]:grid max-[599px]:grid-cols-2 max-[599px]:gap-x-[18px]">
         {#each chipSet.chips as c (c.id)}
-          <li>
-            <Chip chip={c} size={20} text="" />
-            <b class="num">{amt(c.value)}</b>
+          <li class="grid grid-cols-[20px_minmax(0,1fr)_auto] items-center gap-2 min-h-[28px] py-[2px] border-b-[length:var(--hair)] border-solid border-line">
+            <Chip chip={c} size={20} />
+            <b class="num justify-self-start max-w-full truncate text-left">{amt(c.value)}</b>
             <span class="num muted small">×{c.count}</span>
           </li>
         {/each}
       </ul>
-      <p class="small muted foot">{chipSet.name} · {chipCount} chips</p>
+      <p class="small muted foot mt-[6px] mx-0 mb-0">{chipSet.name} · {tp("toys.chips.count", chipCount)}</p>
     </section>
   {/if}
 
   {#if board.length}
     <section>
-      <div class="spread">
-        <h2>Top Players</h2>
-        <a class="small" href="/players">All Stats</a>
+      <div class="spread pb-[4px] mb-[2px]">
+        <h2>{t("toys.players.heading")}</h2>
+        <a class="small" href="/players">{t("toys.players.allStats")}</a>
       </div>
       <ol class="rows bare board">
         {#each board as p, i (p.key)}
-          <li>
-            <span class="num muted small">{i + 1}</span>
-            <a href="/players">{p.name}</a>
+          <li class="grid grid-cols-[20px_minmax(0,1fr)_auto] items-center gap-2 min-h-[30px] py-[2px] border-b-[length:var(--hair)] border-solid border-line">
+            <span class="num muted small justify-self-center">{i + 1}</span>
+            <a class="justify-self-start max-w-full truncate text-left" href="/players">{p.name}</a>
             <span class="num" class:good={p.net > 0} class:bad={p.net < 0}>{signed(p.net)}</span>
           </li>
         {/each}
@@ -281,26 +286,26 @@
   {/if}
 
   <section>
-    <h2>Tools</h2>
+    <h2 class="pb-[4px] mb-[2px]">{t("toys.tools.heading")}</h2>
     <ul class="rows bare tools">
-      <li>
-        <span class="ic muted" aria-hidden="true"><Icon icon={CalcIcon} size="1em" /></span>
-        <button class="link" data-sound="none" onclick={openCalc}>Calculator</button>
+      <li class="grid grid-cols-[20px_minmax(0,1fr)_auto] items-center gap-2 min-h-[30px] py-[2px] border-b-[length:var(--hair)] border-solid border-line">
+        <span class="muted inline-flex justify-self-center" aria-hidden="true"><Icon icon={CalcIcon} size="1em" /></span>
+        <button class="link justify-self-start max-w-full truncate text-left" data-sound="none" onclick={openCalc}>{t("toys.tools.calculator")}</button>
         <kbd class="keys-hint">{keyLabel(CALC_KEY)}</kbd>
       </li>
-      <li>
-        <span class="ic muted" aria-hidden="true"><Icon icon={Search} size="1em" /></span>
+      <li class="grid grid-cols-[20px_minmax(0,1fr)_auto] items-center gap-2 min-h-[30px] py-[2px] border-b-[length:var(--hair)] border-solid border-line">
+        <span class="muted inline-flex justify-self-center" aria-hidden="true"><Icon icon={Search} size="1em" /></span>
         <!-- the palette makes its own sound as it opens -->
-        <button class="link" data-sound="none" onclick={openCommands}>Commands</button>
+        <button class="link justify-self-start max-w-full truncate text-left" data-sound="none" onclick={openCommands}>{t("toys.tools.commands")}</button>
         <kbd class="keys-hint">{paletteKey}</kbd>
       </li>
-      <li>
-        <span class="ic muted" aria-hidden="true"><Icon icon={HardDriveDownload} size="1em" /></span>
-        <a href="/settings#data">Manage Data</a>
+      <li class="grid grid-cols-[20px_minmax(0,1fr)_auto] items-center gap-2 min-h-[30px] py-[2px] border-b-[length:var(--hair)] border-solid border-line">
+        <span class="muted inline-flex justify-self-center" aria-hidden="true"><Icon icon={HardDriveDownload} size="1em" /></span>
+        <a class="justify-self-start max-w-full truncate text-left" href="/settings#data">{t("toys.tools.manageData")}</a>
       </li>
-      <li>
-        <span class="ic muted" aria-hidden="true"><Icon icon={CircleHelp} size="1em" /></span>
-        <a href="/help">How It Works</a>
+      <li class="grid grid-cols-[20px_minmax(0,1fr)_auto] items-center gap-2 min-h-[30px] py-[2px] border-b-[length:var(--hair)] border-solid border-line">
+        <span class="muted inline-flex justify-self-center" aria-hidden="true"><Icon icon={CircleHelp} size="1em" /></span>
+        <a class="justify-self-start max-w-full truncate text-left" href="/help">{t("toys.tools.howItWorks")}</a>
       </li>
     </ul>
   </section>
@@ -323,9 +328,6 @@
   }
   .now {
     grid-area: now;
-  }
-  .backup {
-    margin: 0 0 18px;
   }
   .past {
     grid-area: past;
@@ -351,98 +353,10 @@
       gap: 26px 36px;
     }
   }
-  /* the side's sections are peers of the ones beside them (h2s), set at the
-     size of a small heading so the main column leads */
+  /* the side's sections are peers of the ones beside them (h2s), set a step
+     down (an h3's size) so the main column leads */
   .side h2 {
-    font: bold 15px/1.2 var(--font);
-  }
-  .side section > h2,
-  .side .spread {
-    padding-bottom: 4px;
-    margin-bottom: 2px;
-  }
-  .side p {
-    margin: 6px 0 0;
-  }
-  /* ledger rows: a mark, the thing, and a figure at the end */
-  .rows li {
-    display: grid;
-    grid-template-columns: 20px minmax(0, 1fr) auto;
-    align-items: center;
-    gap: 8px;
-    min-height: 30px;
-    padding: 2px 0;
-    border-bottom: var(--hair) solid var(--line);
-  }
-  .rows li > :nth-child(2) {
-    justify-self: start;
-    max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    text-align: left;
-  }
-  .ic {
-    display: inline-flex;
-    justify-self: center;
-  }
-  .board li > :first-child {
-    justify-self: center;
-  }
-  .chips li {
-    min-height: 28px;
-  }
-  /* a phone: the chips go two across, so the set is half as tall */
-  @media (max-width: 599px) {
-    .chips {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      column-gap: 18px;
-    }
-  }
-  .tick {
-    font-variant-numeric: tabular-nums;
-  }
-  /* on a phone each past game is a short block: the date, then the name, what
-     happened and what you can do, all lined up under the name */
-  @media (max-width: 600px) {
-    .past table,
-    .past tbody {
-      display: block;
-    }
-    .past thead {
-      display: none;
-    }
-    .past tr {
-      display: grid;
-      grid-template-columns: auto minmax(0, 1fr);
-      gap: 2px 10px;
-      padding: 8px 0;
-      border-bottom: var(--hair) solid var(--line);
-    }
-    .past td {
-      padding: 0;
-      border: 0;
-    }
-    .past .res,
-    .past .acts {
-      grid-column: 2;
-    }
-    .past td[colspan] {
-      grid-column: 1 / -1;
-    }
-  }
-  .filters {
-    margin-bottom: 8px;
-  }
-  .filters input {
-    width: min(280px, 100%);
-  }
-  .hero {
-    padding: 20px 20px 22px;
-  }
-  .fidget {
-    margin: -6px 0 6px;
+    font-size: var(--fs-lg);
   }
   /* wide enough: the toys sit beside the headline instead of over it (and
      with them turned off in Settings, the headline has the block to itself) */
@@ -462,33 +376,7 @@
       margin: 0;
     }
   }
-  /* on a phone the two ways in are one full-width target each */
-  @media (max-width: 480px) {
-    .hero .row > .btn {
-      flex: 1 1 100%;
-    }
-  }
-  .hero p {
-    margin: 0 0 16px;
-    max-width: 60ch;
-  }
-  /* nothing running: a chip beside the line */
-  .idle {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-  .idle p {
-    margin: 0;
-  }
-  .list li {
-    padding: 10px 0;
-    border-bottom: var(--hair) solid var(--line);
-  }
-  .list li > * + * {
-    margin-top: 2px;
-  }
   .list .game {
-    font-size: 15px;
+    font-size: var(--fs-md);
   }
 </style>

@@ -1,0 +1,46 @@
+/* the site's one stylesheet: tailwind's utilities over the house styles.
+
+   the layers run in this order, and a later layer always wins, whatever the
+   selector: tailwind's theme (its variables), then app.css (the house styles),
+   then the utilities. so a class like pt-3 or text-muted beats app.css every
+   time, and app.css is only ever the default underneath.
+
+   no preflight: tailwind's reset would undo app.css (headings, buttons, lists,
+   links), so it's left out on purpose. a component's own <style> isn't in a
+   layer, so it still beats a utility on the same element. */
+@layer theme, base, components, utilities;
+
+@import "tailwindcss/theme.css" layer(theme);
+@import "./app.css" layer(base);
+@import "tailwindcss/utilities.css" layer(utilities);
+
+/* tailwind makes a utility from any matching word in the source, and these
+   words are house class names that mean something else: .table is a toy's
+   tabletop, .shadow and .ring are parts of the dice, chips and wheel, and
+   .sr-only is app.css's own. (the gray block is .slab and the label beside its
+   box is label.across, so tailwind's block and inline work as usual.) */
+@source not inline("{table,shadow,ring,sr-only}");
+
+/* utilities speak the house tokens: font-sans is the site's arial (font-serif
+   and font-mono already are, app.css sets those names), and the colors are the
+   ones in app.css, so they follow dark mode and the felt on their own:
+   text-muted, bg-block, border-line, text-accent ... */
+@theme inline {
+  --font-sans: var(--font);
+
+  --color-bg: var(--bg);
+  --color-field: var(--field);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-block: var(--block);
+  --color-block-2: var(--block-2);
+  --color-block-3: var(--block-3);
+  --color-link: var(--link);
+  --color-accent: var(--accent);
+  --color-good: var(--good);
+  --color-felt: var(--felt);
+  --color-felt-fg: var(--felt-fg);
+  --color-warn: var(--warn-bg);
+}

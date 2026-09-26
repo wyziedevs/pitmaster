@@ -6,6 +6,7 @@
   import type { Game } from "$lib/types";
   import TvView from "$lib/components/TvView.svelte";
   import Dealing from "$lib/components/Dealing.svelte";
+  import { t } from "$lib/i18n";
 
   // same-computer tv window: updates instantly over BroadcastChannel. it
   // reads the saved game when it can; with a passcode set it never holds the
@@ -23,15 +24,15 @@
 <svelte:head><title>TV · PitMaster</title></svelte:head>
 
 {#if game}
-  <TvView {game} status="Same-Computer Mode" />
+  <TvView {game} status={t("tv.connect.sameComputer")} />
 {:else if vault.state === "locked"}
   <main class="wrap">
-    <h1>Waiting for the Game</h1>
-    <p><Dealing label="Waiting" />PitMaster is locked on this computer. Unlock it where the game is running and it shows up here.</p>
+    <h1>{t("tv.wait.title")}</h1>
+    <p><Dealing label={t("tv.wait.label")} />{t("tv.wait.locked")}</p>
   </main>
 {:else}
   <main class="wrap">
-    <h1>That Game Isn't on This Device</h1>
-    <p>On a different device? On the computer running the game, press <b>Go Live</b>, then open <a href="/live">{location.host}/live</a> here and type the code.</p>
+    <h1>{t("tv.wait.notHereTitle")}</h1>
+    <p>{t("tv.wait.notHereBefore")}<b>{t("tv.panel.goLive")}</b>{t("tv.wait.notHereMiddle")}<a href="/live">{location.host}/live</a>{t("tv.wait.notHereAfter")}</p>
   </main>
 {/if}

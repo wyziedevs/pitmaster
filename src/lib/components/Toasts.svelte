@@ -11,9 +11,21 @@
   const ICONS = { ok: Check, info: Info, bad: CircleAlert };
 </script>
 
-<div class="toasts" role="status" aria-live="polite">
+<div
+  class="toasts fixed left-1/2 bottom-[calc(16px_+_env(safe-area-inset-bottom))] z-[60] flex flex-col items-center gap-2 pointer-events-none w-max max-w-[calc(100vw_-_32px)]"
+  role="status"
+  aria-live="polite"
+>
   {#each toasts as t (t.id)}
-    <button class="toast float" data-k={t.kind} data-sound="close" onclick={() => dismiss(t.id)} in:fly={rise(10)} out:fade={leave()} animate:flip={reorder()}>
+    <button
+      class="toast float pointer-events-auto h-auto min-h-[var(--control-h)] py-1.5 px-3 whitespace-normal text-left text-fg hover:bg-block hover:border-fg active:bg-block-2"
+      data-k={t.kind}
+      data-sound="close"
+      onclick={() => dismiss(t.id)}
+      in:fly={rise(10)}
+      out:fade={leave()}
+      animate:flip={reorder()}
+    >
       <Icon icon={ICONS[t.kind]} />{t.text}
     </button>
   {/each}
@@ -21,42 +33,19 @@
 
 <style>
   .toasts {
-    position: fixed;
-    left: 50%;
-    bottom: calc(16px + env(safe-area-inset-bottom));
-    transform: translateX(-50%);
-    z-index: 60;
     /* a layer for good, so its text never changes weight when it stops moving (+layout.svelte) */
     will-change: transform;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    pointer-events: none;
-    width: max-content;
-    max-width: calc(100vw - 32px);
+    transform: translateX(-50%);
   }
   /* the floating look (.float). a click puts it away, so it answers like a
      button: the face darkens a step under the pointer and gives when pressed */
   .toast {
-    pointer-events: auto;
-    height: auto;
-    min-height: var(--control-h);
-    padding: 6px 12px;
-    white-space: normal;
-    text-align: left;
-    color: var(--fg);
     transition:
       background-color var(--dur-hover) var(--ease-out),
       scale var(--dur-press) var(--ease-out),
       var(--t-focus);
   }
-  .toast:hover {
-    background: var(--block);
-    border-color: var(--fg);
-  }
   .toast:active {
-    background: var(--block-2);
     transform: none;
     scale: 0.97;
   }

@@ -2,7 +2,7 @@
 // checked before anything reads them: the right kind of value everywhere the
 // app looks, ids that are safe in a page address and colors that are only
 // colors. anything else is turned away whole, never half saved.
-import type { ChipSet, Game, PayHandles, Template } from "./types";
+import type { ChipSet, EventKind, Game, PayHandles, Template } from "./types";
 import { FACE_DEFAULTS } from "./chips";
 
 type Obj = Record<string, unknown>;
@@ -44,6 +44,8 @@ const player = (p: unknown) =>
 
 const level = (l: unknown) => obj(l) && num(l.sb) && num(l.bb) && num(l.ante) && num(l.minutes) && maybe(list(str))(l.colorUp);
 const said = orNull((n) => obj(n) && str(n.text) && num(n.at));
+const EVENT_KINDS: EventKind[] = ["win", "deal", "money", "bust", "chips", "rack", "shuffle", "seat", "note"];
+const flashed = orNull((n) => obj(n) && str(n.text) && num(n.at) && (EVENT_KINDS as string[]).includes(n.kind as string));
 const clock = (c: unknown) =>
   obj(c) && ["idle", "running", "paused"].includes(c.status as string) && num(c.levelIndex) && num(c.levelElapsedMs) && num(c.elapsedMs);
 const tourney = (t: unknown) => obj(t) && num(t.buyIn) && list(num)(t.payouts) && obj(t.rebuy) && obj(t.addOn);
@@ -66,7 +68,7 @@ export function isGame(g: unknown): g is Game {
     clock(g.clock) &&
     list(level)(g.levels) &&
     said(g.message) &&
-    said(g.flash) &&
+    flashed(g.flash) &&
     list(entry)(g.log) &&
     (g.log as unknown[]).length <= 300 &&
     orNull((l) => obj(l) && str(l.code) && str(l.key))(g.live) &&

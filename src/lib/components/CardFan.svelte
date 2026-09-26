@@ -6,13 +6,12 @@
   import { onMount } from "svelte";
   import { play } from "$lib/sound";
   import { reducedMotion } from "$lib/motion";
+  import { t } from "$lib/i18n";
 
   type Card = { r: number; s: number };
   const RANKS = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"];
-  const ONE = ["Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Jack", "Queen", "King", "Ace"];
   // the text form, so a phone doesn't swap in its emoji suits
   const SUITS = ["♠︎", "♥︎", "♦︎", "♣︎"];
-  const SUIT_NAMES = ["Spades", "Hearts", "Diamonds", "Clubs"];
 
   // the pips of a number card as a printer lays them out: [column, how far
   // down] with the columns at the left, middle and right of the pip box. any
@@ -196,7 +195,8 @@
     later(shuffle, 380);
   }
 
-  const nameOf = (c: Card) => `${ONE[c.r]} of ${SUIT_NAMES[c.s]}`;
+  const nameOf = (c: Card) =>
+    t("toys.cardFan.cardName", { rank: t(`toys.cardFan.ranks.${c.r}`), suit: t(`toys.cardFan.suits.${c.s}`) });
 </script>
 
 <svelte:window onpointerup={release} onpointercancel={release} />
@@ -206,13 +206,14 @@
   <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
   <div
     class="fan"
+    dir="ltr"
     class:moving
     class:squared
     class:wave
     class:hovering={over !== null}
     bind:this={fan}
     role="group"
-    aria-label="A hand of cards to play with"
+    aria-label={t("toys.cardFan.groupAria")}
     aria-keyshortcuts="S"
     style:--top="{TOP}px"
     style:--h="{H}px"
@@ -234,7 +235,7 @@
         style:--from={Math.abs(i - MID)}
         style:z-index={i}
         data-sound="none"
-        aria-label={up[i] ? `${nameOf(c)}, face up` : "Face-down card"}
+        aria-label={up[i] ? t("toys.cardFan.faceUp", { name: nameOf(c) }) : t("toys.cardFan.faceDown")}
         onclick={(e) => flip(i, e)}
         onfocus={() => (over = i)}
         onblur={leave}
@@ -267,7 +268,7 @@
       </button>
     {/each}
   </div>
-  <p class="hint">Tap to flip, hold to shuffle.</p>
+  <p class="hint">{t("toys.cardFan.hint")}</p>
 </div>
 
 <style>

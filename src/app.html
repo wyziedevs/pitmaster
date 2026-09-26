@@ -24,8 +24,11 @@
     <link rel="apple-touch-icon" href="%sveltekit.assets%/apple-touch-icon.png" />
     <link rel="manifest" href="%sveltekit.assets%/manifest.webmanifest" />
     <script nonce="%sveltekit.nonce%">
-      // pick the theme (and reduced motion) before first paint so dark mode
-      // doesn't flash white. settings.svelte.ts takes over once the app loads.
+      // pick the theme (and reduced motion) and the language (and its writing
+      // direction) before first paint, so dark mode and right-to-left text
+      // don't flash the wrong way. settings.svelte.ts takes over once the app
+      // loads; i18n/langs.ts is the source of truth this repeats by hand,
+      // since this script runs before any module does.
       (function () {
         var s = {};
         try {
@@ -35,13 +38,29 @@
         if (t !== "light" && t !== "dark") t = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
         document.documentElement.dataset.theme = t;
         if (s.motion === "reduced") document.documentElement.dataset.motion = "reduced";
-        // the tv is dark whatever the theme
-        if (/\/tv\/?$/.test(location.pathname)) document.documentElement.dataset.stage = "tv";
         // the browser's bar (and an installed app's title bar) in the same color
-        var bar = t === "dark" || document.documentElement.dataset.stage ? "#151515" : "#fdfdfd";
+        var bar = t === "dark" ? "#151515" : "#fdfdfd";
         document.querySelectorAll('meta[name="theme-color"]').forEach(function (m) {
           m.content = bar;
         });
+
+        var codes = ["en", "zh", "hi", "es", "fr", "ar", "bn", "pt"];
+        var rtl = { ar: true };
+        var lang = s.language;
+        if (codes.indexOf(lang) === -1) {
+          // no pick saved yet: guess from the browser, same as settings.svelte.ts does
+          var tags = navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language];
+          lang = "en";
+          for (var i = 0; i < tags.length; i++) {
+            var base = (tags[i] || "").slice(0, 2).toLowerCase();
+            if (codes.indexOf(base) !== -1) {
+              lang = base;
+              break;
+            }
+          }
+        }
+        document.documentElement.lang = lang;
+        document.documentElement.dir = rtl[lang] ? "rtl" : "ltr";
       })();
     </script>
     <style>
@@ -54,7 +73,7 @@
         background: oklch(99.3% 0 0);
         color-scheme: light;
       }
-      :where(:root[data-theme="dark"], :root[data-stage="tv"]) {
+      :where(:root[data-theme="dark"]) {
         background: oklch(19.5% 0 0);
         color-scheme: dark;
       }

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import "../app.css";
+  import "../styles.css";
   import { page } from "$app/state";
   import { onNavigate, afterNavigate } from "$app/navigation";
   import Toasts from "$lib/components/Toasts.svelte";
@@ -12,6 +12,7 @@
   import { reveal, leave, revealTheme, slide } from "$lib/motion";
   import {
     applyTheme,
+    applyLang,
     saveSettings,
     settings,
     resolvedTheme,
@@ -29,6 +30,7 @@
   import { calc, closeCalculator, CALC_KEY } from "$lib/calcbox.svelte";
   import { keyLabel } from "$lib/keys";
   import type { Component } from "svelte";
+  import { t } from "$lib/i18n";
 
   let { children } = $props();
 
@@ -55,6 +57,7 @@
     idle(fetchFloaters);
   });
   applyTheme();
+  applyLang();
 
   // tv screens get the whole viewport, no site chrome. they're never locked
   // (they hold no key, see lock.svelte.ts) and nothing on them edits anything.
@@ -73,32 +76,32 @@
   let saveTrouble = $state(false);
   hooks.failed = () => {
     saveTrouble = true;
-    toast("Couldn't save. This browser may be out of space, or blocking site storage.", "bad");
+    toast(t("nav.toast.saveFailed"), "bad");
   };
   hooks.recovered = () => {
     saveTrouble = false;
-    toast("Saved. Everything's caught up.");
+    toast(t("nav.toast.saveRecovered"));
   };
 
   // saved data this browser's key can't open: only the host can decide to let it go
   function discard() {
-    if (!confirm("Delete the saved data this browser can't open, and start fresh? This can't be undone.")) return;
+    if (!confirm(t("nav.discardConfirm"))) return;
     forgetAll();
   }
 
-  const links = [
-    { href: "/", label: "Games" },
-    { href: "/players", label: "Players" },
-    { href: "/live", label: "TV View" },
-    { href: "/settings", label: "Settings" },
-  ];
+  const links = $derived([
+    { href: "/", label: t("nav.links.games") },
+    { href: "/players", label: t("nav.links.players") },
+    { href: "/live", label: t("nav.links.tvView") },
+    { href: "/settings", label: t("common.settings") },
+  ]);
   // not in the header, but still a few keys away in Commands
-  const shortcuts = [
-    { href: "/new?type=cash", label: "New Cash Game", keywords: "start ring" },
-    { href: "/new?type=tournament", label: "New Tournament", keywords: "start mtt sng" },
-    { href: "/settings#chips", label: "Chip Sets", keywords: "chips edit colors values denominations" },
-    { href: "/help", label: "Help", keywords: "how it works guide faq shortcuts keys question" },
-  ];
+  const shortcuts = $derived([
+    { href: "/new?type=cash", label: t("nav.shortcuts.newCashGame"), keywords: "start ring" },
+    { href: "/new?type=tournament", label: t("nav.shortcuts.newTournament"), keywords: "start mtt sng" },
+    { href: "/settings#chips", label: t("nav.shortcuts.chipSets"), keywords: "chips edit colors values denominations" },
+    { href: "/help", label: t("common.help"), keywords: "how it works guide faq shortcuts keys question" },
+  ]);
 
   // every name that's played here, for autocomplete on "Player name" boxes.
   // re-read on each page change so new faces show up next time.
@@ -114,7 +117,7 @@
       ...[...links, ...shortcuts].map((l) => ({
         id: `go:${l.href}`,
         label: l.label,
-        group: "Go To",
+        group: t("nav.commands.goTo"),
         keywords: `page open ${"keywords" in l ? l.keywords : ""}`,
         run: () => goto(l.href),
       })),
@@ -123,21 +126,21 @@
         .map((g) => ({
           id: `game:${g.id}`,
           label: g.name,
-          group: "Games in Progress",
+          group: t("nav.commands.gamesInProgress"),
           keywords: g.type,
           run: () => goto(`/game/${g.id}`),
         })),
-      ...getTemplates().map((t) => ({
-        id: `tpl:${t.id}`,
-        label: `New from “${t.name}”`,
-        group: "Templates",
-        keywords: `template ${t.type}`,
-        run: () => goto(`/new?type=${t.type}&template=${t.id}`),
+      ...getTemplates().map((tpl) => ({
+        id: `tpl:${tpl.id}`,
+        label: t("nav.commands.newFromTemplate", { name: tpl.name }),
+        group: t("nav.commands.templates"),
+        keywords: `template ${tpl.type}`,
+        run: () => goto(`/new?type=${tpl.type}&template=${tpl.id}`),
       })),
       {
         id: "theme",
-        label: resolvedTheme() === "dark" ? "Light Theme" : "Dark Theme",
-        group: "Settings",
+        label: resolvedTheme() === "dark" ? t("nav.commands.lightTheme") : t("nav.commands.darkTheme"),
+        group: t("common.settings"),
         keywords: "theme dark light mode",
         // the same circular wipe as Settings, out from the middle of the screen
         run: () => {
@@ -155,9 +158,9 @@
       {
         id: "rake",
         label: settings.useRake
-          ? "Turn Cash Game Rake Off"
-          : "Turn Cash Game Rake On",
-        group: "Settings",
+          ? t("nav.commands.rakeOff")
+          : t("nav.commands.rakeOn"),
+        group: t("common.settings"),
         keywords: "rake seat fee house cut",
         run: () => {
           settings.useRake = !settings.useRake;
@@ -167,8 +170,8 @@
           saveSettings();
           toast(
             settings.useRake
-              ? "New cash games take a rake"
-              : "No rake on new cash games",
+              ? t("nav.toast.rakeOn")
+              : t("nav.toast.rakeOff"),
             "info",
           );
         },
@@ -176,9 +179,9 @@
       {
         id: "cut",
         label: settings.useHouseCut
-          ? "Turn Tournament House Cut Off"
-          : "Turn Tournament House Cut On",
-        group: "Settings",
+          ? t("nav.commands.houseCutOff")
+          : t("nav.commands.houseCutOn"),
+        group: t("common.settings"),
         keywords: "rake fee house cut tournament buy-in",
         run: () => {
           settings.useHouseCut = !settings.useHouseCut;
@@ -186,16 +189,16 @@
           saveSettings();
           toast(
             settings.useHouseCut
-              ? "New tournaments take a house cut"
-              : "No house cut on new tournaments",
+              ? t("nav.toast.houseCutOn")
+              : t("nav.toast.houseCutOff"),
             "info",
           );
         },
       },
       {
         id: "export",
-        label: "Export Everything",
-        group: "Your Data",
+        label: t("nav.commands.exportEverything"),
+        group: t("nav.commands.yourData"),
         keywords: "backup download save move laptop computer device file",
         run: () => {
           download(
@@ -203,15 +206,15 @@
             exportAll({ ...settings }),
             "application/json",
           );
-          toast("Exported. On the other device, open it with Import.");
+          toast(t("nav.toast.exported"));
         },
       },
       ...(vault.passcode
         ? [
             {
               id: "lock",
-              label: "Lock PitMaster Now",
-              group: "Your Data",
+              label: t("nav.commands.lockNow"),
+              group: t("nav.commands.yourData"),
               keywords: "passcode lock away secure hide",
               run: () => (play("lock"), lockNow()),
             },
@@ -219,15 +222,15 @@
         : []),
       {
         id: "import",
-        label: "Import From a File",
-        group: "Your Data",
+        label: t("nav.commands.importFromFile"),
+        group: t("nav.commands.yourData"),
         keywords: "restore backup upload move laptop computer device",
         run: () => goto("/settings#data"),
       },
       {
         id: "calc",
-        label: calc.open ? "Close Calculator" : "Open Calculator",
-        group: "Tools",
+        label: calc.open ? t("nav.commands.closeCalculator") : t("nav.commands.openCalculator"),
+        group: t("nav.commands.tools"),
         keywords: "calculator math add sum total split divide",
         hint: keyLabel(CALC_KEY),
         run: toggleCalc,
@@ -235,9 +238,9 @@
       {
         id: "sounds",
         label: settings.sounds
-          ? "Turn Interface Sounds Off"
-          : "Turn Interface Sounds On",
-        group: "Settings",
+          ? t("nav.commands.soundsOff")
+          : t("nav.commands.soundsOn"),
+        group: t("common.settings"),
         keywords: "mute sound audio",
         run: () => {
           settings.sounds = !settings.sounds;
@@ -352,7 +355,8 @@
   }
   if (location.hash) landOn(location.hash);
   afterNavigate(({ from, to }) => {
-    if (from && to?.url.hash && from.url.pathname !== to.url.pathname) landOn(to.url.hash);
+    // (the first load has a `from` with no url)
+    if (from?.url && to?.url.hash && from.url.pathname !== to.url.pathname) landOn(to.url.hash);
   });
 
   // ---------- tactile sound, wired once for the whole site ----------
@@ -371,17 +375,43 @@
 
   function press(target: EventTarget | null) {
     const el = (target as Element | null)?.closest?.<HTMLElement>(PRESSABLE);
-    if (!el || el.matches(":disabled")) return;
+    if (!el || el.matches(":disabled")) return null;
     const s = soundFor(el);
     if (s) play(s);
+    return s === "tap" || s === "thock" ? el : null;
   }
+
+  // a plain key held down, so letting go of it can sound its upstroke. slid
+  // off before letting go, it was never pressed: no upstroke.
+  let held: HTMLElement | null = null;
 
   // anything that isn't a control might be a chip or a stack to play with
   function onPointerDown(e: PointerEvent) {
     closeMenu(e);
     if (e.button !== 0) return;
-    press(e.target);
+    held = press(e.target);
+    // a dropdown pops open and shut like the other menus (picking from its list
+    // is "soft", in onChange)
+    const t = e.target as Element;
+    const sel = t.closest?.<HTMLSelectElement>("select:not(:disabled)");
+    if (sel && !t.closest("option")) play(isOpen(sel) ? "close" : "open");
     pressToy(e);
+  }
+
+  // :open only exists where a select's list can be styled; elsewhere it's the
+  // system's own popup, which never shows before the press
+  function isOpen(sel: HTMLSelectElement) {
+    try {
+      return sel.matches(":open");
+    } catch {
+      return false;
+    }
+  }
+
+  function onPointerUp(e: PointerEvent) {
+    const el = held;
+    held = null;
+    if (el?.isConnected && el.contains(e.target as Node)) play(el.matches(".big") ? "upBig" : "up");
   }
 
   // keyboard activation arrives as a click with no pointer detail
@@ -396,9 +426,25 @@
     else if (t.tagName === "SELECT") play("soft");
   }
 
+  // a number box stepped (arrow keys, its spinner, the wheel) clicks one notch
+  // each way. typing into it stays quiet: typing never makes a sound.
+  const lastNum = new WeakMap<HTMLInputElement, number>();
+  function onFocusIn(e: FocusEvent) {
+    const t = e.target as HTMLInputElement;
+    if (t.type === "number") lastNum.set(t, Number(t.value));
+  }
+
   // range sliders tick like a ratchet as they cross each step
   function onInput(e: Event) {
     const t = e.target as HTMLInputElement;
+    if (t.type === "number") {
+      const was = lastNum.get(t);
+      const now = Number(t.value);
+      lastNum.set(t, now);
+      const typed = e instanceof InputEvent && !!e.inputType;
+      if (!typed && was !== undefined && now !== was) play("notch", { v: now - was });
+      return;
+    }
     if (t.type !== "range") return;
     const min = Number(t.min) || 0;
     const max = Number(t.max) || 100;
@@ -417,6 +463,9 @@
 
 <svelte:document
   onpointerdown={onPointerDown}
+  onpointerup={onPointerUp}
+  onpointercancel={() => (held = null)}
+  onfocusin={onFocusIn}
   onpointerover={hoverToy}
   onkeydown={onKeyDown}
   onclick={onClick}
@@ -429,12 +478,12 @@
      what's saved is untouched (saves happen before anything is drawn). a tv
      tries again by itself: nobody's at it to press anything -->
 {#snippet crashed(_: unknown, reset: () => void)}
-  <div class="crash" class:wrap={bare} use:retry={bare ? reset : null}>
-    <h1>Something Broke.</h1>
+  <div class="crash py-10 px-0" class:wrap={bare} use:retry={bare ? reset : null}>
+    <h1>{t("nav.crashed.title")}</h1>
     <p class="muted measure">
-      {bare ? "This screen hit a problem drawing the game. It tries again in a few seconds." : "This page hit a problem it couldn't get past. What's saved is safe."}
+      {bare ? t("nav.crashed.tvBody") : t("nav.crashed.pageBody")}
     </p>
-    {#if !bare}<p class="row"><button onclick={reset}>Try Again</button><a class="btn" href="/">Back to Games</a></p>{/if}
+    {#if !bare}<p class="row"><button onclick={reset}>{t("nav.crashed.tryAgain")}</button><a class="btn" href="/">{t("nav.backToGames")}</a></p>{/if}
   </div>
 {/snippet}
 
@@ -443,48 +492,86 @@
     {@render children()}
   </svelte:boundary>
 {:else}
-  <a class="skip" href="#main">Skip to Content</a>
-  <header class="wrap top" bind:offsetHeight={headH}>
+  <a
+    class="skip absolute left-3 top-2 z-[100] py-1.5 px-3 bg-field border-[length:var(--hair)] border-solid border-fg"
+    href="#main">{t("nav.header.skipToContent")}</a
+  >
+  <header
+    class="wrap top flex gap-[22px] justify-between items-baseline pt-3.5 pb-0 border-b-[length:var(--hair)] border-solid border-line mb-[18px] sticky top-0 z-50 bg-bg pointer-coarse:pt-[6px]"
+    bind:offsetHeight={headH}
+  >
     <!-- hover the suits and they turn over to the other two -->
-    <a href="/" class="logo">
-      <span class="suits" aria-hidden="true">
-        <span class="roll"><span>♠</span><span class="suit-r">♦</span></span
-        ><span class="roll"><span class="suit-r">♥</span><span>♣</span></span>
+    <a
+      href="/"
+      class="logo flex-none whitespace-nowrap text-[length:var(--fs-xl)] font-serif text-fg no-underline pb-2 tracking-[-0.01em] visited:text-fg"
+    >
+      <span class="suits inline-flex" aria-hidden="true">
+        <span class="roll inline-flex flex-col h-[1.2em] leading-[1.2] overflow-hidden align-bottom"
+          ><span>♠</span><span class="suit-r">♦</span></span
+        ><span class="roll inline-flex flex-col h-[1.2em] leading-[1.2] overflow-hidden align-bottom"
+          ><span class="suit-r">♥</span><span>♣</span></span
+        >
       </span>
       PitMaster
     </a>
-    <nav class="tabs" aria-label="Pages" bind:clientWidth={navW}>
+    <nav
+      class="tabs flex-1 min-w-0 flex justify-end items-end gap-4"
+      aria-label={t("nav.header.pagesLabel")}
+      bind:clientWidth={navW}
+    >
       {#each tabLinks as l (l.href)}
-        <a class="tab" href={l.href} aria-current={current(l.href) ? "page" : undefined}>
+        <a
+          class="tab whitespace-nowrap relative inline-flex items-center gap-[3px] pb-2 border-b-2 border-transparent mb-[calc(-1*var(--hair))] no-underline pointer-coarse:pt-2"
+          href={l.href}
+          aria-current={current(l.href) ? "page" : undefined}
+        >
           {l.label}
-          {#if current(l.href)}<span class="tab-rule" aria-hidden="true"
+          {#if current(l.href)}<span class="tab-rule absolute left-0 right-0 -bottom-0.5 h-0.5 bg-fg" aria-hidden="true"
             ></span>{/if}
         </a>
       {/each}
       {#if lockTab}
-        <button class="link tab" data-sound="lock" onclick={lockNow} title="Lock PitMaster now"><Icon icon={Lock} size="1em" />Lock</button>
+        <button
+          class="link tab whitespace-nowrap relative inline-flex items-center gap-1 pb-2 border-b-2 border-transparent mb-[calc(-1*var(--hair))] no-underline pointer-coarse:pt-2"
+          data-sound="lock"
+          onclick={lockNow}
+          title={t("nav.header.lockTitle")}><Icon icon={Lock} size="1em" />{t("nav.header.lock")}</button
+        >
       {/if}
       {#if folded}
-        <div class="more" bind:this={more}>
+        <div class="more relative" bind:this={more}>
           <button
-            class="link tab"
+            class="link tab whitespace-nowrap relative inline-flex items-center gap-1 pb-2 border-b-2 border-transparent mb-[calc(-1*var(--hair))] no-underline pointer-coarse:pt-2 pointer-coarse:min-w-[44px] min-w-7 justify-center"
             data-sound={menuOpen ? "close" : "open"}
-            aria-label="More pages"
+            aria-label={t("nav.header.morePages")}
             aria-expanded={menuOpen}
             aria-controls="more-menu"
             aria-current={foldedCurrent ? "page" : undefined}
             onclick={() => (menuOpen = !menuOpen)}
           >
             <Icon icon={Ellipsis} />
-            {#if foldedCurrent}<span class="tab-rule" aria-hidden="true"></span>{/if}
+            {#if foldedCurrent}<span class="tab-rule absolute left-0 right-0 -bottom-0.5 h-0.5 bg-fg" aria-hidden="true"></span>{/if}
           </button>
           {#if menuOpen}
-            <div id="more-menu" class="menu" in:fade={reveal()} out:fade={leave()}>
+            <div
+              id="more-menu"
+              class="menu absolute right-0 top-[calc(100%_+_var(--hair))] z-[60] flex flex-col min-w-[170px] py-[6px] px-0 bg-bg border-[length:var(--hair)] border-solid border-line"
+              in:fade={reveal()}
+              out:fade={leave()}
+            >
               {#each foldedLinks as l (l.href)}
-                <a href={l.href} aria-current={current(l.href) ? "page" : undefined}>{l.label}</a>
+                <a
+                  class="flex items-center gap-1.5 py-[7px] px-3.5 text-left no-underline whitespace-nowrap hover:bg-block active:bg-block-2"
+                  href={l.href}
+                  aria-current={current(l.href) ? "page" : undefined}>{l.label}</a
+                >
               {/each}
               {#if lockable && !lockTab}
-                <button class="link" data-sound="lock" onclick={lockNow}><Icon icon={Lock} size="1em" />Lock</button>
+                <button
+                  class="link flex items-center gap-1.5 py-[7px] px-3.5 text-left no-underline whitespace-nowrap hover:bg-block active:bg-block-2"
+                  data-sound="lock"
+                  onclick={lockNow}><Icon icon={Lock} size="1em" />{t("nav.header.lock")}</button
+                >
               {/if}
             </div>
           {/if}
@@ -492,53 +579,44 @@
       {/if}
     </nav>
     <button
-      class="link tab calc-tab"
+      class="link tab calc-tab whitespace-nowrap relative inline-flex items-center gap-1 pb-2 border-b-2 border-transparent mb-[calc(-1*var(--hair))] no-underline pointer-coarse:pt-2 pointer-coarse:min-w-[44px] min-w-7 justify-center flex-none -ml-1.5"
       data-sound="none"
-      aria-label="Calculator"
+      aria-label={t("nav.header.calculator")}
       aria-expanded={calc.open}
-      title="Calculator ({keyLabel(CALC_KEY)})"
+      title={t("nav.header.calculatorTitle", { key: keyLabel(CALC_KEY) })}
       onclick={toggleCalc}><Icon icon={CalcIcon} /></button
     >
     <!-- every tab at its own width, never seen: what the fold is worked out from -->
-    <div class="ruler" aria-hidden="true" bind:this={ruler}>
-      {#each links as l (l.href)}<span>{l.label}</span>{/each}
-      <span><Icon icon={Lock} size="1em" />Lock</span>
-      <span><Icon icon={Ellipsis} /></span>
+    <div class="ruler absolute top-0 left-0 w-0 h-0 overflow-hidden flex invisible pointer-events-none whitespace-nowrap" aria-hidden="true" bind:this={ruler}>
+      {#each links as l (l.href)}<span class="flex-none inline-flex items-center gap-1">{l.label}</span>{/each}
+      <span class="flex-none inline-flex items-center gap-1"><Icon icon={Lock} size="1em" />{t("nav.header.lock")}</span>
+      <span class="flex-none inline-flex items-center gap-1 min-w-7 justify-center pointer-coarse:min-w-[44px]"><Icon icon={Ellipsis} /></span>
     </div>
   </header>
-  <main class="wrap" id="main" tabindex="-1">
+  <main class="wrap focus:outline-none" id="main" tabindex="-1">
     {#if vault.state === "locked" && !unlockedPage}
       <LockScreen />
     {:else if vault.state === "unreadable" && !unlockedPage}
-      <h1>Saved Data Can't Be Opened</h1>
+      <h1>{t("nav.unreadable.title")}</h1>
       <p class="measure">
-        PitMaster encrypts everything it saves with a key that only this browser holds. That key is gone, usually
-        because part of this site's data was cleared, so what's saved here can't be read by anyone, including us.
+        {t("nav.unreadable.body1")}
       </p>
       <p class="measure">
-        If you have an export file, start fresh and import it from <b>Settings</b>. Otherwise, starting fresh is the
-        only way forward.
+        {t("nav.unreadable.body2Prefix")} <b>{t("common.settings")}</b>{t("nav.unreadable.body2Suffix")}
       </p>
-      <p><button class="danger" data-sound="thud" onclick={discard}>Delete It and Start Fresh</button></p>
+      <p><button class="danger" data-sound="thud" onclick={discard}>{t("nav.unreadable.deleteAndStart")}</button></p>
     {:else}
       {#if vault.state === "memory"}
-        <p class="block small notice">
-          <b>Nothing here is being saved.</b>
-          {#if noKeeper === "blocked"}
-            This browser is blocking site storage for PitMaster (a private window, or a setting that blocks site data),
-            so there's nowhere safe to keep anything.
-          {:else}
-            This page isn't on a secure (https) connection, so your browser won't encrypt, and PitMaster doesn't save
-            anything unencrypted.
-          {/if}
-          Whatever you do here is gone when the tab closes.
+        <p class="slab small notice mt-0 mx-0 mb-[18px]">
+          <b>{t("nav.memoryNotice.bold")}</b>
+          {noKeeper === "blocked" ? t("nav.memoryNotice.blocked") : t("nav.memoryNotice.insecure")}
+          {t("nav.memoryNotice.tail")}
         </p>
       {/if}
       {#if saveTrouble && !bare}
-        <p class="block small notice" role="status" transition:slide={reveal()}>
-          <b>Your latest changes aren't saved yet.</b>
-          This browser may be out of space, or blocking site storage. PitMaster keeps trying every few seconds; keep this
-          tab open until it gets through, or <a href="/settings#data">export a backup</a> to be safe.
+        <p class="slab small notice mt-0 mx-0 mb-[18px]" role="status" transition:slide={reveal()}>
+          <b>{t("nav.saveTrouble.bold")}</b>
+          {t("nav.saveTrouble.bodyPrefix")} <a href="/settings#data">{t("nav.saveTrouble.exportLink")}</a> {t("nav.saveTrouble.bodySuffix")}
         </p>
       {/if}
       <svelte:boundary failed={crashed} onerror={(e) => console.error(e)}>
@@ -546,25 +624,27 @@
       </svelte:boundary>
     {/if}
   </main>
-  <footer class="wrap small">
-    <div class="foot">
-      <p class="made muted">
-        © {new Date().getFullYear()}
-        <a href="https://wyzie.io" target="_blank" rel="noopener">Wyzie LLC</a>. Open source under the
-        <a href="https://github.com/wyziedevs/pitmaster/blob/main/LICENSE" target="_blank" rel="noopener">MIT License</a>.
+  <footer class="wrap small pt-5 border-t-[length:var(--hair)] border-solid border-line">
+    <div class="foot flex justify-between items-baseline flex-wrap gap-y-2 gap-x-6">
+      <p class="made muted m-0">
+        {t("nav.footer.copyright", { year: String(new Date().getFullYear()) })}
+        <a class="text-muted hover:text-fg" href="https://wyzie.io" target="_blank" rel="noopener">Wyzie LLC</a>. {t("nav.footer.openSourceUnder")}
+        <a class="text-muted hover:text-fg" href="https://github.com/wyziedevs/pitmaster/blob/main/LICENSE" target="_blank" rel="noopener">MIT License</a>{t("nav.footer.licenseSuffix")}
       </p>
-      <nav aria-label="More">
-        <a href="/help" aria-current={page.url.pathname === "/help" ? "page" : undefined}>Help</a>
-        <a href="https://github.com/wyziedevs/pitmaster" target="_blank" rel="noopener">Source Code</a>
+      <nav class="flex flex-wrap items-baseline gap-y-1 gap-x-4" aria-label={t("nav.footer.moreLabel")}>
+        <a class="text-muted hover:text-fg" href="/help" aria-current={page.url.pathname === "/help" ? "page" : undefined}>{t("common.help")}</a>
+        <a class="text-muted hover:text-fg" href="https://github.com/wyziedevs/pitmaster" target="_blank" rel="noopener">GitHub</a>
         <a
+          class="text-muted hover:text-fg"
           href="/privacy"
           aria-current={page.url.pathname === "/privacy" ? "page" : undefined}
-          >Privacy</a
+          >{t("nav.footer.privacy")}</a
         >
         <a
+          class="text-muted hover:text-fg"
           href="/terms"
           aria-current={page.url.pathname === "/terms" ? "page" : undefined}
-          >Terms</a
+          >{t("nav.footer.terms")}</a
         >
       </nav>
     </div>
@@ -582,45 +662,10 @@
 
 <style>
   .top {
-    display: flex;
-    gap: 22px;
-    justify-content: space-between;
-    align-items: baseline;
-    padding-top: 14px;
-    padding-bottom: 0;
-    border-bottom: var(--hair) solid var(--line);
-    margin-bottom: 18px;
-    position: sticky;
-    top: 0;
-    z-index: 50;
-    background: var(--bg);
     /* its own layer in page transitions, so the old page never paints over it */
     view-transition-name: masthead;
   }
-  .logo {
-    flex: none;
-    white-space: nowrap;
-    font: 23px var(--font-serif);
-    color: var(--fg);
-    text-decoration: none;
-    padding-bottom: 8px;
-    letter-spacing: -0.01em;
-  }
-  .logo:visited {
-    color: var(--fg);
-  }
-  .suits {
-    display: inline-flex;
-  }
   /* each suit is a window one glyph tall; hover rolls the next suit up into it */
-  .roll {
-    display: inline-flex;
-    flex-direction: column;
-    height: 1.2em;
-    line-height: 1.2;
-    overflow: hidden;
-    vertical-align: bottom;
-  }
   .roll > span {
     transition: transform 450ms var(--ease-out-expo);
   }
@@ -632,48 +677,9 @@
       transform: translateY(-100%);
     }
   }
-  /* the tabs take what the logo leaves, on one line, from the right */
-  .tabs {
-    flex: 1 1 0;
-    min-width: 0;
-    display: flex;
-    justify-content: flex-end;
-    /* bottoms line up, so every tab's rule lands on the header's */
-    align-items: flex-end;
-    gap: 16px;
-  }
-  /* zero-sized and clipped, so it never widens the page */
-  .ruler {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 0;
-    height: 0;
-    overflow: hidden;
-    display: flex;
-    visibility: hidden;
-    pointer-events: none;
-    white-space: nowrap;
-  }
-  .ruler span {
-    flex: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-  }
-  .tab {
-    white-space: nowrap;
-  }
   .top .tab {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    gap: 3px;
-    padding-bottom: 8px;
-    border-bottom: 2px solid transparent;
-    margin-bottom: calc(-1 * var(--hair));
-    /* tabs get the bottom rule instead of the site's text underline */
-    text-decoration: none;
+    /* tabs get the bottom rule instead of the site's text underline (see the
+       utility classes in markup); this transition just eases its color */
     transition:
       color var(--dur-hover) var(--ease-out),
       var(--t-focus);
@@ -698,6 +704,12 @@
       transform-origin: left;
     }
   }
+  /* the calculator tab is only an icon, so it has no line of text to sit on.
+     an empty character gives it one: the same height and baseline as the
+     tabs beside it, and the icon centers on that line like their words do */
+  .calc-tab::before {
+    content: "\200b";
+  }
   /* the current tab has its own rule (it slides between tabs on navigation) */
   .top .tab[aria-current="page"]::after {
     display: none;
@@ -705,90 +717,9 @@
   .top .tab[aria-current="page"] {
     color: var(--fg);
   }
-  /* lock and … aren't pages, so they're buttons that sit in the tabs like them */
-  .top button.tab {
-    gap: 4px;
-  }
-  /* (the hidden ruler's … matches, so the fold's arithmetic stays right) */
-  .more > .tab,
-  .ruler span:last-child,
-  .calc-tab {
-    min-width: 28px;
-    justify-content: center;
-  }
-  /* the calculator sits just past the tabs, at the tabs' own spacing */
-  .calc-tab {
-    flex: none;
-    margin-left: -6px;
-    /* an icon has no text baseline to line up by, so it sits on the header's
-       rule like the tabs do */
-    align-self: flex-end;
-  }
-  /* a finger needs taller tabs and a wider …; the header's own padding gives
-     the height back, so it doesn't grow */
-  @media (pointer: coarse) {
-    .top {
-      padding-top: 6px;
-    }
-    .top .tab {
-      padding-top: 8px;
-    }
-    .more > .tab,
-    .ruler span:last-child,
-    .calc-tab {
-      min-width: 44px;
-    }
-  }
-  .more {
-    position: relative;
-  }
-  /* the folded tabs, dropped down under the … on the header's rule */
-  .menu {
-    position: absolute;
-    right: 0;
-    top: calc(100% + var(--hair));
-    z-index: 60;
-    display: flex;
-    flex-direction: column;
-    min-width: 170px;
-    padding: 6px 0;
-    background: var(--bg);
-    border: var(--hair) solid var(--line);
-  }
-  .menu a,
-  .menu button {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 7px 14px;
-    text-align: left;
-    text-decoration: none;
-    white-space: nowrap;
-  }
-  .menu a,
-  .menu button {
-    transition: background-color var(--dur-hover) var(--ease-out);
-  }
-  .menu a:hover,
-  .menu button:hover {
-    background: var(--block);
-  }
-  .menu a:active,
-  .menu button:active {
-    background: var(--block-2);
-  }
-  .menu a[aria-current="page"] {
-    color: var(--fg);
-  }
   /* the active tab's rule is its own element so it can slide between tabs
      on navigation (a view transition, see app.css) */
   .tab-rule {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: -2px;
-    height: 2px;
-    background: var(--fg);
     view-transition-name: tab-rule;
   }
   /* windows high contrast paints over backgrounds: the rules are drawn in its text color */
@@ -802,21 +733,8 @@
   main {
     view-transition-name: page;
   }
-  main:focus {
-    outline: none;
-  }
-  .crash {
-    padding: 40px 0;
-  }
   /* for the keyboard: the first tab stop jumps past the header */
   .skip {
-    position: absolute;
-    left: 12px;
-    top: 8px;
-    z-index: 100;
-    padding: 6px 12px;
-    background: var(--field);
-    border: var(--hair) solid var(--fg);
     translate: 0 calc(-100% - 12px);
     transition: translate var(--dur-move) var(--ease-out-expo);
   }
@@ -839,42 +757,18 @@
       will-change: transform;
     }
   }
-  .notice {
-    margin: 0 0 18px;
+  .menu a[aria-current="page"] {
+    color: var(--fg);
   }
-  footer {
-    padding-top: 20px;
-    border-top: var(--hair) solid var(--line);
-  }
-  footer p {
-    margin: 0;
-  }
-  .foot {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    flex-wrap: wrap;
-    gap: 8px 24px;
-  }
-  footer nav {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: 4px 16px;
-  }
-  /* quiet links that come up to full ink on hover */
+  /* quiet links that come up to full ink on hover (base color and hover color
+     are utility classes in markup; this just eases the change) */
   footer nav a,
   .made a {
-    color: var(--muted);
     transition:
       color var(--dur-hover) var(--ease-out),
       text-decoration-color var(--dur-hover) var(--ease-out),
       text-underline-offset 200ms var(--ease-out-expo),
       var(--t-focus);
-  }
-  footer nav a:hover,
-  .made a:hover {
-    color: var(--fg);
   }
   footer nav a[aria-current="page"] {
     color: var(--fg);

@@ -1,8 +1,9 @@
 import { sveltekit } from "@sveltejs/kit/vite";
+import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "vite";
 
 export default defineConfig({
-  plugins: [sveltekit()],
+  plugins: [tailwindcss(), sveltekit()],
   server: {
     // same-origin /api in dev. the dev server only answers this computer; to
     // try a tv or phone, point an https tunnel at it (see README). vite turns

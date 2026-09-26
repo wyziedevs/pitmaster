@@ -11,6 +11,7 @@
   import { leave, reorder, reveal } from "$lib/motion";
   import Chip from "./Chip.svelte";
   import RemoveButton from "./RemoveButton.svelte";
+  import { t } from "$lib/i18n";
 
   let {
     levels = $bindable(),
@@ -89,13 +90,13 @@
   <table class="structure" class:editing={editable} bind:this={table}>
     <thead>
       <tr>
-        <th>Level</th>
-        <th class="num">Small</th>
-        <th class="num">Big</th>
-        <th class="num">Ante</th>
-        <th class="num">Minutes</th>
-        <th class="num starts">Starts</th>
-        <th class="notes">Notes</th>
+        <th class="pl-[10px]">{t("gamePlay.structure.levelHeader")}</th>
+        <th class="num">{t("gamePlay.structure.smallHeader")}</th>
+        <th class="num">{t("gamePlay.structure.bigHeader")}</th>
+        <th class="num">{t("gamePlay.shared.ante")}</th>
+        <th class="num">{t("gamePlay.structure.minutesHeader")}</th>
+        <th class="num starts">{t("gamePlay.structure.startsHeader")}</th>
+        <th class="notes">{t("gamePlay.structure.notesHeader")}</th>
         {#if editable || onjump}<th></th>{/if}
       </tr>
     </thead>
@@ -112,13 +113,13 @@
           animate:flip={reorder()}
         >
           {#if l.isBreak}
-            <td colspan="4"><b><Icon icon={Coffee} /> Break</b></td>
+            <td colspan="4" class="pl-[10px]"><b><Icon icon={Coffee} /> {t("gamePlay.shared.breakLabel")}</b></td>
           {:else}
-            <td class="num">{l.num}</td>
+            <td class="num pl-[10px]">{l.num}</td>
             {#if editable}
-              <td class="num"><input type="number" min="0" step="any" bind:value={l.sb} onchange={changed} aria-label="Level {l.num} Small Blind" /></td>
-              <td class="num"><input type="number" min="0" step="any" bind:value={l.bb} onchange={changed} aria-label="Level {l.num} Big Blind" /></td>
-              <td class="num"><input type="number" min="0" step="any" bind:value={l.ante} onchange={changed} aria-label="Level {l.num} Ante" /></td>
+              <td class="num"><input type="number" class="w-full min-w-[3.6em]" min="0" step="any" bind:value={l.sb} onchange={changed} aria-label={t("gamePlay.structure.smallBlindAria", { n: String(l.num) })} /></td>
+              <td class="num"><input type="number" class="w-full min-w-[3.6em]" min="0" step="any" bind:value={l.bb} onchange={changed} aria-label={t("gamePlay.structure.bigBlindAria", { n: String(l.num) })} /></td>
+              <td class="num"><input type="number" class="w-full min-w-[3.6em]" min="0" step="any" bind:value={l.ante} onchange={changed} aria-label={t("gamePlay.structure.anteAria", { n: String(l.num) })} /></td>
             {:else}
               <td class="num">{amt(l.sb)}</td>
               <td class="num">{amt(l.bb)}</td>
@@ -127,7 +128,7 @@
           {/if}
           <td class="num">
             {#if editable}
-              <input type="number" class="min" min="1" step="1" bind:value={l.minutes} onchange={changed} aria-label="{l.isBreak ? 'Break' : `Level ${l.num}`} Minutes" />
+              <input type="number" class="min w-full min-w-[2.8em]" min="1" step="1" bind:value={l.minutes} onchange={changed} aria-label={l.isBreak ? t("gamePlay.structure.minutesAriaBreak") : t("gamePlay.structure.minutesAriaLevel", { n: String(l.num) })} />
             {:else}
               {l.minutes}
             {/if}
@@ -135,24 +136,24 @@
           <td class="num muted nowrap starts">{duration(starts[i])}</td>
           <td class="small notes">
             {#if l.colorUp?.length}
-              <span class="cu" title="Color up these chips"><span class="cu-l">Color Up</span>
+              <span class="cu inline-flex gap-[3px] items-center" title={t("gamePlay.structure.colorUpTitle")}><span class="cu-l">{t("gamePlay.structure.colorUpLabel")}</span>
                 {#each l.colorUp as id (id)}
                   {@const c = chipById(id)}
-                  {#if c}<Chip chip={c} size={18} text="" spin={false} />{/if}
+                  {#if c}<Chip chip={c} size={18} spin={false} />{/if}
                 {/each}
               </span>
             {/if}
-            {#if l.overtime}<span class="muted ot-l">Overtime</span>{/if}
+            {#if l.overtime}<span class="muted ot-l">{t("gamePlay.structure.overtimeLabel")}</span>{/if}
           </td>
           {#if editable || onjump}
-            <td class="small actions">
-              {#if onjump && i !== current}<button class="link go" data-sound="flap" title="Jump the clock to this {l.isBreak ? 'break' : 'level'}" onclick={() => onjump(i)}>Go</button>{/if}
+            <td class="small actions whitespace-nowrap">
+              {#if onjump && i !== current}<button class="link go" data-sound="flap" title={l.isBreak ? t("gamePlay.structure.jumpTitleBreak") : t("gamePlay.structure.jumpTitleLevel")} onclick={() => onjump(i)}>{t("gamePlay.structure.goLabel")}</button>{/if}
               {#if editable}
-                <span class="adds">
-                  <button class="link" data-sound="card" title="Add a level after this one" onclick={() => insertAfter(i, false)}><Icon icon={Plus} size="1em" />Level</button>
-                  <button class="link" data-sound="card" title="Add a break after this one" onclick={() => insertAfter(i, true)}><Icon icon={Plus} size="1em" />Break</button>
+                <span class="adds whitespace-nowrap">
+                  <button class="link" data-sound="card" title={t("gamePlay.structure.addLevelTitle")} onclick={() => insertAfter(i, false)}><Icon icon={Plus} size="1em" />{t("gamePlay.structure.addLevelLabel")}</button>
+                  <button class="link" data-sound="card" title={t("gamePlay.structure.addBreakTitle")} onclick={() => insertAfter(i, true)}><Icon icon={Plus} size="1em" />{t("gamePlay.shared.breakLabel")}</button>
                 </span>
-                <RemoveButton label={l.isBreak ? "Remove This Break" : `Remove Level ${l.num}`} onclick={() => remove(i)} />
+                <RemoveButton label={l.isBreak ? t("gamePlay.structure.removeThisBreak") : t("gamePlay.structure.removeLevelN", { n: String(l.num) })} onclick={() => remove(i)} />
               {/if}
             </td>
           {/if}
@@ -171,13 +172,6 @@
      digits), and past that the reference columns and the add links give way */
   .structure.editing {
     width: 100%;
-  }
-  .structure input[type="number"] {
-    width: 100%;
-    min-width: 3.6em;
-  }
-  .structure input.min {
-    min-width: 2.8em;
   }
   .structure td:has(> input[type="number"]) {
     width: 16%;
@@ -216,9 +210,6 @@
       vertical-align: middle;
     }
   }
-  .adds {
-    white-space: nowrap;
-  }
   .editing .cu-l,
   .editing .ot-l {
     display: none;
@@ -226,22 +217,8 @@
   tr.brk td {
     background: var(--block);
   }
-  /* rows are tinted (breaks, the current level), so the text on the left gets
-     the same room from the tint's edge as the last column has on the right */
-  th:first-child,
-  td:first-child {
-    padding-left: 10px;
-  }
   tr.ot td {
     font-style: italic;
-  }
-  .cu {
-    display: inline-flex;
-    gap: 3px;
-    align-items: center;
-  }
-  .actions {
-    white-space: nowrap;
   }
   .actions button,
   .adds {

@@ -14,7 +14,7 @@ export const sum = $state({
   entry: "",
   /** how the entry reads in the sum when it isn't just its digits ("10%") */
   note: "",
-  /** the line above after =: "(200 + 10%) × 3 =" */
+  /** the sum that made the answer, as the tape prints it: "(200 + 10%) × 3 =" */
   said: "",
   /** = was just pressed: the answer sits in entry. a digit starts over, an operator carries on */
   done: false,
@@ -56,7 +56,7 @@ function apply(a: number, op: Op, b: number) {
   if (op === "+") return a + b;
   if (op === "−") return a - b;
   if (op === "×") return a * b;
-  if (b === 0) throw new Error("Can't Divide by 0");
+  if (b === 0) throw new Error("divide-by-zero");
   return a / b;
 }
 
@@ -88,7 +88,7 @@ function evaluate(input: Tok[]) {
       return v;
     }
     if (typeof x === "number") return x;
-    throw new Error("Can't Work That Out");
+    throw new Error("cant-work-out");
   };
   const term = () => {
     let v = factor();
@@ -107,7 +107,7 @@ function evaluate(input: Tok[]) {
     return v;
   };
   const v = tidy(expr());
-  if (!Number.isFinite(v) || Math.abs(v) >= TOO_BIG) throw new Error("Too Big");
+  if (!Number.isFinite(v) || Math.abs(v) >= TOO_BIG) throw new Error("too-big");
   return v;
 }
 
@@ -287,16 +287,14 @@ function settle(v: number) {
   sum.tape = [{ expr: sum.said, value: v }, ...sum.tape].slice(0, 20);
 }
 
-export function clearTape() {
-  sum.tape = [];
-}
-
-/** C clears what's being typed; AC (nothing typed) clears the lot */
+/** C clears what's being typed, AC (nothing typed) the whole sum, and AC on a
+ * clear screen tears off the tape */
 export function clear() {
   if (sum.entry && !sum.done && !sum.error) {
     sum.entry = "";
     sum.note = "";
-  } else fresh();
+  } else if (!sum.entry && !sum.toks.length && !sum.error) sum.tape = [];
+  else fresh();
 }
 export const clearsAll = () => !sum.entry || sum.done || !!sum.error;
 
@@ -440,20 +438,3 @@ export function recall(expr: string) {
   fresh();
   return feed(expr);
 }
-
-/** every answer on the tape added up, oldest first, as a sum of its own */
-export function addUp() {
-  const vs = sum.tape.map((t) => t.value).reverse();
-  if (vs.length < 2) return false;
-  fresh();
-  for (const v of vs.slice(0, -1)) sum.toks.push(v, "+");
-  sum.entry = String(vs.at(-1));
-  return equals();
-}
-
-/** the tape as plain text, oldest first, for pasting somewhere */
-export const tapeText = () =>
-  [...sum.tape]
-    .reverse()
-    .map((t) => `${t.expr} ${fmt(t.value)}`)
-    .join("\n");

@@ -8,15 +8,16 @@
   import ArrowDown from "@lucide/svelte/icons/arrow-down";
   import ArrowLeft from "@lucide/svelte/icons/arrow-left";
   import ArrowRight from "@lucide/svelte/icons/arrow-right";
+  import { t } from "$lib/i18n";
 
   let { k, class: cls = "" }: { k: string; class?: string } = $props();
 
-  const ARROWS: Record<string, [Component<any>, string]> = {
-    "↑": [ArrowUp, "Up"],
-    "↓": [ArrowDown, "Down"],
-    "←": [ArrowLeft, "Left"],
-    "→": [ArrowRight, "Right"],
-  };
+  const ARROWS: Record<string, [Component<any>, string]> = $derived({
+    "↑": [ArrowUp, t("gamePlay.keys.arrowUp")],
+    "↓": [ArrowDown, t("gamePlay.keys.arrowDown")],
+    "←": [ArrowLeft, t("gamePlay.keys.arrowLeft")],
+    "→": [ArrowRight, t("gamePlay.keys.arrowRight")],
+  });
   const parts = $derived(k.split(" ").filter(Boolean));
 </script>
 

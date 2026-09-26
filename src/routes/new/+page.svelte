@@ -25,14 +25,15 @@
   import { play } from "$lib/sound";
   import { settings, houseRules } from "$lib/settings.svelte";
   import { keyLabel } from "$lib/keys";
+  import { t, tp } from "$lib/i18n";
 
   const type = $derived<GameType>(page.url.searchParams.get("type") === "tournament" ? "tournament" : "cash");
   const isCash = $derived(type === "cash");
 
   const sets = getChipSets();
-  const day = new Date().toLocaleDateString("en-US", { weekday: "long" });
+  const day = new Date().toLocaleDateString(settings.language, { weekday: "long" });
   // "Friday Cash Game": the day, not "night", since plenty of games run in the afternoon
-  const defaultName = () => `${day} ${type === "cash" ? "Cash Game" : "Tournament"}`;
+  const defaultName = () => `${day} ${type === "cash" ? t("gameSetup.header.cashGame") : t("gameSetup.header.tournament")}`;
 
   // ---- shared ----
   let name = $state("");
@@ -99,13 +100,19 @@
 
   // sensible defaults whenever the type / chip set changes
   let lastKey = "";
+  // tracks the last auto-filled name (in whatever language it was written) so
+  // switching cash/tournament can tell a still-untouched name from one the
+  // host actually typed, without guessing at English weekday/type words
+  let lastDefault = "";
   $effect(() => {
     const key = `${type}|${chipSetId}`;
     if (key === lastKey || !chipSet) return;
     lastKey = key;
     const printed = gameChips(chipSet, 1);
     const smallest = printed[0]?.value ?? 1;
-    if (!name || /^\w+day (cash game|tournament)$/i.test(name)) name = defaultName();
+    const nextDefault = defaultName();
+    if (!name || name === lastDefault) name = nextDefault;
+    lastDefault = nextDefault;
     if (type === "tournament") {
       // coin chips (25¢, 50¢…) read as 25, 50… ; dollar chips play at face value
       multiplier = smallest < 1 ? 100 : 1;
@@ -172,9 +179,13 @@
   const rebuysOn = $derived(settings.useRebuys || tonight.rebuys);
   const addable = $derived(
     (isCash
-      ? [!rakeOn && { key: "rake", label: "Rake or Seat Fee" }]
-      : [!rebuysOn && { key: "rebuys", label: "Rebuys & Add-Ons" }, !bountyOn && { key: "bounty", label: "Bounty" }, !cutOn && { key: "cut", label: "House Cut" }]
-    ).filter((x) => !!x) as { key: keyof typeof tonight; label: string }[]
+      ? [!rakeOn && { key: "rake", labelKey: "gameSetup.addable.rakeOrSeatFee" }]
+      : [
+          !rebuysOn && { key: "rebuys", labelKey: "gameSetup.addable.rebuysAddOns" },
+          !bountyOn && { key: "bounty", labelKey: "gameSetup.addable.bounty" },
+          !cutOn && { key: "cut", labelKey: "gameSetup.tournament.houseCut.legend" },
+        ]
+    ).filter((x) => !!x) as { key: keyof typeof tonight; labelKey: string }[]
   );
   function addTonight(key: keyof typeof tonight) {
     tonight[key] = true;
@@ -261,17 +272,17 @@
       if (rakeMode !== "none") tonight.rake = true;
       cashPlayers = Math.max(cashPlayers, x.players.length || 0);
     }
-    const t = x.tourney;
-    if (t) {
-      ({ buyIn, stack, expected, levelMinutes, breakEvery, breakMinutes, anteFrom, depth, rakePct, bounty, fee, payoutRound } = t);
-      hours = t.targetMinutes / 60;
-      ({ on: rebuyOn, cost: rebuyCost, chips: rebuyChips, untilLevel: rebuyUntil } = t.rebuy);
-      ({ on: addOnOn, cost: addOnCost, chips: addOnChips } = t.addOn);
-      lateReg = t.lateRegLevel;
-      payoutText = t.payouts.join(", ");
+    const ts = x.tourney;
+    if (ts) {
+      ({ buyIn, stack, expected, levelMinutes, breakEvery, breakMinutes, anteFrom, depth, rakePct, bounty, fee, payoutRound } = ts);
+      hours = ts.targetMinutes / 60;
+      ({ on: rebuyOn, cost: rebuyCost, chips: rebuyChips, untilLevel: rebuyUntil } = ts.rebuy);
+      ({ on: addOnOn, cost: addOnCost, chips: addOnChips } = ts.addOn);
+      lateReg = ts.lateRegLevel;
+      payoutText = ts.payouts.join(", ");
       if (bounty) tonight.bounty = true;
       if (fee || rakePct) tonight.cut = true;
-      if (t.rebuy.on || t.addOn.on) tonight.rebuys = true;
+      if (ts.rebuy.on || ts.addOn.on) tonight.rebuys = true;
     }
     if (x.levels?.length) {
       levels = x.levels;
@@ -280,7 +291,7 @@
   }
 
   let allTemplates = $state(getTemplates());
-  const templates = $derived(allTemplates.filter((t) => t.type === type));
+  const templates = $derived(allTemplates.filter((tmpl) => tmpl.type === type));
   let loadedFrom = "";
   $effect(() => {
     const tid = page.url.searchParams.get("template");
@@ -289,13 +300,13 @@
     if (key === loadedFrom || (!tid && !gid)) return;
     loadedFrom = key;
     if (tid) {
-      const t = getTemplate(tid);
-      if (!t) return void toast("That template no longer exists", "bad");
-      fill(t);
-      toast(`Loaded “${t.name}”`, "info");
+      const tpl = getTemplate(tid);
+      if (!tpl) return void toast(t("gameSetup.alerts.templateGone"), "bad");
+      fill(tpl);
+      toast(t("gameSetup.alerts.loadedTemplate", { name: tpl.name }), "info");
     } else if (gid) {
       const g = getGame(gid);
-      if (!g) return void toast("That game no longer exists", "bad");
+      if (!g) return void toast(t("gameSetup.alerts.gameGone"), "bad");
       fill({
         chipSetId: sets.find((s) => s.name === g.chipSetName)?.id,
         multiplier: g.multiplier,
@@ -307,7 +318,7 @@
         name: g.name,
       });
       if (g.house) houseName = g.house;
-      toast(`Copied the setup from “${g.name}”. Change what you need, then deal.`, "info");
+      toast(t("gameSetup.alerts.copiedSetup", { name: g.name }), "info");
     }
   });
 
@@ -323,9 +334,9 @@
     e.preventDefault();
     const label = templateName.trim();
     if (!label) return;
-    const same = getTemplates().find((t) => t.type === type && nameKey(t.name) === nameKey(label));
-    if (same && !confirm(`Replace the template “${same.name}”?`)) return;
-    const t: Template = {
+    const same = getTemplates().find((tmpl) => tmpl.type === type && nameKey(tmpl.name) === nameKey(label));
+    if (same && !confirm(t("gameSetup.alerts.replaceTemplateConfirm", { name: same.name }))) return;
+    const tmpl: Template = {
       id: same?.id ?? uid(),
       name: label,
       type,
@@ -338,11 +349,11 @@
       tourney: type === "tournament" ? tourneySettings() : undefined,
       cash: type === "cash" ? cashSettings() : undefined,
     };
-    saveTemplate(t);
+    saveTemplate(tmpl);
     allTemplates = getTemplates();
     naming = false;
     templateName = "";
-    toast(`Saved “${label}”. It's in the template list and Commands (${keyLabel(settings.paletteKey)}).`);
+    toast(t("gameSetup.alerts.savedTemplate", { name: label, key: keyLabel(settings.paletteKey) }));
   }
 
   // regulars one click away, most games first; anyone already listed drops out
@@ -353,8 +364,8 @@
   }
 
   function create() {
-    if (!chipSet) return alert("Make a chip set first");
-    if (type === "tournament" && !levels.length) return alert("The blind structure is empty");
+    if (!chipSet) return alert(t("gameSetup.alerts.makeChipSetFirst"));
+    if (type === "tournament" && !levels.length) return alert(t("gameSetup.alerts.structureEmpty"));
     const g = newGame({
       name: name.trim() || defaultName(),
       type,
@@ -369,7 +380,7 @@
     });
     const from = page.url.searchParams.get("from");
     if (from) g.from = from;
-    if (type === "cash" && useRake !== "none") g.house = houseName.trim() || "The House";
+    if (type === "cash" && useRake !== "none") g.house = houseName.trim() || t("gameSetup.cash.rake.defaultHouseName");
     if (settings.seatsPerTable !== 9) g.seatsPerTable = settings.seatsPerTable;
     // cash players named up front get the default buy-in
     saveGame(g);
@@ -377,27 +388,27 @@
   }
 </script>
 
-<svelte:head><title>New {isCash ? "Cash Game" : "Tournament"} · PitMaster</title></svelte:head>
+<svelte:head><title>{isCash ? t("gameSetup.header.titleCash") : t("gameSetup.header.titleTournament")} · PitMaster</title></svelte:head>
 
 <div class="spread" use:pagehead>
-  <h1>New {isCash ? "Cash Game" : "Tournament"}</h1>
-  <span class="row small head-tools">
+  <h1>{isCash ? t("gameSetup.header.titleCash") : t("gameSetup.header.titleTournament")}</h1>
+  <span class="row small gap-y-2 gap-x-[14px]">
     {#if naming}
-      <form autocomplete="off" class="row" onsubmit={saveAsTemplate} in:slide={reveal()}>
+      <form autocomplete="off" class="row gap-[6px]" onsubmit={saveAsTemplate} in:slide={reveal()}>
         <!-- svelte-ignore a11y_autofocus -->
-        <input type="text" bind:value={templateName} placeholder="Template Name" aria-label="Template name" autocomplete="off" autofocus onkeydown={(e) => e.key === "Escape" && (play("close"), (naming = false))} />
-        <button>Save</button>
-        <button type="button" class="link muted" data-sound="close" onclick={() => (naming = false)}>Cancel</button>
+        <input type="text" bind:value={templateName} placeholder={t("gameSetup.header.templateNamePlaceholder")} aria-label={t("gameSetup.header.templateNameAria")} autocomplete="off" autofocus onkeydown={(e) => e.key === "Escape" && (play("close"), (naming = false))} />
+        <button>{t("common.save")}</button>
+        <button type="button" class="link muted" data-sound="close" onclick={() => (naming = false)}>{t("common.cancel")}</button>
       </form>
     {:else}
       {#if templates.length}
-        <select onchange={pickTemplate} aria-label="Load a template">
-          <option value="">Load a Template…</option>
-          {#each templates as t (t.id)}<option value={t.id}>{t.name}</option>{/each}
+        <select onchange={pickTemplate} aria-label={t("gameSetup.header.loadTemplateAria")}>
+          <option value="">{t("gameSetup.header.loadTemplateOption")}</option>
+          {#each templates as tmpl (tmpl.id)}<option value={tmpl.id}>{tmpl.name}</option>{/each}
         </select>
       {/if}
-      <button class="link" data-sound="open" onclick={() => ((naming = true), (templateName = name))}><Icon icon={Bookmark} size="1em" />Save as Template</button>
-      {#if isCash}<a class="with-icon" href="/new?type=tournament">Switch to Tournament<Icon icon={ArrowRight} size="1em" /></a>{:else}<a class="with-icon" href="/new?type=cash">Switch to Cash Game<Icon icon={ArrowRight} size="1em" /></a>{/if}
+      <button class="link" data-sound="open" onclick={() => ((naming = true), (templateName = name))}><Icon icon={Bookmark} size="1em" />{t("gameSetup.header.saveAsTemplate")}</button>
+      {#if isCash}<a class="with-icon" href="/new?type=tournament">{t("gameSetup.header.switchToTournament")}<span class="flip-rtl"><Icon icon={ArrowRight} size="1em" /></span></a>{:else}<a class="with-icon" href="/new?type=cash">{t("gameSetup.header.switchToCash")}<span class="flip-rtl"><Icon icon={ArrowRight} size="1em" /></span></a>{/if}
     {/if}
   </span>
 </div>
@@ -405,174 +416,174 @@
 <div class="cols">
   <!-- LEFT: settings -->
   <div>
-    <fieldset>
-      <legend class="ruled">The Basics</legend>
-      <label><span>Name</span><input type="text" bind:value={name} style="width:100%" /></label>
+    <fieldset class="border-0 mt-0 mx-0 mb-[22px] p-0 min-w-0">
+      <legend class="ruled w-full px-0">{t("gameSetup.basics.legend")}</legend>
+      <label><span>{t("gameSetup.basics.name")}</span><input type="text" bind:value={name} style="width:100%" /></label>
       <label>
-        <span class="links">Chip Set <a href="/settings#chips">Edit Sets</a></span>
+        <span class="links">{t("gameSetup.basics.chipSet")} <a href="/settings#chips">{t("gameSetup.basics.editSets")}</a></span>
         <select bind:value={chipSetId}>
-          {#each sets as s (s.id)}<option value={s.id}>{s.name}{s.owned ? " (Yours)" : ""}</option>{/each}
+          {#each sets as s (s.id)}<option value={s.id}>{s.name}{s.owned ? ` (${t("gameSetup.basics.yours")})` : ""}</option>{/each}
         </select>
       </label>
       <!-- the printed value times this is what a chip is worth in the game; the
            hint says it in chips so nobody has to do the math -->
-      <label for="mult" class="mult-l"><span>Chip Values</span></label>
-      <div class="row mult">
+      <label for="mult" class="m-0"><span>{t("gameSetup.basics.chipValues")}</span></label>
+      <div class="row mb-[10px]">
         <select id="mult" bind:value={multiplier}>
-          {#each [0.01, 0.05, 0.1, 0.25, 0.5, 1, 5, 10, 20, 25, 50, 100, 1000] as m (m)}<option value={m}>{m === 1 ? "As Printed" : `Printed ×${m}`}</option>{/each}
+          {#each [0.01, 0.05, 0.1, 0.25, 0.5, 1, 5, 10, 20, 25, 50, 100, 1000] as m (m)}<option value={m}>{m === 1 ? t("gameSetup.basics.asPrinted") : t("gameSetup.basics.printedTimes", { n: m })}</option>{/each}
         </select>
         {#if chips[0]}
-          <span class="small muted">A {chips[0].label || money(chips[0].printed)} chip plays as <b class="num">{isCash ? money(chips[0].value) : amt(chips[0].value)}</b></span>
+          <span class="small muted">{t("gameSetup.basics.chipPlaysAs", { chip: chips[0].label || money(chips[0].printed), value: isCash ? money(chips[0].value) : amt(chips[0].value) })}</span>
         {/if}
       </div>
-      <div class="block legend-box">
+      <div class="slab mb-[10px]">
         <ChipLegend {chips} {isCash} size={44} />
       </div>
     </fieldset>
 
     {#if isCash}
-      <fieldset>
-        <legend class="ruled">Blinds</legend>
+      <fieldset class="border-0 mt-0 mx-0 mb-[22px] p-0 min-w-0">
+        <legend class="ruled w-full px-0">{t("gameSetup.cash.blinds.legend")}</legend>
         <div class="row">
-          <label><span>Small Blind {sym}</span><input type="number" step="any" min="0" bind:value={sb} /></label>
-          <label><span>Big Blind {sym}</span><input type="number" step="any" min="0" bind:value={bb} /></label>
-          <label class="inline"><input type="checkbox" bind:checked={straddle} /><span>Straddles Allowed</span></label>
+          <label><span>{t("gameSetup.cash.blinds.smallBlind", { sym })}</span><input type="number" step="any" min="0" bind:value={sb} /></label>
+          <label><span>{t("gameSetup.cash.blinds.bigBlind", { sym })}</span><input type="number" step="any" min="0" bind:value={bb} /></label>
+          <label class="across"><input type="checkbox" bind:checked={straddle} /><span>{t("gameSetup.cash.blinds.straddlesAllowed")}</span></label>
         </div>
       </fieldset>
-      <fieldset>
-        <legend class="ruled">Buy-Ins</legend>
+      <fieldset class="border-0 mt-0 mx-0 mb-[22px] p-0 min-w-0">
+        <legend class="ruled w-full px-0">{t("gameSetup.cash.buyIns.legend")}</legend>
         <div class="row">
-          <label><span>Min {sym}</span><input type="number" step="any" min="0" bind:value={minBuyIn} /></label>
-          <label><span>Standard {sym}</span><input type="number" step="any" min="0" bind:value={defaultBuyIn} /></label>
-          <label><span>Max {sym}</span><input type="number" step="any" min="0" bind:value={maxBuyIn} /></label>
+          <label><span>{t("gameSetup.cash.buyIns.min", { sym })}</span><input type="number" step="any" min="0" bind:value={minBuyIn} /></label>
+          <label><span>{t("gameSetup.cash.buyIns.standard", { sym })}</span><input type="number" step="any" min="0" bind:value={defaultBuyIn} /></label>
+          <label><span>{t("gameSetup.cash.buyIns.max", { sym })}</span><input type="number" step="any" min="0" bind:value={maxBuyIn} /></label>
         </div>
-        <p class="small muted">Standard buy-in = <span class="num" use:bump={deepBB}>{deepBB}</span> big blinds.</p>
+        <p class="small muted">{t("gameSetup.cash.buyIns.standardBefore")}<span class="num" use:bump={deepBB}>{deepBB}</span>{t("gameSetup.cash.buyIns.standardAfter")}</p>
       </fieldset>
-      <fieldset>
-        <legend class="ruled">Length</legend>
+      <fieldset class="border-0 mt-0 mx-0 mb-[22px] p-0 min-w-0">
+        <legend class="ruled w-full px-0">{t("gameSetup.cash.length.legend")}</legend>
         <label>
-          <span>Play for About <b>{duration(cashHours * 60)}</b></span>
+          <span>{t("gameSetup.cash.length.playForAbout", { duration: duration(cashHours * 60) })}</span>
           <input type="range" min="0.5" max="10" step="0.5" bind:value={cashHours} style="width:100%" />
         </label>
-        <p class="small muted under">Ends around {timeOfDay(time.now + cashHours * 3600000)} if you start now.</p>
+        <p class="small muted -mt-[6px] mx-0 mb-0">{t("gameSetup.cash.length.endsAround", { time: timeOfDay(time.now + cashHours * 3600000) })}</p>
       </fieldset>
       {#if rakeOn}
-      <fieldset transition:slide={reveal()}>
-        <legend class="ruled">Rake{#if !settings.useRake}<button class="link small opt" data-sound="off" onclick={() => ((tonight.rake = false), (rakeMode = "none"))}>Remove</button>{/if}</legend>
+      <fieldset class="border-0 mt-0 mx-0 mb-[22px] p-0 min-w-0" transition:slide={reveal()}>
+        <legend class="ruled w-full px-0">{t("gameSetup.cash.rake.legend")}{#if !settings.useRake}<button class="link small opt ml-2" data-sound="off" onclick={() => ((tonight.rake = false), (rakeMode = "none"))}>{t("gameSetup.cash.rake.remove")}</button>{/if}</legend>
         <RakeFields bind:mode={rakeMode} bind:pct={rakeCashPct} bind:cap={rakeCap} bind:fee={seatFee} bind:house={houseName} />
       </fieldset>
       {/if}
     {:else}
-      <fieldset>
-        <legend class="ruled">Buy-In + Stacks</legend>
+      <fieldset class="border-0 mt-0 mx-0 mb-[22px] p-0 min-w-0">
+        <legend class="ruled w-full px-0">{t("gameSetup.tournament.buyInStacks.legend")}</legend>
         <div class="row">
-          <label><span>Buy-In {sym}</span><input type="number" min="0" step="any" bind:value={buyIn} /></label>
-          <label><span>Starting Stack</span><input type="number" min="1" step="any" bind:value={stack} /></label>
-          <label><span>Expected Players</span><input type="number" min="2" max="100" bind:value={expected} /></label>
+          <label><span>{t("gameSetup.tournament.buyInStacks.buyIn", { sym })}</span><input type="number" min="0" step="any" bind:value={buyIn} /></label>
+          <label><span>{t("gameSetup.tournament.buyInStacks.startingStack")}</span><input type="number" min="1" step="any" bind:value={stack} /></label>
+          <label><span>{t("gameSetup.tournament.buyInStacks.expectedPlayers")}</span><input type="number" min="2" max="100" bind:value={expected} /></label>
         </div>
         <label>
-          <span>Starting Depth</span>
+          <span>{t("gameSetup.tournament.buyInStacks.startingDepth")}</span>
           <GameSelect of="depth" bind:value={depth} />
         </label>
       </fieldset>
 
-      <fieldset>
-        <legend class="ruled">Length</legend>
+      <fieldset class="border-0 mt-0 mx-0 mb-[22px] p-0 min-w-0">
+        <legend class="ruled w-full px-0">{t("gameSetup.tournament.length.legend")}</legend>
         <label>
-          <span>Wrap Up in About <b>{duration(hours * 60)}</b></span>
+          <span>{t("gameSetup.tournament.length.wrapUpAbout", { duration: duration(hours * 60) })}</span>
           <input type="range" min="1" max="8" step="0.25" bind:value={hours} style="width:100%" />
         </label>
         <div class="row">
           <label>
-            <span>Level Length</span>
+            <span>{t("gameSetup.tournament.length.levelLength")}</span>
             <GameSelect of="level" bind:value={levelMinutes} />
           </label>
-          <label><span>Levels Between Breaks (0 = None)</span><input type="number" min="0" bind:value={breakEvery} /></label>
-          <label><span>Break Minutes</span><input type="number" min="1" bind:value={breakMinutes} /></label>
-          <label><span>Antes From Level (0 = None)</span><input type="number" min="0" bind:value={anteFrom} /></label>
+          <label><span>{t("gameSetup.tournament.length.levelsBetweenBreaks")}</span><input type="number" min="0" bind:value={breakEvery} /></label>
+          <label><span>{t("gameSetup.tournament.length.breakMinutes")}</span><input type="number" min="1" bind:value={breakMinutes} /></label>
+          <label><span>{t("gameSetup.tournament.length.antesFromLevel")}</span><input type="number" min="0" bind:value={anteFrom} /></label>
         </div>
       </fieldset>
 
-      <fieldset>
-        <legend class="ruled">{[rebuysOn ? "Rebuys & Add-On" : "", "Late Registration", bountyOn ? "Bounty" : ""].filter(Boolean).join(" / ")}</legend>
+      <fieldset class="border-0 mt-0 mx-0 mb-[22px] p-0 min-w-0">
+        <legend class="ruled w-full px-0">{[rebuysOn ? t("gameSetup.tournament.rebuys.rebuysAddOn") : "", t("gameSetup.tournament.rebuys.lateRegistration"), bountyOn ? t("gameSetup.tournament.rebuys.bounty") : ""].filter(Boolean).join(" / ")}</legend>
         {#if rebuysOn}
-        <label class="inline"><input type="checkbox" bind:checked={rebuyOn} /><span>Rebuys</span></label>
+        <label class="across"><input type="checkbox" bind:checked={rebuyOn} /><span>{t("gameSetup.tournament.rebuys.rebuysLabel")}</span></label>
         {#if rebuyOn}
           <div class="row" transition:slide={reveal()}>
-            <label><span>Cost {sym}</span><input type="number" min="0" step="any" bind:value={rebuyCost} /></label>
-            <label><span>Chips</span><input type="number" min="0" step="any" bind:value={rebuyChips} /></label>
-            <label><span>Through Level</span><input type="number" min="1" bind:value={rebuyUntil} /></label>
+            <label><span>{t("gameSetup.tournament.rebuys.cost", { sym })}</span><input type="number" min="0" step="any" bind:value={rebuyCost} /></label>
+            <label><span>{t("gameSetup.tournament.rebuys.chips")}</span><input type="number" min="0" step="any" bind:value={rebuyChips} /></label>
+            <label><span>{t("gameSetup.tournament.rebuys.throughLevel")}</span><input type="number" min="1" bind:value={rebuyUntil} /></label>
           </div>
         {/if}
-        <label class="inline"><input type="checkbox" bind:checked={addOnOn} /><span>Add-On (At the First Break)</span></label>
+        <label class="across"><input type="checkbox" bind:checked={addOnOn} /><span>{t("gameSetup.tournament.rebuys.addOnLabel")}</span></label>
         {#if addOnOn}
           <div class="row" transition:slide={reveal()}>
-            <label><span>Cost {sym}</span><input type="number" min="0" step="any" bind:value={addOnCost} /></label>
-            <label><span>Chips</span><input type="number" min="0" step="any" bind:value={addOnChips} /></label>
+            <label><span>{t("gameSetup.tournament.rebuys.cost", { sym })}</span><input type="number" min="0" step="any" bind:value={addOnCost} /></label>
+            <label><span>{t("gameSetup.tournament.rebuys.chips")}</span><input type="number" min="0" step="any" bind:value={addOnChips} /></label>
           </div>
         {/if}
         {/if}
         <div class="row">
-          <label><span>Late Registration Through Level</span><input type="number" min="0" bind:value={lateReg} /></label>
-          {#if bountyOn}<label><span>Bounty {sym} (Part of the Buy-In, 0 = None)</span><input type="number" min="0" step="any" max={buyIn} bind:value={bounty} /></label>{/if}
+          <label><span>{t("gameSetup.tournament.rebuys.lateRegThroughLevel")}</span><input type="number" min="0" bind:value={lateReg} /></label>
+          {#if bountyOn}<label><span>{t("gameSetup.tournament.rebuys.bountyField", { sym })}</span><input type="number" min="0" step="any" max={buyIn} bind:value={bounty} /></label>{/if}
         </div>
       </fieldset>
 
-      <fieldset>
-        <legend class="ruled">Payouts</legend>
+      <fieldset class="border-0 mt-0 mx-0 mb-[22px] p-0 min-w-0">
+        <legend class="ruled w-full px-0">{t("gameSetup.tournament.payouts.legend")}</legend>
         <label>
-          <span>Percentages, 1st Place First (Blank = Auto)</span>
+          <span>{t("gameSetup.tournament.payouts.percentagesLabel")}</span>
           <input type="text" bind:value={payoutText} placeholder={defaultPayouts(expected).join(", ")} />
         </label>
-        {#if payoutSum !== 100}<p class="warn small" transition:slide={reveal()}>Adds up to {payoutSum}%, not 100%</p>{/if}
+        {#if payoutSum !== 100}<p class="warn small" transition:slide={reveal()}>{t("gameSetup.tournament.payouts.sumWarning", { n: payoutSum })}</p>{/if}
         <label>
-          <span>Round Payouts To</span>
+          <span>{t("gameSetup.tournament.payouts.roundTo")}</span>
           <GameSelect of="round" bind:value={payoutRound} />
         </label>
         <p class="small">
-          With {expected} players the pool is ~<b>{money(estPool)}</b>{#if useBounty || estHouse > 0.001}{" "}(after {[useBounty ? `${money(useBounty)} a head in bounties` : "", estHouse > 0.001 ? `${money(estHouse)} to the house` : ""].filter(Boolean).join(" and ")}){/if}:
-          {#each payoutAmounts(estPool, payouts, payoutRound) as p, i (i)}<span class="payout num" use:bump={p}>{i + 1}. {money(p)}</span>{/each}
+          {t("gameSetup.tournament.payouts.poolCaption", { n: expected, pool: money(estPool) })}{#if useBounty || estHouse > 0.001}{" "}{t("gameSetup.tournament.payouts.poolAfter", { parts: [useBounty ? t("gameSetup.tournament.payouts.bountyPart", { amount: money(useBounty) }) : "", estHouse > 0.001 ? t("gameSetup.tournament.payouts.housePart", { amount: money(estHouse) }) : ""].filter(Boolean).join(` ${t("gameSetup.tournament.payouts.joinAnd")} `) })}{/if}:
+          {#each payoutAmounts(estPool, payouts, payoutRound) as p, i (i)}<span class="num ml-2" use:bump={p}>{i + 1}. {money(p)}</span>{/each}
         </p>
       </fieldset>
 
       {#if cutOn}
-      <fieldset transition:slide={reveal()}>
-        <legend class="ruled">House Cut <span class="small opt">Optional</span>{#if !settings.useHouseCut}<button class="link small opt" data-sound="off" onclick={() => (tonight.cut = false)}>Remove</button>{/if}</legend>
+      <fieldset class="border-0 mt-0 mx-0 mb-[22px] p-0 min-w-0" transition:slide={reveal()}>
+        <legend class="ruled w-full px-0">{t("gameSetup.tournament.houseCut.legend")} <span class="small opt text-muted ml-[6px]">{t("gameSetup.tournament.houseCut.optional")}</span>{#if !settings.useHouseCut}<button class="link small opt ml-2" data-sound="off" onclick={() => (tonight.cut = false)}>{t("gameSetup.tournament.houseCut.remove")}</button>{/if}</legend>
         <HouseCutFields bind:fee bind:pct={rakePct} {buyIn} />
       </fieldset>
       {/if}
     {/if}
 
     {#if addable.length}
-      <p class="small links tonight">
-        <span class="muted">Also for This Game:</span>
-        {#each addable as x (x.key)}<button class="link" data-sound="on" onclick={() => addTonight(x.key)}><Icon icon={Plus} size="1em" />{x.label}</button>{/each}
-        <a class="muted" href="/settings#game">Turn On for Every Game</a>
+      <p class="small links -mt-2 mx-0 mb-[22px]">
+        <span class="muted">{t("gameSetup.addable.caption")}</span>
+        {#each addable as x (x.key)}<button class="link" data-sound="on" onclick={() => addTonight(x.key)}><Icon icon={Plus} size="1em" />{t(x.labelKey)}</button>{/each}
+        <a class="muted" href="/settings#game">{t("gameSetup.addable.turnOnForEvery")}</a>
       </p>
     {/if}
 
-    <fieldset>
-      <legend class="ruled">Players <span class="small opt">Optional, or Add Them Later</span></legend>
+    <fieldset class="border-0 mt-0 mx-0 mb-[22px] p-0 min-w-0">
+      <legend class="ruled w-full px-0">{t("gameSetup.players.legend")} <span class="small opt text-muted ml-[6px]">{t("gameSetup.players.optional")}</span></legend>
       <label>
-        <span>Names, One per Line or Split by Commas</span>
-        <textarea bind:value={playerNames} rows="4" placeholder="Alex, Sam, Jordan"></textarea>
+        <span>{t("gameSetup.players.namesLabel")}</span>
+        <textarea bind:value={playerNames} rows="4" placeholder={t("gameSetup.players.namesPlaceholder")}></textarea>
       </label>
       {#if unlisted.length}
-        <p class="small links regulars">
-          <span class="muted">Regulars:</span>
-          {#each unlisted as r (r.name)}<button class="link" data-sound="chips" onclick={() => addRegular(r.name)} title="{r.games} game{r.games > 1 ? 's' : ''}"><Icon icon={Plus} size="1em" />{r.name}</button>{/each}
+        <p class="small links -mt-1 mx-0 mb-[10px]">
+          <span class="muted">{t("gameSetup.players.regulars")}</span>
+          {#each unlisted as r (r.name)}<button class="link" data-sound="chips" onclick={() => addRegular(r.name)} title={tp("gameSetup.players.gamesCount", r.games)}><Icon icon={Plus} size="1em" />{r.name}</button>{/each}
         </p>
       {/if}
       {#if isCash}
-        <label><span>How Many Players for Chip Math</span><input type="number" min="1" bind:value={cashPlayers} /></label>
+        <label><span>{t("gameSetup.cash.chipMath")}</span><input type="number" min="1" bind:value={cashPlayers} /></label>
       {/if}
       <label>
-        <span>House Rules / Notes, One per Line (Shown on the TV)</span>
-        <textarea bind:value={notes} rows={Math.min(8, Math.max(2, notes.split("\n").length + 1))} placeholder="No string bets. One player to a hand. Cards stay on the table."></textarea>
+        <span>{t("gameSetup.players.notesLabel")}</span>
+        <textarea bind:value={notes} rows={Math.min(8, Math.max(2, notes.split("\n").length + 1))} placeholder={t("gameSetup.players.notesPlaceholder")}></textarea>
       </label>
-      <p class="small rules-l links">
-        {#if houseRules().length && rulesMissing}<button class="link" data-sound="card" onclick={addHouseRules}><Icon icon={Plus} size="1em" />Add the House Rules</button>{/if}
-        <a href="/settings#house">{houseRules().length ? "Edit" : "Write"} Your House Rules</a>
+      <p class="small links -mt-[6px] mx-0 mb-0">
+        {#if houseRules().length && rulesMissing}<button class="link" data-sound="card" onclick={addHouseRules}><Icon icon={Plus} size="1em" />{t("gameSetup.players.addHouseRules")}</button>{/if}
+        <a href="/settings#house">{houseRules().length ? t("gameSetup.players.editHouseRules") : t("gameSetup.players.writeHouseRules")}</a>
       </p>
     </fieldset>
   </div>
@@ -580,51 +591,55 @@
   <!-- RIGHT: live preview -->
   <div class="preview">
     {#if isCash}
-      <h2>Each Buy-In ({money(defaultBuyIn)}) Gets</h2>
+      <h2>{t("gameSetup.previewCash.eachBuyInGets", { amount: money(defaultBuyIn) })}</h2>
       <div class="felt"><Breakdown breakdown={cBreakdown} isCash target={defaultBuyIn} /></div>
       <p class="small">
         {#if buyInsCovered}
-          This set covers about <b>{buyInsCovered}</b> standard buy-ins in all{#if buyInsCovered < cashPlayers}{" "}<span class="bad">(fewer than {cashPlayers} players). You'll run short.</span>{/if}
+          {t("gameSetup.previewCash.coversAbout", { n: buyInsCovered })}{#if buyInsCovered < cashPlayers}{" "}<span class="bad">{t("gameSetup.previewCash.fewerThan", { n: cashPlayers })}</span>{/if}
         {:else}
-          <span class="bad">Can't make that buy-in from this set.</span>
+          <span class="bad">{t("gameSetup.previewCash.cantMake")}</span>
         {/if}
       </p>
       <hr />
-      <h2>Summary</h2>
+      <h2>{t("gameSetup.previewCash.summary")}</h2>
       <table>
         <tbody>
-          <tr><td>Blinds</td><td class="num">{money(sb)} / {money(bb)}{straddle ? " (straddles allowed)" : ""}</td></tr>
-          <tr><td>Buy-In</td><td class="num">{money(minBuyIn)}–{money(maxBuyIn)}</td></tr>
-          <tr><td>Length</td><td class="num">{duration(cashHours * 60)}</td></tr>
+          <tr><td>{t("gameSetup.previewCash.rowBlinds")}</td><td class="num">{money(sb)} / {money(bb)}{straddle ? t("gameSetup.previewCash.straddlesInline") : ""}</td></tr>
+          <tr><td>{t("gameSetup.previewCash.rowBuyIn")}</td><td class="num">{money(minBuyIn)}–{money(maxBuyIn)}</td></tr>
+          <tr><td>{t("gameSetup.previewCash.rowLength")}</td><td class="num">{duration(cashHours * 60)}</td></tr>
           {#if rakeOn}
             <tr>
-              <td>Rake</td>
-              <td class="num">{useRake === "pot" ? `${rakeCashPct}% up to ${money(rakeCap)}` : useRake === "seat" ? `${money(seatFee)} a seat` : "None"}</td>
+              <td>{t("gameSetup.previewCash.rowRake")}</td>
+              <td class="num">{useRake === "pot" ? t("gameSetup.previewCash.rakePct", { pct: rakeCashPct, cap: money(rakeCap) }) : useRake === "seat" ? t("gameSetup.previewCash.rakeSeat", { fee: money(seatFee) }) : t("gameSetup.previewCash.rakeNone")}</td>
             </tr>
           {/if}
         </tbody>
       </table>
     {:else}
-      <h2>Each Player Starts With</h2>
+      <h2>{t("gameSetup.previewTournament.eachPlayerStarts")}</h2>
       <div class="felt"><Breakdown breakdown={tBreakdown} target={stack} /></div>
       {#if chips.length}
         <p class="small muted">
-          {amt(stack)} chips = {levels[0] ? Math.round(stack / levels[0].bb) : "?"} big blinds at level 1.
-          Biggest even stack for {expected} players ≈ {amt(maxStack(chips, expected))}.
+          {t("gameSetup.previewTournament.chipMathCaption", {
+            chips: amt(stack),
+            bb: levels[0] ? Math.round(stack / levels[0].bb) : "?",
+            n: expected,
+            amount: amt(maxStack(chips, expected)),
+          })}
         </p>
       {/if}
       <hr />
       <div class="spread">
-        <h2>Blind Structure</h2>
+        <h2>{t("gameSetup.previewTournament.blindStructure")}</h2>
         <span class="small">
-          {#if customized}<button class="link" data-sound="rewind" onclick={regenerate}><Icon icon={RotateCw} size="1em" />Reset to Auto</button>{:else}<span class="muted">Auto · Edit Any Cell to Change It</span>{/if}
+          {#if customized}<button class="link" data-sound="rewind" onclick={regenerate}><Icon icon={RotateCw} size="1em" />{t("gameSetup.previewTournament.resetToAuto")}</button>{:else}<span class="muted">{t("gameSetup.previewTournament.autoEdit")}</span>{/if}
         </span>
       </div>
       <p class="small">
-        {levels.filter((l) => !l.isBreak && !l.overtime).length} levels over <b>{duration(planned)}</b>
-        {#if lastPlanned}(ends around {amt(lastPlanned.sb)}/{amt(lastPlanned.bb)}){/if}
-        · ~{timeOfDay(time.now + planned * 60000)} if you start now.
-        Overtime levels (italic) are there in case it runs long. Total with overtime: {duration(structureMinutes(levels))}.
+        {t("gameSetup.previewTournament.levelsOver", { n: levels.filter((l) => !l.isBreak && !l.overtime).length, duration: duration(planned) })}
+        {#if lastPlanned}{t("gameSetup.previewTournament.endsAroundLevel", { sb: amt(lastPlanned.sb), bb: amt(lastPlanned.bb) })}{/if}
+        {t("gameSetup.previewTournament.startNowTime", { time: timeOfDay(time.now + planned * 60000) })}
+        {t("gameSetup.previewTournament.overtimeNote", { duration: duration(structureMinutes(levels)) })}
       </p>
       <StructureTable bind:levels {chips} editable onedit={() => (customized = true)} />
     {/if}
@@ -632,50 +647,12 @@
 </div>
 
 <hr />
-<p class="row actions">
-  <button class="big" data-sound="riffle" onclick={create}>Deal It<Icon icon={ArrowRight} /></button>
-  <a href="/" data-sound="close">Cancel</a>
+<p class="row actions justify-between">
+  <button class="big" data-sound="riffle" onclick={create}>{t("gameSetup.actions.dealIt")}<span class="flip-rtl"><Icon icon={ArrowRight} /></span></button>
+  <a href="/" data-sound="close">{t("common.cancel")}</a>
 </p>
 
 <style>
-  /* each group is a bold heading and its fields, no box around it */
-  fieldset {
-    border: 0;
-    margin: 0 0 22px;
-    padding: 0;
-    min-width: 0;
-  }
-  /* its name is a subhead like the h3s elsewhere: bold, on its rule (.ruled) */
-  legend {
-    width: 100%;
-    padding-inline: 0;
-    font-size: 15px;
-    font-weight: bold;
-    line-height: 1.2;
-  }
-  .legend-box {
-    margin-bottom: 10px;
-  }
-  .mult-l {
-    margin: 0;
-  }
-  .mult {
-    margin-bottom: 10px;
-  }
-  legend .opt {
-    font-weight: normal;
-    color: var(--muted);
-    margin-left: 6px;
-  }
-  legend button.opt {
-    margin-left: 8px;
-  }
-  .payout {
-    margin-left: 8px;
-  }
-  .actions {
-    justify-content: space-between;
-  }
   /* the form runs long on a phone, so Deal It stays at the bottom of the screen */
   @media (max-width: 600px) {
     .actions {
@@ -687,23 +664,6 @@
       background: var(--bg);
       border-top: var(--hair) solid var(--line);
     }
-  }
-  .head-tools {
-    gap: 8px 14px;
-  }
-  .head-tools form {
-    gap: 6px;
-  }
-  /* a line that belongs to the field above it sits up close to it */
-  .rules-l,
-  .under {
-    margin: -6px 0 0;
-  }
-  .tonight {
-    margin: -8px 0 22px;
-  }
-  .regulars {
-    margin: -4px 0 10px;
   }
   .preview {
     position: sticky;

@@ -16,6 +16,7 @@
   import { getChipSet, getDefaultChipSetId } from "$lib/store";
   import { play } from "$lib/sound";
   import { reducedMotion } from "$lib/motion";
+  import { t } from "$lib/i18n";
 
   const chips = (getChipSet(getDefaultChipSetId())?.chips ?? []).slice(0, 5);
 
@@ -79,20 +80,20 @@
   >
     <div class="head">
       <div class="chips" aria-hidden="true">
-        {#each chips as c, i (c.id)}<span style:--i={i}><Chip chip={c} size={30} text="" /></span>{/each}
+        {#each chips as c, i (c.id)}<span style:--i={i}><Chip chip={c} size={30} /></span>{/each}
       </div>
-      <button class="icon-btn x" data-sound="none" onclick={() => close()}><Icon icon={X} label="Close" /></button>
+      <button class="icon-btn x" data-sound="none" onclick={() => close()}><Icon icon={X} label={t("common.close")} /></button>
     </div>
-    <h2 id="intro-title">Welcome to the Table.</h2>
-    <p class="lede muted">PitMaster runs your poker game, whatever its size. Four steps and you're dealing.</p>
+    <h2 id="intro-title">{t("nav.intro.title")}</h2>
+    <p class="lede muted">{t("nav.intro.lede")}</p>
 
     <HowItWorks deal />
 
     <div class="foot">
-      <button class="link muted" data-sound="none" onclick={() => close(true)}>Don't Show This Again</button>
-      <button class="go big" data-sound="none" onclick={() => close()} bind:this={go}>Let's Play<Icon icon={ArrowRight} /></button>
+      <button class="link muted" data-sound="none" onclick={() => close(true)}>{t("nav.intro.dontShowAgain")}</button>
+      <button class="go big" data-sound="none" onclick={() => close()} bind:this={go}>{t("nav.intro.letsPlay")}<span class="inline-flex flip-rtl"><Icon icon={ArrowRight} /></span></button>
     </div>
-    <p class="small muted note">This lives in <a href="/help">Help</a> too, at the bottom of every page.</p>
+    <p class="small muted note">{t("nav.intro.notePrefix")} <a href="/help">{t("common.help")}</a> {t("nav.intro.noteSuffix")}</p>
   </dialog>
 {/if}
 
@@ -160,7 +161,7 @@
   }
   /* the welcome's display title: bigger than a section heading, no rule under it */
   h2 {
-    font-size: 26px;
+    font-size: var(--fs-2xl);
     border: 0;
     padding: 0;
     margin: 0 0 4px;

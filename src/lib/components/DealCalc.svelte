@@ -9,6 +9,7 @@
   import { amt, money } from "$lib/util";
   import { bump, reveal, slide } from "$lib/motion";
   import { toast } from "$lib/toast.svelte";
+  import { t } from "$lib/i18n";
 
   let { game = $bindable(), persist }: { game: Game; persist: () => void } = $props();
 
@@ -35,65 +36,55 @@
   function take(kind: "icm" | "chop") {
     const pay = kind === "icm" ? byIcm : byChop;
     const names = alive.map((p, i) => `${p.name} ${money(pay[i])}`).join(", ");
-    if (!confirm(`Take the ${kind === "icm" ? "ICM" : "chip chop"} deal and end the tournament?\n\n${names}`)) return;
+    const confirmMsg =
+      kind === "icm" ? t("gamePlay.deal.takeIcmDealConfirm", { names }) : t("gamePlay.deal.takeChipChopDealConfirm", { names });
+    if (!confirm(confirmMsg)) return;
     const amounts = Object.fromEntries(alive.map((p, i) => [p.id, pay[i]]));
     const chips = Object.fromEntries(alive.map((p, i) => [p.id, counted[i]]));
     takeDeal(game, kind, amounts, chips);
     persist();
     // the finished game rakes the pot over (TournamentControl), so this one stays quiet
-    toast("Deal done. Results are in.", "info");
+    toast(t("gamePlay.deal.dealDoneToast"), "info");
   }
 </script>
 
 <div class="deal">
   <p class="small muted">
-    {alive.length} left, playing for {money(left)}. Count each stack. ICM weighs the pay jumps; a chip chop
-    {#if prizes.at(-1)}gives everyone {money(prizes.at(-1) ?? 0)} and splits the rest{:else}splits it all{/if} by chips.
+    {#if prizes.at(-1)}
+      {t("gamePlay.deal.summaryWithPrize", { count: String(alive.length), amount: money(left), prize: money(prizes.at(-1) ?? 0) })}
+    {:else}
+      {t("gamePlay.deal.summaryNoPrize", { count: String(alive.length), amount: money(left) })}
+    {/if}
   </p>
-  <div class="scroll-x">
+  <div class="scroll-x mb-2.5">
     <table>
       <thead>
-        <tr><th>Player</th><th class="num">Chips</th><th class="num">ICM</th><th class="num">Chip Chop</th></tr>
+        <tr><th>{t("gamePlay.deal.playerHeader")}</th><th class="num">{t("gamePlay.deal.chipsHeader")}</th><th class="num">{t("gamePlay.deal.icmHeader")}</th><th class="num">{t("gamePlay.deal.chipChopHeader")}</th></tr>
       </thead>
       <tbody>
         {#each alive as p, i (p.id)}
           <tr>
             <td>{p.name}</td>
-            <td class="num"><input type="number" min="0" step="any" bind:value={stacks[p.id]} aria-label="{p.name}'s Chips" /></td>
+            <td class="num"><input class="w-[80px] text-right" type="number" min="0" step="any" bind:value={stacks[p.id]} aria-label="{p.name} {t('gamePlay.deal.chipsHeader')}" /></td>
             <td class="num"><span use:bump={byIcm[i]}>{money(byIcm[i])}</span></td>
             <td class="num"><span use:bump={byChop[i]}>{money(byChop[i])}</span></td>
           </tr>
         {/each}
         <tr class="total">
-          <td>Total</td>
-          <td class="num">
+          <td class="font-bold border-b-0">{t("gamePlay.deal.totalLabel")}</td>
+          <td class="num font-bold border-b-0">
             {amt(total)}
-            {#if off}<div class="small bad" transition:slide={reveal()}>{off > 0 ? "+" : ""}{amt(off)} vs chips in play</div>{/if}
+            {#if off}<div class="small bad" transition:slide={reveal()}>{t("gamePlay.deal.offVsChips", { diff: `${off > 0 ? "+" : ""}${amt(off)}` })}</div>{/if}
           </td>
-          <td class="num">{money(byIcm.reduce((a, b) => a + b, 0))}</td>
-          <td class="num">{money(byChop.reduce((a, b) => a + b, 0))}</td>
+          <td class="num font-bold border-b-0">{money(byIcm.reduce((a, b) => a + b, 0))}</td>
+          <td class="num font-bold border-b-0">{money(byChop.reduce((a, b) => a + b, 0))}</td>
         </tr>
       </tbody>
     </table>
   </div>
   <!-- taking a deal ends the game, and that makes its own sound -->
   <div class="row">
-    <button data-sound="none" onclick={() => take("icm")}><Icon icon={Handshake} />Take ICM Deal</button>
-    <button data-sound="none" onclick={() => take("chop")}><Icon icon={Handshake} />Take Chip Chop</button>
+    <button data-sound="none" onclick={() => take("icm")}><Icon icon={Handshake} />{t("gamePlay.deal.takeIcmDealButton")}</button>
+    <button data-sound="none" onclick={() => take("chop")}><Icon icon={Handshake} />{t("gamePlay.deal.takeChipChopButton")}</button>
   </div>
 </div>
-
-<style>
-  .deal .scroll-x {
-    margin-bottom: 10px;
-  }
-  /* room for a seven-digit stack, and narrow enough that the table fits a phone */
-  .deal input {
-    width: 80px;
-    text-align: right;
-  }
-  .total td {
-    font-weight: bold;
-    border-bottom: 0;
-  }
-</style>

@@ -17,7 +17,7 @@
   import RotateCw from "@lucide/svelte/icons/rotate-cw";
   import { FACE_DEFAULTS, totalCount, totalValue } from "$lib/chips";
   import type { ChipDef, ChipSet, ChipStyle } from "$lib/types";
-  import { money, uid } from "$lib/util";
+  import { amt, money, uid } from "$lib/util";
   import Chip from "$lib/components/Chip.svelte";
   import RemoveButton from "$lib/components/RemoveButton.svelte";
   import ChipStack from "$lib/components/ChipStack.svelte";
@@ -29,6 +29,7 @@
   import { reveal, leave, reorder, bump, replay, slide } from "$lib/motion";
   import { toast } from "$lib/toast.svelte";
   import { play } from "$lib/sound";
+  import { t } from "$lib/i18n";
 
   const found = getChipSets();
   let sets = $state<ChipSet[]>(found);
@@ -88,7 +89,7 @@
     sel.chips.push({
       ...(last ? { style: last.style, inlay: last.inlay, ink: last.ink, trim: last.trim, accent2: last.accent2 } : {}),
       id: uid(),
-      label: "New",
+      label: t("chips.newChipLabel"),
       color: "#888888",
       accent: "#ffffff",
       value: last ? last.value * 5 : 1,
@@ -96,11 +97,11 @@
     });
   }
 
-  const DESIGNS: { id: ChipStyle; short: string; name: string }[] = [
-    { id: "montecarlo", short: "Monte Carlo", name: "Monte Carlo (3-Part Inserts + Silver Label)" },
-    { id: "delsol", short: "Casino Del Sol", name: "Casino Del Sol (Colored Rim + Big White Label)" },
-    { id: "basic", short: "Dice", name: "Dice (Edge Inserts + Pips)" },
-  ];
+  const DESIGNS = $derived<{ id: ChipStyle; short: string; name: string }[]>([
+    { id: "montecarlo", short: t("chips.designs.montecarlo.short"), name: t("chips.designs.montecarlo.name") },
+    { id: "delsol", short: t("chips.designs.delsol.short"), name: t("chips.designs.delsol.name") },
+    { id: "basic", short: t("chips.designs.basic.short"), name: t("chips.designs.basic.name") },
+  ]);
 
   // "set every chip to…" is an action, not a setting: it resets to the prompt.
   // the chips flip over in turn (cascade); one chip's own select flips just it.
@@ -118,31 +119,32 @@
     sel.chips.forEach((c, i) => {
       if (was[i] !== style) setTimeout(() => play("note", { value: c.value }), 200 + i * 60);
     });
-    toast(`Every chip is ${DESIGNS.find((d) => d.id === style)?.short} now`, "info");
+    toast(t("chips.allSetTo", { style: DESIGNS.find((d) => d.id === style)?.short ?? "" }), "info");
   }
 
   // each design only draws some of the colors, so each row only offers those.
   // fallbacks match what Chip.svelte paints when a color was never picked.
   type ColorKey = "color" | "accent" | "accent2" | "inlay" | "trim";
-  const SWATCHES: Record<ChipStyle, { key: ColorKey; label: string }[]> = {
+  const SWATCHES = $derived<Record<ChipStyle, { key: ColorKey; label: string }[]>>({
     basic: [
-      { key: "color", label: "Clay" },
-      { key: "accent", label: "Inserts + Pips" },
+      { key: "color", label: t("chips.swatches.basic.color") },
+      { key: "accent", label: t("chips.swatches.basic.accent") },
+      { key: "inlay", label: t("chips.swatches.basic.inlay") },
     ],
     montecarlo: [
-      { key: "color", label: "Clay" },
-      { key: "accent", label: "Insert Centers" },
-      { key: "accent2", label: "Insert Sides + Ring" },
-      { key: "inlay", label: "Label" },
-      { key: "trim", label: "Glitter Ring" },
+      { key: "color", label: t("chips.swatches.montecarlo.color") },
+      { key: "accent", label: t("chips.swatches.montecarlo.accent") },
+      { key: "accent2", label: t("chips.swatches.montecarlo.accent2") },
+      { key: "inlay", label: t("chips.swatches.montecarlo.inlay") },
+      { key: "trim", label: t("chips.swatches.montecarlo.trim") },
     ],
     delsol: [
-      { key: "color", label: "Rim" },
-      { key: "accent", label: "Inserts" },
-      { key: "inlay", label: "Label" },
-      { key: "trim", label: "Ring Text" },
+      { key: "color", label: t("chips.swatches.delsol.color") },
+      { key: "accent", label: t("chips.swatches.delsol.accent") },
+      { key: "inlay", label: t("chips.swatches.delsol.inlay") },
+      { key: "trim", label: t("chips.swatches.delsol.trim") },
     ],
-  };
+  });
   function colorOf(c: ChipDef, key: ColorKey) {
     if (c[key]) return c[key]!;
     if (key === "accent2") return c.accent;
@@ -168,39 +170,39 @@
     flush(); // before the list is read back
     const s: ChipSet =
       copy && sel
-        ? { ...$state.snapshot(sel), id: uid(), name: sel.name + " (Copy)", chips: sel.chips.map((c) => ({ ...c, id: uid() })) }
-        : { id: uid(), name: "New Chip Set", note: "", chips: [] };
+        ? { ...$state.snapshot(sel), id: uid(), name: t("chips.duplicateName", { name: sel.name }), chips: sel.chips.map((c) => ({ ...c, id: uid() })) }
+        : { id: uid(), name: t("chips.newSetName"), note: "", chips: [] };
     saveChipSet(s);
     sets = getChipSets();
     selId = s.id;
   }
 
   function remove() {
-    if (!sel || !confirm(`Delete the chip set “${sel.name}”? Games already set up keep their own copy.`)) return;
+    if (!sel || !confirm(t("chips.confirmDelete", { name: sel.name }))) return;
     const name = sel.name;
     pending = null; // its unsaved edits go with it
     deleteChipSet(sel.id);
     sets = getChipSets();
     defaultId = getDefaultChipSetId();
     selId = sets[0]?.id;
-    toast(`Deleted ${name}`, "info");
+    toast(t("chips.deletedToast", { name }), "info");
   }
 
   function makeDefault() {
     if (!sel) return;
     setDefaultChipSet(sel.id);
     defaultId = sel.id;
-    toast(`New games start with ${sel.name}`);
+    toast(t("chips.newGamesStart", { name: sel.name }));
   }
 
   function resetPresets() {
-    if (!confirm("Reset the built-in chip sets back to their original values? Your own sets stay.")) return;
+    if (!confirm(t("chips.confirmResetPresets"))) return;
     flush();
     restorePresets();
     sets = getChipSets();
     lastId = ""; // the open set is as saved now: nothing new to save
     if (!sets.some((s) => s.id === selId)) selId = sets[0]?.id;
-    toast("Built-in sets are back to new");
+    toast(t("chips.presetsReset"));
   }
 </script>
 
@@ -210,21 +212,21 @@
       {#each sets as s (s.id)}
         <li class:on={s.id === selId} in:slide={reveal()} out:slide={leave()}>
           <button class="link" data-sound="none" aria-current={s.id === selId ? "true" : undefined} onclick={() => pick(s)}>{s.name}</button>
-          {#if s.owned}<span class="pill">Yours</span>{/if}
-          {#if s.id === defaultId}<span class="pill" in:fade={reveal()}>Default</span>{/if}
+          {#if s.owned}<span class="pill">{t("chips.yours")}</span>{/if}
+          {#if s.id === defaultId}<span class="pill" in:fade={reveal()}>{t("chips.defaultPill")}</span>{/if}
           <div class="mini">
-            {#each s.chips as c (c.id)}<Chip chip={c} size={16} text="" spin={false} />{/each}
+            {#each s.chips as c (c.id)}<Chip chip={c} size={16} spin={false} />{/each}
           </div>
         </li>
       {/each}
     </ul>
-    {#if !sets.length}<p class="empty">No chip sets yet. Make one to start.</p>{/if}
+    {#if !sets.length}<p class="empty">{t("chips.noSets")}</p>{/if}
     <p class="row">
-      <button data-sound="card" onclick={() => newSet()}><Icon icon={Plus} />New Set</button>
-      <button data-sound="card" onclick={() => newSet(true)} disabled={!sel} title={sel ? undefined : "Pick a set to copy first"}>Duplicate</button>
+      <button data-sound="card" onclick={() => newSet()}><Icon icon={Plus} />{t("chips.newSetBtn")}</button>
+      <button data-sound="card" onclick={() => newSet(true)} disabled={!sel} title={sel ? undefined : t("chips.duplicateHint")}>{t("chips.duplicateBtn")}</button>
     </p>
     <p class="row">
-      <button class="link small muted" data-sound="rewind" onclick={resetPresets}><Icon icon={RotateCw} size="1em" />Reset Built-In Sets</button>
+      <button class="link small muted" data-sound="rewind" onclick={resetPresets}><Icon icon={RotateCw} size="1em" />{t("chips.resetPresetsBtn")}</button>
     </p>
   </aside>
 
@@ -234,17 +236,17 @@
     <section in:fade={reveal()} onchange={settle}>
       <div class="row">
         <label style="flex:1">
-          <span class="name-l">Name {#if saved}<span class="saved" transition:fade={leave()}><Icon icon={Check} size="1em" />Saved</span>{/if}</span>
+          <span class="name-l">{t("chips.nameLabel")} {#if saved}<span class="saved" transition:fade={leave()}><Icon icon={Check} size="1em" />{t("chips.savedLabel")}</span>{/if}</span>
           <input type="text" bind:value={sel.name} style="width:100%" />
         </label>
       </div>
-      <label><span>Notes</span><textarea bind:value={sel.note} rows="2"></textarea></label>
-      <label class="inline"><input type="checkbox" bind:checked={sel.owned} /><span>I Own This Set</span></label>
+      <label><span>{t("chips.notesLabel")}</span><textarea bind:value={sel.note} rows="2"></textarea></label>
+      <label class="across"><input type="checkbox" bind:checked={sel.owned} /><span>{t("chips.ownSetLabel")}</span></label>
 
       <div class="spread chips-head">
-        <h3>Chips</h3>
-        <select class="all" onchange={applyDesign} aria-label="Set every chip's design">
-          <option value="">Set Every Chip To…</option>
+        <h3>{t("chips.chipsHeading")}</h3>
+        <select class="all" onchange={applyDesign} aria-label={t("chips.setEveryChipAria")}>
+          <option value="">{t("chips.setEveryChipOption")}</option>
           {#each DESIGNS as d (d.id)}<option value={d.id}>{d.name}</option>{/each}
         </select>
       </div>
@@ -252,51 +254,51 @@
         <table class="editor">
           <thead>
             <tr>
-              <th><span class="sr-only">Preview</span></th>
-              <th>Value</th>
-              <th>How Many</th>
-              <th class="num">Worth</th>
-              <th>Face</th>
-              <th>Design</th>
-              <th>Colors</th>
-              <th><span class="sr-only">Remove</span></th>
+              <th><span class="sr-only">{t("chips.previewHeader")}</span></th>
+              <th>{t("chips.valueHeader")}</th>
+              <th>{t("chips.howManyHeader")}</th>
+              <th class="num">{t("chips.worthHeader")}</th>
+              <th>{t("chips.faceHeader")}</th>
+              <th>{t("chips.designHeader")}</th>
+              <th>{t("chips.colorsHeader")}</th>
+              <th><span class="sr-only">{t("chips.removeHeader")}</span></th>
             </tr>
           </thead>
           <tbody>
             {#each sel.chips as c, i (c.id)}
-              {@const name = `the ${money(c.value)} chip`}
+              {@const chipValue = money(c.value)}
               <tr in:fade={reveal()} out:fade={leave()} animate:flip={reorder()}>
                 <!-- a new design flips the chip over to show its new face -->
                 <td class="pv"><span class="face-up" style:--i={cascade ? i : 0} use:replay={[c.style, "flipover"]}><Chip chip={c} size={44} /></span></td>
-                <td class="v" data-l="Value"><input type="number" step="any" min="0" bind:value={c.value} aria-label="Value of chip {i + 1}" /></td>
-                <td class="n" data-l="How Many"><input type="number" min="0" step="25" bind:value={c.count} aria-label="How many of {name}" /></td>
-                <td class="num worth" data-l="Worth">{money(c.value * c.count)}</td>
-                <td class="fc" data-l="Face"><input type="text" class="face" bind:value={c.label} placeholder="Blank" aria-label="Text printed on {name}" title="Text printed on the chip" /></td>
-                <td class="ds" data-l="Design">
-                  <select bind:value={c.style} onchange={() => setTimeout(() => play("note", { value: c.value }), 200)} aria-label="Design of {name}">
+                <td class="v" data-l={t("chips.valueHeader")}><input type="number" step="any" min="0" bind:value={c.value} aria-label={t("chips.valueOfChip", { n: i + 1 })} /></td>
+                <td class="n" data-l={t("chips.howManyHeader")}><input type="number" min="0" step="25" bind:value={c.count} aria-label={t("chips.howManyOf", { value: chipValue })} /></td>
+                <td class="num worth" data-l={t("chips.worthHeader")}>{money(c.value * c.count)}</td>
+                <td class="fc" data-l={t("chips.faceHeader")}><input type="text" class="face" bind:value={c.label} placeholder={amt(c.value)} aria-label={t("chips.textPrintedOn", { value: chipValue })} title={t("chips.textPrintedHint")} /></td>
+                <td class="ds" data-l={t("chips.designHeader")}>
+                  <select bind:value={c.style} onchange={() => setTimeout(() => play("note", { value: c.value }), 200)} aria-label={t("chips.designOf", { value: chipValue })}>
                     {#each DESIGNS as d (d.id)}<option value={d.id}>{d.short}</option>{/each}
                   </select>
                 </td>
-                <td class="cl" data-l="Colors">
-                  <span class="swatches" role="group" aria-label="Colors of {name}">
+                <td class="cl" data-l={t("chips.colorsHeader")}>
+                  <span class="swatches" role="group" aria-label={t("chips.colorsOf", { value: chipValue })}>
                     {#each SWATCHES[c.style ?? "basic"] as sw (sw.key)}
                       <label class="sw" style:--c={colorOf(c, sw.key)} title={sw.label}>
-                        <input type="color" value={colorOf(c, sw.key)} oninput={(e) => (c[sw.key] = (e.target as HTMLInputElement).value)} onchange={() => play("note", { value: c.value })} aria-label="{sw.label} of {name}" />
+                        <input type="color" value={colorOf(c, sw.key)} oninput={(e) => (c[sw.key] = (e.target as HTMLInputElement).value)} onchange={() => play("note", { value: c.value })} aria-label={t("chips.swatchOf", { label: sw.label, value: chipValue })} />
                       </label>
                     {/each}
                   </span>
                 </td>
-                <td class="rm"><RemoveButton label="Remove {name}" onclick={() => sel.chips.splice(i, 1)} /></td>
+                <td class="rm"><RemoveButton label={t("chips.removeChip", { value: chipValue })} onclick={() => sel.chips.splice(i, 1)} /></td>
               </tr>
             {:else}
-              <tr><td colspan="8" class="empty">No chips yet. Add the first one below.</td></tr>
+              <tr><td colspan="8" class="empty">{t("chips.noChipsYet")}</td></tr>
             {/each}
           </tbody>
           {#if sel.chips.length}
             <tfoot>
               <tr>
                 <td></td>
-                <td class="muted">Total</td>
+                <td class="muted">{t("chips.total")}</td>
                 <td class="num count"><b use:bump={totalCount(sel.chips)}>{totalCount(sel.chips)}</b></td>
                 <td class="num"><b use:bump={totalValue(sel.chips)}>{money(totalValue(sel.chips))}</b></td>
                 <td colspan="4"></td>
@@ -307,11 +309,11 @@
       </div>
       <p class="row">
         <!-- (both play their chips' own notes) -->
-        <button data-sound="none" onclick={addChip}><Icon icon={Plus} />Add Chip</button>
-        <button data-sound="none" onclick={sortChips} disabled={sel.chips.length < 2} title={sel.chips.length < 2 ? "Takes two or more chips" : undefined}><Icon icon={ArrowDownWideNarrow} />Sort by Value</button>
+        <button data-sound="none" onclick={addChip}><Icon icon={Plus} />{t("chips.addChipBtn")}</button>
+        <button data-sound="none" onclick={sortChips} disabled={sel.chips.length < 2} title={sel.chips.length < 2 ? t("chips.sortHintDisabled") : undefined}><Icon icon={ArrowDownWideNarrow} />{t("chips.sortByValueBtn")}</button>
       </p>
 
-      <h3 style="margin-top:22px">The Whole Set</h3>
+      <h3 style="margin-top:22px">{t("chips.wholeSetHeading")}</h3>
       <div class="case">
         {#each sel.chips as c (c.id)}
           <div class="col">
@@ -320,11 +322,11 @@
           </div>
         {/each}
       </div>
-      <p class="small muted">Each chip drawn is worth 5 chips.</p>
+      <p class="small muted">{t("chips.eachChipWorth")}</p>
 
       <p class="row">
-        {#if sel.id !== defaultId}<button onclick={makeDefault}>Use This Set by Default</button>{/if}
-        <button class="danger" data-sound="thud" onclick={remove}>Delete Set</button>
+        {#if sel.id !== defaultId}<button onclick={makeDefault}>{t("chips.useAsDefaultBtn")}</button>{/if}
+        <button class="danger" data-sound="thud" onclick={remove}>{t("chips.deleteSetBtn")}</button>
       </p>
     </section>
     {/key}
@@ -512,7 +514,7 @@
       display: block;
       margin-bottom: 3px;
       font: var(--fs-xs) var(--font);
-      letter-spacing: 0.05em;
+      letter-spacing: var(--track-caps);
       text-transform: uppercase;
       color: var(--muted);
     }

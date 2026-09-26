@@ -6,6 +6,7 @@
   // facing, so a die looks solid from every side.
   import { play } from "$lib/sound";
   import { reducedMotion } from "$lib/motion";
+  import { t } from "$lib/i18n";
 
   /** the cube's edge, px */
   const S = 28;
@@ -23,9 +24,19 @@
   ] as const;
   // pips on a 3x3 grid, by cell
   const PIPS = [[], [4], [0, 8], [0, 4, 8], [0, 2, 6, 8], [0, 2, 4, 6, 8], [0, 2, 3, 5, 6, 8]];
-  // what the table calls a roll, when it calls it anything
-  const NAMES: Record<number, string> = { 2: "Snake Eyes", 3: "Ace-Deuce", 11: "Yo", 12: "Boxcars" };
-  const HARD: Record<number, string> = { 4: "Hard Four", 6: "Hard Six", 8: "Hard Eight", 10: "Hard Ten" };
+  // what the table calls a roll, when it calls it anything (i18n keys, resolved with t() at roll time)
+  const NAMES: Record<number, string> = {
+    2: "toys.diceCup.names.snakeEyes",
+    3: "toys.diceCup.names.aceDeuce",
+    11: "toys.diceCup.names.yo",
+    12: "toys.diceCup.names.boxcars",
+  };
+  const HARD: Record<number, string> = {
+    4: "toys.diceCup.names.hardFour",
+    6: "toys.diceCup.names.hardSix",
+    8: "toys.diceCup.names.hardEight",
+    10: "toys.diceCup.names.hardTen",
+  };
 
   type Die = { x: number; y: number; yaw: number; rx: number; ry: number; v: number };
   const rand = (a: number, b: number) => a + Math.random() * (b - a);
@@ -122,7 +133,8 @@
     later(() => {
       phase = "rest";
       const [a, b] = dice.map((d) => d.v);
-      result = { sum: a + b, name: (a === b && HARD[a + b]) || NAMES[a + b] || "" };
+      const nameKey = (a === b && HARD[a + b]) || NAMES[a + b] || "";
+      result = { sum: a + b, name: nameKey ? t(nameKey) : "" };
       if (a === b) play("success");
     }, ROLL);
   }
@@ -141,14 +153,14 @@
 <svelte:window onpointerup={roll} onpointercancel={roll} onblur={roll} />
 
 <div class="toy">
-  <div class="table">
+  <div class="table" dir="ltr">
     <button
       type="button"
       class="throw"
       class:held={phase === "held"}
       class:rolling={phase === "roll"}
       data-sound="none"
-      aria-label="Dice, hold to shake and let go to roll"
+      aria-label={t("toys.diceCup.aria")}
       onpointerdown={(e) => e.button === 0 && pickUp()}
       onkeydown={key}
       onkeyup={key}
@@ -190,7 +202,7 @@
       {/if}
     </div>
   </div>
-  <p class="hint">Hold to shake, let go to roll.</p>
+  <p class="hint">{t("toys.diceCup.hint")}</p>
 </div>
 
 <style>

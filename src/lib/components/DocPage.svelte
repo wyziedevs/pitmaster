@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
+  import { t } from "$lib/i18n";
 
   // the pages that are for reading (help, privacy, terms): one readable column
   // in the middle of the page, a quiet line under the title (the date, or what
@@ -14,26 +15,19 @@
 
 <svelte:head><title>{title} · PitMaster</title></svelte:head>
 
-<article class="doc">
+<article class="doc mx-auto max-w-[84ch]">
   <header>
     <h1>{title}</h1>
-    <p class="muted">{sub}</p>
+    <p class="muted mb-[18px]">{sub}</p>
   </header>
   {@render children()}
-  <p class="small muted end">
-    PitMaster is an open source side project published by <a href="https://wyzie.io" target="_blank" rel="noopener">Wyzie LLC</a>, and its code is on
-    <a href="https://github.com/wyziedevs/pitmaster" target="_blank" rel="noopener">GitHub</a>. See also the <a href={other.href}>{other.label}</a>.
+  <p class="small muted end mt-10">
+    {t("nav.docPage.footerPrefix")} <a href="https://wyzie.io" target="_blank" rel="noopener">Wyzie LLC</a>{t("nav.docPage.footerMiddle")}
+    <a href="https://github.com/wyziedevs/pitmaster" target="_blank" rel="noopener">GitHub</a>{t("nav.docPage.codeSuffix")}{t("nav.docPage.footerSeeAlso")} <a href={other.href}>{other.label}</a>.
   </p>
 </article>
 
 <style>
-  .doc {
-    max-width: 84ch;
-    margin: 0 auto;
-  }
-  header p {
-    margin: 0 0 18px;
-  }
   /* plain text all the way down: no rules under the headings or above the end */
   .doc :global(h2) {
     margin: 30px 0 8px;
@@ -64,8 +58,5 @@
   }
   .doc :global(.short ul) {
     margin: 6px 0 0;
-  }
-  .end {
-    margin-top: 40px;
   }
 </style>

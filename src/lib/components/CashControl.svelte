@@ -1,5 +1,6 @@
 <script lang="ts">
   import Icon from "$lib/components/Icon.svelte";
+  import Digits from "$lib/components/Digits.svelte";
   import Play from "@lucide/svelte/icons/play";
   import Pause from "@lucide/svelte/icons/pause";
   import Plus from "@lucide/svelte/icons/plus";
@@ -7,11 +8,11 @@
   import { fade } from "svelte/transition";
   import { bump, reveal, leave, slide } from "$lib/motion";
   import type { Game } from "$lib/types";
-  import { cashElapsed, cashToggle, STATUS_LABEL } from "$lib/clock";
-  import { addPlayer, cashStats, cashSettle, cashRake, HOUSE, logEvent, flash, reseat, seatsDrawn, seatLabel, tableCounts } from "$lib/game";
+  import { cashElapsed, cashToggle } from "$lib/clock";
+  import { addPlayer, cashStats, cashSettle, cashRake, logEvent, flash, reseat, seatsDrawn, seatLabel, tableCounts } from "$lib/game";
   import { getHandles } from "$lib/store";
-  import { distribute } from "$lib/chips";
-  import { clock, currencySymbol, duration, money, nameKey, payLinks, round2, signed, timeOfDay } from "$lib/util";
+  import { distribute, faceText } from "$lib/chips";
+  import { clock, clockFace, currencySymbol, duration, money, nameKey, payLinks, round2, signed, timeOfDay } from "$lib/util";
   import { time } from "$lib/now.svelte";
   import { provide } from "$lib/commands.svelte";
   import { play } from "$lib/sound";
@@ -22,6 +23,7 @@
   import { settings } from "$lib/settings.svelte";
   import Count from "./Count.svelte";
   import RemoveButton from "./RemoveButton.svelte";
+  import { t, tp } from "$lib/i18n";
 
   let { game = $bindable(), persist }: { game: Game; persist: () => void } = $props();
 
@@ -30,9 +32,12 @@
   const elapsed = $derived(cashElapsed(game, time.now));
   const remaining = $derived(c.plannedMinutes * 60000 - elapsed);
   const running = $derived(game.clock.status === "running");
+  // STATUS_LABEL (clock.ts) is English only; this game screen shows its own
+  // translated labels for the same three statuses instead.
+  const statusLabel = $derived({ idle: t("gamePlay.shared.statusIdle"), running: t("gamePlay.shared.statusRunning"), paused: t("gamePlay.shared.statusPaused") });
   const moves = $derived(cashSettle(game));
   const r = $derived(cashRake(game));
-  const house = $derived(game.house?.trim() || HOUSE);
+  const house = $derived(game.house?.trim() || t("gamePlay.shared.house"));
   // where people get paid (saved on the Players page), for links in settle-up
   const handles = getHandles();
   const linksFor = (name: string, amount: number) => (settings.usePayLinks ? payLinks(handles[nameKey(name)] ?? null, amount, game.name) : []);
@@ -54,8 +59,8 @@
       const wasIdle = game.clock.status === "idle";
       const wasRunning = running;
       cashToggle(game);
-      logEvent(game, wasRunning ? "Session paused" : wasIdle ? "Cards in the air" : "Session resumed");
-      if (wasIdle) flash(game, "Cards in the air!");
+      logEvent(game, wasRunning ? t("gamePlay.cash.sessionPausedLog") : wasIdle ? t("gamePlay.cash.cardsInTheAirLog") : t("gamePlay.cash.sessionResumedLog"));
+      if (wasIdle) flash(game, t("gamePlay.cash.cardsInTheAirFlash"), "shuffle");
     });
 
   const drawn = $derived(seatsDrawn(game));
@@ -110,7 +115,7 @@
     const p = game.players.find((x) => x.id === id)!;
     if (!(amount > 0)) return false;
     if (amount < c.minBuyIn || amount > c.maxBuyIn) {
-      if (!confirm(`${money(amount)} is outside the ${money(c.minBuyIn)}–${money(c.maxBuyIn)} buy-in range. Add it anyway?`)) return false;
+      if (!confirm(t("gamePlay.cash.buyInOutsideRangeConfirm", { amount: money(amount), min: money(c.minBuyIn), max: money(c.maxBuyIn) }))) return false;
     }
     act(() => {
       p.cashIn = round2(p.cashIn + amount);
@@ -120,8 +125,8 @@
         p.leftAt = null;
         reseat(game, p);
       }
-      logEvent(game, `${p.name} bought in ${money(amount)} (total ${money(p.cashIn)})`);
-      flash(game, `${p.name} reloads ${money(amount)}`);
+      logEvent(game, t("gamePlay.cash.boughtInLog", { name: p.name, amount: money(amount), total: money(p.cashIn) }));
+      flash(game, t("gamePlay.cash.reloadsFlash", { name: p.name, amount: money(amount) }), "chips");
     });
     return true;
   }
@@ -133,11 +138,11 @@
 
   function undoBuyIn(id: string) {
     const p = game.players.find((x) => x.id === id)!;
-    const amount = Number(prompt(`How much should come off ${p.name}'s buy-in?`, String(c.defaultBuyIn)));
+    const amount = Number(prompt(t("gamePlay.cash.undoBuyInPrompt", { name: p.name }), String(c.defaultBuyIn)));
     if (!(amount > 0)) return;
     act(() => {
       p.cashIn = Math.max(0, round2(p.cashIn - amount));
-      logEvent(game, `${p.name}'s buy-in reduced by ${money(amount)}`);
+      logEvent(game, t("gamePlay.cash.buyInReducedLog", { name: p.name, amount: money(amount) }));
     });
   }
 
@@ -165,8 +170,8 @@
       p.cashOut = amount;
       p.leftAt = Date.now();
       const net = round2(amount - p.cashIn);
-      logEvent(game, `${p.name} cashed out ${money(amount)} (${signed(net)})`);
-      flash(game, `${p.name} racks up ${signed(net)}`);
+      logEvent(game, t("gamePlay.cash.cashedOutLog", { name: p.name, amount: money(amount), net: signed(net) }));
+      flash(game, t("gamePlay.cash.racksUpFlash", { name: p.name, net: signed(net) }), "rack");
     });
     counting = null;
   }
@@ -176,8 +181,8 @@
     act(() => {
       game.cash!.sb = newSb;
       game.cash!.bb = newBb;
-      logEvent(game, `Blinds now ${money(newSb)}/${money(newBb)}`);
-      flash(game, `Blinds are now ${money(newSb)}/${money(newBb)}`);
+      logEvent(game, t("gamePlay.cash.blindsNowLog", { sb: money(newSb), bb: money(newBb) }));
+      flash(game, t("gamePlay.cash.blindsAreNowFlash", { sb: money(newSb), bb: money(newBb) }));
     });
   }
 
@@ -202,30 +207,30 @@
   }
 
   function recountRake() {
-    const v = prompt("What's in the rake box now?", String(game.rakeBox ?? 0));
+    const v = prompt(t("gamePlay.cash.rakeBoxPrompt"), String(game.rakeBox ?? 0));
     if (v === null || !(Number(v) >= 0)) return;
     act(() => {
       game.rakeBox = round2(Number(v));
-      logEvent(game, `Rake box recounted: ${money(game.rakeBox)}`);
+      logEvent(game, t("gamePlay.cash.rakeRecountedLog", { amount: money(game.rakeBox) }));
     });
   }
 
   function removePlayer(id: string) {
     const p = game.players.find((x) => x.id === id)!;
-    if (!confirm(`Remove ${p.name} and their buy-ins from the game?`)) return;
+    if (!confirm(t("gamePlay.cash.removeConfirm", { name: p.name }))) return;
     act(() => {
       game.players = game.players.filter((x) => x.id !== id);
-      logEvent(game, `${p.name} removed`);
+      logEvent(game, t("gamePlay.shared.removedLog", { name: p.name }));
     });
   }
 
   function endGame() {
-    if (!s.allOut && !confirm("Not everyone has cashed out. End the game anyway?")) return;
+    if (!s.allOut && !confirm(t("gamePlay.cash.endGameConfirm"))) return;
     act(() => {
       game.finished = true;
       game.endedAt = Date.now();
       if (running) cashToggle(game);
-      logEvent(game, "Game over");
+      logEvent(game, t("gamePlay.cash.gameOverLog"));
     });
   }
 
@@ -242,14 +247,14 @@
   // makes the same sound as the button it stands in for.
   $effect(() =>
     provide("cash", () => [
-      { id: "c:clock", label: running ? "Pause the Session" : game.clock.status === "idle" ? "Start the Session" : "Resume the Session", group: "This Game", run: () => (play(startSound), toggle()) },
-      { id: "c:add", label: "Seat a Player", group: "This Game", keywords: "add sit down", prompt: "their name", run: (name: string) => (play("chips"), addNamed(name)) },
-      { id: "c:blinds", label: "Change Blinds", group: "This Game", prompt: "the new blinds, like 1/2", run: blindsFrom },
-      ...(seatsOn ? [{ id: "c:seats", label: drawn ? "Redraw Seats" : "Draw Seats", group: "This Game", keywords: "tables shuffle", run: () => seatTools?.draw() }] : []),
-      ...(!game.finished ? [{ id: "c:end", label: "End the Game", group: "This Game", keywords: "finish over", run: () => (play("square"), endGame()) }] : []),
-      ...(r.mode === "pot" ? [{ id: "c:rake", label: "Add to the Rake Box", group: "This Game", keywords: "rake house drop", prompt: "the amount", run: (v: string) => (play("drop"), addRake(Number(v.replace(/[^0-9.-]/g, "")) || 0)) }] : []),
-      ...game.players.map((p) => ({ id: `c:buy:${p.id}`, label: `${p.cashOut === null ? "Rebuy" : "Back In"}: ${p.name}`, group: "Players", keywords: "buy in reload top-up", hint: `+${money(c.defaultBuyIn)}`, run: () => (play("chips"), buyIn(p.id, c.defaultBuyIn)) })),
-      ...game.players.filter((p) => p.cashOut === null).map((p) => ({ id: `c:out:${p.id}`, label: `Cash Out ${p.name}`, group: "Players", keywords: "leave rack", run: () => (play(counting === p.id ? "close" : "open"), openCount(p.id)) })),
+      { id: "c:clock", label: running ? t("gamePlay.cash.cmdPauseSession") : game.clock.status === "idle" ? t("gamePlay.cash.cmdStartSession") : t("gamePlay.cash.cmdResumeSession"), group: t("gamePlay.shared.groupThisGame"), run: () => (play(startSound), toggle()) },
+      { id: "c:add", label: t("gamePlay.cash.cmdSeatPlayer"), group: t("gamePlay.shared.groupThisGame"), keywords: "add sit down", prompt: t("gamePlay.shared.theirNamePrompt"), run: (name: string) => (play("chips"), addNamed(name)) },
+      { id: "c:blinds", label: t("gamePlay.cash.changeBlindsButton"), group: t("gamePlay.shared.groupThisGame"), prompt: t("gamePlay.cash.cmdChangeBlindsPrompt"), run: blindsFrom },
+      ...(seatsOn ? [{ id: "c:seats", label: drawn ? t("gamePlay.shared.redrawSeats") : t("gamePlay.shared.drawSeats"), group: t("gamePlay.shared.groupThisGame"), keywords: "tables shuffle", run: () => seatTools?.draw() }] : []),
+      ...(!game.finished ? [{ id: "c:end", label: t("gamePlay.cash.endGame"), group: t("gamePlay.shared.groupThisGame"), keywords: "finish over", run: () => (play("square"), endGame()) }] : []),
+      ...(r.mode === "pot" ? [{ id: "c:rake", label: t("gamePlay.cash.cmdAddToRakeBox"), group: t("gamePlay.shared.groupThisGame"), keywords: "rake house drop", prompt: t("gamePlay.cash.cmdAddToRakeBoxPrompt"), run: (v: string) => (play("drop"), addRake(Number(v.replace(/[^0-9.-]/g, "")) || 0)) }] : []),
+      ...game.players.map((p) => ({ id: `c:buy:${p.id}`, label: `${p.cashOut === null ? t("gamePlay.cash.cmdRebuyLabel") : t("gamePlay.cash.cmdBackInLabel")}: ${p.name}`, group: t("gamePlay.shared.groupPlayers"), keywords: "buy in reload top-up", hint: `+${money(c.defaultBuyIn)}`, run: () => (play("chips"), buyIn(p.id, c.defaultBuyIn)) })),
+      ...game.players.filter((p) => p.cashOut === null).map((p) => ({ id: `c:out:${p.id}`, label: t("gamePlay.cash.cmdCashOut", { name: p.name }), group: t("gamePlay.shared.groupPlayers"), keywords: "leave rack", run: () => (play(counting === p.id ? "close" : "open"), openCount(p.id)) })),
     ])
   );
 </script>
@@ -257,67 +262,67 @@
 <section class="clockbox" class:paused={game.clock.status === "paused"}>
   <div class="spread">
     <div>
-      <div class="lvl">Session <span class="pill" data-s={game.clock.status}>{STATUS_LABEL[game.clock.status]}</span></div>
-      <div class="clockface num">{clock(elapsed)}</div>
+      <div class="lvl">{t("gamePlay.cash.sessionLabel")} <span class="pill" data-s={game.clock.status}>{statusLabel[game.clock.status]}</span></div>
+      <div class="clockface" dir="ltr"><Digits value={clockFace(elapsed)} /></div>
       <div class="small muted">
         {#if game.clock.status !== "idle"}
-          {#if remaining > 0}{clock(remaining)} left of {Math.round(c.plannedMinutes / 6) / 10}h · Ends ~{timeOfDay(time.now + remaining)}{:else}Past the planned end: last orbit?{/if}
-        {:else}Planned: {Math.round(c.plannedMinutes / 6) / 10}h{/if}
+          {#if remaining > 0}{t("gamePlay.cash.leftOfPlanned", { remaining: clock(remaining), total: String(Math.round(c.plannedMinutes / 6) / 10), time: timeOfDay(time.now + remaining) })}{:else}{t("gamePlay.cash.pastPlannedEnd")}{/if}
+        {:else}{t("gamePlay.cash.plannedDuration", { h: String(Math.round(c.plannedMinutes / 6) / 10) })}{/if}
       </div>
     </div>
-    <div class="blinds">
-      <div class="num bb"><span use:bump={c.sb * 1e6 + c.bb}>{money(c.sb)}/{money(c.bb)}</span></div>
-      <form autocomplete="off" class="row small" onsubmit={changeBlinds}>
-        <input type="number" step="any" bind:value={newSb} aria-label="Small Blind" />/<input type="number" step="any" bind:value={newBb} aria-label="Big Blind" />
-        <button data-sound="flap">Change Blinds</button>
+    <div class="blinds text-right max-[600px]:text-left">
+      <div class="num bb" dir="ltr"><span use:bump={c.sb * 1e6 + c.bb}>{money(c.sb)}/{money(c.bb)}</span></div>
+      <form autocomplete="off" class="row small justify-end mt-1 max-[600px]:justify-start" onsubmit={changeBlinds}>
+        <input type="number" step="any" class="w-[70px]" bind:value={newSb} aria-label={t("gamePlay.cash.smallBlindAria")} />/<input type="number" step="any" class="w-[70px]" bind:value={newBb} aria-label={t("gamePlay.cash.bigBlindAria")} />
+        <button data-sound="flap">{t("gamePlay.cash.changeBlindsButton")}</button>
       </form>
     </div>
   </div>
-  <div class="row controls">
-    <button class="big" data-sound={startSound} onclick={toggle}><Icon icon={running ? Pause : Play} />{running ? "Pause" : game.clock.status === "idle" ? "Start Session" : "Resume"}</button>
-    {#if !game.finished}<button data-sound="square" onclick={endGame}>End Game</button>{:else}<span class="pill pop">Finished</span>{/if}
+  <div class="row controls mt-2">
+    <button class="big" data-sound={startSound} onclick={toggle}><Icon icon={running ? Pause : Play} />{running ? t("gamePlay.tournament.pause") : game.clock.status === "idle" ? t("gamePlay.cash.startSession") : t("gamePlay.tournament.resume")}</button>
+    {#if !game.finished}<button data-sound="square" onclick={endGame}>{t("gamePlay.cash.endGame")}</button>{:else}<span class="pill pop">{t("gamePlay.cash.finishedPill")}</span>{/if}
   </div>
 </section>
 
 <div class="stats">
-  <div><span>Bank (Buy-Ins)</span><b class="num" use:bump={s.bank}><Count value={s.bank} format={money} /></b></div>
-  <div><span>On the Table</span><b class="num" use:bump={s.onTable}><Count value={s.onTable} format={money} /></b></div>
-  <div><span>Cashed Out</span><b class="num" use:bump={s.out}><Count value={s.out} format={money} /></b></div>
-  <div><span>Seated</span><b class="num" use:bump={s.seated * 1000 + game.players.length}>{s.seated}/{game.players.length}</b></div>
+  <div><span>{t("gamePlay.cash.bankLabel")}</span><b class="num" use:bump={s.bank}><Count value={s.bank} format={money} /></b></div>
+  <div><span>{t("gamePlay.cash.onTableLabel")}</span><b class="num" use:bump={s.onTable}><Count value={s.onTable} format={money} /></b></div>
+  <div><span>{t("gamePlay.cash.cashedOutLabel")}</span><b class="num" use:bump={s.out}><Count value={s.out} format={money} /></b></div>
+  <div><span>{t("gamePlay.cash.seatedLabel")}</span><b class="num" use:bump={s.seated * 1000 + game.players.length}>{s.seated}/{game.players.length}</b></div>
 </div>
 
 {#if r.mode === "pot"}
   <!-- the rake box: a running total the host adds to as chips go in -->
-  <div class="rakebox">
-    <span class="rb-total"><span class="small muted">Rake Box</span> <b class="num" use:bump={s.rakeBox}><Count value={s.rakeBox} format={money} /></b></span>
+  <div class="rakebox flex flex-wrap items-center gap-x-4 gap-y-1.5 -mt-1 mx-0 mb-5">
+    <span class="rb-total"><span class="small muted">{t("gamePlay.cash.rakeBoxLabel")}</span> <b class="num text-[length:var(--fs-md)]" use:bump={s.rakeBox}><Count value={s.rakeBox} format={money} /></b></span>
     <span class="row">
-      {#each rakeSteps as v (v)}<button data-sound="drop" onclick={() => addRake(v)} title="Add {money(v)} to the rake box">+{money(v)}</button>{/each}
-      <form autocomplete="off" class="joined" onsubmit={rakeOther}>
-        <input type="number" step="any" placeholder="Other" bind:value={rakeTyped} aria-label="Other amount for the rake box" />
-        <button data-sound="drop" disabled={!rakeTyped} aria-label="Add that to the rake box" title={rakeTyped ? "Add that to the rake box" : "Type an amount first"}><Icon icon={Plus} /></button>
+      {#each rakeSteps as v (v)}<button data-sound="drop" onclick={() => addRake(v)} title={t("gamePlay.cash.addToRakeBoxTitle", { amount: money(v) })}>+{money(v)}</button>{/each}
+      <form autocomplete="off" class="joined inline-flex" onsubmit={rakeOther}>
+        <input type="number" step="any" class="w-[72px]" placeholder={t("gamePlay.shared.other")} bind:value={rakeTyped} aria-label={t("gamePlay.cash.otherAmountRakeBoxAria")} />
+        <button data-sound="drop" class="ml-[calc(-1*var(--hair))]" disabled={!rakeTyped} aria-label={t("gamePlay.cash.addThatToRakeBox")} title={rakeTyped ? t("gamePlay.cash.addThatToRakeBox") : t("gamePlay.shared.typeAmountFirst")}><Icon icon={Plus} /></button>
       </form>
-      <button class="link small muted" data-sound="drop" onclick={recountRake}>Recount</button>
+      <button class="link small muted" data-sound="drop" onclick={recountRake}>{t("gamePlay.cash.recount")}</button>
     </span>
-    <span class="small muted">{r.pct}% of each pot, up to {money(r.cap)}, to {house}</span>
+    <span class="small muted">{t("gamePlay.cash.rakePctNote", { pct: String(r.pct), cap: money(r.cap), house })}</span>
   </div>
 {:else if r.mode === "seat"}
-  <p class="small muted rakebox">Seat fee: {money(r.fee)} a player, paid to {house} in cash, not chips. Settle-up includes it.</p>
+  <p class="small muted rakebox flex flex-wrap items-center gap-x-4 gap-y-1.5 -mt-1 mx-0 mb-5">{t("gamePlay.cash.seatFeeNote", { fee: money(r.fee), house })}</p>
 {/if}
 
 <!-- the players table is where the night is run, so it gets the full width -->
-<section class="players">
-    <h2>Players</h2>
+<section class="players mb-[26px]">
+    <h2>{t("gamePlay.shared.groupPlayers")}</h2>
     {#if seatsOn}<SeatTools bind:this={seatTools} bind:game {persist} />{/if}
     <div class="scroll-x">
-    <table class="roster acts-below">
+    <table class="roster acts-below min-w-[640px]">
       <thead>
         <tr>
-          {#if drawn}<th>Seat</th>{/if}
-          <th>Name</th>
-          <th class="num hide-sm">Played</th>
-          <th class="num">In</th>
-          <th class="num">Out</th>
-          <th class="num">Net</th>
+          {#if drawn}<th>{t("gamePlay.shared.seatHeader")}</th>{/if}
+          <th>{t("gamePlay.shared.nameHeader")}</th>
+          <th class="num hide-sm">{t("gamePlay.cash.playedHeader")}</th>
+          <th class="num">{t("gamePlay.cash.inHeader")}</th>
+          <th class="num">{t("gamePlay.cash.outHeader")}</th>
+          <th class="num">{t("gamePlay.cash.netHeader")}</th>
           <th></th>
         </tr>
       </thead>
@@ -326,192 +331,103 @@
           {@const net = p.cashOut !== null ? round2(p.cashOut - p.cashIn) : null}
           <tr class:dim={p.cashOut !== null} in:fade={reveal()}>
             {#if drawn}<td class="num seat"><span class:dealt={dealing} style:--i={i}>{p.cashOut === null ? seatLabel(p.seat, tables) : ""}</span></td>{/if}
-            <td class="who"><input type="text" bind:value={p.name} onchange={persist} class="edit-name" aria-label="Name" /></td>
+            <td class="who"><input type="text" bind:value={p.name} onchange={persist} class="edit-name" aria-label={t("gamePlay.shared.nameHeader")} /></td>
             <td class="num muted small hide-sm">{played(p)}</td>
-            <td class="num nowrap" data-l="In"><span use:bump={p.cashIn}>{money(p.cashIn)}</span> <button class="link small muted" data-sound="rewind" title="Take back a buy-in that shouldn't count" onclick={() => undoBuyIn(p.id)}>Fix</button></td>
-            <td class="num" class:blank={p.cashOut === null} data-l="Out">{p.cashOut !== null ? money(p.cashOut) : ""}</td>
-            <td class="num {net === null ? 'blank' : net >= 0 ? 'good' : 'bad'}" data-l="Net">{net === null ? "" : signed(net)}</td>
-            <td class="nowrap acts">
-              <button data-sound="chips" onclick={() => buyIn(p.id, c.defaultBuyIn)} title={p.cashOut === null ? "Standard buy-in" : "Back in for a standard buy-in"}>+{money(c.defaultBuyIn)}</button>
+            <td class="num nowrap" data-l={t("gamePlay.cash.inHeader")}><span use:bump={p.cashIn}>{money(p.cashIn)}</span> <button class="link small muted" data-sound="rewind" title={t("gamePlay.cash.fixTitle")} onclick={() => undoBuyIn(p.id)}>{t("gamePlay.cash.fixLink")}</button></td>
+            <td class="num" class:blank={p.cashOut === null} data-l={t("gamePlay.cash.outHeader")}>{p.cashOut !== null ? money(p.cashOut) : ""}</td>
+            <td class="num {net === null ? 'blank' : net >= 0 ? 'good' : 'bad'}" data-l={t("gamePlay.cash.netHeader")}>{net === null ? "" : signed(net)}</td>
+            <td class="nowrap acts w-[1%]">
+              <button data-sound="chips" onclick={() => buyIn(p.id, c.defaultBuyIn)} title={p.cashOut === null ? t("gamePlay.cash.standardBuyInTitle") : t("gamePlay.cash.backInForStandardTitle")}>+{money(c.defaultBuyIn)}</button>
               <!-- any other amount: the box and its + are one control -->
-              <form autocomplete="off" class="joined" onsubmit={(e) => addOther(e, p.id)}>
-                <input type="number" step="any" min="0" placeholder="Other" bind:value={custom[p.id]} aria-label="Other buy-in amount for {p.name}" />
-                <button data-sound="chips" disabled={!custom[p.id]} aria-label="Add that buy-in for {p.name}" title={custom[p.id] ? "Add that buy-in" : "Type an amount first"}><Icon icon={Plus} /></button>
+              <form autocomplete="off" class="joined inline-flex" onsubmit={(e) => addOther(e, p.id)}>
+                <input type="number" step="any" min="0" class="w-[72px]" placeholder={t("gamePlay.shared.other")} bind:value={custom[p.id]} aria-label={t("gamePlay.cash.otherBuyInAria", { name: p.name })} />
+                <button data-sound="chips" class="ml-[calc(-1*var(--hair))]" disabled={!custom[p.id]} aria-label={t("gamePlay.cash.addThatBuyInAria", { name: p.name })} title={custom[p.id] ? t("gamePlay.cash.addThatBuyInTitle") : t("gamePlay.shared.typeAmountFirst")}><Icon icon={Plus} /></button>
               </form>
-              <button class:down={counting === p.id} data-sound={counting === p.id ? "close" : "open"} aria-expanded={counting === p.id} onclick={() => openCount(p.id)}>{p.cashOut === null ? "Cash Out" : "Edit Cash-Out"}</button>
-              <RemoveButton label="Remove {p.name}" onclick={() => removePlayer(p.id)} />
+              <button class:down={counting === p.id} data-sound={counting === p.id ? "close" : "open"} aria-expanded={counting === p.id} onclick={() => openCount(p.id)}>{p.cashOut === null ? t("gamePlay.cash.cashOutButton") : t("gamePlay.cash.editCashOutButton")}</button>
+              <RemoveButton label={t("gamePlay.shared.removePlayer", { name: p.name })} onclick={() => removePlayer(p.id)} />
             </td>
           </tr>
           {#if counting === p.id}
             <tr class="count-row">
-              <td colspan={cols}>
-                <form autocomplete="off" class="counter vstack" onsubmit={cashOut} transition:slide={reveal()}>
-                  <div class="small muted">Count {p.name}'s chips, or type the total.</div>
-                  <div class="stacks">
+              <td colspan={cols} class="bg-block p-0">
+                <form autocomplete="off" class="counter vstack py-2.5 px-3" onsubmit={cashOut} transition:slide={reveal()}>
+                  <div class="small muted">{t("gamePlay.cash.countChipsPrompt", { name: p.name })}</div>
+                  <div class="stacks flex flex-wrap gap-x-3.5 gap-y-1.5">
                     {#each game.chips as ch (ch.id)}
-                      <label class="cc">
-                        <Chip chip={ch} size={30} spin={false} />
-                        <input type="number" min="0" step="1" bind:value={counts[ch.id]} oninput={() => (typed = null)} aria-label="How many {money(ch.value)} chips" />
+                      <label class="cc inline-flex items-center gap-1.5 m-0">
+                        <Chip chip={ch} size={30} text={faceText(ch, true)} spin={false} />
+                        <input type="number" min="0" step="1" class="w-[60px]" bind:value={counts[ch.id]} oninput={() => (typed = null)} aria-label={t("gamePlay.cash.howManyChipsAria", { amount: money(ch.value) })} />
                         <span class="small muted num">× {money(ch.value)}</span>
                       </label>
                     {/each}
                   </div>
                   <div class="row">
-                    <label class="inline"><span>Or the Total {currencySymbol()}</span><input type="number" min="0" step="any" bind:value={typed} /></label>
-                    <button data-sound="rack">Cash Out {money(outTotal)}</button>
-                    <span class="small num {outTotal - p.cashIn >= 0 ? 'good' : 'bad'}">{signed(round2(outTotal - p.cashIn))} for the session</span>
-                    <button type="button" class="link small muted" data-sound="close" onclick={() => (counting = null)}>Cancel</button>
+                    <label class="across"><span>{t("gamePlay.cash.orTheTotal")} {currencySymbol()}</span><input type="number" min="0" step="any" bind:value={typed} /></label>
+                    <button data-sound="rack">{t("gamePlay.cash.cashOutAmountButton", { amount: money(outTotal) })}</button>
+                    <span class="small num {outTotal - p.cashIn >= 0 ? 'good' : 'bad'}">{signed(round2(outTotal - p.cashIn))} {t("gamePlay.cash.forTheSession")}</span>
+                    <button type="button" class="link small muted" data-sound="close" onclick={() => (counting = null)}>{t("common.cancel")}</button>
                   </div>
                 </form>
               </td>
             </tr>
           {/if}
         {:else}
-          <tr><td class="empty" colspan={cols}>No players seated yet</td></tr>
+          <tr><td class="empty" colspan={cols}>{t("gamePlay.cash.noPlayersSeated")}</td></tr>
         {/each}
       </tbody>
     </table>
     </div>
-    <form autocomplete="off" class="row add" onsubmit={add}>
-      <input type="text" bind:value={newName} placeholder="Player Name" list="regulars" autocomplete="off" aria-label="Player Name" />
-      <button data-sound="chips"><Icon icon={Plus} />Sit Down ({money(c.defaultBuyIn)})</button>
+    <form autocomplete="off" class="row add mt-2" onsubmit={add}>
+      <input type="text" bind:value={newName} placeholder={t("gamePlay.shared.playerNamePlaceholder")} list="regulars" autocomplete="off" aria-label={t("gamePlay.shared.playerNamePlaceholder")} />
+      <button data-sound="chips"><Icon icon={Plus} />{t("gamePlay.cash.sitDownButton", { amount: money(c.defaultBuyIn) })}</button>
     </form>
 </section>
 
 <div class="cols">
   <section>
-    <h2>Settle Up</h2>
+    <h2>{t("gamePlay.cash.settleUpHeading")}</h2>
     {#if Math.abs(s.diff) > 0.001 && s.allOut}
-      <p class="warn small" transition:slide={reveal()}>The bank is off by {money(s.diff)}: more {s.diff > 0 ? "came out than went in" : "went in than came out"}. Recheck the cash-outs.</p>
+      <p class="warn small" transition:slide={reveal()}>{s.diff > 0 ? t("gamePlay.cash.bankOffCameOut", { amount: money(s.diff) }) : t("gamePlay.cash.bankOffWentIn", { amount: money(s.diff) })}</p>
     {/if}
     {#if balanced}
-      <p class="good small with-icon pop"><Icon icon={Check} />The bank balances. Every chip is accounted for{s.rakeBox ? `, ${money(s.rakeBox)} of it in the rake box` : ""}.</p>
+      <p class="good small with-icon pop"><Icon icon={Check} />{s.rakeBox ? t("gamePlay.cash.bankBalancesWithRakeBox", { amount: money(s.rakeBox) }) : t("gamePlay.cash.bankBalances")}</p>
     {/if}
     {#if moves.length}
-      <ul class="moves" in:slide={reveal()}>
+      <ul class="moves pl-[18px]" in:slide={reveal()}>
         {#each moves as m, i (i)}
           {@const links = linksFor(m.to, m.amount)}
-          <li in:slide={reveal()} out:slide={leave()} style:--i={i}>
-            <b>{m.from}</b> pays <b>{m.to}</b> <span class="num">{money(m.amount)}</span>
-            {#if links.length}<span class="small pay links">{#each links as l (l.label)}<a href={l.href} target="_blank" rel="noopener noreferrer" title="Pay {l.handle} on {l.label}">{l.label}</a>{/each}</span>{/if}
+          <li class="mb-1" in:slide={reveal()} out:slide={leave()} style:--i={i}>
+            <b>{m.from}</b> {t("gamePlay.cash.pays")} <b>{m.to}</b> <span class="num">{money(m.amount)}</span>
+            {#if links.length}<span class="small pay links ml-3">{#each links as l (l.label)}<a href={l.href} target="_blank" rel="noopener noreferrer" title={t("gamePlay.shared.payLinkTitle", { handle: l.handle, label: l.label })}>{l.label}</a>{/each}</span>{/if}
           </li>
         {/each}
       </ul>
-      {#if r.mode === "seat"}<p class="small muted">Includes the {money(r.fee)} seat fee each player owes {house}.</p>{/if}
-      {#if !s.allOut}<p class="small muted" in:slide={reveal()} out:slide={leave()}>Counts only players who have cashed out so far.</p>{/if}
-      {#if !anyHandles && settings.usePayLinks}<p class="small muted">Save players' Venmo, Cash App or PayPal on the <a href="/players">Players</a> page to get pay links here with the amount filled in.</p>{/if}
+      {#if r.mode === "seat"}<p class="small muted">{t("gamePlay.cash.includesSeatFeeNote", { fee: money(r.fee), house })}</p>{/if}
+      {#if !s.allOut}<p class="small muted" in:slide={reveal()} out:slide={leave()}>{t("gamePlay.cash.countsOnlyCashedOut")}</p>{/if}
+      {#if !anyHandles && settings.usePayLinks}<p class="small muted">{t("gamePlay.cash.savePlayersNoteBefore")} <a href="/players">{t("gamePlay.shared.groupPlayers")}</a> {t("gamePlay.cash.savePlayersNoteAfter")}</p>{/if}
     {:else}
-      <p class="muted small">Cash players out to see who pays who, in as few payments as possible.</p>
+      <p class="muted small">{t("gamePlay.cash.cashOutToSeeWho")}</p>
     {/if}
   </section>
 
   <section>
-    <h2>Chips</h2>
-    <div class="block"><ChipLegend chips={game.chips} isCash size={44} /></div>
-    <h3>
-      A Buy-In of
-      <input type="number" step="any" min="0" bind:value={buyInFor} aria-label="Buy-In Amount" /> Gets
+    <h2>{t("gamePlay.shared.chipsHeading")}</h2>
+    <div class="slab"><ChipLegend chips={game.chips} isCash size={44} /></div>
+    <h3 class="mt-3">
+      {t("gamePlay.cash.buyInOfPrefix")}
+      <input type="number" step="any" min="0" bind:value={buyInFor} aria-label={t("gamePlay.cash.buyInAmountAria")} /> {t("gamePlay.cash.buyInOfSuffix")}
     </h3>
     <div class="felt"><Breakdown breakdown={distribute(buyInFor, game.chips, Math.max(1, game.players.length))} isCash target={buyInFor} /></div>
-    <p class="small muted">Buy-in range {money(c.minBuyIn)}–{money(c.maxBuyIn)} · {c.straddle ? "Straddles allowed" : "No straddles"}</p>
+    <p class="small muted">{t("gamePlay.cash.buyInRangeNote", { min: money(c.minBuyIn), max: money(c.maxBuyIn), straddle: c.straddle ? t("gamePlay.cash.straddlesAllowed") : t("gamePlay.cash.noStraddles") })}</p>
   </section>
 </div>
 
 <style>
-  /* the same size as the tournament clock (TournamentControl) */
-  .controls {
-    margin-top: 8px;
-  }
-  .blinds {
-    text-align: right;
-  }
-  .blinds input {
-    width: 70px;
-  }
-  .blinds form {
-    justify-content: flex-end;
-    margin-top: 4px;
-  }
-  /* on a phone the blinds drop under the session clock, lined up with it */
-  @media (max-width: 600px) {
-    .blinds {
-      text-align: left;
-    }
-    .blinds form {
-      justify-content: flex-start;
-    }
-  }
-  .moves {
-    padding-left: 18px;
-  }
-  .players {
-    margin-bottom: 26px;
-  }
-  .add {
-    margin-top: 8px;
-  }
-  /* a sub-heading under the chips (A Buy-In of...) */
-  h3 {
-    margin-top: 12px;
-  }
-  .players table {
-    min-width: 640px;
-  }
-  .acts {
-    width: 1%;
-  }
   /* global: the remove x at the end is its own component */
   .acts > :global(*) {
     vertical-align: middle;
   }
   .acts > :global(* + *) {
     margin-left: 4px;
-  }
-  .joined {
-    display: inline-flex;
-  }
-  .joined input {
-    width: 72px;
-  }
-  /* one hairline where the two meet, not two */
-  .joined button {
-    margin-left: calc(-1 * var(--hair));
-  }
-  .count-row td {
-    background: var(--block);
-    padding: 0;
-  }
-  .counter {
-    padding: 10px 12px;
-  }
-  .stacks {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px 14px;
-  }
-  .cc {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    margin: 0;
-  }
-  .cc input {
-    width: 60px;
-  }
-  .moves li {
-    margin-bottom: 4px;
-  }
-  .pay {
-    margin-left: 12px;
-  }
-  .rakebox {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 6px 16px;
-    margin: -4px 0 20px;
-  }
-  .rb-total b {
-    font-size: 16px;
   }
 </style>

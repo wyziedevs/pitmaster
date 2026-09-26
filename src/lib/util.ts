@@ -1,4 +1,5 @@
-import { prefs } from "./settings.svelte";
+import { prefs, settings } from "./settings.svelte";
+import { t, tp } from "./i18n";
 
 export const uid = () => Math.random().toString(36).slice(2, 9);
 
@@ -60,12 +61,27 @@ export function clock(ms: number) {
   return h ? `${h}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`;
 }
 
+/** a wall clock's reading: no leading zero (8:27, not 08:27) */
+export const clockFace = (ms: number) => clock(ms).replace(/^0(?=\d:)/, "");
+
+const DURATION_UNITS: Record<string, [string, string]> = {
+  en: ["h", "m"],
+  zh: ["时", "分"],
+  hi: ["घं", "मि"],
+  es: ["h", "min"],
+  fr: ["h", "min"],
+  ar: ["س", "د"],
+  bn: ["ঘ", "মি"],
+  pt: ["h", "min"],
+};
+
 export function duration(min: number) {
   min = Math.round(min);
   const h = Math.floor(min / 60);
   const m = min % 60;
-  if (!h) return `${m}m`;
-  return m ? `${h}h ${m}m` : `${h}h`;
+  const [H, M] = DURATION_UNITS[settings.language] ?? DURATION_UNITS.en;
+  if (!h) return `${m}${M}`;
+  return m ? `${h}${H} ${m}${M}` : `${h}${H}`;
 }
 
 /** 7:30 PM or 19:30, per the time setting */
@@ -85,9 +101,9 @@ export function day(ts: number) {
 
 export function ago(ts: number) {
   const s = Math.round((Date.now() - ts) / 1000);
-  if (s < 60) return "just now";
-  if (s < 3600) return `${Math.round(s / 60)} min ago`;
-  if (s < 86400) return `${Math.round(s / 3600)} hr ago`;
+  if (s < 60) return t("util.justNow");
+  if (s < 3600) return tp("util.minutesAgo", Math.round(s / 60));
+  if (s < 86400) return tp("util.hoursAgo", Math.round(s / 3600));
   return day(ts);
 }
 
@@ -95,10 +111,30 @@ export const near = (a: number, b: number) => Math.abs(a - b) < 1e-6;
 export const isMultiple = (x: number, unit: number) => unit > 0 && near(Math.round(x / unit) * unit, x);
 export const round2 = (n: number) => Math.round(n * 100) / 100;
 
+/** "3rd", "第3", "3º"... a finishing place, in whichever language is set */
 export function ordinal(n: number) {
-  const s = ["th", "st", "nd", "rd"];
-  const v = n % 100;
-  return n + (s[(v - 20) % 10] || s[v] || s[0]);
+  switch (settings.language) {
+    case "zh":
+      return `第${n}`;
+    case "hi":
+      return `${n}वां`;
+    case "es":
+    case "pt":
+      return `${n}º`;
+    case "fr":
+      return n === 1 ? `${n}er` : `${n}e`;
+    case "bn":
+      return `${n}তম`;
+    case "ar":
+      // arabic ordinals are irregular past ten and gendered; a bare number
+      // reads fine next to the "place"/"rank" word every caller already uses
+      return `${n}`;
+    default: {
+      const s = ["th", "st", "nd", "rd"];
+      const v = n % 100;
+      return n + (s[(v - 20) % 10] || s[v] || s[0]);
+    }
+  }
 }
 
 export const SUITS = ["♠", "♥", "♦", "♣"] as const;

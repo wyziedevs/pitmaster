@@ -10,14 +10,16 @@
   import { fly } from "svelte/transition";
   import { play } from "$lib/sound";
   import { rise } from "$lib/motion";
+  import { t } from "$lib/i18n";
 
   type Load = () => Promise<{ default: Component }>;
-  const TOYS: { name: string; load: Load }[] = [
-    { name: "Cards", load: () => import("./CardFan.svelte") },
-    { name: "Money Counter", load: () => import("./MoneyCounter.svelte") },
-    { name: "Chip Sort", load: () => import("./ChipSort.svelte") },
-    { name: "Dice", load: () => import("./DiceCup.svelte") },
-    { name: "Roulette", load: () => import("./RouletteWheel.svelte") },
+  /** nameKey points at toys.widget.names.* so the label follows the current language */
+  const TOYS: { nameKey: string; load: Load }[] = [
+    { nameKey: "toys.widget.names.cards", load: () => import("./CardFan.svelte") },
+    { nameKey: "toys.widget.names.moneyCounter", load: () => import("./MoneyCounter.svelte") },
+    { nameKey: "toys.widget.names.chipSort", load: () => import("./ChipSort.svelte") },
+    { nameKey: "toys.widget.names.dice", load: () => import("./DiceCup.svelte") },
+    { nameKey: "toys.widget.names.roulette", load: () => import("./RouletteWheel.svelte") },
   ];
   /** the toys' box: every toy fits it, so swapping one never moves the page */
   const W = 290;
@@ -54,41 +56,22 @@
   const zoom = $derived(Math.min(1, width / W));
 </script>
 
-<div class="toys" bind:clientWidth={width}>
-  <div class="stage" style:zoom={zoom < 1 ? zoom : null} style:--w="{W}px" style:--h="{H}px">
+<div class="toys flex flex-col items-center gap-1 w-full max-w-[var(--w,290px)] mx-auto my-0" bind:clientWidth={width}>
+  <div class="stage grid w-[var(--w)] h-[var(--h)]" style:zoom={zoom < 1 ? zoom : null} style:--w="{W}px" style:--h="{H}px">
     {#key at}
       {#if Toy}
-        <div class="slot" in:fly={rise(10)}>
+        <div class="slot [grid-area:1/1] grid place-items-center" in:fly={rise(10)}>
           <Toy />
         </div>
       {/if}
     {/key}
   </div>
-  <button class="icon-btn next" data-sound="none" onclick={next} title="Next Toy" aria-label="Next toy, now {TOYS[at].name}">
-    <span style:rotate="{turns * 180}deg"><Icon icon={Shuffle} /></span>
+  <button class="icon-btn next self-end" data-sound="none" onclick={next} title={t("toys.widget.next")} aria-label={t("toys.widget.nextAria", { name: t(TOYS[at].nameKey) })}>
+    <span class="grid" style:rotate="{turns * 180}deg"><Icon icon={Shuffle} /></span>
   </button>
 </div>
 
 <style>
-  .toys {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    width: 100%;
-    max-width: var(--w, 290px);
-    margin: 0 auto;
-  }
-  .stage {
-    display: grid;
-    width: var(--w);
-    height: var(--h);
-  }
-  .slot {
-    grid-area: 1 / 1;
-    display: grid;
-    place-items: center;
-  }
   /* every toy: its table, and the hint under it */
   .slot > :global(.toy) {
     display: flex;
@@ -96,12 +79,8 @@
     align-items: center;
     gap: 2px;
   }
-  .next {
-    align-self: flex-end;
-  }
   /* a half turn each press */
   .next span {
-    display: grid;
     transition: rotate var(--dur-pop) var(--ease-out-expo);
   }
   @media (prefers-reduced-motion: reduce) {

@@ -1,3 +1,7 @@
+/** what a flash toast is about: the tv picks its icon, sound and color by
+ *  this, not by matching words in the (now translated) text */
+export type EventKind = "win" | "deal" | "money" | "bust" | "chips" | "rack" | "shuffle" | "seat" | "note";
+
 /** how a chip is drawn. matches the real chip families. */
 export type ChipStyle = "basic" | "montecarlo" | "delsol";
 
@@ -161,8 +165,10 @@ export interface Game {
   cash?: CashSettings;
   /** banner pushed to the tv */
   message: { text: string; at: number } | null;
-  /** last notable thing that happened, for tv toasts */
-  flash: { text: string; at: number } | null;
+  /** last notable thing that happened, for tv toasts: what it says, and what
+   *  kind of thing it was (that picks the toast's icon, sound and color, so
+   *  the tv doesn't have to guess by pattern-matching translated text) */
+  flash: { text: string; at: number; kind: EventKind } | null;
   log: { t: number; text: string }[];
   live: { code: string; key: string } | null;
   finished: boolean;

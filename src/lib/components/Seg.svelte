@@ -54,51 +54,45 @@
   }
 </script>
 
-<div class="seg" role="group" aria-labelledby={labelledby} bind:this={el}>
-  <span class="thumb face" class:ready style:transform="translateX({x}px)" style:width="{w}px" aria-hidden="true"></span>
+<div
+  class="seg relative inline-flex bg-block-2 border-[length:var(--hair)] border-solid border-line-strong border-l-0 align-middle justify-self-start self-center max-w-full"
+  role="group"
+  aria-labelledby={labelledby}
+  bind:this={el}
+>
+  <span
+    class="thumb face absolute top-[calc(-1*var(--hair))] bottom-[calc(-1*var(--hair))] left-0 pointer-events-none z-0 bg-field"
+    class:ready
+    style:transform="translateX({x}px)"
+    style:width="{w}px"
+    aria-hidden="true"
+  ></span>
   {#each options as o (o.id)}
-    <button type="button" aria-pressed={value === o.id} data-sound="none" onclick={(e) => pick(o.id, e)}>
-      {#if o.icon}<Icon icon={o.icon} />{/if}{o.label}{#if o.hint}<span class="muted">{o.hint}</span>{/if}
+    <button
+      type="button"
+      class="relative z-[1] min-w-0 h-auto min-h-[calc(var(--control-h)_-_2*var(--hair))] whitespace-normal leading-[1.2] bg-transparent border-solid border-line-strong border-l-[length:var(--hair)] border-t-0 border-r-0 border-b-0 hover:bg-block-3 hover:border-line-strong active:bg-line"
+      aria-pressed={value === o.id}
+      data-sound="none"
+      onclick={(e) => pick(o.id, e)}
+    >
+      {#if o.icon}<Icon icon={o.icon} />{/if}{o.label}{#if o.hint}<span class="muted ml-0.5">{o.hint}</span>{/if}
     </button>
   {/each}
-  <span class="thumb edge" class:ready style:transform="translateX({x}px)" style:width="{w}px" aria-hidden="true"></span>
+  <span
+    class="thumb edge absolute top-[calc(-1*var(--hair))] bottom-[calc(-1*var(--hair))] left-0 pointer-events-none z-[2] border-[length:var(--hair)] border-solid border-fg"
+    class:ready
+    style:transform="translateX({x}px)"
+    style:width="{w}px"
+    aria-hidden="true"
+  ></span>
 </div>
 
 <style>
   .seg {
-    position: relative;
-    display: inline-flex;
     isolation: isolate;
-    background: var(--block-2);
-    border: var(--hair) solid var(--line-strong);
-    border-left: 0;
-    vertical-align: middle;
-    justify-self: start;
-    align-self: center;
-    /* never wider than where it sits: on a narrow phone the labels wrap */
-    max-width: 100%;
-  }
-  .seg button {
-    position: relative;
-    z-index: 1;
-    min-width: 0;
-    height: auto;
-    min-height: calc(var(--control-h) - 2 * var(--hair));
-    white-space: normal;
-    line-height: 1.2;
-    background: transparent;
-    border: 0;
-    border-left: var(--hair) solid var(--line-strong);
   }
   /* the others darken a step under the pointer and sink when pressed (the
      global button press); the dividers stay put either way */
-  .seg button:hover {
-    background: var(--block-3);
-    border-color: var(--line-strong);
-  }
-  .seg button:active {
-    background: var(--line);
-  }
   /* the picked one is already down: its face is the thumb's, so it neither
      darkens nor sinks */
   .seg button[aria-pressed="true"] {
@@ -108,28 +102,10 @@
     transform: none;
     background: transparent;
   }
-  .seg .muted {
-    margin-left: 2px;
-  }
   /* the picked face sits under the labels, its edge sits over the dividers */
-  .thumb {
-    position: absolute;
-    top: calc(-1 * var(--hair));
-    bottom: calc(-1 * var(--hair));
-    left: 0;
-    pointer-events: none;
-  }
   .thumb.ready {
     transition:
       transform var(--dur-move) var(--ease-out-expo),
       width var(--dur-move) var(--ease-out-expo);
-  }
-  .face {
-    z-index: 0;
-    background: var(--field);
-  }
-  .edge {
-    z-index: 2;
-    border: var(--hair) solid var(--fg);
   }
 </style>

@@ -1,5 +1,5 @@
 import type { ChipDef, ChipSet, ChipStyle, GameChip } from "./types";
-import { isMultiple, uid } from "./util";
+import { amt, isMultiple, uid } from "./util";
 
 type PresetChip = Omit<ChipDef, "id">;
 type Preset = Omit<ChipSet, "chips"> & {
@@ -112,8 +112,12 @@ export const presetCopy = (p: Preset): ChipSet => ({
   chips: p.chips.map((c) => ({ id: uid(), style: p.style, ...p.look, ...c })),
 });
 
-/** what to write on the chip face */
-export const faceText = (c: ChipDef) => c.label || "";
+/**
+ * what's on the chip face: its printed text, or, on a chip with nothing
+ * printed (dice chips), its value, the way a host stickers a blank chip. a
+ * game chip's value is what it plays for in that game.
+ */
+export const faceText = (c: ChipDef, isCash = false) => c.label || amt(c.value, isCash);
 
 /** chips as used in a game. printed value x multiplier, sorted small -> big */
 export function gameChips(set: ChipSet, multiplier = 1): GameChip[] {
@@ -200,11 +204,39 @@ export function smallestNeeded<C extends ChipDef>(values: number[], chips: C[]):
   return desc[desc.length - 1];
 }
 
-/** readable text on a chip face */
-export function faceInk(hex: string) {
+/** a color's relative luminance (WCAG), 0 black to 1 white */
+function luminance(hex: string) {
   const h = hex.replace("#", "");
-  const [r, g, b] = [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16) || 0);
-  return 0.299 * r + 0.587 * g + 0.114 * b > 150 ? "#111" : "#fff";
+  const [r, g, b] = [0, 2, 4].map((i) => {
+    const v = (parseInt(h.slice(i, i + 2), 16) || 0) / 255;
+    return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+const contrast = (a: string, b: string) => {
+  const [x, y] = [luminance(a), luminance(b)].sort((p, q) => q - p);
+  return (x + 0.05) / (y + 0.05);
+};
+
+/** readable text on a chip face */
+export const faceInk = (hex: string) => (luminance(hex) > 0.3 ? "#111" : "#fff");
+
+/**
+ * what a sticker's value is printed in: the chip's own clay color, like a
+ * casino's denomination print (a shade deeper if it needs it to read), or its
+ * inserts' color when the clay is too close to the sticker (a white chip), or
+ * plain ink.
+ */
+export function printInk(sticker: string, choices: string[]) {
+  for (const hex of choices) {
+    const h = hex.replace("#", "");
+    const rgb = [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16) || 0);
+    for (const deeper of [1, 0.85, 0.72, 0.6]) {
+      const ink = "#" + rgb.map((v) => Math.round(v * deeper).toString(16).padStart(2, "0")).join("");
+      if (contrast(ink, sticker) >= 4.5) return ink;
+    }
+  }
+  return faceInk(sticker);
 }
 
 /**
@@ -247,10 +279,11 @@ export function edgeInserts(chip: ChipDef, turn = 0) {
 
 /**
  * the colors a face falls back to for a part that was never picked, by design.
- * ChipFace.svelte paints with them and the chip set editor offers them.
+ * ChipFace.svelte paints with them and the chip set editor offers them. a dice
+ * chip's inlay is the paper sticker its value is printed on.
  */
 export const FACE_DEFAULTS: Record<ChipStyle, { inlay: string; trim: string }> = {
-  basic: { inlay: "#c9cac7", trim: "#b7a86a" },
+  basic: { inlay: "#efede7", trim: "#b7a86a" },
   montecarlo: { inlay: "#c9cac7", trim: "#b7a86a" },
   delsol: { inlay: "#fdfdfb", trim: "#7e1b15" },
 };

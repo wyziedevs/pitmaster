@@ -15,6 +15,7 @@
   import { endLive, startLive } from "$lib/sync";
   import { showCode } from "$lib/crypto";
   import { logEvent } from "$lib/game";
+  import { t } from "$lib/i18n";
 
   let { game = $bindable(), persist }: { game: Game; persist: () => void } = $props();
 
@@ -35,11 +36,11 @@
     err = "";
     try {
       game.live = await startLive();
-      logEvent(game, `Went live with code ${showCode(game.live.code)}`);
+      logEvent(game, t("tv.panel.logWentLive", { code: showCode(game.live.code) }));
       persist();
       play("success");
     } catch (e) {
-      err = `Couldn't get a code (${(e as Error).message}). Check the connection and try again.`;
+      err = t("tv.panel.codeError", { message: (e as Error).message });
       play("error");
     }
     busy = false;
@@ -47,62 +48,69 @@
 
   // the server's copy is deleted right away; screens using the code stop updating
   function stopLive() {
-    if (!game.live || !confirm("Stop sharing? Screens using the code stop updating, and the copy on the server is deleted.")) return;
-    endLive(game.live).catch(() => toast("Couldn't reach the server to delete its copy. It's deleted on its own two days after the last update.", "bad"));
-    logEvent(game, "Stopped sharing");
+    if (!game.live || !confirm(t("tv.panel.stopConfirm"))) return;
+    endLive(game.live).catch(() => toast(t("tv.panel.stopServerError"), "bad"));
+    logEvent(game, t("tv.panel.logStoppedSharing"));
     game.live = null;
     persist();
   }
 
   function send(text = msg) {
     game.message = text.trim() ? { text: text.trim(), at: Date.now() } : null;
-    if (text.trim()) logEvent(game, `TV message: ${text.trim()}`);
+    if (text.trim()) logEvent(game, t("tv.panel.logTvMessage", { text: text.trim() }));
     msg = "";
     persist();
-    toast(text.trim() ? "On the TV" : "Banner cleared", text.trim() ? "ok" : "info");
+    toast(text.trim() ? t("tv.panel.toastOnTv") : t("tv.panel.toastBannerCleared"), text.trim() ? "ok" : "info");
   }
 
-  const quick = ["On Break", "Last Hand Before Break", "Shuffle Up and Deal", "Seat Change", "Back in 5 Minutes", "Registration Closing Soon"];
+  const quick = $derived([
+    t("tv.panel.quick.onBreak"),
+    t("tv.panel.quick.lastHandBeforeBreak"),
+    t("tv.panel.quick.shuffleUpAndDeal"),
+    t("tv.panel.quick.seatChange"),
+    t("tv.panel.quick.backIn5"),
+    t("tv.panel.quick.registrationClosing"),
+  ]);
 </script>
 
 <div class="box">
-  <h2>TV</h2>
+  <h2>{t("tv.panel.title")}</h2>
   <p class="row">
-    <button data-sound="open" onclick={openTv}>Open TV Window<Icon icon={ExternalLink} /></button>
-    <span class="small muted">Drag it to the TV (HDMI) and press <Kbd k="F" /></span>
+    <button data-sound="open" onclick={openTv}>{t("tv.panel.openWindow")}<Icon icon={ExternalLink} /></button>
+    <span class="small muted">{t("tv.panel.dragHint")} <Kbd k="F" /></span>
   </p>
 
   {#if game.live}
     {@const code = showCode(game.live.code)}
-    <div class="live" in:slide={reveal()}>
-      <div class="block">
-        <div class="small muted">TV code: on any screen, open {location.host}/live and type</div>
+    <div class="live mb-2" in:slide={reveal()}>
+      <div class="slab">
+        <div class="small muted">{t("tv.panel.tvCodeInstructions", { host: location.host })}</div>
         <!-- the code itself is the copy button: it's what people ask for -->
-        <CopyButton text={code} plain title="Copy the Code">
+        <CopyButton text={code} plain title={t("tv.panel.copyCodeTitle")}>
           {#snippet children(copied)}
-            <span class="code mono">{code}</span>
-            <span class="small with-icon" class:muted={!copied}>{#if copied}<Icon icon={Check} size="1em" />Copied{:else}<Icon icon={Copy} size="1em" />Copy{/if}</span>
+            <span class="code mono font-bold text-[44px] tracking-[0.12em]">{code}</span>
+            <span class="small with-icon" class:muted={!copied}>{#if copied}<Icon icon={Check} size="1em" />{t("common.copied")}{:else}<Icon icon={Copy} size="1em" />{t("common.copy")}{/if}</span>
           {/snippet}
         </CopyButton>
         <div class="small row">
           <a href={liveUrl} target="_blank">{liveUrl}</a>
-          <CopyButton text={liveUrl} link label="Copy Link" />
+          <CopyButton text={liveUrl} link label={t("tv.panel.copyLink")} />
         </div>
-        <button class="link small" data-sound="thud" onclick={stopLive}>Stop Sharing</button>
+        <button class="link small" data-sound="thud" onclick={stopLive}>{t("tv.panel.stopSharing")}</button>
       </div>
       {#if onLocalhost}
-        <p class="small warn">Other devices can't open <b>localhost</b>, and a TV needs https to unlock the game. Use Open TV Window here, or a deployed copy or an https tunnel.</p>
+        <p class="small warn mt-2 mx-0">{t("tv.panel.localhostBefore")}<b>localhost</b>{t("tv.panel.localhostAfter", { openWindow: t("tv.panel.openWindow") })}</p>
       {/if}
     </div>
   {:else}
     <p class="row">
-      <button onclick={goLive} disabled={busy}>{#if busy}<Dealing label="Getting a Code" />Getting a Code{:else}Go Live (Any Device){/if}</button>
-      <span class="small muted">Get a code for a smart TV, a Chromecast or phones. The game is encrypted before it's sent, and only screens with the code can read it. <a href="/privacy#tv">How it works</a></span>
+      <button onclick={goLive} disabled={busy}>{#if busy}<Dealing label={t("tv.panel.gettingCode")} />{t("tv.panel.gettingCode")}{:else}{t("tv.panel.goLiveAnyDevice")}{/if}</button>
+      <span class="small muted">{t("tv.panel.goLiveHint")} <a href="/privacy#tv">{t("tv.panel.howItWorks")}</a></span>
     </p>
     {#if err}<p class="small bad" transition:slide={reveal()}>{err}</p>{/if}
   {/if}
 
-  <h2 class="part">Message the Table</h2>
+  <h2 class="part mt-[22px]">{t("tv.panel.messageTable")}</h2>
   <form
     class="row"
     autocomplete="off"
@@ -111,34 +119,14 @@
       send();
     }}
   >
-    <input type="text" class="grow" bind:value={msg} placeholder="Shows as a Banner on the TV" aria-label="TV Message" autocomplete="off" />
-    <button disabled={!msg.trim()} title={msg.trim() ? undefined : "Type a message first"}><Icon icon={Send} />Send</button>
+    <input type="text" class="grow flex-1" bind:value={msg} placeholder={t("tv.panel.messagePlaceholder")} aria-label={t("tv.panel.messageAriaLabel")} autocomplete="off" />
+    <button disabled={!msg.trim()} title={msg.trim() ? undefined : t("tv.panel.typeMessageFirst")}><Icon icon={Send} />{t("tv.panel.send")}</button>
   </form>
   <p class="row small">
     {#each quick as q (q)}<button class="link" onclick={() => send(q)}>{q}</button>{/each}
   </p>
   {#if game.message}
-    <p class="small spread" transition:fade={leave()}><span>Showing: <b>{game.message.text}</b></span><button class="link" data-sound="swish" onclick={() => send("")}>Clear</button></p>
+    <p class="small spread" transition:fade={leave()}><span>{t("tv.panel.showing")} <b>{game.message.text}</b></span><button class="link" data-sound="swish" onclick={() => send("")}>{t("common.clear")}</button></p>
   {/if}
 </div>
 
-<style>
-  .live {
-    margin-bottom: 8px;
-  }
-  .live .warn {
-    margin: 8px 0 0;
-  }
-  .code {
-    font-size: 44px;
-    letter-spacing: 0.12em;
-    font-weight: bold;
-  }
-  /* a later part of the panel starts with room above it, like the dealer screen's */
-  .part {
-    margin-top: 22px;
-  }
-  .grow {
-    flex: 1;
-  }
-</style>

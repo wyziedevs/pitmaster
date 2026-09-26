@@ -1,5 +1,6 @@
 <script lang="ts">
   import Icon from "$lib/components/Icon.svelte";
+  import Digits from "$lib/components/Digits.svelte";
   import Play from "@lucide/svelte/icons/play";
   import Pause from "@lucide/svelte/icons/pause";
   import ChevronLeft from "@lucide/svelte/icons/chevron-left";
@@ -28,7 +29,7 @@
   } from "$lib/game";
   import { annotate } from "$lib/blinds";
   import { distribute } from "$lib/chips";
-  import { amt, clock, money, nameKey, ordinal, payLinks, timeOfDay } from "$lib/util";
+  import { amt, clock, clockFace, money, nameKey, ordinal, payLinks, timeOfDay } from "$lib/util";
   import { getHandles } from "$lib/store";
   import { time } from "$lib/now.svelte";
   import StructureTable from "./StructureTable.svelte";
@@ -47,6 +48,7 @@
   import { flip } from "svelte/animate";
   import { bump, fresh, reveal, reorder, slide } from "$lib/motion";
   import { play } from "$lib/sound";
+  import { t as tt, tp } from "$lib/i18n";
 
   let { game = $bindable(), persist }: { game: Game; persist: () => void } = $props();
 
@@ -121,18 +123,22 @@
     persist();
   }
 
+  // clk.STATUS_LABEL (clock.ts) is English only; this game screen shows its
+  // own translated labels for the same three statuses instead.
+  const statusLabel = $derived({ idle: tt("gamePlay.shared.statusIdle"), running: tt("gamePlay.shared.statusRunning"), paused: tt("gamePlay.shared.statusPaused") });
+
   const toggle = () =>
     act(() => {
       const wasIdle = game.clock.status === "idle";
       const wasRunning = running;
       clk.toggle(game);
-      logEvent(game, wasRunning ? "Clock paused" : wasIdle ? "Shuffle up and deal!" : "Clock resumed");
-      if (wasIdle) flash(game, "Shuffle up and deal!");
+      logEvent(game, wasRunning ? tt("gamePlay.tournament.clockPausedLog") : wasIdle ? tt("gamePlay.tournament.shuffleUpLog") : tt("gamePlay.tournament.clockResumedLog"));
+      if (wasIdle) flash(game, tt("gamePlay.tournament.shuffleUpLog"), "shuffle");
     });
 
   function addNamed(name: string) {
     if (!name.trim()) return;
-    if (!lateRegOpen && game.clock.status !== "idle" && !confirm("Late registration is closed. Add anyway?")) return;
+    if (!lateRegOpen && game.clock.status !== "idle" && !confirm(tt("gamePlay.tournament.lateRegClosedConfirm"))) return;
     act(() => addPlayer(game, name));
   }
 
@@ -148,8 +154,8 @@
       p.rebuys = Math.max(0, p.rebuys + delta);
       if (delta > 0) {
         if (p.out) unbust(game, id, true);
-        logEvent(game, `${p.name} rebought (${money(t.rebuy.cost)})`);
-        flash(game, `${p.name} rebuys!`);
+        logEvent(game, tt("gamePlay.tournament.reboughtLog", { name: p.name, cost: money(t.rebuy.cost) }));
+        flash(game, tt("gamePlay.tournament.rebuysFlash", { name: p.name }), "chips");
       }
     });
   }
@@ -158,16 +164,16 @@
     const p = game.players.find((x) => x.id === id)!;
     act(() => {
       p.addOns = Math.max(0, p.addOns + delta);
-      if (delta > 0) logEvent(game, `${p.name} took the add-on`);
+      if (delta > 0) logEvent(game, tt("gamePlay.tournament.addOnLog", { name: p.name }));
     });
   }
 
   function removePlayer(id: string) {
     const p = game.players.find((x) => x.id === id)!;
-    if (!confirm(`Remove ${p.name} and refund their buy-in?`)) return;
+    if (!confirm(tt("gamePlay.tournament.removeConfirm", { name: p.name }))) return;
     act(() => {
       game.players = game.players.filter((x) => x.id !== id);
-      logEvent(game, `${p.name} removed`);
+      logEvent(game, tt("gamePlay.shared.removedLog", { name: p.name }));
     });
   }
 
@@ -175,19 +181,19 @@
   // makes the same sound as the button it stands in for.
   $effect(() =>
     provide("tourney", () => [
-      { id: "t:clock", label: running ? "Pause the Clock" : game.clock.status === "idle" ? "Start the Clock" : "Resume the Clock", group: "This Game", hint: "Space", run: () => (play(startSound), toggle()) },
-      { id: "t:next", label: "Next Level", group: "This Game", hint: "→", run: () => (play("flap"), act(() => clk.step(game, 1))) },
-      { id: "t:back", label: "Previous Level", group: "This Game", hint: "←", run: () => (play("flapBack"), act(() => clk.step(game, -1))) },
-      { id: "t:plus", label: "Add a Minute", group: "This Game", keywords: "+1 time", run: () => (play("wind"), act(() => clk.addTime(game, 60000))) },
-      { id: "t:minus", label: "Take a Minute Off", group: "This Game", keywords: "-1 time", run: () => (play("unwind"), act(() => clk.addTime(game, -60000))) },
-      { id: "t:add", label: "Add Player", group: "This Game", keywords: "register entry seat", prompt: "their name", run: (name: string) => (play("chips"), addNamed(name)) },
-      ...(seatsOn ? [{ id: "t:seats", label: drawn ? "Redraw Seats" : "Draw Seats", group: "This Game", keywords: "tables shuffle", run: () => seatTools?.draw() }] : []),
-      { id: "t:structure", label: "Edit the Structure", group: "This Game", keywords: "blinds levels", run: () => (play("open"), (editStructure = true)) },
-      ...(canDeal && dealsOn ? [{ id: "t:deal", label: "Deal Calculator", group: "This Game", keywords: "icm chop split", run: () => (play("open"), (showDeal = true)) }] : []),
-      ...alive.map((p) => ({ id: `t:bust:${p.id}`, label: `Bust ${p.name}`, group: "Players", keywords: "out eliminate", run: () => (play("bust"), act(() => bust(game, p.id))) })),
-      ...(t.rebuy.on && rebuyOpen ? game.players.map((p) => ({ id: `t:rebuy:${p.id}`, label: `Rebuy ${p.name}`, group: "Players", hint: money(t.rebuy.cost), run: () => (play("chips"), rebuy(p.id, 1)) })) : []),
-      ...(t.addOn.on ? alive.map((p) => ({ id: `t:addon:${p.id}`, label: `Add-On for ${p.name}`, group: "Players", hint: money(t.addOn.cost), run: () => (play("chips"), addOn(p.id, 1)) })) : []),
-      ...game.players.filter((p) => p.out && !game.deal).map((p) => ({ id: `t:unbust:${p.id}`, label: `Undo Bust: ${p.name}`, group: "Players", run: () => (play("rewind"), act(() => unbust(game, p.id))) })),
+      { id: "t:clock", label: running ? tt("gamePlay.tournament.cmdPauseClock") : game.clock.status === "idle" ? tt("gamePlay.tournament.cmdStartClock") : tt("gamePlay.tournament.cmdResumeClock"), group: tt("gamePlay.shared.groupThisGame"), hint: "Space", run: () => (play(startSound), toggle()) },
+      { id: "t:next", label: tt("gamePlay.tournament.cmdNextLevel"), group: tt("gamePlay.shared.groupThisGame"), hint: "→", run: () => (play("flap"), act(() => clk.step(game, 1))) },
+      { id: "t:back", label: tt("gamePlay.tournament.cmdPreviousLevel"), group: tt("gamePlay.shared.groupThisGame"), hint: "←", run: () => (play("flapBack"), act(() => clk.step(game, -1))) },
+      { id: "t:plus", label: tt("gamePlay.tournament.cmdAddMinute"), group: tt("gamePlay.shared.groupThisGame"), keywords: "+1 time", run: () => (play("wind"), act(() => clk.addTime(game, 60000))) },
+      { id: "t:minus", label: tt("gamePlay.tournament.cmdTakeMinuteOff"), group: tt("gamePlay.shared.groupThisGame"), keywords: "-1 time", run: () => (play("unwind"), act(() => clk.addTime(game, -60000))) },
+      { id: "t:add", label: tt("gamePlay.tournament.cmdAddPlayer"), group: tt("gamePlay.shared.groupThisGame"), keywords: "register entry seat", prompt: tt("gamePlay.tournament.cmdAddPlayerPrompt"), run: (name: string) => (play("chips"), addNamed(name)) },
+      ...(seatsOn ? [{ id: "t:seats", label: drawn ? tt("gamePlay.shared.redrawSeats") : tt("gamePlay.shared.drawSeats"), group: tt("gamePlay.shared.groupThisGame"), keywords: "tables shuffle", run: () => seatTools?.draw() }] : []),
+      { id: "t:structure", label: tt("gamePlay.tournament.cmdEditStructure"), group: tt("gamePlay.shared.groupThisGame"), keywords: "blinds levels", run: () => (play("open"), (editStructure = true)) },
+      ...(canDeal && dealsOn ? [{ id: "t:deal", label: tt("gamePlay.tournament.cmdDealCalculator"), group: tt("gamePlay.shared.groupThisGame"), keywords: "icm chop split", run: () => (play("open"), (showDeal = true)) }] : []),
+      ...alive.map((p) => ({ id: `t:bust:${p.id}`, label: tt("gamePlay.tournament.bustCommandLabel", { name: p.name }), group: tt("gamePlay.shared.groupPlayers"), keywords: "out eliminate", run: () => (play("bust"), act(() => bust(game, p.id))) })),
+      ...(t.rebuy.on && rebuyOpen ? game.players.map((p) => ({ id: `t:rebuy:${p.id}`, label: tt("gamePlay.tournament.rebuyCommandLabel", { name: p.name }), group: tt("gamePlay.shared.groupPlayers"), hint: money(t.rebuy.cost), run: () => (play("chips"), rebuy(p.id, 1)) })) : []),
+      ...(t.addOn.on ? alive.map((p) => ({ id: `t:addon:${p.id}`, label: tt("gamePlay.tournament.addOnCommandLabel", { name: p.name }), group: tt("gamePlay.shared.groupPlayers"), hint: money(t.addOn.cost), run: () => (play("chips"), addOn(p.id, 1)) })) : []),
+      ...game.players.filter((p) => p.out && !game.deal).map((p) => ({ id: `t:unbust:${p.id}`, label: tt("gamePlay.tournament.undoBustCommandLabel", { name: p.name }), group: tt("gamePlay.shared.groupPlayers"), run: () => (play("rewind"), act(() => unbust(game, p.id))) })),
     ])
   );
 
@@ -223,56 +229,56 @@
   <div class="spread">
     <div>
       <div class="lvl">
-        <span use:bump={d.index}>{#if d.level.isBreak}<Icon icon={Coffee} /> Break{:else}Level {levelNum}{/if}</span>
-        <span class="pill" data-s={game.clock.status}>{clk.STATUS_LABEL[game.clock.status]}</span>
+        <span use:bump={d.index}>{#if d.level.isBreak}<Icon icon={Coffee} /> {tt("gamePlay.shared.breakLabel")}{:else}{tt("gamePlay.tournament.level", { n: String(levelNum) })}{/if}</span>
+        <span class="pill" data-s={game.clock.status}>{statusLabel[game.clock.status]}</span>
       </div>
-      <div class="clockface num">{clock(d.remainingMs)}</div>
+      <div class="clockface" dir="ltr"><Digits value={clockFace(d.remainingMs)} /></div>
     </div>
-    <div class="blinds">
+    <div class="blinds text-right">
       {#if d.level.isBreak}
-        <div class="muted small">Next</div>
-        {#if d.next}<div class="num bb">{amt(d.next.sb)}/{amt(d.next.bb)}</div>{/if}
+        <div class="muted small">{tt("gamePlay.tournament.next")}</div>
+        {#if d.next}<div class="num bb" dir="ltr">{amt(d.next.sb)}/{amt(d.next.bb)}</div>{/if}
       {:else}
-        <div class="num bb"><span use:bump={d.index}>{amt(d.level.sb)}/{amt(d.level.bb)}</span></div>
-        {#if d.level.ante}<div class="num">Ante {amt(d.level.ante)}</div>{/if}
-        <div class="small muted">{d.next ? `Next: ${amt(d.next.sb)}/${amt(d.next.bb)}` : "Final Level"}</div>
+        <div class="num bb" dir="ltr"><span use:bump={d.index}>{amt(d.level.sb)}/{amt(d.level.bb)}</span></div>
+        {#if d.level.ante}<div class="num">{tt("gamePlay.shared.ante")} {amt(d.level.ante)}</div>{/if}
+        <div class="small muted">{d.next ? tt("gamePlay.tournament.nextColon", { sb: amt(d.next.sb), bb: amt(d.next.bb) }) : tt("gamePlay.tournament.finalLevel")}</div>
       {/if}
     </div>
   </div>
   <ProgressBar value={d.progress} />
-  <div class="row controls">
-    <button class="big" class:down={held === " "} data-sound={startSound} onclick={toggle}><Icon icon={running ? Pause : Play} />{running ? "Pause" : game.clock.status === "idle" ? "Start" : "Resume"}</button>
-    <button class:down={held === "ArrowLeft"} data-sound="flapBack" onclick={() => act(() => clk.step(game, -1))}><Icon icon={ChevronLeft} />Back</button>
-    <button class:down={held === "ArrowRight"} data-sound="flap" onclick={() => act(() => clk.step(game, 1))}>Next<Icon icon={ChevronRight} /></button>
-    <button data-sound="unwind" onclick={() => act(() => clk.addTime(game, -60000))}>−1 Min</button>
-    <button data-sound="wind" onclick={() => act(() => clk.addTime(game, 60000))}>+1 Min</button>
-    <span class="small muted keys-hint"><Kbd k="Space" class={held === " " ? "down" : ""} /> Pause · <Kbd k="←" class={held === "ArrowLeft" ? "down" : ""} /><Kbd k="→" class={held === "ArrowRight" ? "down" : ""} /> Levels</span>
+  <div class="row controls mt-2 max-[600px]:grid max-[600px]:grid-cols-[repeat(2,minmax(0,1fr))]">
+    <button class="big max-[600px]:col-span-full" class:down={held === " "} data-sound={startSound} onclick={toggle}><Icon icon={running ? Pause : Play} />{running ? tt("gamePlay.tournament.pause") : game.clock.status === "idle" ? tt("gamePlay.tournament.start") : tt("gamePlay.tournament.resume")}</button>
+    <button class:down={held === "ArrowLeft"} data-sound="flapBack" onclick={() => act(() => clk.step(game, -1))}><span class="flip-rtl inline-flex"><Icon icon={ChevronLeft} /></span>{tt("common.back")}</button>
+    <button class:down={held === "ArrowRight"} data-sound="flap" onclick={() => act(() => clk.step(game, 1))}>{tt("common.next")}<span class="flip-rtl inline-flex"><Icon icon={ChevronRight} /></span></button>
+    <button data-sound="unwind" onclick={() => act(() => clk.addTime(game, -60000))}>{tt("gamePlay.tournament.minusMinute")}</button>
+    <button data-sound="wind" onclick={() => act(() => clk.addTime(game, 60000))}>{tt("gamePlay.tournament.plusMinute")}</button>
+    <span class="small muted keys-hint max-[600px]:col-span-full"><Kbd k="Space" class={held === " " ? "down" : ""} /> {tt("gamePlay.tournament.pause")} · <Kbd k="←" class={held === "ArrowLeft" ? "down" : ""} /><Kbd k="→" class={held === "ArrowRight" ? "down" : ""} /> {tt("gamePlay.tournament.keysHintLevels")}</span>
   </div>
 </section>
 
 <div class="stats">
   <div>
-    <span>Players</span><b class="num" use:bump={s.left * 1000 + s.entrants}>{s.left}/{s.entrants}</b>
+    <span>{tt("gamePlay.shared.groupPlayers")}</span><b class="num" use:bump={s.left * 1000 + s.entrants}>{s.left}/{s.entrants}</b>
     {#key moneyState}
-      {#if moneyState === "bubble"}<small class="bubble pop">Bubble</small>{:else if moneyState === "itm"}<small class="good pop">In the Money</small>{/if}
+      {#if moneyState === "bubble"}<small class="bubble pop text-accent">{tt("gamePlay.tournament.bubbleTag")}</small>{:else if moneyState === "itm"}<small class="good pop">{tt("gamePlay.tournament.itmTag")}</small>{/if}
     {/key}
   </div>
-  <div><span>Avg Stack</span><b class="num" use:bump={Math.round(s.avgStack)}><Count value={Math.round(s.avgStack)} format={amt} /></b>{#if d.level.bb}<small> {Math.round(s.avgStack / d.level.bb)}bb</small>{/if}</div>
-  <div><span>Prize Pool</span><b class="num" use:bump={s.pool}><Count value={s.pool} format={money} /></b></div>
-  <div><span>Chips in Play</span><b class="num" use:bump={s.chipsInPlay}><Count value={s.chipsInPlay} format={amt} /></b></div>
-  <div><span>Next Break</span><b class="num">{d.nextBreakInMs === null ? "None" : clock(d.nextBreakInMs)}</b></div>
-  <div><span>Elapsed</span><b class="num">{clock(d.totalElapsedMs)}</b>{#if game.clock.startedAt}<small> since {timeOfDay(game.clock.startedAt)}</small>{/if}</div>
+  <div><span>{tt("gamePlay.tournament.avgStackLabel")}</span><b class="num" use:bump={Math.round(s.avgStack)}><Count value={Math.round(s.avgStack)} format={amt} /></b>{#if d.level.bb}<small> {Math.round(s.avgStack / d.level.bb)}bb</small>{/if}</div>
+  <div><span>{tt("gamePlay.tournament.prizePoolLabel")}</span><b class="num" use:bump={s.pool}><Count value={s.pool} format={money} /></b></div>
+  <div><span>{tt("gamePlay.tournament.chipsInPlayLabel")}</span><b class="num" use:bump={s.chipsInPlay}><Count value={s.chipsInPlay} format={amt} /></b></div>
+  <div><span>{tt("gamePlay.tournament.nextBreakLabel")}</span><b class="num">{d.nextBreakInMs === null ? tt("gamePlay.tournament.none") : clock(d.nextBreakInMs)}</b></div>
+  <div><span>{tt("gamePlay.tournament.elapsedLabel")}</span><b class="num">{clock(d.totalElapsedMs)}</b>{#if game.clock.startedAt}<small> {tt("gamePlay.tournament.sinceTime", { time: timeOfDay(game.clock.startedAt) })}</small>{/if}</div>
 </div>
 
 {#if game.finished}
-  <div class="warn pop won">
-    <p>
-      {#if game.deal}<Icon icon={Handshake} /> It's a deal: {game.players.filter((p) => p.id in game.deal!.amounts).map((p) => p.name).join(", ")} split the prize pool.
-      {:else}<Icon icon={Trophy} /> <b>{game.players.find((p) => p.place === 1)?.name}</b> wins.{/if}
-      The TV is showing the results.
+  <div class="warn pop won my-[14px] flex items-end flex-wrap gap-x-4 gap-y-1.5">
+    <p class="m-0 self-center">
+      {#if game.deal}<Icon icon={Handshake} /> {tt("gamePlay.tournament.dealBanner", { names: game.players.filter((p) => p.id in game.deal!.amounts).map((p) => p.name).join(", ") })}
+      {:else}<Icon icon={Trophy} /> <b>{game.players.find((p) => p.place === 1)?.name}</b> {tt("gamePlay.tournament.winnerSuffix")}{/if}
+      {tt("gamePlay.tournament.tvShowingResults")}
     </p>
     <!-- the pot, pushed across and stacked -->
-    <span class="pot" aria-hidden="true">
+    <span class="pot inline-flex items-end gap-3.5 flex-none" aria-hidden="true">
       {#each pot as c, i (c.id)}<span style:--d="{200 + i * 110}ms"><ChipStack chip={c} n={[7, 10, 5, 8][i]} width={20} /></span>{/each}
     </span>
   </div>
@@ -281,10 +287,10 @@
 <div class="cols">
   <section>
     <div class="spread">
-      <h2>Players</h2>
+      <h2>{tt("gamePlay.shared.groupPlayers")}</h2>
       <span class="small">
-        {#key lateRegOpen}<span class="pop" class:good={lateRegOpen} class:muted={!lateRegOpen}>{lateRegOpen ? `Late Registration Open Through Level ${t.lateRegLevel}` : "Late Registration Closed"}</span>{/key}
-        {#if t.rebuy.on}· {#key rebuyOpen}<span class="pop" class:good={rebuyOpen} class:muted={!rebuyOpen}>{rebuyOpen ? "Rebuys Open" : "Rebuys Closed"}</span>{/key}{/if}
+        {#key lateRegOpen}<span class="pop" class:good={lateRegOpen} class:muted={!lateRegOpen}>{lateRegOpen ? tt("gamePlay.tournament.lateRegOpenThrough", { level: String(t.lateRegLevel) }) : tt("gamePlay.tournament.lateRegClosed")}</span>{/key}
+        {#if t.rebuy.on}· {#key rebuyOpen}<span class="pop" class:good={rebuyOpen} class:muted={!rebuyOpen}>{rebuyOpen ? tt("gamePlay.tournament.rebuysOpen") : tt("gamePlay.tournament.rebuysClosed")}</span>{/key}{/if}
       </span>
     </div>
     {#if seatsOn}<SeatTools bind:this={seatTools} bind:game {persist} />{/if}
@@ -292,11 +298,11 @@
     <table class="roster">
       <thead>
         <tr>
-          {#if drawn}<th>Seat</th>{/if}
-          <th>Name</th>
-          {#if t.rebuy.on}<th class="num">Rebuys</th>{/if}
-          {#if t.addOn.on}<th class="num">Add-On</th>{/if}
-          {#if showKos}<th class="num">KOs</th>{/if}
+          {#if drawn}<th>{tt("gamePlay.shared.seatHeader")}</th>{/if}
+          <th>{tt("gamePlay.shared.nameHeader")}</th>
+          {#if t.rebuy.on}<th class="num">{tt("gamePlay.tournament.rebuysHeader")}</th>{/if}
+          {#if t.addOn.on}<th class="num">{tt("gamePlay.tournament.addOnHeader")}</th>{/if}
+          {#if showKos}<th class="num">{tt("gamePlay.tournament.kosHeader")}</th>{/if}
           <th></th>
         </tr>
       </thead>
@@ -305,50 +311,50 @@
           <tr class:dim={p.out} in:fade={reveal()} animate:flip={reorder()}>
             {#if drawn}<td class="num seat"><span class:dealt={dealing} style:--i={i}>{p.out ? "" : seatLabel(p.seat, tables)}</span></td>{/if}
             <td class="nowrap who">
-              {#if p.out}<span class="num place" use:fresh={[p.bustedAt, "stamp"]}>{ordinal(p.place ?? 0)}</span>{:else if p.place === 1}<Icon icon={Trophy} label="Winner" />{/if}
-              <input type="text" bind:value={p.name} onchange={persist} class="edit-name" aria-label="Name" />
+              {#if p.out}<span class="num place inline-block min-w-[2.2em] text-muted" use:fresh={[p.bustedAt, "stamp"]}>{ordinal(p.place ?? 0)}</span>{:else if p.place === 1}<Icon icon={Trophy} label={tt("gamePlay.tournament.winnerLabel")} />{/if}
+              <input type="text" bind:value={p.name} onchange={persist} class="edit-name" aria-label={tt("gamePlay.shared.nameHeader")} />
             </td>
             {#if t.rebuy.on}
-              <td class="num nowrap" data-l="Rebuys">
-                <button class="link" data-sound="rewind" onclick={() => rebuy(p.id, -1)} disabled={!p.rebuys} aria-label="Take Back a Rebuy" title={p.rebuys ? "Take back a rebuy" : "No rebuys to take back"}><Icon icon={Minus} size="1em" /></button>
+              <td class="num nowrap" data-l={tt("gamePlay.tournament.rebuysHeader")}>
+                <button class="link" data-sound="rewind" onclick={() => rebuy(p.id, -1)} disabled={!p.rebuys} aria-label={tt("gamePlay.tournament.takeBackRebuyAria")} title={p.rebuys ? tt("gamePlay.tournament.takeBackRebuyTitleYes") : tt("gamePlay.tournament.takeBackRebuyTitleNo")}><Icon icon={Minus} size="1em" /></button>
                 {p.rebuys}
-                <button class="link" data-sound="chips" onclick={() => rebuy(p.id, 1)} aria-label="Add a Rebuy"><Icon icon={Plus} size="1em" /></button>
+                <button class="link" data-sound="chips" onclick={() => rebuy(p.id, 1)} aria-label={tt("gamePlay.tournament.addRebuyAria")}><Icon icon={Plus} size="1em" /></button>
               </td>
             {/if}
             {#if t.addOn.on}
-              <td class="num nowrap" data-l="Add-On">
-                <button class="link" data-sound="rewind" onclick={() => addOn(p.id, -1)} disabled={!p.addOns} aria-label="Take Back an Add-On" title={p.addOns ? "Take back an add-on" : "No add-ons to take back"}><Icon icon={Minus} size="1em" /></button>
+              <td class="num nowrap" data-l={tt("gamePlay.tournament.addOnHeader")}>
+                <button class="link" data-sound="rewind" onclick={() => addOn(p.id, -1)} disabled={!p.addOns} aria-label={tt("gamePlay.tournament.takeBackAddOnAria")} title={p.addOns ? tt("gamePlay.tournament.takeBackAddOnTitleYes") : tt("gamePlay.tournament.takeBackAddOnTitleNo")}><Icon icon={Minus} size="1em" /></button>
                 {p.addOns}
-                <button class="link" data-sound="chips" onclick={() => addOn(p.id, 1)} aria-label="Add an Add-On"><Icon icon={Plus} size="1em" /></button>
+                <button class="link" data-sound="chips" onclick={() => addOn(p.id, 1)} aria-label={tt("gamePlay.tournament.addAddOnAria")}><Icon icon={Plus} size="1em" /></button>
               </td>
             {/if}
-            {#if showKos}<td class="num" class:blank={!koCount(game, p.id)} data-l="KOs">{koCount(game, p.id) || ""}</td>{/if}
+            {#if showKos}<td class="num" class:blank={!koCount(game, p.id)} data-l={tt("gamePlay.tournament.kosHeader")}>{koCount(game, p.id) || ""}</td>{/if}
             <!-- a busted row's actions may wrap to a second line rather than push the table wider -->
-            <td class="acts">
+            <td class="acts leading-[30px]">
               {#if p.out && !game.deal}
-                {#if kosOn}<select class="ko" value={lastKo(p.id)} onchange={(e) => act(() => creditKo(game, p.id, (e.target as HTMLSelectElement).value || null))} aria-label="Who knocked out {p.name}">
-                  <option value="">KO’d By…</option>
+                {#if kosOn}<select class="ko max-w-[150px]" value={lastKo(p.id)} onchange={(e) => act(() => creditKo(game, p.id, (e.target as HTMLSelectElement).value || null))} aria-label={tt("gamePlay.tournament.whoKnockedOutAria", { name: p.name })}>
+                  <option value="">{tt("gamePlay.tournament.koByPlaceholder")}</option>
                   {#each game.players.filter((x) => x.id !== p.id) as x (x.id)}<option value={x.id}>{x.name}</option>{/each}
                 </select>{/if}
-                <button class="link small nowrap" data-sound="rewind" onclick={() => act(() => unbust(game, p.id))}>Undo Bust</button>
+                <button class="link small nowrap" data-sound="rewind" onclick={() => act(() => unbust(game, p.id))}>{tt("gamePlay.tournament.undoBust")}</button>
               {:else if !game.finished}
-                <button class="danger" data-sound="bust" onclick={() => act(() => bust(game, p.id))}><Icon icon={Skull} />Bust</button>
+                <button class="danger" data-sound="bust" onclick={() => act(() => bust(game, p.id))}><Icon icon={Skull} />{tt("gamePlay.tournament.bust")}</button>
               {/if}
-              <RemoveButton label="Remove {p.name}" onclick={() => removePlayer(p.id)} />
+              <RemoveButton label={tt("gamePlay.shared.removePlayer", { name: p.name })} onclick={() => removePlayer(p.id)} />
             </td>
           </tr>
         {:else}
-          <tr><td class="empty" colspan={cols}>No players yet. Add them below.</td></tr>
+          <tr><td class="empty" colspan={cols}>{tt("gamePlay.tournament.noPlayersYet")}</td></tr>
         {/each}
       </tbody>
     </table>
     </div>
-    <form autocomplete="off" class="row add" onsubmit={add}>
-      <input type="text" bind:value={newName} placeholder="Player Name" list="regulars" autocomplete="off" aria-label="Player Name" />
-      <button data-sound="chips"><Icon icon={Plus} />Add ({money(t.buyIn)})</button>
+    <form autocomplete="off" class="row add mt-2" onsubmit={add}>
+      <input type="text" bind:value={newName} placeholder={tt("gamePlay.shared.playerNamePlaceholder")} list="regulars" autocomplete="off" aria-label={tt("gamePlay.shared.playerNamePlaceholder")} />
+      <button data-sound="chips"><Icon icon={Plus} />{tt("gamePlay.tournament.addPlayerButton", { amount: money(t.buyIn) })}</button>
     </form>
 
-    <h2 class="part">Payouts{#if game.deal} <span class="pill">Deal</span>{/if}</h2>
+    <h2 class="part mt-[22px]">{tt("gamePlay.tournament.payoutsHeading")}{#if game.deal} <span class="pill">{tt("gamePlay.shared.dealPill")}</span>{/if}</h2>
     <table>
       <tbody>
         {#each payRows as i (i)}
@@ -360,10 +366,10 @@
             <td class="num"><b>{money(owed)}</b></td>
             <td>
               <!-- a name lands in its place like the busted player's stamp -->
-              {#if who}<span class="paid" use:fresh={[who.bustedAt ?? game.endedAt, "stamp"]}>{who.name}</span>{/if}
+              {#if who}<span class="paid inline-block" use:fresh={[who.bustedAt ?? game.endedAt, "stamp"]}>{who.name}</span>{/if}
               {#if who && game.finished && owed > 0 && settings.usePayLinks}
                 {@const links = payLinks(handles[nameKey(who.name)] ?? null, owed, game.name)}
-                {#if links.length}<span class="small pay links">{#each links as l (l.label)}<a href={l.href} target="_blank" rel="noopener noreferrer" title="Pay {l.handle} on {l.label}">{l.label}</a>{/each}</span>{/if}
+                {#if links.length}<span class="small pay links ml-3">{#each links as l (l.label)}<a href={l.href} target="_blank" rel="noopener noreferrer" title={tt("gamePlay.shared.payLinkTitle", { handle: l.handle, label: l.label })}>{l.label}</a>{/each}</span>{/if}
               {/if}
             </td>
           </tr>
@@ -371,14 +377,14 @@
       </tbody>
     </table>
     <p class="small muted">
-      {s.entrants} × {money(t.buyIn)}{s.rebuys ? ` + ${s.rebuys} rebuys` : ""}{s.addOns ? ` + ${s.addOns} add-ons` : ""} = {money(s.gross)}{s.bounties ? ` − ${money(s.bounties)} in bounties (${money(s.bounty)} a head)` : ""}{s.rake ? ` − ${money(s.rake)} to the house` : ""}
+      {s.entrants} × {money(t.buyIn)}{#if s.rebuys} + {tp("gamePlay.tournament.rebuysCount", s.rebuys)}{/if}{#if s.addOns} + {tp("gamePlay.tournament.addOnsCount", s.addOns)}{/if} = {money(s.gross)}{#if s.bounties} − {tt("gamePlay.tournament.bountiesNote", { bounties: money(s.bounties), bounty: money(s.bounty) })}{/if}{#if s.rake} − {tt("gamePlay.tournament.rakeNote", { rake: money(s.rake) })}{/if}
     </p>
 
     {#if canDeal && dealsOn}
-      <div class="part" transition:slide={reveal()}>
+      <div class="part mt-[22px]" transition:slide={reveal()}>
         <div class="spread">
-          <h2>Deal?</h2>
-          <button class="link small" data-sound={showDeal ? "close" : "open"} aria-expanded={showDeal} onclick={() => (showDeal = !showDeal)}>{showDeal ? "Hide" : "Run the Numbers"}</button>
+          <h2>{tt("gamePlay.tournament.dealHeading")}</h2>
+          <button class="link small" data-sound={showDeal ? "close" : "open"} aria-expanded={showDeal} onclick={() => (showDeal = !showDeal)}>{showDeal ? tt("gamePlay.tournament.hide") : tt("gamePlay.tournament.runTheNumbers")}</button>
         </div>
         {#if showDeal}<div transition:slide={reveal()}><DealCalc bind:game {persist} /></div>{/if}
       </div>
@@ -387,8 +393,8 @@
 
   <section>
     <div class="spread">
-      <h2>Structure</h2>
-      <button class="link small" data-sound={editStructure ? "close" : "open"} aria-expanded={editStructure} onclick={() => (editStructure = !editStructure)}>{editStructure ? "Done Editing" : "Edit"}</button>
+      <h2>{tt("gamePlay.tournament.structureHeading")}</h2>
+      <button class="link small" data-sound={editStructure ? "close" : "open"} aria-expanded={editStructure} onclick={() => (editStructure = !editStructure)}>{editStructure ? tt("gamePlay.tournament.doneEditing") : tt("common.edit")}</button>
     </div>
     <StructureTable
       bind:levels={game.levels}
@@ -402,12 +408,12 @@
       }}
     />
 
-    <h2 class="part">Chips</h2>
-    <div class="block"><ChipLegend chips={game.chips} size={44} /></div>
-    <h3>Starting Stack ({amt(t.stack)})</h3>
+    <h2 class="part mt-[22px]">{tt("gamePlay.shared.chipsHeading")}</h2>
+    <div class="slab"><ChipLegend chips={game.chips} size={44} /></div>
+    <h3 class="mt-3">{tt("gamePlay.tournament.startingStackHeading", { amount: amt(t.stack) })}</h3>
     <div class="felt"><Breakdown breakdown={distribute(t.stack, game.chips, Math.max(2, s.entrants))} target={t.stack} /></div>
     {#if t.rebuy.on}
-      <h3>Rebuy ({amt(t.rebuy.chips)})</h3>
+      <h3 class="mt-3">{tt("gamePlay.tournament.rebuyHeading", { amount: amt(t.rebuy.chips) })}</h3>
       <div class="felt"><Breakdown breakdown={distribute(t.rebuy.chips, game.chips, 1)} target={t.rebuy.chips} /></div>
     {/if}
   </section>
@@ -420,83 +426,10 @@
   .clockbox.hot .clockface {
     color: var(--accent);
   }
-  .blinds {
-    text-align: right;
-  }
-  .controls {
-    margin-top: 8px;
-  }
   .clockbox > :global(.progress) {
     margin-top: 8px;
   }
-  /* one bust from the money: the tense bit, so it gets the red */
-  .bubble {
-    color: var(--accent);
-  }
-  .won {
-    margin: 14px 0;
-    display: flex;
-    align-items: flex-end;
-    flex-wrap: wrap;
-    gap: 6px 16px;
-  }
-  .won p {
-    margin: 0;
-    align-self: center;
-  }
-  .pot {
-    display: inline-flex;
-    align-items: flex-end;
-    gap: 14px; /* room for a shuffle's halves (toys.ts SPLIT) */
-    flex: none;
-  }
   .pot :global(.stack) {
     --t: 3px;
-  }
-  .place {
-    display: inline-block;
-    min-width: 2.2em;
-    color: var(--muted);
-  }
-  .acts {
-    line-height: 30px;
-  }
-  .add {
-    margin-top: 8px;
-  }
-  /* a later part of a column (Payouts, Deal?, Chips) starts with room above it */
-  .part {
-    margin-top: 22px;
-  }
-  /* and a sub-heading under one (Starting Stack, Rebuy) with a little less */
-  h3 {
-    margin-top: 12px;
-  }
-  /* inline-block, so the stamp can turn it */
-  .paid {
-    display: inline-block;
-  }
-  /* pay links sit a space after the winner's name */
-  .pay {
-    margin-left: 12px;
-  }
-  /* a long name shouldn't push the row wider */
-  select.ko {
-    max-width: 150px;
-  }
-  /* on a phone the clock's buttons are an even grid: Pause (or Resume, which
-     wouldn't fit a third of a phone) the whole way across, where a thumb finds
-     it, then Back and Next, then the minute nudges */
-  @media (max-width: 600px) {
-    .controls {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-    .controls > button:first-child {
-      grid-column: 1 / -1;
-    }
-    .controls .keys-hint {
-      grid-column: 1 / -1;
-    }
   }
 </style>

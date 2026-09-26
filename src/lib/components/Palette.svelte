@@ -13,6 +13,7 @@
   import { play } from "$lib/sound";
   import { settings } from "$lib/settings.svelte";
   import { comboOf, hasModifier, typingIn, DEFAULT_PALETTE_KEY } from "$lib/keys";
+  import { t } from "$lib/i18n";
 
   let q = $state("");
   let active = $state(0);
@@ -154,11 +155,23 @@
 
 {#if palette.open}
   <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
-  <div class="scrim" transition:fade={leave()} onclick={() => close()}></div>
-  <div class="palette float" role="dialog" aria-modal="true" aria-label="Commands" in:fly={rise(-8)} out:fade={leave()}>
-    <div class="field">
-      {#if asking}<span class="asking">{asking.label}<Icon icon={ChevronRight} size="1em" /></span>{/if}
+  <div
+    class="scrim fixed inset-0 z-[70] bg-[var(--scrim)]"
+    transition:fade={leave()}
+    onclick={() => close()}
+  ></div>
+  <div
+    class="palette float fixed z-[71] top-[12vh] left-1/2 w-[min(560px,calc(100vw_-_32px))] flex flex-col max-h-[70dvh]"
+    role="dialog"
+    aria-modal="true"
+    aria-label={t("nav.palette.ariaLabel")}
+    in:fly={rise(-8)}
+    out:fade={leave()}
+  >
+    <div class="field flex items-center border-b-[length:var(--hair)] border-solid border-line py-0 px-3">
+      {#if asking}<span class="asking inline-flex items-center gap-0.5 me-2 font-bold whitespace-nowrap">{asking.label}<span class="inline-flex flip-rtl"><Icon icon={ChevronRight} size="1em" /></span></span>{/if}
       <input
+        class="flex-1 h-[46px] text-[length:var(--fs-md)] border-0 bg-transparent p-0 outline-none"
         bind:this={input}
         bind:value={q}
         onkeydown={onInputKey}
@@ -167,18 +180,18 @@
         aria-expanded="true"
         aria-controls="palette-list"
         aria-activedescendant={flat[active] ? `cmd-${active}` : undefined}
-        placeholder={asking ? asking.prompt : "What Do You Want to Do?"}
+        placeholder={asking ? asking.prompt : t("nav.palette.placeholder")}
         autocomplete="off"
         spellcheck="false"
       />
     </div>
     {#if !asking}
-      <div class="list" id="palette-list" role="listbox" bind:this={list}>
+      <div class="list overflow-auto py-1 px-0" id="palette-list" role="listbox" bind:this={list}>
         {#each groups as g (g.name)}
-          <div class="group eyebrow" role="presentation">{g.name}</div>
+          <div class="group eyebrow pt-2 px-3 pb-0.5" role="presentation">{g.name}</div>
           {#each g.items as { c, i } (c.id)}
             <button
-              class="item"
+              class="item flex justify-between gap-3 w-full h-auto min-h-8 py-1.5 px-3 bg-transparent border-0 text-start whitespace-normal transition-none"
               class:on={i === active}
               id="cmd-{i}"
               data-i={i}
@@ -190,89 +203,30 @@
               onclick={() => choose(c)}
             >
               <span>{c.label}{#if isPrompted(c)}…{/if}</span>
-              {#if "hint" in c && c.hint}<span class="hint">{c.hint}</span>{/if}
+              {#if "hint" in c && c.hint}<span class="hint text-muted font-mono text-[length:var(--fs-sm)] whitespace-nowrap">{c.hint}</span>{/if}
             </button>
           {/each}
         {:else}
-          <p class="empty none">Nothing matches “{q}”.</p>
+          <p class="empty none m-0 p-3">{t("nav.palette.noResults", { query: q })}</p>
         {/each}
       </div>
     {:else}
-      <p class="none muted small">Type {asking.prompt}, then press Enter.</p>
+      <p class="none muted small m-0 p-3">{t("nav.palette.typeThenEnter", { prompt: asking.prompt })}</p>
     {/if}
-    <div class="foot small muted">
-      <span><Kbd k="↑" /><Kbd k="↓" /> Move</span>
-      <span><Kbd k="Enter" /> Run</span>
-      <span><Kbd k="Esc" /> {asking ? "Back" : "Close"}</span>
+    <div class="foot small muted flex gap-3.5 border-t-[length:var(--hair)] border-solid border-line py-1.5 px-3">
+      <span><Kbd k="↑" /><Kbd k="↓" /> {t("nav.palette.move")}</span>
+      <span><Kbd k="Enter" /> {t("nav.palette.run")}</span>
+      <span><Kbd k="Esc" /> {asking ? t("common.back") : t("common.close")}</span>
     </div>
   </div>
 {/if}
 
 <style>
-  .scrim {
-    position: fixed;
-    inset: 0;
-    z-index: 70;
-    background: var(--scrim);
-  }
   /* the floating look (.float) at a bigger size, over the dimmed page */
   .palette {
-    position: fixed;
-    z-index: 71;
     /* a layer for good, so its text never changes weight when it stops moving (+layout.svelte) */
     will-change: transform;
-    top: 12vh;
-    left: 50%;
     translate: -50% 0;
-    width: min(560px, calc(100vw - 32px));
-    display: flex;
-    flex-direction: column;
-    /* dvh: shorter while a phone's keyboard is up, so the list stays above it */
-    max-height: 70dvh;
-  }
-  .field {
-    display: flex;
-    align-items: center;
-    border-bottom: var(--hair) solid var(--line);
-    padding: 0 12px;
-  }
-  .field input {
-    flex: 1;
-    height: 46px;
-    font-size: 16px;
-    border: 0;
-    background: transparent;
-    padding: 0;
-    outline: none;
-  }
-  .asking {
-    display: inline-flex;
-    align-items: center;
-    gap: 2px;
-    margin-right: 8px;
-    font-weight: bold;
-    white-space: nowrap;
-  }
-  .list {
-    overflow: auto;
-    padding: 4px 0;
-  }
-  .group {
-    padding: 8px 12px 2px;
-  }
-  .item {
-    display: flex;
-    justify-content: space-between;
-    gap: 12px;
-    width: 100%;
-    height: auto;
-    min-height: 32px;
-    padding: 6px 12px;
-    background: none;
-    border: 0;
-    text-align: left;
-    white-space: normal;
-    transition: none;
   }
   .item:hover,
   .item:active {
@@ -292,22 +246,6 @@
   }
   .item:active {
     background: var(--block-3);
-  }
-  .hint {
-    color: var(--muted);
-    font-family: var(--font-mono);
-    font-size: var(--fs-sm);
-    white-space: nowrap;
-  }
-  .none {
-    margin: 0;
-    padding: 12px;
-  }
-  .foot {
-    display: flex;
-    gap: 14px;
-    border-top: var(--hair) solid var(--line);
-    padding: 6px 12px;
   }
   .foot :global(kbd + kbd) {
     margin-left: 2px;

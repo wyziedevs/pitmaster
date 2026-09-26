@@ -7,10 +7,11 @@
   import Check from "@lucide/svelte/icons/check";
   import { play } from "$lib/sound";
   import { toast } from "$lib/toast.svelte";
+  import { t } from "$lib/i18n";
 
   let {
     text,
-    label = "Copy",
+    label = t("common.copy"),
     icon = true,
     link = false,
     plain = false,
@@ -40,7 +41,7 @@
     try {
       await navigator.clipboard.writeText(typeof text === "function" ? text() : text);
     } catch {
-      toast("Couldn't copy. The browser blocked the clipboard.", "bad");
+      toast(t("gamePlay.shared.copyFailed"), "bad");
       return;
     }
     play("success");
@@ -51,16 +52,24 @@
 </script>
 
 <!-- no press sound: the success (or the toast's error) comes once the clipboard answers -->
-<button type="button" class={cls} class:link class:plain class:done={copied} data-sound="none" {title} aria-live="polite" onclick={copy}>
+<button
+  type="button"
+  class={cls}
+  class:link
+  class:plain
+  class:done={copied}
+  class:text-good={copied}
+  data-sound="none"
+  {title}
+  aria-live="polite"
+  onclick={copy}
+>
   {#if children}{@render children(copied)}
-  {:else if copied}<Icon icon={Check} size={link ? "1em" : undefined} />Copied
+  {:else if copied}<Icon icon={Check} size={link ? "1em" : undefined} />{t("common.copied")}
   {:else}{#if icon}<Icon icon={Copy} size={link ? "1em" : undefined} />{/if}{label}{/if}
 </button>
 
 <style>
-  .done {
-    color: var(--good);
-  }
   .done :global(.icon) {
     animation: pop var(--dur-pop) var(--ease-out-expo);
   }

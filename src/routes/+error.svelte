@@ -3,6 +3,7 @@
   import Icon from "$lib/components/Icon.svelte";
   import ArrowLeft from "@lucide/svelte/icons/arrow-left";
   import { play } from "$lib/sound";
+  import { t } from "$lib/i18n";
 
   const lost = $derived(page.status === 404);
   // the status code, dealt as three cards
@@ -18,7 +19,7 @@
   }
 </script>
 
-<svelte:head><title>{lost ? "Page Not Found" : "Error"} · PitMaster</title></svelte:head>
+<svelte:head><title>{lost ? t("nav.error.notFoundTitle") : t("nav.error.genericTitle")} · PitMaster</title></svelte:head>
 
 <!-- a press squares the cards up (and sounds like it); let go and they fan out
      again. a toy, hidden from screen readers: there's nothing here to reach by keyboard -->
@@ -32,11 +33,11 @@
   {/each}
 </div>
 
-<h1>{lost ? "Misdeal." : "Something Broke."}</h1>
+<h1>{lost ? t("nav.error.misdeal") : t("nav.crashed.title")}</h1>
 <p class="muted">
-  {#if lost}There's no page at this address. It may have moved, or the link has a typo.{:else}{page.error?.message ?? "Try that again."}{/if}
+  {#if lost}{t("nav.error.notFoundBody")}{:else}{page.error?.message ?? t("nav.error.tryThatAgain")}{/if}
 </p>
-<p><a class="btn" href="/"><Icon icon={ArrowLeft} />Back to Games</a></p>
+<p><a class="btn" href="/"><span class="inline-flex flip-rtl"><Icon icon={ArrowLeft} /></span>{t("nav.backToGames")}</a></p>
 
 <style>
   .hand {

@@ -441,6 +441,19 @@ const kit = {
     click(a, t, { freq: jitter(1300), q: 1.1, len: 0.03, vol: 0.07 });
     tone(a, t, { freq: jitter(190, 0.05), len: 0.05, vol: 0.035 });
   },
+  /** the same key coming back up: the upstroke, higher and quieter than the press */
+  up: (a, t) => click(a, t, { freq: jitter(3300), q: 1.8, len: 0.012, vol: 0.026 }),
+  /** a big key coming back up: the space bar's lighter knock as it lands on top */
+  upBig: (a, t) => {
+    click(a, t, { freq: jitter(2100), q: 1.4, len: 0.016, vol: 0.03 });
+    tone(a, t, { freq: jitter(300, 0.05), len: 0.03, vol: 0.012 });
+  },
+  /** a number stepped one notch: a ratchet click, brighter going up (`v` > 0) than down */
+  notch: (a, t, o) => {
+    const up = (o.v ?? 1) > 0;
+    click(a, t, { freq: jitter(up ? 2900 : 2000, 0.04), q: 5, len: 0.012, vol: 0.075 });
+    tone(a, t + 0.004, { freq: up ? 990 : 740, len: 0.03, vol: 0.011 });
+  },
   /** link-style buttons: lighter and higher */
   soft: (a, t) => click(a, t, { freq: jitter(3400), q: 1.6, len: 0.012, vol: 0.035 }),
   /** a switch flipping: tick plus a little pitch, up for on and down for off */
@@ -760,7 +773,7 @@ const kit = {
 export type UiSound = keyof typeof kit;
 
 // the same sound twice in a frame is just louder; a few want a longer rest
-const REST: Partial<Record<UiSound, number>> = { spin: 140, tick: 20, strum: 12, count: 25, rattle: 70, fret: 24 };
+const REST: Partial<Record<UiSound, number>> = { spin: 140, tick: 20, strum: 12, count: 25, rattle: 70, fret: 24, notch: 30 };
 const lastPlayed: Partial<Record<UiSound, number>> = {};
 
 // where the last press was, so a sound comes from that side of the screen

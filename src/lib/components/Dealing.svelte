@@ -1,10 +1,13 @@
 <script lang="ts">
   // loading: chips being stacked one at a time, then swept, then again.
   // reads as "the dealer's working", not "the page is stuck".
-  let { label = "Loading" }: { label?: string } = $props();
+  import { t } from "$lib/i18n";
+
+  let { label }: { label?: string } = $props();
+  const shown = $derived(label ?? t("toys.dealing.loading"));
 </script>
 
-<span class="dealing" role="status" aria-label={label}>
+<span class="dealing" role="status" aria-label={shown}>
   <i style:--i="0"></i><i style:--i="1"></i><i style:--i="2"></i><i style:--i="3"></i>
 </span>
 

@@ -6,6 +6,7 @@
   import Timer from "@lucide/svelte/icons/timer";
   import Tv from "@lucide/svelte/icons/tv";
   import Smartphone from "@lucide/svelte/icons/smartphone";
+  import { t } from "$lib/i18n";
 
   /** deal: the steps come in one after another, like cards */
   let { deal = false }: { deal?: boolean } = $props();
@@ -15,29 +16,29 @@
   <li style:--i={0}>
     <span class="tile" aria-hidden="true"><Icon icon={Coins} /></span>
     <div>
-      <b>Set Up Your Chips</b>
-      <p>Start from a common set, or <a href="/settings#chips">match the chips you play with</a>: colors, values and how many of each.</p>
+      <b>{t("nav.howItWorks.step1Title")}</b>
+      <p>{t("nav.howItWorks.step1Prefix")} <a href="/settings#chips">{t("nav.howItWorks.step1LinkText")}</a>{t("nav.howItWorks.step1Suffix")}</p>
     </div>
   </li>
   <li style:--i={1}>
     <span class="tile" aria-hidden="true"><Icon icon={Timer} /></span>
     <div>
-      <b>Make a Game</b>
-      <p>A <a href="/new?type=cash">Cash Game</a> (blinds, buy-ins and a settle-up at the end) or a <a href="/new?type=tournament">Tournament</a> (a blind clock sized to your time, payouts and rebuys).</p>
+      <b>{t("nav.howItWorks.step2Title")}</b>
+      <p>{t("nav.howItWorks.step2Prefix")} <a href="/new?type=cash">{t("nav.howItWorks.step2CashGame")}</a> {t("nav.howItWorks.step2Mid")} <a href="/new?type=tournament">{t("nav.howItWorks.step2Tournament")}</a> {t("nav.howItWorks.step2Suffix")}</p>
     </div>
   </li>
   <li style:--i={2}>
     <span class="tile" aria-hidden="true"><Icon icon={Tv} /></span>
     <div>
-      <b>Put It on the TV</b>
-      <p>Hit <b>Open TV Window</b> and drag it onto the TV. Or hit <b>Go Live</b>, open <code>{location.host}/live</code> on any screen and type the code.</p>
+      <b>{t("nav.howItWorks.step3Title")}</b>
+      <p>{t("nav.howItWorks.step3Prefix")} <b>{t("nav.howItWorks.step3OpenTv")}</b> {t("nav.howItWorks.step3Mid")} <b>{t("nav.howItWorks.step3GoLive")}</b>{t("nav.howItWorks.step3CodeMid")} <code>{location.host}/live</code> {t("nav.howItWorks.step3CodeSuffix")}</p>
     </div>
   </li>
   <li style:--i={3}>
     <span class="tile" aria-hidden="true"><Icon icon={Smartphone} /></span>
     <div>
-      <b>Run It From Your Seat</b>
-      <p>Deal from your laptop or phone. The TV keeps up by itself.</p>
+      <b>{t("nav.howItWorks.step4Title")}</b>
+      <p>{t("nav.howItWorks.step4Body")}</p>
     </div>
   </li>
 </ol>
@@ -78,7 +79,7 @@
     place-items: center;
     width: 17px;
     height: 17px;
-    font: bold 10px/1 var(--font-mono);
+    font: bold var(--fs-xs) / 1 var(--font-mono);
     background: var(--fg);
     color: var(--bg);
   }

@@ -5,10 +5,11 @@
    without hunting. */
 
 :root {
-  /* garage night: the dark set. the site's dark mode AND the tv both read these,
-     so the tv is literally the dark site at room scale (the one stage rule).
-     app.html repeats --night-bg and --bg to paint the page before this file
-     loads, so change them there too. */
+  /* garage night: the dark set. the site's own dark mode reads these; the tv
+     used to always read them too (a stage is always dark), but now it just
+     follows whichever theme this device is set to, light or dark, same as
+     everywhere else. app.html repeats --night-bg and --bg to paint the page
+     before this file loads, so change them there too. */
   --night-bg: oklch(19.5% 0 0);
   --night-fg: oklch(89% 0 0);
   --night-muted: oklch(67% 0 0);
@@ -40,13 +41,28 @@
   --warn-bg: oklch(95.5% 0.05 95);
   --focus: var(--link);
 
+  /* three faces, three jobs, never swapped:
+     times names things: every heading, legend, the logo, a game's title.
+     never bold; size alone sets the level.
+     arial is everything you read or press, and the board's numbers (the
+     clock, the blinds, the stat strip): bold, tabular, like the tv.
+     mono is the ledger: the numbers in tables, lists and fields. */
   --font: Arial, Helvetica, sans-serif;
   --font-serif: "Times New Roman", Times, serif;
   --font-mono: ui-monospace, "Cascadia Mono", "Courier New", monospace;
 
-  /* type under the body's 14px: small print, and the smallest labels */
-  --fs-sm: 12px;
-  --fs-xs: 11px;
+  /* the one type scale. nothing on the desk is set off it (the tv has its own,
+     sized off the screen). times runs small for its size, so a times heading
+     sits a step above the arial it leads. */
+  --fs-xs: 11px; /* uppercase labels, pills, keys */
+  --fs-sm: 12px; /* form labels, table heads, hints, small print */
+  --fs-base: 14px; /* body */
+  --fs-md: 16px; /* big buttons, a total that leads its line */
+  --fs-lg: 18px; /* h3 and legends; the clock's level */
+  --fs-xl: 22px; /* h2, the logo, the stat strip */
+  --fs-2xl: 30px; /* h1, one per page */
+  /* uppercase is always tracked open by the same amount */
+  --track-caps: 0.05em;
 
   /* what sits under something floating over the page: the page dimmed behind
      it, and one soft shadow under it */
@@ -80,15 +96,20 @@
   /* every focusable thing carries these so the focus ring can snap in */
   --t-focus: outline-color var(--dur-hover) var(--ease-out), outline-offset 200ms var(--ease-out-expo);
 
-  --tv-bg: var(--night-bg);
-  --tv-fg: var(--night-fg);
-  --tv-muted: var(--night-muted);
-  --tv-line: var(--night-line);
-  --tv-raise: var(--night-block-2);
-  --tv-hot: var(--night-accent);
-  --tv-felt: var(--night-felt);
-  --tv-banner: var(--night-banner);
-  --tv-banner-fg: var(--night-bg);
+  /* the tv used to be dark no matter what; now it's the site's own theme at
+     room scale, so these point at the same tokens the rest of the site
+     reads (which the dark block below already redefines for dark mode).
+     only the banner has no everyday equivalent to borrow, so it gets its
+     own light value here and its own dark value in that block. */
+  --tv-bg: var(--bg);
+  --tv-fg: var(--fg);
+  --tv-muted: var(--muted);
+  --tv-line: var(--line);
+  --tv-raise: var(--block-2);
+  --tv-hot: var(--accent);
+  --tv-felt: var(--felt);
+  --tv-banner: oklch(58% 0.15 92);
+  --tv-banner-fg: oklch(98% 0 0);
 
   color-scheme: light;
 }
@@ -110,6 +131,8 @@
   --good: var(--night-good);
   --felt: oklch(35% 0.06 160);
   --warn-bg: oklch(31% 0.045 92);
+  --tv-banner: var(--night-banner);
+  --tv-banner-fg: var(--night-bg);
   color-scheme: dark;
 }
 
@@ -125,8 +148,25 @@
   }
 }
 
+/* tailwind's preflight is skipped (it would undo headings, buttons and links,
+   see below), but its border reset is still needed: without it, an element
+   with only a border-*-width utility (border-b-[...]) picks up the browser's
+   own default width on the sides that utility didn't set, and since setting
+   any border-style makes that default width visible, a hairline on one edge
+   turns into a box on all four. zero width everywhere by default, solid style
+   everywhere by default, so a single-side width utility is the only thing
+   that ever draws a line. */
 * {
   box-sizing: border-box;
+  border-style: solid;
+  border-width: 0;
+}
+
+/* a "back" or "next" chevron/arrow: point the other way once the page is
+   right-to-left (Arabic). numerals, chip faces, cards and dice never get
+   this: they stay left-to-right on purpose, so leave it off those. */
+[dir="rtl"] .flip-rtl {
+  transform: scaleX(-1);
 }
 
 html,
@@ -134,8 +174,16 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--fg);
-  font: 14px/1.5 var(--font);
+  font-family: var(--font);
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+}
+/* the page's 14px is set on the body, not the root: the root stays the
+   browser's own size, so 1rem (and tailwind's scale, which counts in rem:
+   pt-5 is 20px) means what it says */
+body {
+  font-size: var(--fs-base);
+  font-kerning: normal;
   -webkit-tap-highlight-color: transparent;
   /* a long unbroken name, link or code breaks where it has to rather than
      running off the side */
@@ -188,13 +236,21 @@ textarea:focus-visible {
   border-color: var(--focus);
 }
 
+/* every heading is times at its own step of the scale, never bold: a form
+   group's legend is an h3 in all but name */
 h1,
 h2,
-h3 {
+h3,
+legend {
   font-family: var(--font-serif);
   font-weight: normal;
   margin: 0 0 0.4em;
   line-height: 1.2;
+  text-wrap: balance;
+}
+/* a note, a pill or a button riding in a heading is text, not the name */
+:is(h1, h2, h3, legend) :is(.small, .pill, button, kbd) {
+  font-family: var(--font);
 }
 /* section headings sit on a hairline, like a ruled ledger page; the gap under
    the text scales with the heading. page titles (h1) stand on their own. */
@@ -204,23 +260,23 @@ h3,
   border-bottom: var(--hair) solid var(--line);
 }
 h1 {
-  font-size: 30px;
+  font-size: var(--fs-2xl);
   letter-spacing: -0.01em;
 }
 h2 {
-  font-size: 21px;
+  font-size: var(--fs-xl);
   padding-bottom: 6px;
   margin-bottom: 10px;
 }
 h3,
+legend,
 .ruled {
   padding-bottom: 4px;
   margin-bottom: 8px;
 }
-h3 {
-  font-size: 15px;
-  font-weight: bold;
-  font-family: var(--font);
+h3,
+legend {
+  font-size: var(--fs-lg);
 }
 /* heading with something beside it (a Switch link, an Edit button, a status):
    the rule runs under the whole row instead of stopping at the heading */
@@ -332,7 +388,7 @@ html:has(.tv) {
   font-size: var(--fs-xs);
   color: var(--muted);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--track-caps);
 }
 /* a list that's just a column of things: no bullets, no indent */
 .bare {
@@ -439,7 +495,7 @@ html:has(.tv) {
   input:is([type="text"], [type="search"], [type="number"], [type="password"], :not([type])),
   select,
   textarea {
-    font-size: 16px;
+    font-size: var(--fs-md);
   }
   input[type="checkbox"] {
     width: 22px;
@@ -449,7 +505,7 @@ html:has(.tv) {
     width: 13px;
     height: 13px;
   }
-  label.inline {
+  label.across {
     min-height: 40px;
   }
   .links,
@@ -483,11 +539,6 @@ label > span.links:first-child {
 span.links {
   display: inline-flex;
 }
-.grid {
-  display: grid;
-  gap: 14px;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-}
 .cols {
   display: grid;
   gap: 32px;
@@ -506,8 +557,9 @@ span.links {
   overflow-x: auto;
 }
 
-/* are.na-ish gray blocks */
-.block {
+/* are.na-ish gray blocks: a slab of concrete. (not .block, which is
+   tailwind's display: block) */
+.slab {
   background: var(--block);
   padding: 12px 14px;
 }
@@ -536,17 +588,17 @@ label {
 }
 label > span:first-child {
   display: block;
-  font-size: 12px;
+  font-size: var(--fs-sm);
   color: var(--muted);
   margin-bottom: 3px;
 }
-label.inline {
+label.across {
   display: inline-flex;
   gap: 6px;
   align-items: center;
   margin-right: 12px;
 }
-label.inline > span:first-child {
+label.across > span:first-child {
   display: inline;
   font-size: inherit;
   color: inherit;
@@ -630,8 +682,91 @@ input[type="checkbox"]:disabled {
     display: none;
   }
 }
+/* a range is a fader on a mixing desk: a square cap riding a sunk slot, with a
+   groove across the cap for the thumb. it's the height of every other control,
+   and the cap goes down a step under the finger, like a button. */
 input[type="range"] {
+  appearance: none;
+  height: var(--control-h);
+  margin: 0;
+  background: none;
   cursor: pointer;
+  vertical-align: middle;
+  --cap-w: 12px;
+  --cap-h: 22px;
+}
+input[type="range"]:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 4px;
+  background: var(--block-3);
+  border: 0;
+}
+input[type="range"]::-moz-range-track {
+  height: 4px;
+  background: var(--block-3);
+  border: 0;
+}
+input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  width: var(--cap-w);
+  height: var(--cap-h);
+  margin-top: calc((4px - var(--cap-h)) / 2);
+  border: var(--hair) solid var(--line-strong);
+  border-radius: 0;
+  background: linear-gradient(var(--fg), var(--fg)) center / 100% var(--hair) no-repeat, var(--block-2);
+  transition:
+    background-color var(--dur-hover) var(--ease-out),
+    border-color var(--dur-hover) var(--ease-out),
+    transform 160ms var(--ease-out-expo);
+}
+input[type="range"]::-moz-range-thumb {
+  box-sizing: border-box;
+  width: var(--cap-w);
+  height: var(--cap-h);
+  border: var(--hair) solid var(--line-strong);
+  border-radius: 0;
+  background: linear-gradient(var(--fg), var(--fg)) center / 100% var(--hair) no-repeat, var(--block-2);
+  transition:
+    background-color var(--dur-hover) var(--ease-out),
+    border-color var(--dur-hover) var(--ease-out),
+    transform 160ms var(--ease-out-expo);
+}
+input[type="range"]:not(:disabled):hover::-webkit-slider-thumb {
+  background-color: var(--block-3);
+  border-color: var(--muted);
+}
+input[type="range"]:not(:disabled):hover::-moz-range-thumb {
+  background-color: var(--block-3);
+  border-color: var(--muted);
+}
+input[type="range"]:not(:disabled):active::-webkit-slider-thumb {
+  background-color: var(--line);
+  border-color: var(--fg);
+  transform: translateY(1px);
+  transition-duration: var(--dur-press);
+}
+input[type="range"]:not(:disabled):active::-moz-range-thumb {
+  background-color: var(--line);
+  border-color: var(--fg);
+  transform: translateY(1px);
+  transition-duration: var(--dur-press);
+}
+input[type="range"]:focus-visible {
+  outline-offset: 2px;
+}
+@media (pointer: coarse) {
+  input[type="range"] {
+    --cap-w: 18px;
+    --cap-h: 32px;
+  }
+}
+@media (forced-colors: active) {
+  input[type="range"] {
+    appearance: auto;
+  }
 }
 input[type="text"],
 input[type="search"],
@@ -883,7 +1018,7 @@ button:disabled:active {
 button.big,
 .btn.big {
   height: var(--control-h-big);
-  font-size: 16px;
+  font-size: var(--fs-md);
   padding: 0 18px;
   gap: 8px;
 }
@@ -986,7 +1121,7 @@ td {
     color var(--dur-slow) var(--ease-out);
 }
 th {
-  font-size: 12px;
+  font-size: var(--fs-sm);
   color: var(--muted);
   font-weight: normal;
 }
@@ -1027,10 +1162,19 @@ tr.dim td {
 /* one size for the dealer's clock, cash or tournament: by the width, and on a
    short screen (a phone on its side) by the height, so the buttons under it
    stay in view */
+/* the board's numbers (the clock, the blinds, the stat strip) are set the
+   way the tv sets them: arial bold, every figure one width, so the dealer
+   screen is the tv in small and nothing jitters while the clock runs */
+.clockbox :is(.clockface, .bb),
+.stats b {
+  font-family: var(--font);
+  font-weight: bold;
+  font-variant-numeric: tabular-nums;
+}
 .clockbox .clockface {
   font-size: clamp(56px, min(11vw, 18vh), 120px);
   line-height: 1;
-  font-weight: bold;
+  letter-spacing: -0.03em;
   transition:
     color var(--dur-slow) var(--ease-out),
     opacity 300ms var(--ease-out);
@@ -1040,12 +1184,18 @@ tr.dim td {
   opacity: 0.45;
 }
 .clockbox .lvl {
-  font-size: 18px;
-  letter-spacing: 0.05em;
+  font-size: var(--fs-lg);
 }
 .clockbox .bb {
   font-size: clamp(28px, 5vw, 52px);
-  font-weight: bold;
+  letter-spacing: -0.02em;
+}
+/* a clock's colons sit a touch above the baseline, where a real clock puts
+   them (Digits.svelte, here and on the tv) */
+.colon {
+  display: inline-block;
+  transform: translateY(-0.07em);
+  margin: 0 0.02em;
 }
 
 /* the running numbers under the clock: a ledger strip, one rule between cells */
@@ -1068,13 +1218,15 @@ tr.dim td {
   font-size: var(--fs-xs);
   color: var(--muted);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--track-caps);
 }
 .stats b {
-  font-size: 20px;
+  font-size: var(--fs-xl);
+  line-height: 1.2;
 }
 .stats small {
   margin-left: 4px;
+  font-size: var(--fs-sm);
   color: var(--muted);
 }
 .stats:has(> :nth-child(4):last-child) {
@@ -1096,7 +1248,7 @@ tr.dim td {
     padding: 6px 8px;
   }
   .stats b {
-    font-size: 16px;
+    font-size: var(--fs-lg);
   }
   .stats small {
     display: block;
@@ -1235,8 +1387,8 @@ td.seat {
   .roster td[data-l]::before {
     content: attr(data-l);
     margin-right: 5px;
-    font: 11px var(--font);
-    letter-spacing: 0.05em;
+    font: var(--fs-xs) var(--font);
+    letter-spacing: var(--track-caps);
     text-transform: uppercase;
     color: var(--muted);
   }
@@ -1269,102 +1421,8 @@ td.seat {
 
 /* ---------- chips ---------- */
 
-/* chips themselves are svg: src/lib/components/Chip.svelte */
-
-/* a stack seen from a little above, like on the table in front of you. every
-   disc is a short cylinder: a pill whose round ends are the foreshortened
-   ellipse of its face (--e tall), set one chip's thickness (--t) above the one
-   under it. so each disc shows only its curved edge band below the next, and
-   the top chip shows its face. */
-.stack {
-  --w: 44px;
-  --t: calc(var(--w) * 0.1);
-  --e: calc(var(--w) * 0.34);
-  /* drawn on whole pixels: a disc that dropped in or zipped back in from a
-     shuffle is drawn on its own layer while it moves, and a disc at a
-     fraction of a pixel shimmered as it went back onto the page */
-  --step: round(var(--t), 1px);
-  --face: round(var(--e), 1px);
-  position: relative;
-  isolation: isolate; /* a shuffle reorders the discs without reaching past the stack */
-  display: inline-block;
-  flex: none;
-  width: var(--w);
-  height: calc(var(--n, 1) * var(--step) + var(--face));
-  vertical-align: bottom;
-}
-/* a stack being shuffled is lifted onto the top layer of the page (toys.ts):
-   over everything, and its chips don't drop in again */
-.stack.lifted {
-  position: absolute;
-  z-index: 1000;
-  margin: 0;
-  pointer-events: none;
-}
-.stack.lifted i {
-  animation: none;
-}
-/* its shadow on the felt */
-.stack::before {
-  content: "";
-  position: absolute;
-  left: -8%;
-  right: -8%;
-  bottom: calc(var(--face) * -0.14);
-  height: calc(var(--face) * 1.15);
-  border-radius: 50%;
-  background: radial-gradient(closest-side, rgb(0 0 0 / 0.32), rgb(0 0 0 / 0));
-  z-index: -1;
-}
-/* each disc is drawn by ChipStack.svelte with Chip.svelte's own parts: the
-   edge with its inserts (turned a different amount on every disc, so they
-   never stack into stripes) and, on the discs whose top shows, the chip's
-   face. a shade layer rounds the edge like a cylinder, and a dark hairline
-   under each disc is the seam between two chips. */
-.stack i {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: calc(var(--i) * var(--step));
-  height: calc(var(--face) + var(--step));
-  border-radius: 50% / calc(var(--face) / 2);
-  overflow: hidden;
-  isolation: isolate;
-  background: var(--c);
-  translate: var(--x, 0px) 0;
-  box-shadow: 0 1px 0 rgb(0 0 0 / 0.45);
-  animation: drop 0.36s var(--ease-out-expo) backwards;
-  animation-delay: calc(var(--i) * 18ms + var(--d, 0ms));
-}
-.stack svg {
-  position: absolute;
-  left: 0;
-  width: 100%;
-  overflow: visible;
-}
-.stack .edge {
-  top: 0;
-  height: 100%;
-}
-/* the edge is round: dark at the sides, a soft light just left of center */
-.stack i::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(90deg, rgb(0 0 0 / 0.38), rgb(0 0 0 / 0) 22%, rgb(255 255 255 / 0.16) 42%, rgb(0 0 0 / 0) 64%, rgb(0 0 0 / 0.42));
-}
-/* the face, over the shade */
-.stack .top {
-  top: 0;
-  z-index: 1;
-  height: var(--face);
-}
-@keyframes drop {
-  from {
-    transform: translateY(-14px);
-    opacity: 0;
-  }
-}
+/* chips themselves are svg (Chip.svelte), and stacks draw themselves
+   (ChipStack.svelte) */
 
 /* ---------- misc ---------- */
 
@@ -1372,10 +1430,10 @@ td.seat {
   display: inline-block;
   border: var(--hair) solid currentColor;
   padding: 0 6px;
-  font-size: 11px;
+  font-size: var(--fs-xs);
   line-height: 1.6;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--track-caps);
   vertical-align: 0.1em;
   transition:
     color 300ms var(--ease-out),
@@ -1403,7 +1461,7 @@ kbd {
   font-family: var(--font-mono);
   border: var(--hair) solid var(--line-strong);
   padding: 0 4px;
-  font-size: 11px;
+  font-size: var(--fs-xs);
   background: var(--field);
   transition:
     transform var(--dur-press) var(--ease-out),

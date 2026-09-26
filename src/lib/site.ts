@@ -8,7 +8,7 @@ export const SITE = "https://pitmaster.cc";
 /** where the code is, public under the MIT license */
 export const REPO = "https://github.com/wyziedevs/pitmaster";
 export const NAME = "PitMaster";
-export const HOME_TITLE = "PitMaster · Poker Blind Clock & Home Game Manager";
+export const HOME_TITLE = "PitMaster · Poker Blind Clock & Game Manager";
 const DESCRIPTION =
   "Run a poker game of any size: blind clocks, chip math, buy-ins, payouts and a live TV display. Free, no account, encrypted on your device.";
 

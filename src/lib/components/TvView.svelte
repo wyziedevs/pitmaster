@@ -1,5 +1,6 @@
 <script lang="ts">
   import Icon from "./Icon.svelte";
+  import Digits from "./Digits.svelte";
   import Trophy from "@lucide/svelte/icons/trophy";
   import VolumeX from "@lucide/svelte/icons/volume-x";
   import Volume2 from "@lucide/svelte/icons/volume-2";
@@ -11,10 +12,10 @@
   import Handshake from "@lucide/svelte/icons/handshake";
   import Armchair from "@lucide/svelte/icons/armchair";
   import Megaphone from "@lucide/svelte/icons/megaphone";
-  import type { Game } from "$lib/types";
+  import type { EventKind, Game } from "$lib/types";
   import { derive, cashElapsed } from "$lib/clock";
   import { tourneyStats, cashStats, cashRake, seatLabel, tableCounts, paidFor } from "$lib/game";
-  import { amt, clock, money, ordinal, timeOfDay } from "$lib/util";
+  import { amt, clock, clockFace, money, ordinal, timeOfDay } from "$lib/util";
   import { play, sounds, resumeAudio, audioReady, speak } from "$lib/sound";
   import { hostPrefs, prefs } from "$lib/settings.svelte";
   import { time } from "$lib/now.svelte";
@@ -27,6 +28,9 @@
   import Kbd from "./Kbd.svelte";
   import { fade, fly } from "svelte/transition";
   import { replay, fresh, rise, leave, slide } from "$lib/motion";
+  // the local "t" below is tourney stats (t.left, t.pool…), already established
+  // through this file, so the translator is imported under another name
+  import { t as tr, tp } from "$lib/i18n";
 
   let { game, status = "" }: { game: Game; status?: string } = $props();
 
@@ -83,7 +87,9 @@
   const warning = $derived(!!d && !!warnMs && !d.level.isBreak && d.remainingMs <= warnMs && game.clock.status === "running");
   const lastMinute = $derived(warning && !!d && d.remainingMs <= 60000);
   const finalFive = $derived(!!d && !!d.next && game.clock.status === "running" && d.remainingMs <= 5000);
-  const warnLabel = $derived(!d ? "" : d.remainingMs <= 60000 ? "Last Minute" : `${Math.ceil(d.remainingMs / 60000)} Min Left`);
+  const warnLabel = $derived(
+    !d ? "" : d.remainingMs <= 60000 ? tr("tv.warn.lastMinute") : tr("tv.warn.minLeft", { n: String(Math.ceil(d.remainingMs / 60000)) })
+  );
   const colorUpChips = $derived(d?.level.colorUp?.map((id) => game.chips.find((c) => c.id === id)).filter((c) => !!c) ?? []);
   const nextColorUp = $derived.by(() => {
     if (!d || !d.level.isBreak) return [];
@@ -99,7 +105,7 @@
   const lateRegOpen = $derived(!!d && !!game.tourney?.lateRegLevel && levelNum <= game.tourney.lateRegLevel);
   const winner = $derived(game.finished && !isCash ? game.players.find((p) => p.place === 1) : null);
   // a wall clock doesn't pad the minutes: 8:27, not 08:27
-  const timeLeft = $derived(d ? clock(d.remainingMs).replace(/^0(?=\d:)/, "") : "");
+  const timeLeft = $derived(d ? clockFace(d.remainingMs) : "");
   // house rules in the footer: two fit on a line; more take turns, one every ten seconds
   const rules = $derived(game.notes.split("\n").map((r) => r.trim()).filter(Boolean));
   let ruleAt = $state(0);
@@ -127,8 +133,8 @@
 
   const meta = $derived(
     isCash
-      ? ["Cash Game", stakes]
-      : ["Tournament", showMoney && game.tourney ? `${money(game.tourney.buyIn)} Buy-In` : ""]
+      ? [tr("tv.meta.cashGame"), stakes]
+      : [tr("tv.meta.tournament"), showMoney && game.tourney ? tr("tv.meta.buyIn", { amount: money(game.tourney.buyIn) }) : ""]
   );
 
   // ---------- cues: every sound comes with something to see ----------
@@ -164,8 +170,10 @@
       if (voice)
         speak(
           l.isBreak
-            ? `Break time. ${l.minutes} minutes.`
-            : `Level ${levelNum}. Blinds are ${say(l.sb)}, ${say(l.bb)}${l.ante ? `, with a ${say(l.ante)} ante` : ""}.`,
+            ? tp("tv.voice.breakTime", l.minutes)
+            : l.ante
+              ? tr("tv.voice.levelBlindsAnte", { level: String(levelNum), sb: say(l.sb), bb: say(l.bb), ante: say(l.ante) })
+              : tr("tv.voice.levelBlinds", { level: String(levelNum), sb: say(l.sb), bb: say(l.bb) }),
           1300
         );
     }
@@ -191,25 +199,15 @@
       warned = d!.index;
       cue(sounds.warn, HOT, 2);
       const m = Math.round(warnMs / 60000);
-      if (voice) speak(`${m === 1 ? "One minute" : `${m} minutes`} left at these blinds.`, 700);
+      if (voice) speak(tp("tv.voice.minutesLeftAtBlinds", m), 700);
     }
   });
 
-  // every announcement has a kind: it picks the toast's icon, how it arrives,
-  // and what the room hears
-  type Kind = "win" | "deal" | "money" | "bust" | "chips" | "rack" | "shuffle" | "seat" | "note";
-  function kindOf(text: string): Kind {
-    if (/ wins!$/.test(text)) return "win";
-    if (/^It's a deal/.test(text)) return "deal";
-    if (/Everyone left gets paid/.test(text)) return "money";
-    if (/ is out /.test(text)) return "bust";
-    if (/ rebuys!$| reloads | is in$| sat down$/.test(text)) return "chips";
-    if (/ racks up /.test(text)) return "rack";
-    if (/deal!|in the air|Seats are drawn/.test(text)) return "shuffle";
-    if (/: table \d|Table \d+ is breaking/.test(text)) return "seat";
-    return "note";
-  }
-  const KINDS: Record<Kind, { icon: typeof Trophy; sound: () => void; color: string; n: number }> = {
+  // every announcement has a kind, set by whatever raised it (game.ts, or a
+  // dealer-screen control): it picks the toast's icon, how it arrives, and
+  // what the room hears. no more guessing it by matching English words in
+  // text that's now translated.
+  const KINDS: Record<EventKind, { icon: typeof Trophy; sound: () => void; color: string; n: number }> = {
     win: { icon: Trophy, sound: sounds.ship, color: BANNER, n: 4 },
     deal: { icon: Handshake, sound: sounds.money, color: BANNER, n: 3 },
     money: { icon: HandCoins, sound: sounds.money, color: GOOD, n: 3 },
@@ -221,7 +219,7 @@
     note: { icon: Megaphone, sound: sounds.ding, color: BANNER, n: 2 },
   };
 
-  let toast = $state<{ text: string; kind: Kind; at: number } | null>(null);
+  let toast = $state<{ text: string; kind: EventKind; at: number } | null>(null);
   let lastFlash = 0;
   $effect(() => {
     const f = game.flash;
@@ -229,7 +227,7 @@
     const first = lastFlash === 0;
     lastFlash = f.at;
     if (first && Date.now() - f.at > 8000) return; // don't replay old news on load
-    const kind = kindOf(f.text);
+    const kind = f.kind;
     // a win or a deal takes over the whole screen; a toast on top would only cover the name
     if (kind !== "win" && kind !== "deal") toast = { text: f.text, kind, at: f.at };
     cue(KINDS[kind].sound, KINDS[kind].color, KINDS[kind].n);
@@ -394,8 +392,8 @@
     <!-- ================= WINNER ================= -->
     <section class="winner" class:entrance={justWon}>
       <div class="trophy"><Icon icon={Trophy} size="11vh" /></div>
-      <div class="k">{game.deal ? "The Final Table Made a Deal" : "Champion"}</div>
-      <div class="big">{game.deal ? "It's a Deal" : winner.name}</div>
+      <div class="k">{game.deal ? tr("tv.winner.dealMade") : tr("tv.winner.champion")}</div>
+      <div class="big">{game.deal ? tr("tv.winner.dealBig") : winner.name}</div>
       <!-- the pot, pushed across the felt and stacked one chip at a time -->
       <div class="pot" aria-hidden="true">
         {#each pot as c, i (c.id)}<span style:--d="{500 + i * 160}ms"><ChipStack chip={c} n={[12, 18, 9, 15, 7][i]} width="min(6vw, 10vh)" /></span>{/each}
@@ -408,7 +406,7 @@
             {@const who = game.players.find((x) => x.place === i + 1)}
             <li class:top={i % rows === 0} style:--i={i}>
               <span class="place">{ordinal(i + 1)}</span>
-              <b>{who?.name ?? "Nobody Yet"}</b>
+              <b>{who?.name ?? tr("tv.winner.nobodyYet")}</b>
               {#if showMoney}<span class="fig">{money(paidFor(game, who?.id, i + 1, t.payouts))}</span>{/if}
             </li>
           {/each}
@@ -419,46 +417,46 @@
     <!-- ================= TOURNAMENT ================= -->
     <aside class="col left">
       <div class="stat">
-        <span class="k">Players</span>
+        <span class="k">{tr("tv.tourney.players")}</span>
         <span class="v fig"><span class="n" use:replay={[t.left, "tumble"]}>{t.left}</span><span class="of">/{t.entrants}</span></span>
-        {#if t.bubble}<span class="sub hot-text" use:later={"stamp"}>On the Bubble</span>{:else if t.itm}<span class="sub good-text" use:later={"stamp"}>In the Money</span>{/if}
+        {#if t.bubble}<span class="sub hot-text" use:later={"stamp"}>{tr("tv.tourney.onBubble")}</span>{:else if t.itm}<span class="sub good-text" use:later={"stamp"}>{tr("tv.tourney.inTheMoney")}</span>{/if}
       </div>
       {#if seating.length}
         <div class="stat seats" class:many={seating.length > 10}>
-          <span class="k">Seats</span>
+          <span class="k">{tr("tv.tourney.seats")}</span>
           {@render seatList(seating)}
         </div>
       {:else}
         <div class="stat">
-          <span class="k">Avg Stack</span>
+          <span class="k">{tr("tv.tourney.avgStack")}</span>
           <span class="v fig"><Count value={Math.round(t.avgStack)} format={(n) => amt(n)} /></span>
-          {#if !d.level.isBreak && d.level.bb}<span class="sub fig">{Math.round(t.avgStack / d.level.bb)} Big Blinds</span>{/if}
+          {#if !d.level.isBreak && d.level.bb}<span class="sub fig">{tp("tv.tourney.bigBlinds", Math.round(t.avgStack / d.level.bb))}</span>{/if}
         </div>
         {#if game.tourney!.rebuy.on || game.tourney!.addOn.on}
           <div class="stat pair">
-            {#if game.tourney!.rebuy.on}<div><span class="k">Rebuys</span><span class="v fig" use:replay={[t.rebuys, "pop"]}>{t.rebuys}</span></div>{/if}
-            {#if game.tourney!.addOn.on}<div><span class="k">Add-Ons</span><span class="v fig" use:replay={[t.addOns, "pop"]}>{t.addOns}</span></div>{/if}
+            {#if game.tourney!.rebuy.on}<div><span class="k">{tr("tv.tourney.rebuys")}</span><span class="v fig" use:replay={[t.rebuys, "pop"]}>{t.rebuys}</span></div>{/if}
+            {#if game.tourney!.addOn.on}<div><span class="k">{tr("tv.tourney.addOns")}</span><span class="v fig" use:replay={[t.addOns, "pop"]}>{t.addOns}</span></div>{/if}
           </div>
         {/if}
       {/if}
       <div class="notes-col">
-        {#if lateRegOpen}<span class="good-text">Late Reg Open Through Level {game.tourney!.lateRegLevel}</span>{/if}
-        {#if rebuyOpen}<span class="good-text">Rebuys Open Through Level {game.tourney!.rebuy.untilLevel}</span>{/if}
-        {#if game.clock.status !== "idle"}<span>Elapsed <span class="fig">{clock(d.totalElapsedMs)}</span></span>{/if}
+        {#if lateRegOpen}<span class="good-text">{tr("tv.tourney.lateRegOpen", { level: String(game.tourney!.lateRegLevel) })}</span>{/if}
+        {#if rebuyOpen}<span class="good-text">{tr("tv.tourney.rebuysOpen", { level: String(game.tourney!.rebuy.untilLevel) })}</span>{/if}
+        {#if game.clock.status !== "idle"}<span>{tr("tv.tourney.elapsed")} <span class="fig">{clock(d.totalElapsedMs)}</span></span>{/if}
       </div>
     </aside>
 
     <section class="main" class:flash={flashLevel}>
       <div class="level">
-        <span use:replay={[d.index, "roll"]}>{#if d.level.isBreak}Break{:else}Level {levelNum}{/if}</span>
-        {#if game.clock.status === "paused"}<span class="pill" use:later={"pop"}><span class="blink">Paused</span></span>{/if}
-        {#if game.clock.status === "idle"}<span class="pill">Not Started</span>{/if}
+        <span use:replay={[d.index, "roll"]}>{#if d.level.isBreak}{tr("tv.level.break")}{:else}{tr("tv.level.levelNum", { n: String(levelNum) })}{/if}</span>
+        {#if game.clock.status === "paused"}<span class="pill" use:later={"pop"}><span class="blink">{tr("tv.status.paused")}</span></span>{/if}
+        {#if game.clock.status === "idle"}<span class="pill">{tr("tv.status.notStarted")}</span>{/if}
         {#if warning}<span class="pill warn-pill" use:later={"stamp"}>{warnLabel}</span>{/if}
       </div>
       <!-- three layers so each motion owns one: the final-minute blink, the
            last-five-seconds pulse, and the new level rolling in -->
       <div class="clock fig" class:long={timeLeft.length > 5}>
-        <span class="pulse" use:replay={[tickKey, "tick"]}><span class="face" use:replay={[d.index, "roll"]}>{@render digits(timeLeft)}</span></span>
+        <span class="pulse" use:replay={[tickKey, "tick"]}><span class="face" use:replay={[d.index, "roll"]}><Digits value={timeLeft} /></span></span>
       </div>
       <div class="bar"><ProgressBar value={d.progress} /></div>
 
@@ -466,49 +464,49 @@
         {#if d.next}
           <div class="strip" style:--n={stripLen(d.next)}>
             <div class="cell">
-              <span class="k">Blinds After the Break</span>
+              <span class="k">{tr("tv.level.blindsAfterBreak")}</span>
               <span class="v fig">{amt(d.next.sb)}<span class="sep">/</span>{amt(d.next.bb)}</span>
             </div>
-            {#if d.next.ante}<div class="cell"><span class="k">Ante</span><span class="v fig">{amt(d.next.ante)}</span></div>{/if}
+            {#if d.next.ante}<div class="cell"><span class="k">{tr("tv.level.ante")}</span><span class="v fig">{amt(d.next.ante)}</span></div>{/if}
           </div>
         {/if}
         {#if nextColorUp.length || (game.tourney?.addOn.on && levelNum === game.tourney.breakEvery)}
           <div class="callouts">
             {#if nextColorUp.length}
               <div class="callout" use:later={"pop"}>
-                <span class="k">Color Up Now</span>
-                {#each nextColorUp as c, i (c.id)}<span class="flip" style:--i={i} use:later={"flip-in"}><Chip chip={c} size={chipPx} text={c.label || amt(c.value)} /></span>{/each}
+                <span class="k">{tr("tv.level.colorUpNow")}</span>
+                {#each nextColorUp as c, i (c.id)}<span class="flip" style:--i={i} use:later={"flip-in"}><Chip chip={c} size={chipPx} /></span>{/each}
               </div>
             {/if}
             {#if game.tourney?.addOn.on && levelNum === game.tourney.breakEvery}
-              <div class="callout" use:later={"pop"}><span class="k">Add-Ons Open</span><span class="fig">{money(game.tourney.addOn.cost)}</span> for <span class="fig">{amt(game.tourney.addOn.chips)}</span></div>
+              <div class="callout" use:later={"pop"}><span class="k">{tr("tv.level.addOnsOpen")}</span><span class="fig">{money(game.tourney.addOn.cost)}</span> {tr("tv.level.addOnsFor")} <span class="fig">{amt(game.tourney.addOn.chips)}</span></div>
             {/if}
           </div>
         {/if}
       {:else}
         <div class="strip" style:--n={stripLen(d.level)}>
           <div class="cell">
-            <span class="k">Blinds</span>
+            <span class="k">{tr("tv.level.blinds")}</span>
             <span class="v fig" use:replay={[d.index, "roll"]}>{amt(d.level.sb)}<span class="sep">/</span>{amt(d.level.bb)}</span>
           </div>
           {#if d.level.ante}
             <div class="cell">
-              <span class="k">Ante</span>
+              <span class="k">{tr("tv.level.ante")}</span>
               <span class="v fig" use:replay={[d.index, "roll"]}>{amt(d.level.ante)}</span>
             </div>
           {/if}
         </div>
         <div class="after">
           <span>
-            <span class="k">Next Level</span>
-            {#if d.next}<span class="fig" use:replay={[d.index, "roll"]}>{amt(d.next.sb)}/{amt(d.next.bb)}{d.next.ante ? ` · Ante ${amt(d.next.ante)}` : ""}</span>{:else}Final Level{/if}
+            <span class="k">{tr("tv.level.nextLevel")}</span>
+            {#if d.next}<span class="fig" use:replay={[d.index, "roll"]}>{amt(d.next.sb)}/{amt(d.next.bb)}{d.next.ante ? ` · ${tr("tv.level.anteSuffix", { n: amt(d.next.ante) })}` : ""}</span>{:else}{tr("tv.level.finalLevel")}{/if}
           </span>
-          {#if d.nextBreakInMs !== null}<span><span class="k">Next Break</span> <span class="fig">{clock(d.nextBreakInMs)}</span></span>{/if}
+          {#if d.nextBreakInMs !== null}<span><span class="k">{tr("tv.level.nextBreak")}</span> <span class="fig">{clock(d.nextBreakInMs)}</span></span>{/if}
         </div>
         {#if colorUpChips.length && d.elapsedMs < 5 * 60000}
           <div class="callout" use:later={"pop"}>
-            <span class="k">Color Up</span>
-            {#each colorUpChips as c, i (c.id)}<span class="flip" style:--i={i} use:later={"flip-in"}><Chip chip={c} size={chipPx} text={c.label || amt(c.value)} /></span>{/each}
+            <span class="k">{tr("tv.level.colorUp")}</span>
+            {#each colorUpChips as c, i (c.id)}<span class="flip" style:--i={i} use:later={"flip-in"}><Chip chip={c} size={chipPx} /></span>{/each}
           </div>
         {/if}
       {/if}
@@ -517,12 +515,12 @@
     <aside class="col right">
       {#if showMoney}
         <div class="stat">
-          <span class="k">Prize Pool</span>
+          <span class="k">{tr("tv.tourney.prizePool")}</span>
           <span class="v fig" use:replay={[t.pool, "glint"]}><Count value={t.pool} format={money} /></span>
         </div>
       {/if}
       <div class="stat">
-        <span class="k">{showMoney ? "Payouts" : "Pays"}</span>
+        <span class="k">{showMoney ? tr("tv.tourney.payouts") : tr("tv.tourney.pays")}</span>
         {#if showMoney}
           <!-- places fill in as players finish in the money: their name stamps onto the line -->
           <ol class="ladder" class:burst>
@@ -535,14 +533,14 @@
               </li>
             {/each}
           </ol>
-          {#if t.payouts.length > LADDER}<span class="sub">+ {t.payouts.length - LADDER} More Paid</span>{/if}
+          {#if t.payouts.length > LADDER}<span class="sub">{tp("tv.tourney.morePaid", t.payouts.length - LADDER)}</span>{/if}
         {:else}
-          <span class="v">Top {t.paid}</span>
+          <span class="v">{tr("tv.tourney.topN", { n: String(t.paid) })}</span>
         {/if}
       </div>
       {#if game.tourney!.bounty}
         <div class="notes-col">
-          <span>{#if showMoney}<span class="fig">{money(game.tourney!.bounty)}</span> {/if}Bounty on Every Head</span>
+          <span>{#if showMoney}<span class="fig">{money(game.tourney!.bounty)}</span> {/if}{tr("tv.tourney.bountyOnEveryHead")}</span>
         </div>
       {/if}
     </aside>
@@ -555,52 +553,52 @@
     <!-- ================= CASH ================= -->
     <aside class="col left">
       <div class="stat seats" class:many={seated.length > 10}>
-        <span class="k">Seated · {cash.seated}</span>
+        <span class="k">{tr("tv.cash.seatedLabel", { n: String(cash.seated) })}</span>
         {@render seatList(seated)}
-        {#if !seated.length}<div class="sub">Open Seats</div>{/if}
+        {#if !seated.length}<div class="sub">{tr("tv.cash.openSeats")}</div>{/if}
       </div>
     </aside>
 
     <section class="main">
       <div class="level">
-        <span>Blinds</span>
-        {#if game.clock.status === "paused"}<span class="pill" use:later={"pop"}><span class="blink">Paused</span></span>{/if}
-        {#if game.clock.status === "idle"}<span class="pill">Not Started</span>{/if}
+        <span>{tr("tv.level.blinds")}</span>
+        {#if game.clock.status === "paused"}<span class="pill" use:later={"pop"}><span class="blink">{tr("tv.status.paused")}</span></span>{/if}
+        {#if game.clock.status === "idle"}<span class="pill">{tr("tv.status.notStarted")}</span>{/if}
       </div>
       <div class="clock fig stakes" style:--n={stakes.length}>
         <span class="face" use:replay={[stakes, "roll"]}>{money(game.cash.sb)}<span class="sep">/</span>{money(game.cash.bb)}</span>
       </div>
       {#if planned}<div class="bar"><ProgressBar value={elapsed} max={planned} /></div>{/if}
       <div class="after">
-        <span><span class="k">Session</span> <span class="fig">{clock(elapsed)}</span></span>
+        <span><span class="k">{tr("tv.cash.session")}</span> <span class="fig">{clock(elapsed)}</span></span>
         {#if game.clock.status !== "idle" && planned}
           {#if cashRemaining > 0}
-            <span><span class="k">Time Left</span> <span class="fig">{clock(cashRemaining)}</span></span>
-            <span><span class="k">Ends</span> <span class="fig">~{timeOfDay(time.now + cashRemaining)}</span></span>
+            <span><span class="k">{tr("tv.cash.timeLeft")}</span> <span class="fig">{clock(cashRemaining)}</span></span>
+            <span><span class="k">{tr("tv.cash.ends")}</span> <span class="fig">~{timeOfDay(time.now + cashRemaining)}</span></span>
           {:else}
-            <span class="hot-text">Last Orbit</span>
+            <span class="hot-text">{tr("tv.cash.lastOrbit")}</span>
           {/if}
         {/if}
       </div>
-      {#if game.cash.straddle}<div class="callout plain"><span class="k">Straddles Welcome</span></div>{/if}
+      {#if game.cash.straddle}<div class="callout plain"><span class="k">{tr("tv.cash.straddlesWelcome")}</span></div>{/if}
     </section>
 
     {#if cashRight}
       <aside class="col right">
         {#if showMoney}
           <div class="stat">
-            <span class="k">Buy-In</span>
+            <span class="k">{tr("tv.cash.buyIn")}</span>
             <span class="v fig">{money(game.cash.minBuyIn)}<span class="of">–{money(game.cash.maxBuyIn)}</span></span>
           </div>
           <div class="stat">
-            <span class="k">On the Table</span>
+            <span class="k">{tr("tv.cash.onTable")}</span>
             <span class="v fig" use:replay={[cash.onTable, "glint"]}><Count value={cash.onTable} format={money} /></span>
           </div>
         {/if}
         {#if rake && rake.mode === "pot"}
-          <div class="stat"><span class="k">Rake</span><span class="v fig">{rake.pct}%</span><span class="sub">Up to {money(rake.cap)} a Pot</span></div>
+          <div class="stat"><span class="k">{tr("tv.cash.rake")}</span><span class="v fig">{rake.pct}%</span><span class="sub">{tr("tv.cash.upToAPot", { amount: money(rake.cap) })}</span></div>
         {:else if rake && rake.mode === "seat"}
-          <div class="stat"><span class="k">Seat Fee</span><span class="v fig">{money(rake.fee)}</span></div>
+          <div class="stat"><span class="k">{tr("tv.cash.seatFee")}</span><span class="v fig">{money(rake.fee)}</span></div>
         {/if}
       </aside>
     {/if}
@@ -610,7 +608,7 @@
       {@render houseRules()}
     </footer>
   {:else}
-    <section class="main wait"><div class="level"><Dealing label="Waiting for the host" />Waiting for the Host</div></section>
+    <section class="main wait"><div class="level"><Dealing label={tr("tv.wait.waitingForHost")} />{tr("tv.wait.waitingForHost")}</div></section>
   {/if}
 
   {#if toast}
@@ -629,25 +627,19 @@
   <div class="controls">
     {#if status}<span class="status">{status}</span>{/if}
     <!-- turning sound on answers with the tv's own chime, at the tv's volume -->
-    {#if !soundOn}<button data-sound="none" onclick={enableSound}><Icon icon={VolumeX} />Enable Sound <Kbd k="S" class="keys-hint" /></button>
-    {:else if !audioOk}<button class="ask" data-sound="none" onclick={enableSound}><Icon icon={VolumeX} />Click Anywhere for Sound</button>
-    {:else}<button data-sound="off" onclick={() => (soundOn = false)}><Icon icon={Volume2} />Sound On <Kbd k="S" class="keys-hint" /></button>{/if}
-    {#if canFullscreen}<button onclick={fullscreen}><Icon icon={Maximize} />Fullscreen <Kbd k="F" class="keys-hint" /></button>{/if}
+    {#if !soundOn}<button data-sound="none" onclick={enableSound}><Icon icon={VolumeX} />{tr("tv.controls.enableSound")} <Kbd k="S" class="keys-hint" /></button>
+    {:else if !audioOk}<button class="ask" data-sound="none" onclick={enableSound}><Icon icon={VolumeX} />{tr("tv.controls.clickForSound")}</button>
+    {:else}<button data-sound="off" onclick={() => (soundOn = false)}><Icon icon={Volume2} />{tr("tv.controls.soundOn")} <Kbd k="S" class="keys-hint" /></button>{/if}
+    {#if canFullscreen}<button onclick={fullscreen}><Icon icon={Maximize} />{tr("tv.controls.fullscreen")} <Kbd k="F" class="keys-hint" /></button>{/if}
   </div>
 </div>
-
-<!-- a clock face: the colons sit a touch higher than the text baseline, where a
-     real clock puts them -->
-{#snippet digits(s: string)}
-  {#each s.split(":") as part, i (i)}{#if i}<span class="colon">:</span>{/if}{part}{/each}
-{/snippet}
 
 {#snippet seatList(list: typeof game.players)}
   {#if tables > 1}
     <div class="tables">
       {#each byTable(list) as tb (tb.table)}
         <div>
-          <span class="tname">{tb.table ? `Table ${tb.table}` : "No Seat Yet"}</span>
+          <span class="tname">{tb.table ? tr("tv.seatList.table", { n: String(tb.table) }) : tr("tv.seatList.noSeatYet")}</span>
           {#each tb.players as p, i (p.id)}<div class="seat" style:--i={i} use:later={"deal-in"} out:fade={leave()}><span class="fig">{p.seat?.seat ?? ""}</span>{p.name}</div>{/each}
         </div>
       {/each}
@@ -659,9 +651,9 @@
 
 {#snippet houseRules()}
   {#if rules.length > 2}
-    <p class="rules"><span class="k">House Rules</span> {#key ruleAt % rules.length}<span class="rule" in:fly={rise(10)}>{rules[ruleAt % rules.length]}</span>{/key}</p>
+    <p class="rules"><span class="k">{tr("tv.rules.houseRules")}</span> {#key ruleAt % rules.length}<span class="rule" in:fly={rise(10)}>{rules[ruleAt % rules.length]}</span>{/key}</p>
   {:else if rules.length}
-    <p class="rules"><span class="k">House Rules</span> {rules.join(" · ")}</p>
+    <p class="rules"><span class="k">{tr("tv.rules.houseRules")}</span> {rules.join(" · ")}</p>
   {/if}
 {/snippet}
 
@@ -670,7 +662,7 @@
      same share of the height on anything wider, so nothing ever overflows */
   .tv {
     --u: min(1vw, 1.7778vh);
-    --tv-good: var(--night-good);
+    --tv-good: var(--good);
     /* across a room a single real pixel disappears, so the board's hairline is
        one css pixel on any screen */
     --hair: 1px;
@@ -1067,11 +1059,6 @@
   }
   .main:has(.callout) .clock {
     font-size: min(var(--big), 31vh, 34cqh, var(--fit));
-  }
-  .colon {
-    display: inline-block;
-    transform: translateY(-0.07em);
-    margin: 0 0.02em;
   }
   .pulse,
   .face {

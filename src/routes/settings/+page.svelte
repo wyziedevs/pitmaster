@@ -38,6 +38,8 @@
   import { palette } from "$lib/commands.svelte";
   import { comboOf, heldLabel, keyLabel, keyProblem, DEFAULT_PALETTE_KEY } from "$lib/keys";
   import { settings, saveSettings, resolvedTheme, houseRules, adoptSettings, type Theme } from "$lib/settings.svelte";
+  import { LANGS } from "$lib/i18n/langs";
+  import { t, tp } from "$lib/i18n";
   import { revealTheme, reveal, rise, slide } from "$lib/motion";
   import { play, speak, sounds } from "$lib/sound";
   import { toast } from "$lib/toast.svelte";
@@ -65,64 +67,38 @@
   import { vault, lockNow, setPasscode, MIN_PASSCODE } from "$lib/lock.svelte";
   import ChipSets from "$lib/components/ChipSets.svelte";
 
-  const THEMES: { id: Theme; label: string; icon: typeof Sun }[] = [
-    { id: "system", label: "System", icon: Monitor },
-    { id: "light", label: "Light", icon: Sun },
-    { id: "dark", label: "Dark", icon: Moon },
-  ];
+  const THEMES = $derived<{ id: Theme; label: string; icon: typeof Sun }[]>([
+    { id: "system", label: t("settings.appearance.theme.system"), icon: Monitor },
+    { id: "light", label: t("settings.appearance.theme.light"), icon: Sun },
+    { id: "dark", label: t("settings.appearance.theme.dark"), icon: Moon },
+  ]);
 
-  // native names so people can find their own language
-  const LANGUAGES = [
-    ["en", "English"],
-    ["es", "Español"],
-    ["fr", "Français"],
-    ["de", "Deutsch"],
-    ["pt", "Português"],
-    ["it", "Italiano"],
-    ["nl", "Nederlands"],
-    ["pl", "Polski"],
-    ["tr", "Türkçe"],
-    ["vi", "Tiếng Việt"],
-    ["tl", "Tagalog"],
-    ["ja", "日本語"],
-    ["ko", "한국어"],
-    ["zh-Hans", "中文 (简体)"],
-    ["zh-Hant", "中文 (繁體)"],
-  ];
-
-  const CURRENCIES = [
-    ["USD", "US Dollar ($)"],
-    ["CAD", "Canadian Dollar ($)"],
-    ["EUR", "Euro (€)"],
-    ["GBP", "British Pound (£)"],
-    ["AUD", "Australian Dollar ($)"],
-    ["MXN", "Mexican Peso ($)"],
-    ["JPY", "Japanese Yen (¥)"],
-  ];
+  // the six most traded, in that order; each name is translated below
+  const CURRENCY_CODES = ["USD", "EUR", "JPY", "GBP", "CNY", "AUD"] as const;
 
   // one tab at a time. the tab rides in the url's #, so a link can open any
   // of them (/settings#chips), and a link to a part of one (#data) opens its tab.
   // only the open one is on the page, so it can rise in when it's picked; the
   // one it replaces goes at once, so the two never stack.
-  const GROUPS = [
+  const GROUPS = $derived([
     {
-      label: "Games",
+      label: t("settings.nav.groups.games"),
       tabs: [
-        { id: "game", label: "Your Game", icon: Spade },
-        { id: "defaults", label: "New Games", icon: CirclePlus },
-        { id: "chips", label: "Chip Sets", icon: Coins },
-        { id: "tv", label: "TV", icon: Tv },
+        { id: "game", label: t("settings.nav.tabs.game"), icon: Spade },
+        { id: "defaults", label: t("settings.nav.tabs.defaults"), icon: CirclePlus },
+        { id: "chips", label: t("settings.nav.tabs.chips"), icon: Coins },
+        { id: "tv", label: t("settings.nav.tabs.tv"), icon: Tv },
       ],
     },
     {
-      label: "You",
+      label: t("settings.nav.groups.you"),
       tabs: [
-        { id: "general", label: "General", icon: Sliders },
-        { id: "yours", label: "Your Data", icon: ShieldCheck },
+        { id: "general", label: t("settings.nav.tabs.general"), icon: Sliders },
+        { id: "yours", label: t("settings.nav.tabs.yours"), icon: ShieldCheck },
       ],
     },
-  ];
-  const TABS = GROUPS.flatMap((g) => g.tabs.map((t) => t.id));
+  ]);
+  const TABS = $derived(GROUPS.flatMap((g) => g.tabs.map((t) => t.id)));
   const PARTS: Record<string, string> = {
     house: "game",
     templates: "defaults",
@@ -164,26 +140,38 @@
     });
   });
 
-  const AUTO_LOCK: [number, string][] = [
-    [30, "After 30 Seconds"],
-    [60, "After 1 Minute"],
-    [120, "After 2 Minutes"],
-    [300, "After 5 Minutes"],
-    [600, "After 10 Minutes"],
-    [900, "After 15 Minutes"],
-    [1800, "After 30 Minutes"],
-    [3600, "After 1 Hour"],
-    [0, "Only When PitMaster Closes"],
-  ];
+  const AUTO_LOCK = $derived<[number, string][]>([
+    [30, t("settings.lock.autoLock.options.sec30")],
+    [60, t("settings.lock.autoLock.options.min1")],
+    [120, t("settings.lock.autoLock.options.min2")],
+    [300, t("settings.lock.autoLock.options.min5")],
+    [600, t("settings.lock.autoLock.options.min10")],
+    [900, t("settings.lock.autoLock.options.min15")],
+    [1800, t("settings.lock.autoLock.options.min30")],
+    [3600, t("settings.lock.autoLock.options.hour1")],
+    [0, t("settings.lock.autoLock.options.onClose")],
+  ]);
+  // same order, worded to slot into "PitMaster locks {phrase} with no input."
+  const AUTO_LOCK_PHRASE = $derived<Record<number, string>>({
+    30: t("settings.lock.autoLock.phrase.sec30"),
+    60: t("settings.lock.autoLock.phrase.min1"),
+    120: t("settings.lock.autoLock.phrase.min2"),
+    300: t("settings.lock.autoLock.phrase.min5"),
+    600: t("settings.lock.autoLock.phrase.min10"),
+    900: t("settings.lock.autoLock.phrase.min15"),
+    1800: t("settings.lock.autoLock.phrase.min30"),
+    3600: t("settings.lock.autoLock.phrase.hour1"),
+    0: t("settings.lock.autoLock.phrase.onClose"),
+  });
 
   let templates = $state(getTemplates());
   const sym = $derived(currencySymbol());
 
   function removeTemplate(id: string, name: string) {
-    if (!confirm(`Delete the template “${name}”? Games made from it stay.`)) return;
+    if (!confirm(t("settings.defaults.templates.deleteConfirm", { name }))) return;
     deleteTemplate(id);
     templates = getTemplates();
-    toast(`Deleted “${name}”`, "info");
+    toast(t("settings.defaults.templates.deletedToast", { name }), "info");
   }
 
   // the new theme wipes in from the button that was clicked
@@ -222,13 +210,13 @@
   }
 
   // the extras a host can switch off; a game that already uses one keeps it
-  const EXTRAS = [
-    { key: "useBounties", label: "Bounties & Knockouts", hint: "A bounty on every head, and who knocked out who." },
-    { key: "useRebuys", label: "Rebuys & Add-Ons", hint: "Buying back in, and topping up at the first break." },
-    { key: "useSeats", label: "Seat Draw & Tables", hint: "Drawing seats, and balancing tables as players bust." },
-    { key: "useDeals", label: "Final Table Deals", hint: "The ICM and chip-chop calculator." },
-    { key: "usePayLinks", label: "Pay Links", hint: "Venmo, Cash App and PayPal links in settle-up and payouts." },
-  ] as const;
+  const EXTRAS = $derived<{ key: "useBounties" | "useRebuys" | "useSeats" | "useDeals" | "usePayLinks"; label: string; hint: string }[]>([
+    { key: "useBounties", label: t("settings.game.extras.bounties.label"), hint: t("settings.game.extras.bounties.hint") },
+    { key: "useRebuys", label: t("settings.game.extras.rebuys.label"), hint: t("settings.game.extras.rebuys.hint") },
+    { key: "useSeats", label: t("settings.game.extras.seats.label"), hint: t("settings.game.extras.seats.hint") },
+    { key: "useDeals", label: t("settings.game.extras.deals.label"), hint: t("settings.game.extras.deals.hint") },
+    { key: "usePayLinks", label: t("settings.game.extras.payLinks.label"), hint: t("settings.game.extras.payLinks.hint") },
+  ]);
 
   function pickMotion(m: "system" | "reduced") {
     settings.motion = m;
@@ -236,24 +224,24 @@
   }
 
   // table rules most games play by, whatever their size, one click to add
-  const COMMON_RULES = [
-    "Cards speak.",
-    "Show one, show all.",
-    "Verbal action is binding.",
-    "No string bets.",
-    "One player to a hand.",
-    "Protect your hand.",
-    "Chips stay on the table.",
-    "Straddles are welcome.",
-    "Run it twice if both players agree.",
-    "Chop the blinds if it folds to them.",
-    "Phones down during a hand.",
-    "Rebuys between hands only.",
-    "New deck on request.",
-    "The last hand is announced.",
-    "Settle up before you leave.",
-    "Whoever runs the game has the final say.",
-  ];
+  const COMMON_RULES = $derived([
+    t("settings.house.commonRules.cardsSpeak"),
+    t("settings.house.commonRules.showOneShowAll"),
+    t("settings.house.commonRules.verbalBinding"),
+    t("settings.house.commonRules.noStringBets"),
+    t("settings.house.commonRules.onePlayerToAHand"),
+    t("settings.house.commonRules.protectYourHand"),
+    t("settings.house.commonRules.chipsStayOnTable"),
+    t("settings.house.commonRules.straddlesWelcome"),
+    t("settings.house.commonRules.runItTwice"),
+    t("settings.house.commonRules.chopBlinds"),
+    t("settings.house.commonRules.phonesDown"),
+    t("settings.house.commonRules.rebuysBetweenHands"),
+    t("settings.house.commonRules.newDeckOnRequest"),
+    t("settings.house.commonRules.lastHandAnnounced"),
+    t("settings.house.commonRules.settleUp"),
+    t("settings.house.commonRules.finalSay"),
+  ]);
   const unusedRules = $derived(COMMON_RULES.filter((r) => !houseRules().includes(r)));
   function addRule(r: string) {
     settings.houseRules = [...houseRules(), r].join("\n");
@@ -278,7 +266,7 @@
 
   // a sample announcement, so the host hears the voice before game night
   function testVoice() {
-    speak("Level 5. Blinds are 200, 400, with a 400 ante.");
+    speak(t("settings.tv.announcer.sample"));
   }
 
   function pickClock(c: "12h" | "24h") {
@@ -330,14 +318,14 @@
     saveSettings();
     listening = false;
     savedAt = Date.now();
-    keyNote = { text: `Saved. ${keyLabel(combo)} opens Commands now.`, bad: false };
+    keyNote = { text: t("settings.keyboard.openCommands.saved", { key: keyLabel(combo) }), bad: false };
     play("on");
   }
 
   function resetKey() {
     settings.paletteKey = DEFAULT_PALETTE_KEY;
     saveSettings();
-    keyNote = { text: `Back to ${keyLabel(DEFAULT_PALETTE_KEY)}.`, bad: false };
+    keyNote = { text: t("settings.keyboard.openCommands.resetTo", { key: keyLabel(DEFAULT_PALETTE_KEY) }), bad: false };
   }
 
   // the rest of the keys, for reference
@@ -348,20 +336,19 @@
   }
 
   // ---------- export + import ----------
-  const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
-  /** "a, b and c" */
+  /** "a, b and c", joined the way this language does it */
   const list = (xs: (string | false | 0)[]) => {
     const ys = xs.filter(Boolean) as string[];
-    return ys.length > 1 ? `${ys.slice(0, -1).join(", ")} and ${ys.at(-1)}` : (ys[0] ?? "");
+    return ys.length > 1 ? t("settings.data.summary.join", { rest: ys.slice(0, -1).join(", "), last: ys.at(-1)! }) : (ys[0] ?? "");
   };
   function contents(d: Backup["data"]) {
     const live = d.games.filter((g) => !g.finished).length;
     const people = Object.keys(d.handles).length;
     return list([
-      plural(d.games.length, "game") + (live ? ` (${live} in progress)` : ""),
-      d.chipSets.length > 0 && plural(d.chipSets.length, "chip set"),
-      (d.templates?.length ?? 0) > 0 && plural(d.templates!.length, "template"),
-      people > 0 && `pay links for ${plural(people, "person", "people")}`,
+      tp("settings.data.count.games", d.games.length, { n: d.games.length }) + (live ? ` ${t("settings.data.count.inProgress", { n: live })}` : ""),
+      d.chipSets.length > 0 && tp("settings.data.count.chipSets", d.chipSets.length, { n: d.chipSets.length }),
+      (d.templates?.length ?? 0) > 0 && tp("settings.data.count.templates", d.templates!.length, { n: d.templates!.length }),
+      people > 0 && tp("settings.data.count.payLinksFor", people, { n: people }),
     ]);
   }
 
@@ -381,9 +368,9 @@
   let lockBusy = $state(false);
   let lockErr = $state("");
   const nextProblem = $derived(
-    next.length < MIN_PASSCODE ? `At least ${MIN_PASSCODE} characters.` : next !== again ? "The two don't match yet." : ""
+    next.length < MIN_PASSCODE ? t("settings.lock.passcode.tooShort", { n: MIN_PASSCODE }) : next !== again ? t("settings.lock.passcode.mismatch") : ""
   );
-  const autoLockLabel = () => AUTO_LOCK.find(([s]) => s === settings.autoLock)?.[1].toLowerCase() ?? "a while";
+  const autoLockLabel = () => AUTO_LOCK_PHRASE[settings.autoLock] ?? t("settings.lock.autoLock.phrase.awhile");
 
   async function passcode(to: string | null, e?: SubmitEvent) {
     e?.preventDefault();
@@ -393,9 +380,9 @@
       await setPasscode(to, current);
       current = next = again = "";
       // (its button clicked shut or open on the way down; the toast says it worked)
-      toast(!to ? "Lock off. Everything's still encrypted." : settings.autoLock ? `Locked with a passcode. PitMaster locks ${autoLockLabel()} with no input.` : "Locked with a passcode.");
+      toast(!to ? t("settings.lock.toast.off") : settings.autoLock ? t("settings.lock.toast.onWithAuto", { phrase: autoLockLabel() }) : t("settings.lock.toast.on"));
     } catch (err) {
-      lockErr = (err as Error).message === "wrong" ? "That's not the current passcode." : "Couldn't change it. Nothing was changed; try again.";
+      lockErr = (err as Error).message === "wrong" ? t("settings.lock.error.wrongPasscode") : t("settings.lock.error.generic");
       play("error");
     }
     lockBusy = false;
@@ -420,9 +407,9 @@
       download(`pitmaster-${new Date().toLocaleDateString("en-CA")}${locking ? "-locked" : ""}.json`, file, "application/json");
       exportPassword = "";
       exportedAt = lastExport();
-      toast(locking ? "Exported and locked. Importing it takes the password." : "Exported. On the other device, open it with Import.");
+      toast(locking ? t("settings.data.export.toast.locked") : t("settings.data.export.toast.plain"));
     } catch {
-      toast("Couldn't lock the file. Try again, or export it without a password.", "bad");
+      toast(t("settings.data.export.toast.lockFailed"), "bad");
     }
     exporting = false;
   }
@@ -450,7 +437,7 @@
 
   async function openFile(file: File | undefined) {
     if (!file) return;
-    if (file.size > MAX_IMPORT) return void toast("That file is too big to be a PitMaster export.", "bad");
+    if (file.size > MAX_IMPORT) return void toast(t("settings.data.import.error.tooBig"), "bad");
     try {
       const backup = readBackup(await file.text());
       arrived = [];
@@ -462,7 +449,7 @@
         unlockErr = "";
       } else preview(file.name, backup);
     } catch (err) {
-      toast(`That file didn't work. ${(err as Error).message}`, "bad");
+      toast(t("settings.data.import.error.failed", { message: (err as Error).message }), "bad");
     }
   }
 
@@ -513,7 +500,7 @@
     rev++;
     arrived = backup.data.games.filter((g) => !g.finished).map((g) => ({ id: g.id, name: g.name }));
     pending = null;
-    toast(`Imported ${plural(backup.data.games.length, "game")}`);
+    toast(tp("settings.data.import.importedToast", backup.data.games.length, { n: backup.data.games.length }));
   }
 
   function takeBack() {
@@ -524,50 +511,50 @@
     templates = getTemplates();
     rev++;
     play("rewind");
-    toast("Import undone. Everything's as it was.", "info");
+    toast(t("settings.data.import.undoneToast"), "info");
   }
 
   function startOver() {
-    if (!confirm("Delete every game and custom chip set? This can't be undone. Export first if you might want them.")) return;
+    if (!confirm(t("settings.data.startOver.confirm"))) return;
     wipeAll();
     templates = getTemplates();
     arrived = [];
     undoable = null;
     rev++;
-    toast("Everything's cleared. Fresh start.");
+    toast(t("settings.data.startOver.doneToast"));
   }
 </script>
 
-<svelte:head><title>Settings · PitMaster</title></svelte:head>
+<svelte:head><title>{t("settings.page.title")} · PitMaster</title></svelte:head>
 <svelte:window onhashchange={() => (hash = location.hash)} />
 
-<h1>Settings</h1>
-<p class="muted">Saved in this browser, encrypted. To take them to another device, <a href="#data">export</a> them with your games.</p>
+<h1>{t("settings.page.heading")}</h1>
+<p class="muted">{t("settings.page.savedHint")} <a href="#data">{t("settings.page.exportLink")}</a> {t("settings.page.savedHintEnd")}</p>
 
-<div class="settings" bind:this={panes}>
-<nav class="side" aria-label="Settings">
+<div class="settings grid grid-cols-[176px_minmax(0,1fr)] gap-x-12 gap-y-0 items-start mt-[26px] max-[760px]:grid-cols-[minmax(0,1fr)] max-[760px]:mt-[18px]" bind:this={panes}>
+<nav class="side flex flex-col gap-0.5 max-[760px]:grid max-[760px]:grid-cols-[repeat(3,minmax(0,1fr))] max-[760px]:gap-1 max-[760px]:mb-[26px] max-[380px]:grid-cols-[repeat(2,minmax(0,1fr))]" aria-label={t("settings.page.heading")}>
   {#each GROUPS as g (g.label)}
-    <p class="eyebrow group">{g.label}</p>
+    <p class="eyebrow group mt-[18px] mx-0 mb-1 pl-[11px] first:mt-0 max-[760px]:hidden">{g.label}</p>
     {#each g.tabs as t (t.id)}
-      <a href="#{t.id}" data-sound="soft" aria-current={tab === t.id ? "page" : undefined} onclick={(e) => pickTab(e, t.id)}><Icon icon={t.icon} />{t.label}</a>
+      <a href="#{t.id}" class="flex items-center gap-2.5 min-h-[var(--control-h-big)] py-0 px-[10px] border-[length:var(--hair)] border-solid border-transparent text-fg no-underline hover:bg-block max-[760px]:gap-[7px] max-[760px]:px-2 max-[760px]:py-0 max-[760px]:border-line" data-sound="soft" aria-current={tab === t.id ? "page" : undefined} onclick={(e) => pickTab(e, t.id)}><Icon icon={t.icon} />{t.label}</a>
     {/each}
   {/each}
 </nav>
 
 <div class="panes">
 {#if tab === "game"}
-<section id="game" in:fly={rise(6)}>
-  <h2>Your Game</h2>
-  <p class="small muted lede">Turn on what your games use, whatever their size. Anything off stays off new games and the dealer screen, and a new game can still add it just for that game.</p>
-  <div class="set top">
-    <div class="what">
-      <b>Cash Game Rake</b>
-      <span class="small muted">A cut of each pot into a rake box, or a flat fee to sit down. New games start with what you set here.</span>
+<section id="game" class="max-w-[760px] mb-[30px]" in:fly={rise(6)}>
+  <h2 class="flex items-center gap-2 first:mt-0">{t("settings.game.heading")}</h2>
+  <p class="small muted lede -mt-1 mx-0 mb-1 max-w-[88ch]">{t("settings.game.lede")}</p>
+  <div class="set top grid grid-cols-[minmax(0,280px)_minmax(0,1fr)] gap-x-7 gap-y-1.5 py-3 px-0 border-b-[length:var(--hair)] border-solid border-line last:border-b-0 max-[600px]:grid-cols-[1fr] items-start">
+    <div class="what flex flex-col gap-px">
+      <b class="inline-flex items-center gap-1.5 font-normal text-fg">{t("settings.game.rake.label")}</b>
+      <span class="small muted">{t("settings.game.rake.hint")}</span>
     </div>
     <div>
-      <label class="inline"><input type="checkbox" checked={settings.useRake} onchange={toggleRake} /><span>Take a Rake or Seat Fee</span></label>
+      <label class="across m-0"><input type="checkbox" checked={settings.useRake} onchange={toggleRake} /><span>{t("settings.game.rake.checkbox")}</span></label>
       {#if settings.useRake}
-        <div class="more" transition:slide={reveal()}>
+        <div class="more mt-2" transition:slide={reveal()}>
           <RakeFields
             bind:mode={settings.cashRakeMode}
             bind:pct={settings.cashRakePct}
@@ -580,171 +567,171 @@
       {/if}
     </div>
   </div>
-  <div class="set top">
-    <div class="what">
-      <b>Tournament House Cut</b>
-      <span class="small muted">A flat fee per entry, a percent of the rest, or both.</span>
+  <div class="set top grid grid-cols-[minmax(0,280px)_minmax(0,1fr)] gap-x-7 gap-y-1.5 py-3 px-0 border-b-[length:var(--hair)] border-solid border-line last:border-b-0 max-[600px]:grid-cols-[1fr] items-start">
+    <div class="what flex flex-col gap-px">
+      <b class="inline-flex items-center gap-1.5 font-normal text-fg">{t("settings.game.houseCut.label")}</b>
+      <span class="small muted">{t("settings.game.houseCut.hint")}</span>
     </div>
     <div>
-      <label class="inline"><input type="checkbox" bind:checked={settings.useHouseCut} onchange={saveSettings} /><span>Take a Cut of Each Buy-In</span></label>
+      <label class="across m-0"><input type="checkbox" bind:checked={settings.useHouseCut} onchange={saveSettings} /><span>{t("settings.game.houseCut.checkbox")}</span></label>
       {#if settings.useHouseCut}
-        <div class="more" transition:slide={reveal()}>
+        <div class="more mt-2" transition:slide={reveal()}>
           <HouseCutFields bind:fee={settings.tFee} bind:pct={settings.tRakePct} buyIn={settings.tBuyIn} onchange={saveSettings} />
         </div>
       {/if}
     </div>
   </div>
-  <div class="set top">
-    <div class="what"><b>Extras</b><span class="small muted">A game that already uses one keeps it.</span></div>
+  <div class="set top grid grid-cols-[minmax(0,280px)_minmax(0,1fr)] gap-x-7 gap-y-1.5 py-3 px-0 border-b-[length:var(--hair)] border-solid border-line last:border-b-0 max-[600px]:grid-cols-[1fr] items-start">
+    <div class="what flex flex-col gap-px"><b class="inline-flex items-center gap-1.5 font-normal text-fg">{t("settings.game.extras.heading")}</b><span class="small muted">{t("settings.game.extras.hint")}</span></div>
     <div class="vstack">
       {#each EXTRAS as x (x.key)}
-        <label class="opt">
-          <input type="checkbox" bind:checked={settings[x.key]} onchange={saveSettings} />
-          <span><span class="name">{x.label}</span><span class="small muted">{x.hint}</span></span>
+        <label class="opt grid grid-cols-[auto_1fr] gap-2 items-start cursor-pointer m-0">
+          <input type="checkbox" class="mt-[3px] mx-0" bind:checked={settings[x.key]} onchange={saveSettings} />
+          <span class="flex flex-col"><span class="name">{x.label}</span><span class="small muted">{x.hint}</span></span>
         </label>
       {/each}
     </div>
   </div>
-  <div class="set top" id="house">
-    <label class="what" for="rules"><b>House Rules</b><span class="small muted">One per line. They go on the TV under the clock, taking turns when there are more than two.</span></label>
+  <div class="set top grid grid-cols-[minmax(0,280px)_minmax(0,1fr)] gap-x-7 gap-y-1.5 py-3 px-0 border-b-[length:var(--hair)] border-solid border-line last:border-b-0 max-[600px]:grid-cols-[1fr] items-start" id="house">
+    <label class="what flex flex-col gap-px m-0" for="rules"><b class="inline-flex items-center gap-1.5 font-normal text-fg">{t("settings.house.heading")}</b><span class="small muted">{t("settings.house.hint")}</span></label>
     <div>
-      <textarea id="rules" rows={Math.min(10, Math.max(3, houseRules().length + 1))} value={settings.houseRules} oninput={typeRules} onchange={flushRules} placeholder="No string bets.&#10;Rebuys close at the first break."></textarea>
+      <textarea id="rules" rows={Math.min(10, Math.max(3, houseRules().length + 1))} value={settings.houseRules} oninput={typeRules} onchange={flushRules} placeholder={t("settings.house.placeholder")}></textarea>
       {#if unusedRules.length}
-        <p class="small links common">
-          <span class="muted">Common Ones:</span>
+        <p class="small links common mt-1.5 mx-0 mb-2">
+          <span class="muted">{t("settings.house.commonOnes")}</span>
           {#each unusedRules as r (r)}<button class="link" data-sound="card" onclick={() => addRule(r)}><Icon icon={Plus} size="1em" />{r}</button>{/each}
         </p>
       {/if}
-      <label class="inline"><input type="checkbox" bind:checked={settings.rulesOnNew} onchange={saveSettings} /><span>Put Them on Every New Game</span></label>
+      <label class="across m-0"><input type="checkbox" bind:checked={settings.rulesOnNew} onchange={saveSettings} /><span>{t("settings.house.onNewGame")}</span></label>
     </div>
   </div>
 </section>
 {/if}
 
 {#if tab === "defaults"}
-<section id="defaults" in:fly={rise(6)}>
-  <h2>New Games</h2>
-  <p class="small muted lede">Where a new game starts. Every one of these can still be changed on the game itself, and a template sets its own.</p>
+<section id="defaults" class="max-w-[760px] mb-[30px]" in:fly={rise(6)}>
+  <h2 class="flex items-center gap-2 first:mt-0">{t("settings.defaults.heading")}</h2>
+  <p class="small muted lede -mt-1 mx-0 mb-1 max-w-[88ch]">{t("settings.defaults.lede")}</p>
 
-  <h3>Tournaments</h3>
-  <div class="set">
-    <label class="what" for="t-buyin"><b>Buy-In {sym}</b><span class="small muted">Rebuys start at the same price.</span></label>
+  <h3 class="mt-[22px]">{t("settings.defaults.tournaments.heading")}</h3>
+  <div class="set grid grid-cols-[minmax(0,280px)_minmax(0,1fr)] gap-x-7 gap-y-1.5 py-3 px-0 border-b-[length:var(--hair)] border-solid border-line last:border-b-0 max-[600px]:grid-cols-[1fr] items-center">
+    <label class="what flex flex-col gap-px m-0" for="t-buyin"><b class="inline-flex items-center gap-1.5 font-normal text-fg">{t("settings.defaults.tournaments.buyIn.label", { sym })}</b><span class="small muted">{t("settings.defaults.tournaments.buyIn.hint")}</span></label>
     <input id="t-buyin" type="number" min="0" step="any" bind:value={settings.tBuyIn} onchange={saveSettings} />
   </div>
-  <div class="set">
-    <label class="what" for="t-players"><b>Players</b><span class="small muted">How many usually play. Stacks, chip math and payouts start from it.</span></label>
+  <div class="set grid grid-cols-[minmax(0,280px)_minmax(0,1fr)] gap-x-7 gap-y-1.5 py-3 px-0 border-b-[length:var(--hair)] border-solid border-line last:border-b-0 max-[600px]:grid-cols-[1fr] items-center">
+    <label class="what flex flex-col gap-px m-0" for="t-players"><b class="inline-flex items-center gap-1.5 font-normal text-fg">{t("settings.defaults.tournaments.players.label")}</b><span class="small muted">{t("settings.defaults.tournaments.players.hint")}</span></label>
     <input id="t-players" type="number" min="2" max="100" bind:value={settings.tPlayers} onchange={saveSettings} />
   </div>
-  <div class="set">
-    <label class="what" for="t-stack"><b>Starting Stack</b><span class="small muted">Leave it blank and each game picks one that fits its chip set and players.</span></label>
-    <input id="t-stack" type="number" min="0" step="any" placeholder="Auto" value={settings.tStack || ""} onchange={(e) => setAuto("tStack", e)} />
+  <div class="set grid grid-cols-[minmax(0,280px)_minmax(0,1fr)] gap-x-7 gap-y-1.5 py-3 px-0 border-b-[length:var(--hair)] border-solid border-line last:border-b-0 max-[600px]:grid-cols-[1fr] items-center">
+    <label class="what flex flex-col gap-px m-0" for="t-stack"><b class="inline-flex items-center gap-1.5 font-normal text-fg">{t("settings.defaults.tournaments.startingStack.label")}</b><span class="small muted">{t("settings.defaults.tournaments.startingStack.hint")}</span></label>
+    <input id="t-stack" type="number" min="0" step="any" placeholder={t("settings.defaults.auto")} value={settings.tStack || ""} onchange={(e) => setAuto("tStack", e)} />
   </div>
-  <div class="set">
-    <label class="what" for="t-depth"><b>Starting Depth</b><span class="small muted">The stack in big blinds at level 1.</span></label>
+  <div class="set grid grid-cols-[minmax(0,280px)_minmax(0,1fr)] gap-x-7 gap-y-1.5 py-3 px-0 border-b-[length:var(--hair)] border-solid border-line last:border-b-0 max-[600px]:grid-cols-[1fr] items-center">
+    <label class="what flex flex-col gap-px m-0" for="t-depth"><b class="inline-flex items-center gap-1.5 font-normal text-fg">{t("settings.defaults.tournaments.startingDepth.label")}</b><span class="small muted">{t("settings.defaults.tournaments.startingDepth.hint")}</span></label>
     <GameSelect of="depth" id="t-depth" bind:value={settings.tDepth} onchange={saveSettings} />
   </div>
-  <div class="set">
-    <label class="what" for="t-hours"><b>Length</b><span class="small muted">The blind structure is built to wrap up around then.</span></label>
+  <div class="set grid grid-cols-[minmax(0,280px)_minmax(0,1fr)] gap-x-7 gap-y-1.5 py-3 px-0 border-b-[length:var(--hair)] border-solid border-line last:border-b-0 max-[600px]:grid-cols-[1fr] items-center">
+    <label class="what flex flex-col gap-px m-0" for="t-hours"><b class="inline-flex items-center gap-1.5 font-normal text-fg">{t("settings.defaults.length.label")}</b><span class="small muted">{t("settings.defaults.tournaments.length.hint")}</span></label>
     <select id="t-hours" bind:value={settings.tHours} onchange={saveSettings}>
-      {#each [1, 1.5, 2, 2.5, 3, 3.5, 4, 5, 6, 8] as h (h)}<option value={h}>About {duration(h * 60)}</option>{/each}
+      {#each [1, 1.5, 2, 2.5, 3, 3.5, 4, 5, 6, 8] as h (h)}<option value={h}>{t("settings.defaults.length.about", { time: duration(h * 60) })}</option>{/each}
     </select>
   </div>
-  <div class="set">
-    <label class="what" for="t-level"><b>Level Length</b></label>
+  <div class="set grid grid-cols-[minmax(0,280px)_minmax(0,1fr)] gap-x-7 gap-y-1.5 py-3 px-0 border-b-[length:var(--hair)] border-solid border-line last:border-b-0 max-[600px]:grid-cols-[1fr] items-center">
+    <label class="what flex flex-col gap-px m-0" for="t-level"><b class="inline-flex items-center gap-1.5 font-normal text-fg">{t("settings.defaults.tournaments.levelLength.label")}</b></label>
     <GameSelect of="level" id="t-level" bind:value={settings.tLevel} onchange={saveSettings} />
   </div>
-  <div class="set">
-    <div class="what"><b>Breaks</b><span class="small muted">0 levels means no breaks.</span></div>
+  <div class="set grid grid-cols-[minmax(0,280px)_minmax(0,1fr)] gap-x-7 gap-y-1.5 py-3 px-0 border-b-[length:var(--hair)] border-solid border-line last:border-b-0 max-[600px]:grid-cols-[1fr] items-center">
+    <div class="what flex flex-col gap-px"><b class="inline-flex items-center gap-1.5 font-normal text-fg">{t("settings.defaults.tournaments.breaks.label")}</b><span class="small muted">{t("settings.defaults.tournaments.breaks.hint")}</span></div>
     <div class="row">
-      <label><span>Levels Between Breaks</span><input type="number" min="0" bind:value={settings.tBreakEvery} onchange={saveSettings} /></label>
-      <label><span>Break Minutes</span><input type="number" min="1" bind:value={settings.tBreakMinutes} onchange={saveSettings} /></label>
+      <label class="m-0"><span>{t("settings.defaults.tournaments.breaks.levelsBetween")}</span><input type="number" min="0" bind:value={settings.tBreakEvery} onchange={saveSettings} /></label>
+      <label class="m-0"><span>{t("settings.defaults.tournaments.breaks.minutes")}</span><input type="number" min="1" bind:value={settings.tBreakMinutes} onchange={saveSettings} /></label>
     </div>
   </div>
-  <div class="set">
-    <div class="what"><b>Antes and Late Registration</b><span class="small muted">0 means no antes. Late registration closes after the level you pick.</span></div>
+  <div class="set grid grid-cols-[minmax(0,280px)_minmax(0,1fr)] gap-x-7 gap-y-1.5 py-3 px-0 border-b-[length:var(--hair)] border-solid border-line last:border-b-0 max-[600px]:grid-cols-[1fr] items-center">
+    <div class="what flex flex-col gap-px"><b class="inline-flex items-center gap-1.5 font-normal text-fg">{t("settings.defaults.tournaments.antes.label")}</b><span class="small muted">{t("settings.defaults.tournaments.antes.hint")}</span></div>
     <div class="row">
-      <label><span>Antes From Level</span><input type="number" min="0" bind:value={settings.tAnteFrom} onchange={saveSettings} /></label>
-      <label><span>Late Registration Through Level</span><input type="number" min="0" bind:value={settings.tLateReg} onchange={saveSettings} /></label>
+      <label class="m-0"><span>{t("settings.defaults.tournaments.antes.antesFrom")}</span><input type="number" min="0" bind:value={settings.tAnteFrom} onchange={saveSettings} /></label>
+      <label class="m-0"><span>{t("settings.defaults.tournaments.antes.lateRegThrough")}</span><input type="number" min="0" bind:value={settings.tLateReg} onchange={saveSettings} /></label>
     </div>
   </div>
   {#if settings.useRebuys}
-    <div class="set top" transition:slide={reveal()}>
-      <div class="what"><b>Rebuys &amp; Add-Ons</b><span class="small muted">Rebuys cost the buy-in and give a starting stack. The add-on comes at the first break.</span></div>
-      <div class="vstack fields">
+    <div class="set top grid grid-cols-[minmax(0,280px)_minmax(0,1fr)] gap-x-7 gap-y-1.5 py-3 px-0 border-b-[length:var(--hair)] border-solid border-line last:border-b-0 max-[600px]:grid-cols-[1fr] items-start" transition:slide={reveal()}>
+      <div class="what flex flex-col gap-px"><b class="inline-flex items-center gap-1.5 font-normal text-fg">{t("settings.defaults.tournaments.rebuys.label")}</b><span class="small muted">{t("settings.defaults.tournaments.rebuys.hint")}</span></div>
+      <div class="vstack fields items-start">
         <!-- a switch's number opens out beside it -->
         <div class="row">
-          <label class="inline"><input type="checkbox" bind:checked={settings.tRebuy} onchange={saveSettings} /><span>Rebuys</span></label>
-          {#if settings.tRebuy}<label class="inline beside" transition:slide={{ ...reveal(), axis: "x" }}><span>Through Level</span><input type="number" min="1" bind:value={settings.tRebuyUntil} onchange={saveSettings} /></label>{/if}
+          <label class="across m-0"><input type="checkbox" bind:checked={settings.tRebuy} onchange={saveSettings} /><span>{t("settings.defaults.tournaments.rebuys.checkbox")}</span></label>
+          {#if settings.tRebuy}<label class="across beside whitespace-nowrap m-0" transition:slide={{ ...reveal(), axis: "x" }}><span>{t("settings.defaults.tournaments.rebuys.throughLevel")}</span><input type="number" min="1" bind:value={settings.tRebuyUntil} onchange={saveSettings} /></label>{/if}
         </div>
         <div class="row">
-          <label class="inline"><input type="checkbox" bind:checked={settings.tAddOn} onchange={saveSettings} /><span>Add-On</span></label>
-          {#if settings.tAddOn}<label class="inline beside" transition:slide={{ ...reveal(), axis: "x" }}><span>Cost {sym}</span><input type="number" min="0" step="any" bind:value={settings.tAddOnCost} onchange={saveSettings} /></label>{/if}
+          <label class="across m-0"><input type="checkbox" bind:checked={settings.tAddOn} onchange={saveSettings} /><span>{t("settings.defaults.tournaments.rebuys.addOnCheckbox")}</span></label>
+          {#if settings.tAddOn}<label class="across beside whitespace-nowrap m-0" transition:slide={{ ...reveal(), axis: "x" }}><span>{t("settings.defaults.tournaments.rebuys.cost", { sym })}</span><input type="number" min="0" step="any" bind:value={settings.tAddOnCost} onchange={saveSettings} /></label>{/if}
         </div>
       </div>
     </div>
   {/if}
   {#if settings.useBounties}
-    <div class="set" transition:slide={reveal()}>
-      <label class="what" for="t-bounty"><b>Bounty {sym}</b><span class="small muted">The part of each buy-in that sits on the player's head. 0 means none.</span></label>
+    <div class="set grid grid-cols-[minmax(0,280px)_minmax(0,1fr)] gap-x-7 gap-y-1.5 py-3 px-0 border-b-[length:var(--hair)] border-solid border-line last:border-b-0 max-[600px]:grid-cols-[1fr] items-center" transition:slide={reveal()}>
+      <label class="what flex flex-col gap-px m-0" for="t-bounty"><b class="inline-flex items-center gap-1.5 font-normal text-fg">{t("settings.defaults.tournaments.bounty.label", { sym })}</b><span class="small muted">{t("settings.defaults.tournaments.bounty.hint")}</span></label>
       <input id="t-bounty" type="number" min="0" step="any" bind:value={settings.tBounty} onchange={saveSettings} />
     </div>
   {/if}
-  <div class="set">
-    <label class="what" for="t-payouts"><b>Payouts</b><span class="small muted">Percentages, 1st place first, like 50, 30, 20. Leave it blank and they're picked by how many play.</span></label>
-    <input id="t-payouts" type="text" placeholder="Auto" bind:value={settings.tPayouts} onchange={saveSettings} />
+  <div class="set grid grid-cols-[minmax(0,280px)_minmax(0,1fr)] gap-x-7 gap-y-1.5 py-3 px-0 border-b-[length:var(--hair)] border-solid border-line last:border-b-0 max-[600px]:grid-cols-[1fr] items-center">
+    <label class="what flex flex-col gap-px m-0" for="t-payouts"><b class="inline-flex items-center gap-1.5 font-normal text-fg">{t("settings.defaults.tournaments.payouts.label")}</b><span class="small muted">{t("settings.defaults.tournaments.payouts.hint")}</span></label>
+    <input id="t-payouts" type="text" class="w-[220px]" placeholder={t("settings.defaults.auto")} bind:value={settings.tPayouts} onchange={saveSettings} />
   </div>
-  <div class="set">
-    <label class="what" for="t-round"><b>Round Payouts To</b><span class="small muted">So no one is paid {money(37.4)}. Whatever's left over goes to 1st.</span></label>
+  <div class="set grid grid-cols-[minmax(0,280px)_minmax(0,1fr)] gap-x-7 gap-y-1.5 py-3 px-0 border-b-[length:var(--hair)] border-solid border-line last:border-b-0 max-[600px]:grid-cols-[1fr] items-center">
+    <label class="what flex flex-col gap-px m-0" for="t-round"><b class="inline-flex items-center gap-1.5 font-normal text-fg">{t("settings.defaults.tournaments.roundTo.label")}</b><span class="small muted">{t("settings.defaults.tournaments.roundTo.hint", { amount: money(37.4) })}</span></label>
     <GameSelect of="round" id="t-round" bind:value={settings.payoutRound} onchange={saveSettings} />
   </div>
 
-  <h3>Cash Games</h3>
-  <div class="set">
-    <div class="what"><b>Buy-In</b><span class="small muted">In big blinds, so it works at any stakes. The amounts come from each game's blinds.</span></div>
+  <h3 class="mt-[22px]">{t("settings.defaults.cash.heading")}</h3>
+  <div class="set grid grid-cols-[minmax(0,280px)_minmax(0,1fr)] gap-x-7 gap-y-1.5 py-3 px-0 border-b-[length:var(--hair)] border-solid border-line last:border-b-0 max-[600px]:grid-cols-[1fr] items-center">
+    <div class="what flex flex-col gap-px"><b class="inline-flex items-center gap-1.5 font-normal text-fg">{t("settings.defaults.cash.buyIn.label")}</b><span class="small muted">{t("settings.defaults.cash.buyIn.hint")}</span></div>
     <div class="row">
-      <label><span>Min</span><input type="number" min="1" bind:value={settings.cashMinBB} onchange={saveSettings} /></label>
-      <label><span>Standard</span><input type="number" min="1" bind:value={settings.cashDepth} onchange={saveSettings} /></label>
-      <label><span>Max</span><input type="number" min="1" bind:value={settings.cashMaxBB} onchange={saveSettings} /></label>
+      <label class="m-0"><span>{t("settings.defaults.cash.buyIn.min")}</span><input type="number" min="1" bind:value={settings.cashMinBB} onchange={saveSettings} /></label>
+      <label class="m-0"><span>{t("settings.defaults.cash.buyIn.standard")}</span><input type="number" min="1" bind:value={settings.cashDepth} onchange={saveSettings} /></label>
+      <label class="m-0"><span>{t("settings.defaults.cash.buyIn.max")}</span><input type="number" min="1" bind:value={settings.cashMaxBB} onchange={saveSettings} /></label>
     </div>
   </div>
-  <div class="set">
-    <label class="what" for="c-hours"><b>Length</b><span class="small muted">For the end time and chip math. Cash games can always run long.</span></label>
+  <div class="set grid grid-cols-[minmax(0,280px)_minmax(0,1fr)] gap-x-7 gap-y-1.5 py-3 px-0 border-b-[length:var(--hair)] border-solid border-line last:border-b-0 max-[600px]:grid-cols-[1fr] items-center">
+    <label class="what flex flex-col gap-px m-0" for="c-hours"><b class="inline-flex items-center gap-1.5 font-normal text-fg">{t("settings.defaults.length.label")}</b><span class="small muted">{t("settings.defaults.cash.length.hint")}</span></label>
     <select id="c-hours" bind:value={settings.cashHours} onchange={saveSettings}>
-      {#each [1, 2, 3, 4, 5, 6, 8, 10] as h (h)}<option value={h}>About {duration(h * 60)}</option>{/each}
+      {#each [1, 2, 3, 4, 5, 6, 8, 10] as h (h)}<option value={h}>{t("settings.defaults.length.about", { time: duration(h * 60) })}</option>{/each}
     </select>
   </div>
-  <div class="set">
-    <div class="what"><b>Straddles</b></div>
-    <label class="inline"><input type="checkbox" bind:checked={settings.cashStraddle} onchange={saveSettings} /><span>Straddles Allowed</span></label>
+  <div class="set grid grid-cols-[minmax(0,280px)_minmax(0,1fr)] gap-x-7 gap-y-1.5 py-3 px-0 border-b-[length:var(--hair)] border-solid border-line last:border-b-0 max-[600px]:grid-cols-[1fr] items-center">
+    <div class="what flex flex-col gap-px"><b class="inline-flex items-center gap-1.5 font-normal text-fg">{t("settings.defaults.cash.straddles.label")}</b></div>
+    <label class="across m-0"><input type="checkbox" bind:checked={settings.cashStraddle} onchange={saveSettings} /><span>{t("settings.defaults.cash.straddles.checkbox")}</span></label>
   </div>
 
   {#if settings.useSeats}
-    <h3 transition:slide={reveal()}>Both</h3>
-    <div class="set" transition:slide={reveal()}>
-      <label class="what" for="seats"><b>Seats per Table</b><span class="small muted">For drawing seats and balancing tables.</span></label>
+    <h3 class="mt-[22px]" transition:slide={reveal()}>{t("settings.defaults.both.heading")}</h3>
+    <div class="set grid grid-cols-[minmax(0,280px)_minmax(0,1fr)] gap-x-7 gap-y-1.5 py-3 px-0 border-b-[length:var(--hair)] border-solid border-line last:border-b-0 max-[600px]:grid-cols-[1fr] items-center" transition:slide={reveal()}>
+      <label class="what flex flex-col gap-px m-0" for="seats"><b class="inline-flex items-center gap-1.5 font-normal text-fg">{t("settings.defaults.both.seatsPerTable.label")}</b><span class="small muted">{t("settings.defaults.both.seatsPerTable.hint")}</span></label>
       <select id="seats" bind:value={settings.seatsPerTable} onchange={saveSettings}>
-        {#each [4, 5, 6, 7, 8, 9, 10] as n (n)}<option value={n}>{n} Seats</option>{/each}
+        {#each [4, 5, 6, 7, 8, 9, 10] as n (n)}<option value={n}>{t("settings.defaults.both.seatsPerTable.option", { n })}</option>{/each}
       </select>
     </div>
   {/if}
-  <h3 id="templates">Templates</h3>
-  <div class="set">
-    <div class="what">
-      <b>Saved Setups</b>
-      <span class="small muted">Make one from <b>Save as Template</b> on a new game; start from one there or from Commands (<kbd>{keyLabel(paletteKey)}</kbd>).</span>
+  <h3 id="templates" class="mt-[22px]">{t("settings.defaults.templates.heading")}</h3>
+  <div class="set grid grid-cols-[minmax(0,280px)_minmax(0,1fr)] gap-x-7 gap-y-1.5 py-3 px-0 border-b-[length:var(--hair)] border-solid border-line last:border-b-0 max-[600px]:grid-cols-[1fr] items-center">
+    <div class="what flex flex-col gap-px">
+      <b class="inline-flex items-center gap-1.5 font-normal text-fg">{t("settings.defaults.templates.savedSetups.label")}</b>
+      <span class="small muted">{t("settings.defaults.templates.savedSetups.hintBefore")} <b class="inline-flex items-center gap-1.5 font-normal text-fg">{t("settings.defaults.templates.savedSetups.saveAsTemplate")}</b> {t("settings.defaults.templates.savedSetups.hintAfter")} (<kbd>{keyLabel(paletteKey)}</kbd>).</span>
     </div>
     {#if templates.length}
       <ul class="bare templates">
-        {#each templates as t (t.id)}
-          <li>
-            <a href="/new?type={t.type}&template={t.id}">{t.name}</a>
-            <span class="small muted">{t.type === "cash" ? "Cash" : "Tournament"}{t.players.length ? ` · ${t.players.length} players` : ""}</span>
-            <button class="link small muted" data-sound="thud" onclick={() => removeTemplate(t.id, t.name)} aria-label="Delete template {t.name}">Delete</button>
+        {#each templates as tpl (tpl.id)}
+          <li class="flex gap-2 items-baseline py-0.5 px-0">
+            <a href="/new?type={tpl.type}&template={tpl.id}">{tpl.name}</a>
+            <span class="small muted">{tpl.type === "cash" ? t("settings.defaults.templates.typeCash") : t("settings.defaults.templates.typeTournament")}{tpl.players.length ? ` · ${tp("settings.defaults.templates.playersCount", tpl.players.length, { n: tpl.players.length })}` : ""}</span>
+            <button class="link small muted" data-sound="thud" onclick={() => removeTemplate(tpl.id, tpl.name)} aria-label={t("settings.defaults.templates.deleteAriaLabel", { name: tpl.name })}>{t("common.delete")}</button>
           </li>
         {/each}
       </ul>
     {:else}
-      <span class="empty">No templates yet.</span>
+      <span class="empty">{t("settings.defaults.templates.empty")}</span>
     {/if}
   </div>
 </section>
@@ -752,172 +739,172 @@
 
 <!-- wider than the rest: a set list beside a table of chips -->
 {#if tab === "chips"}
-<section id="chips" class="wide" in:fly={rise(6)}>
-  <h2>Chip Sets</h2>
-  <p class="small muted lede">The chips you play with. Value is what's printed on the chip; each game can scale it (a chip printed 1 can play as 100 in a tournament). New games start with the default set.</p>
+<section id="chips" class="max-w-none mb-[30px]" in:fly={rise(6)}>
+  <h2 class="flex items-center gap-2 first:mt-0">{t("settings.chips.heading")}</h2>
+  <p class="small muted lede -mt-1 mx-0 mb-1 max-w-[88ch]">{t("settings.chips.lede")}</p>
   <!-- an import or a fresh start swaps what's saved, so it reads them again -->
   {#key rev}<ChipSets />{/key}
 </section>
 {/if}
 
 {#if tab === "tv"}
-<section id="tv" in:fly={rise(6)}>
-  <h2>TV</h2>
-  <div class="set">
-    <label class="what" for="warn"><b>Level Warning</b><span class="small muted">The TV beeps and the clock turns red before the blinds go up. The last minute blinks.</span></label>
+<section id="tv" class="max-w-[760px] mb-[30px]" in:fly={rise(6)}>
+  <h2 class="flex items-center gap-2 first:mt-0">{t("settings.tv.heading")}</h2>
+  <div class="set grid grid-cols-[minmax(0,280px)_minmax(0,1fr)] gap-x-7 gap-y-1.5 py-3 px-0 border-b-[length:var(--hair)] border-solid border-line last:border-b-0 max-[600px]:grid-cols-[1fr] items-center">
+    <label class="what flex flex-col gap-px m-0" for="warn"><b class="inline-flex items-center gap-1.5 font-normal text-fg">{t("settings.tv.levelWarning.label")}</b><span class="small muted">{t("settings.tv.levelWarning.hint")}</span></label>
     <select id="warn" bind:value={settings.levelWarning} onchange={saveSettings}>
-      <option value={0}>Off</option>
-      <option value={1}>1 Minute Before</option>
-      <option value={2}>2 Minutes Before</option>
-      <option value={5}>5 Minutes Before</option>
+      <option value={0}>{t("common.off")}</option>
+      <option value={1}>{t("settings.tv.levelWarning.before1")}</option>
+      <option value={2}>{t("settings.tv.levelWarning.before2")}</option>
+      <option value={5}>{t("settings.tv.levelWarning.before5")}</option>
     </select>
   </div>
-  <div class="set">
-    <div class="what"><b>Sound</b><span class="small muted">Browsers need one click on the TV before it can play sound, so the TV asks for it.</span></div>
-    <label class="inline"><input type="checkbox" bind:checked={settings.tvSound} onchange={saveSettings} /><span>Start TV Screens With Sound On</span></label>
+  <div class="set grid grid-cols-[minmax(0,280px)_minmax(0,1fr)] gap-x-7 gap-y-1.5 py-3 px-0 border-b-[length:var(--hair)] border-solid border-line last:border-b-0 max-[600px]:grid-cols-[1fr] items-center">
+    <div class="what flex flex-col gap-px"><b class="inline-flex items-center gap-1.5 font-normal text-fg">{t("settings.tv.sound.label")}</b><span class="small muted">{t("settings.tv.sound.hint")}</span></div>
+    <label class="across m-0"><input type="checkbox" bind:checked={settings.tvSound} onchange={saveSettings} /><span>{t("settings.tv.sound.checkbox")}</span></label>
   </div>
-  <div class="set">
-    <label class="what" for="tv-vol"><b>TV Volume</b><span class="small muted">The beeps, the countdown ticks and the announcer. A TV on another device follows this too. Let go of the slider to hear the level-up sound.</span></label>
-    <div class="vol">
-      <input id="tv-vol" type="range" min="0" max="100" step="5" bind:value={settings.tvVolume} onchange={() => (saveSettings(), sounds.level())} />
-      <span class="num small">{settings.tvVolume}%</span>
+  <div class="set grid grid-cols-[minmax(0,280px)_minmax(0,1fr)] gap-x-7 gap-y-1.5 py-3 px-0 border-b-[length:var(--hair)] border-solid border-line last:border-b-0 max-[600px]:grid-cols-[1fr] items-center">
+    <label class="what flex flex-col gap-px m-0" for="tv-vol"><b class="inline-flex items-center gap-1.5 font-normal text-fg">{t("settings.tv.volume.label")}</b><span class="small muted">{t("settings.tv.volume.hint")}</span></label>
+    <div class="vol flex items-center gap-2.5">
+      <input id="tv-vol" type="range" class="w-[200px]" min="0" max="100" step="5" bind:value={settings.tvVolume} onchange={() => (saveSettings(), sounds.level())} />
+      <span class="num small min-w-[4ch] text-right">{settings.tvVolume}%</span>
     </div>
   </div>
-  <div class="set">
-    <div class="what"><b>Keep Awake</b><span class="small muted">So the screen doesn't dim in the middle of a level. Works in Chrome, Edge and Safari.</span></div>
-    <label class="inline"><input type="checkbox" bind:checked={settings.tvAwake} onchange={saveSettings} /><span>Keep the TV On While the Clock Runs</span></label>
+  <div class="set grid grid-cols-[minmax(0,280px)_minmax(0,1fr)] gap-x-7 gap-y-1.5 py-3 px-0 border-b-[length:var(--hair)] border-solid border-line last:border-b-0 max-[600px]:grid-cols-[1fr] items-center">
+    <div class="what flex flex-col gap-px"><b class="inline-flex items-center gap-1.5 font-normal text-fg">{t("settings.tv.keepAwake.label")}</b><span class="small muted">{t("settings.tv.keepAwake.hint")}</span></div>
+    <label class="across m-0"><input type="checkbox" bind:checked={settings.tvAwake} onchange={saveSettings} /><span>{t("settings.tv.keepAwake.checkbox")}</span></label>
   </div>
-  <div class="set">
-    <div class="what"><b>Announcer</b><span class="small muted">After the beep, the TV reads the new blinds, breaks, busts and the winner out loud, in the device's own voice.</span></div>
+  <div class="set grid grid-cols-[minmax(0,280px)_minmax(0,1fr)] gap-x-7 gap-y-1.5 py-3 px-0 border-b-[length:var(--hair)] border-solid border-line last:border-b-0 max-[600px]:grid-cols-[1fr] items-center">
+    <div class="what flex flex-col gap-px"><b class="inline-flex items-center gap-1.5 font-normal text-fg">{t("settings.tv.announcer.label")}</b><span class="small muted">{t("settings.tv.announcer.hint")}</span></div>
     <div class="row">
-      <label class="inline"><input type="checkbox" bind:checked={settings.tvVoice} onchange={saveSettings} /><span>Read Big Moments Out Loud</span></label>
-      <button class="link small" onclick={testVoice}>Hear It</button>
+      <label class="across m-0"><input type="checkbox" bind:checked={settings.tvVoice} onchange={saveSettings} /><span>{t("settings.tv.announcer.checkbox")}</span></label>
+      <button class="link small" onclick={testVoice}>{t("settings.tv.announcer.hearIt")}</button>
     </div>
   </div>
-  <div class="set">
-    <div class="what"><b>Money on the TV</b><span class="small muted">Turn off to keep the prize pool, payouts and buy-ins off the big screen. The dealer screen still shows everything.</span></div>
-    <label class="inline"><input type="checkbox" bind:checked={settings.tvMoney} onchange={saveSettings} /><span>Show Money Amounts on the TV</span></label>
+  <div class="set grid grid-cols-[minmax(0,280px)_minmax(0,1fr)] gap-x-7 gap-y-1.5 py-3 px-0 border-b-[length:var(--hair)] border-solid border-line last:border-b-0 max-[600px]:grid-cols-[1fr] items-center">
+    <div class="what flex flex-col gap-px"><b class="inline-flex items-center gap-1.5 font-normal text-fg">{t("settings.tv.money.label")}</b><span class="small muted">{t("settings.tv.money.hint")}</span></div>
+    <label class="across m-0"><input type="checkbox" bind:checked={settings.tvMoney} onchange={saveSettings} /><span>{t("settings.tv.money.checkbox")}</span></label>
   </div>
 </section>
 {/if}
 
 {#if tab === "general"}
-<section id="general" in:fly={rise(6)}>
-  <h2>General</h2>
-  <h3 id="appearance">Appearance</h3>
-  <div class="set">
-    <div class="what">
-      <b id="theme-l">Theme</b>
-      <span class="small muted">System follows your device. The TV screen is always dark.</span>
+<section id="general" class="max-w-[760px] mb-[30px]" in:fly={rise(6)}>
+  <h2 class="flex items-center gap-2 first:mt-0">{t("settings.general.heading")}</h2>
+  <h3 id="appearance" class="mt-[22px]">{t("settings.appearance.heading")}</h3>
+  <div class="set grid grid-cols-[minmax(0,280px)_minmax(0,1fr)] gap-x-7 gap-y-1.5 py-3 px-0 border-b-[length:var(--hair)] border-solid border-line last:border-b-0 max-[600px]:grid-cols-[1fr] items-center">
+    <div class="what flex flex-col gap-px">
+      <b id="theme-l" class="inline-flex items-center gap-1.5 font-normal text-fg">{t("settings.appearance.theme.label")}</b>
+      <span class="small muted">{t("settings.appearance.theme.hint")}</span>
     </div>
     <Seg labelledby="theme-l" value={settings.theme} options={THEMES} onpick={pickTheme} />
   </div>
-  <div class="set">
-    <div class="what">
-      <b id="sound-l">Interface Sounds</b>
-      <span class="small muted">Quiet clicks under buttons and switches, chips clacking when money moves, and every chip its own note when you tap it. The TV's alarms are separate.</span>
+  <div class="set grid grid-cols-[minmax(0,280px)_minmax(0,1fr)] gap-x-7 gap-y-1.5 py-3 px-0 border-b-[length:var(--hair)] border-solid border-line last:border-b-0 max-[600px]:grid-cols-[1fr] items-center">
+    <div class="what flex flex-col gap-px">
+      <b id="sound-l" class="inline-flex items-center gap-1.5 font-normal text-fg">{t("settings.appearance.sounds.label")}</b>
+      <span class="small muted">{t("settings.appearance.sounds.hint")}</span>
     </div>
     <Seg
       labelledby="sound-l"
       value={settings.sounds ? "on" : "off"}
       options={[
-        { id: "off", label: "Off", icon: VolumeX },
-        { id: "on", label: "On", icon: Volume2 },
+        { id: "off", label: t("common.off"), icon: VolumeX },
+        { id: "on", label: t("common.on"), icon: Volume2 },
       ]}
       onpick={pickSounds}
     />
   </div>
-  <div class="set">
-    <label class="what" for="ui-vol"><b>Interface Volume</b><span class="small muted">How loud those clicks and clacks are. {settings.sounds ? "Let go of the slider to hear it." : "Turn on Interface Sounds to set it."}</span></label>
+  <div class="set grid grid-cols-[minmax(0,280px)_minmax(0,1fr)] gap-x-7 gap-y-1.5 py-3 px-0 border-b-[length:var(--hair)] border-solid border-line last:border-b-0 max-[600px]:grid-cols-[1fr] items-center">
+    <label class="what flex flex-col gap-px m-0" for="ui-vol"><b class="inline-flex items-center gap-1.5 font-normal text-fg">{t("settings.appearance.volume.label")}</b><span class="small muted">{t("settings.appearance.volume.hint")} {settings.sounds ? t("settings.appearance.volume.hintOn") : t("settings.appearance.volume.hintOff")}</span></label>
     <!-- (the title sits on the box: a disabled slider shows no tooltip of its own) -->
-    <div class="vol" title={settings.sounds ? undefined : "Interface Sounds are off"}>
-      <input id="ui-vol" type="range" min="0" max="100" step="5" bind:value={settings.volume} onchange={() => (saveSettings(), play("chips"))} disabled={!settings.sounds} />
-      <span class="num small">{settings.volume}%</span>
+    <div class="vol flex items-center gap-2.5" title={settings.sounds ? undefined : t("settings.appearance.volume.disabledTitle")}>
+      <input id="ui-vol" type="range" class="w-[200px]" min="0" max="100" step="5" bind:value={settings.volume} onchange={() => (saveSettings(), play("chips"))} disabled={!settings.sounds} />
+      <span class="num small min-w-[4ch] text-right">{settings.volume}%</span>
     </div>
   </div>
-  <div class="set">
-    <div class="what">
-      <b id="motion-l">Motion</b>
-      <span class="small muted">System follows your device's reduce-motion setting. Reduced turns off the slides, flips and page swaps here and on the TV.</span>
+  <div class="set grid grid-cols-[minmax(0,280px)_minmax(0,1fr)] gap-x-7 gap-y-1.5 py-3 px-0 border-b-[length:var(--hair)] border-solid border-line last:border-b-0 max-[600px]:grid-cols-[1fr] items-center">
+    <div class="what flex flex-col gap-px">
+      <b id="motion-l" class="inline-flex items-center gap-1.5 font-normal text-fg">{t("settings.appearance.motion.label")}</b>
+      <span class="small muted">{t("settings.appearance.motion.hint")}</span>
     </div>
     <Seg
       labelledby="motion-l"
       value={settings.motion}
       options={[
-        { id: "system", label: "System", icon: Sparkles },
-        { id: "reduced", label: "Reduced", icon: Minimize },
+        { id: "system", label: t("settings.appearance.motion.system"), icon: Sparkles },
+        { id: "reduced", label: t("settings.appearance.motion.reduced"), icon: Minimize },
       ]}
       onpick={pickMotion}
     />
   </div>
-  <div class="set">
-    <div class="what">
-      <b id="toys-l">Home Page Toys</b>
-      <span class="small muted">Cards to fan, chips to sort, dice, a bill counter and a roulette wheel to fidget with beside the headline. Off keeps the home page to your games.</span>
+  <div class="set grid grid-cols-[minmax(0,280px)_minmax(0,1fr)] gap-x-7 gap-y-1.5 py-3 px-0 border-b-[length:var(--hair)] border-solid border-line last:border-b-0 max-[600px]:grid-cols-[1fr] items-center">
+    <div class="what flex flex-col gap-px">
+      <b id="toys-l" class="inline-flex items-center gap-1.5 font-normal text-fg">{t("settings.appearance.toys.label")}</b>
+      <span class="small muted">{t("settings.appearance.toys.hint")}</span>
     </div>
     <Seg
       labelledby="toys-l"
       value={settings.toys ? "on" : "off"}
       options={[
-        { id: "off", label: "Off", icon: EyeOff },
-        { id: "on", label: "On", icon: Dices },
+        { id: "off", label: t("common.off"), icon: EyeOff },
+        { id: "on", label: t("common.on"), icon: Dices },
       ]}
       onpick={pickToys}
     />
   </div>
-  <h3 id="keys">Keyboard</h3>
-  <div class="set top">
-    <div class="what">
-      <b id="pal-l">Open Commands</b>
-      <span class="small muted">The command box does anything by name: go to a page, start a template, or "bust mike" on the dealer screen. Click the shortcut, then press the keys you want.</span>
+  <h3 id="keys" class="mt-[22px]">{t("settings.keyboard.heading")}</h3>
+  <div class="set top grid grid-cols-[minmax(0,280px)_minmax(0,1fr)] gap-x-7 gap-y-1.5 py-3 px-0 border-b-[length:var(--hair)] border-solid border-line last:border-b-0 max-[600px]:grid-cols-[1fr] items-start">
+    <div class="what flex flex-col gap-px">
+      <b id="pal-l" class="inline-flex items-center gap-1.5 font-normal text-fg">{t("settings.keyboard.openCommands.label")}</b>
+      <span class="small muted">{t("settings.keyboard.openCommands.hint")}</span>
     </div>
     <div>
       <div class="row">
-        <button class="keycap" class:listening aria-labelledby="pal-l" aria-describedby="pal-note" data-sound="none" onclick={listen} onkeydown={record} onblur={() => (listening = false)}>
+        <button class="keycap gap-2 min-w-[170px] justify-start" class:listening aria-labelledby="pal-l" aria-describedby="pal-note" data-sound="none" onclick={listen} onkeydown={record} onblur={() => (listening = false)}>
           <Icon icon={Keyboard} />
           {#if listening}
-            {#if holding}<kbd>{holding}</kbd><span class="muted">and a Key</span>{:else}<span class="muted">Press the New Keys</span>{/if}
+            {#if holding}<kbd>{holding}</kbd><span class="muted">{t("settings.keyboard.openCommands.andAKey")}</span>{:else}<span class="muted">{t("settings.keyboard.openCommands.pressNewKeys")}</span>{/if}
           {:else}
             <kbd>{keyLabel(paletteKey)}</kbd>
           {/if}
         </button>
         {#if listening}
-          <span class="small muted" in:fade={reveal()}>Esc to keep {keyLabel(paletteKey)}</span>
+          <span class="small muted" in:fade={reveal()}>{t("settings.keyboard.openCommands.escToKeep", { key: keyLabel(paletteKey) })}</span>
         {:else if paletteKey !== DEFAULT_PALETTE_KEY}
-          <button class="link small muted" data-sound="rewind" onclick={resetKey}>Reset to {keyLabel(DEFAULT_PALETTE_KEY)}</button>
+          <button class="link small muted" data-sound="rewind" onclick={resetKey}>{t("settings.keyboard.openCommands.resetButton", { key: keyLabel(DEFAULT_PALETTE_KEY) })}</button>
         {/if}
       </div>
       <!-- always there, so the row doesn't jump and a screen reader hears each new note -->
-      <p id="pal-note" class="small note" class:bad={keyNote?.bad} class:muted={!keyNote?.bad} aria-live="polite">
+      <p id="pal-note" class="small note min-h-[1.5em] mt-1.5 mx-0" class:bad={keyNote?.bad} class:muted={!keyNote?.bad} aria-live="polite">
         {#key keyNote}<span in:fade={reveal()}>{keyNote?.text ?? ""}</span>{/key}
       </p>
     </div>
   </div>
-  <div class="set top">
-    <div class="what"><b>Other Shortcuts</b><span class="small muted">These are fixed. None of them fire while you're typing in a box.</span></div>
+  <div class="set top grid grid-cols-[minmax(0,280px)_minmax(0,1fr)] gap-x-7 gap-y-1.5 py-3 px-0 border-b-[length:var(--hair)] border-solid border-line last:border-b-0 max-[600px]:grid-cols-[1fr] items-start">
+    <div class="what flex flex-col gap-px"><b class="inline-flex items-center gap-1.5 font-normal text-fg">{t("settings.keyboard.otherShortcuts.label")}</b><span class="small muted">{t("settings.keyboard.otherShortcuts.hint")}</span></div>
     <KeyList class="small" />
   </div>
-  <h3 id="region">Language &amp; Region</h3>
-  <div class="set">
-    <label class="what" for="lang"><b>Language <span class="pill">Soon</span></b><span class="small muted">PitMaster is in English for now. Your pick is saved for when translations arrive.</span></label>
+  <h3 id="region" class="mt-[22px]">{t("settings.region.heading")}</h3>
+  <div class="set grid grid-cols-[minmax(0,280px)_minmax(0,1fr)] gap-x-7 gap-y-1.5 py-3 px-0 border-b-[length:var(--hair)] border-solid border-line last:border-b-0 max-[600px]:grid-cols-[1fr] items-center">
+    <label class="what flex flex-col gap-px m-0" for="lang"><b class="inline-flex items-center gap-1.5 font-normal text-fg">{t("settings.language.title")}</b><span class="small muted">{t("settings.language.hint")}</span></label>
     <select id="lang" bind:value={settings.language} onchange={saveSettings}>
-      {#each LANGUAGES as [code, name] (code)}<option value={code} lang={code}>{name}</option>{/each}
+      {#each LANGS as { code, native } (code)}<option value={code} lang={code}>{native}</option>{/each}
     </select>
   </div>
-  <div class="set">
-    <label class="what" for="cur"><b>Currency</b><span class="small muted">How buy-ins, pots and cash chips are written: <span class="num">{money(1250.5)}</span>. Live TVs follow this one.</span></label>
+  <div class="set grid grid-cols-[minmax(0,280px)_minmax(0,1fr)] gap-x-7 gap-y-1.5 py-3 px-0 border-b-[length:var(--hair)] border-solid border-line last:border-b-0 max-[600px]:grid-cols-[1fr] items-center">
+    <label class="what flex flex-col gap-px m-0" for="cur"><b class="inline-flex items-center gap-1.5 font-normal text-fg">{t("settings.region.currency.label")}</b><span class="small muted">{t("settings.region.currency.hint")} <span class="num">{money(1250.5)}</span>. {t("settings.region.currency.hintEnd")}</span></label>
     <select id="cur" bind:value={settings.currency} onchange={saveSettings}>
-      {#each CURRENCIES as [code, name] (code)}<option value={code}>{name}</option>{/each}
+      {#each CURRENCY_CODES as code (code)}<option value={code}>{t(`settings.region.currency.names.${code}`)}</option>{/each}
     </select>
   </div>
-  <div class="set">
-    <div class="what"><b id="clock-l">Time</b><span class="small muted">Start times, bust times and the TV's clock. It's {timeOfDay(Date.now())}.</span></div>
+  <div class="set grid grid-cols-[minmax(0,280px)_minmax(0,1fr)] gap-x-7 gap-y-1.5 py-3 px-0 border-b-[length:var(--hair)] border-solid border-line last:border-b-0 max-[600px]:grid-cols-[1fr] items-center">
+    <div class="what flex flex-col gap-px"><b id="clock-l" class="inline-flex items-center gap-1.5 font-normal text-fg">{t("settings.region.time.label")}</b><span class="small muted">{t("settings.region.time.hint", { time: timeOfDay(Date.now()) })}</span></div>
     <Seg
       labelledby="clock-l"
       value={settings.clock}
       options={[
-        { id: "12h", label: "12-Hour", hint: "7:30 PM" },
-        { id: "24h", label: "24-Hour", hint: "19:30" },
+        { id: "12h", label: t("settings.region.time.h12"), hint: "7:30 PM" },
+        { id: "24h", label: t("settings.region.time.h24"), hint: "19:30" },
       ]}
       onpick={pickClock}
     />
@@ -926,183 +913,179 @@
 {/if}
 
 {#if tab === "yours"}
-<section id="yours" in:fly={rise(6)}>
-  <h2>Your Data</h2>
-  <h3 id="lock">Passcode Lock</h3>
-  <p class="small muted lede">
-    Everything here is already encrypted. A passcode goes further: nothing saved can be opened without it, even by
-    someone using this browser, and PitMaster locks itself after a while with no input. TV screens keep showing the game
-    while it's locked, and nothing on them can change it.
-  </p>
+<section id="yours" class="max-w-[760px] mb-[30px]" in:fly={rise(6)}>
+  <h2 class="flex items-center gap-2 first:mt-0">{t("settings.yours.heading")}</h2>
+  <h3 id="lock" class="mt-[22px]">{t("settings.lock.heading")}</h3>
+  <p class="small muted lede -mt-1 mx-0 mb-1 max-w-[88ch]">{t("settings.lock.intro")}</p>
   {#if vault.state === "memory"}
-    <p class="small muted">It needs a secure (https) page, where this browser can encrypt.</p>
+    <p class="small muted">{t("settings.lock.needsHttps")}</p>
   {:else if !vault.passcode}
-    <div class="set top">
-      <div class="what">
-        <b>Passcode</b>
-        <span class="small muted">At least {MIN_PASSCODE} characters, and longer is harder to crack if someone copies this browser's files. Forget it and everything saved here is gone for good, so export first.</span>
+    <div class="set top grid grid-cols-[minmax(0,280px)_minmax(0,1fr)] gap-x-7 gap-y-1.5 py-3 px-0 border-b-[length:var(--hair)] border-solid border-line last:border-b-0 max-[600px]:grid-cols-[1fr] items-start">
+      <div class="what flex flex-col gap-px">
+        <b class="inline-flex items-center gap-1.5 font-normal text-fg">{t("settings.lock.passcode.label")}</b>
+        <span class="small muted">{t("settings.lock.passcode.hint", { n: MIN_PASSCODE })}</span>
       </div>
-      <form class="vstack fields" onsubmit={(e) => passcode(next, e)}>
+      <form class="vstack fields items-start" onsubmit={(e) => passcode(next, e)}>
         <!-- password managers file a passcode under a name; this is the one the lock screen uses -->
         <input type="text" autocomplete="username" value="PitMaster" hidden />
-        <input type="password" bind:value={next} autocomplete="new-password" minlength={MIN_PASSCODE} placeholder="New Passcode" aria-label="New passcode" />
-        <input type="password" bind:value={again} autocomplete="new-password" placeholder="Type It Again" aria-label="New passcode, again" />
+        <input type="password" bind:value={next} autocomplete="new-password" minlength={MIN_PASSCODE} placeholder={t("settings.lock.passcode.newPlaceholder")} aria-label={t("settings.lock.passcode.newAriaLabel")} />
+        <input type="password" bind:value={again} autocomplete="new-password" placeholder={t("settings.lock.passcode.againPlaceholder")} aria-label={t("settings.lock.passcode.againAriaLabel")} />
         {#if next && nextProblem}<p class="small muted" transition:slide={reveal()}>{nextProblem}</p>{/if}
-        <button data-sound="lock" disabled={lockBusy || !!nextProblem} title={nextProblem || undefined}><Icon icon={Lock} />{lockBusy ? "Locking…" : "Turn On the Lock"}</button>
+        <button data-sound="lock" disabled={lockBusy || !!nextProblem} title={nextProblem || undefined}><Icon icon={Lock} />{lockBusy ? t("settings.lock.passcode.turningOn") : t("settings.lock.passcode.turnOnButton")}</button>
         {#if lockErr}<p class="small bad" aria-live="polite" transition:slide={reveal()}>{lockErr}</p>{/if}
       </form>
     </div>
   {:else}
-    <div class="set">
-      <label class="what" for="auto-lock"><b>Auto-Lock</b><span class="small muted">After this long with no clicks, taps or keys in any PitMaster tab. TV screens don't count and don't lock.</span></label>
+    <div class="set grid grid-cols-[minmax(0,280px)_minmax(0,1fr)] gap-x-7 gap-y-1.5 py-3 px-0 border-b-[length:var(--hair)] border-solid border-line last:border-b-0 max-[600px]:grid-cols-[1fr] items-center">
+      <label class="what flex flex-col gap-px m-0" for="auto-lock"><b class="inline-flex items-center gap-1.5 font-normal text-fg">{t("settings.lock.autoLock.label")}</b><span class="small muted">{t("settings.lock.autoLock.hint")}</span></label>
       <div class="row">
         <select id="auto-lock" bind:value={settings.autoLock} onchange={saveSettings}>
           {#each AUTO_LOCK as [s, label] (s)}<option value={s}>{label}</option>{/each}
         </select>
-        <button data-sound="lock" onclick={lockNow}><Icon icon={Lock} />Lock Now</button>
+        <button data-sound="lock" onclick={lockNow}><Icon icon={Lock} />{t("settings.lock.autoLock.lockNowButton")}</button>
       </div>
     </div>
-    <div class="set top">
-      <div class="what">
-        <b>Change or Turn Off</b>
-        <span class="small muted">Both take the current passcode. Everything is encrypted either way.</span>
+    <div class="set top grid grid-cols-[minmax(0,280px)_minmax(0,1fr)] gap-x-7 gap-y-1.5 py-3 px-0 border-b-[length:var(--hair)] border-solid border-line last:border-b-0 max-[600px]:grid-cols-[1fr] items-start">
+      <div class="what flex flex-col gap-px">
+        <b class="inline-flex items-center gap-1.5 font-normal text-fg">{t("settings.lock.changeOrOff.label")}</b>
+        <span class="small muted">{t("settings.lock.changeOrOff.hint")}</span>
       </div>
-      <form class="vstack fields" onsubmit={(e) => passcode(next, e)}>
+      <form class="vstack fields items-start" onsubmit={(e) => passcode(next, e)}>
         <input type="text" autocomplete="username" value="PitMaster" hidden />
-        <input type="password" bind:value={current} autocomplete="current-password" placeholder="Current Passcode" aria-label="Current passcode" />
-        <input type="password" bind:value={next} autocomplete="new-password" minlength={MIN_PASSCODE} placeholder="New Passcode" aria-label="New passcode" />
-        <input type="password" bind:value={again} autocomplete="new-password" placeholder="Type It Again" aria-label="New passcode, again" />
+        <input type="password" bind:value={current} autocomplete="current-password" placeholder={t("settings.lock.changeOrOff.currentPlaceholder")} aria-label={t("settings.lock.changeOrOff.currentAriaLabel")} />
+        <input type="password" bind:value={next} autocomplete="new-password" minlength={MIN_PASSCODE} placeholder={t("settings.lock.passcode.newPlaceholder")} aria-label={t("settings.lock.passcode.newAriaLabel")} />
+        <input type="password" bind:value={again} autocomplete="new-password" placeholder={t("settings.lock.passcode.againPlaceholder")} aria-label={t("settings.lock.passcode.againAriaLabel")} />
         {#if next && nextProblem}<p class="small muted" transition:slide={reveal()}>{nextProblem}</p>{/if}
         <div class="row">
-          <button data-sound="lock" disabled={lockBusy || !current || !!nextProblem} title={!current ? "Type the current passcode first" : nextProblem || undefined}>{lockBusy ? "Changing…" : "Change Passcode"}</button>
-          <button type="button" data-sound="unlock" disabled={lockBusy || !current} title={current ? undefined : "Type the current passcode first"} onclick={() => passcode(null)}>Turn Off the Lock</button>
+          <button data-sound="lock" disabled={lockBusy || !current || !!nextProblem} title={!current ? t("settings.lock.changeOrOff.typeCurrentFirst") : nextProblem || undefined}>{lockBusy ? t("settings.lock.changeOrOff.changingBusy") : t("settings.lock.changeOrOff.changeButton")}</button>
+          <button type="button" data-sound="unlock" disabled={lockBusy || !current} title={current ? undefined : t("settings.lock.changeOrOff.typeCurrentFirst")} onclick={() => passcode(null)}>{t("settings.lock.changeOrOff.turnOffButton")}</button>
         </div>
         {#if lockErr}<p class="small bad" aria-live="polite" transition:slide={reveal()}>{lockErr}</p>{/if}
       </form>
     </div>
   {/if}
-  <h3 id="data">Export &amp; Import</h3>
-  <p class="small muted lede">
-    Everything is saved in this browser, encrypted: {here.summary} ({here.kb} KB). There's no account and no cloud copy, so a file is how it gets to another device.
-    <a href="/privacy">How Your Data Is Handled</a>
+  <h3 id="data" class="mt-[22px]">{t("settings.data.heading")}</h3>
+  <p class="small muted lede -mt-1 mx-0 mb-1 max-w-[88ch]">
+    {t("settings.data.lede", { summary: here.summary, kb: here.kb })}
+    <a href="/privacy">{t("settings.data.privacyLink")}</a>
   </p>
-  <div class="set top">
-    <div class="what">
-      <b>Export</b>
-      <span class="small muted">One file with all of it. Keep it as a backup, or import it on another device and carry on from there. Without a password, anyone who has the file can read it.{#if exportedAt}{" "}Last exported {ago(exportedAt)}.{/if}</span>
+  <div class="set top grid grid-cols-[minmax(0,280px)_minmax(0,1fr)] gap-x-7 gap-y-1.5 py-3 px-0 border-b-[length:var(--hair)] border-solid border-line last:border-b-0 max-[600px]:grid-cols-[1fr] items-start">
+    <div class="what flex flex-col gap-px">
+      <b class="inline-flex items-center gap-1.5 font-normal text-fg">{t("settings.data.export.label")}</b>
+      <span class="small muted">{t("settings.data.export.hint")}{#if exportedAt}{" "}{t("settings.data.export.lastExported", { time: ago(exportedAt) })}{/if}</span>
     </div>
-    <div class="vstack fields">
+    <div class="vstack fields items-start">
       <div>
         <button
           onclick={exportEverything}
           disabled={exporting || (locking && exportPassword.length < MIN_PASSWORD)}
-          title={locking && exportPassword.length < MIN_PASSWORD ? `Type a password of at least ${MIN_PASSWORD} characters, or turn off the lock` : undefined}
-        ><Icon icon={Download} />{exporting ? "Locking…" : "Export Everything"}</button>
+          title={locking && exportPassword.length < MIN_PASSWORD ? t("settings.data.export.passwordTitle", { n: MIN_PASSWORD }) : undefined}
+        ><Icon icon={Download} />{exporting ? t("settings.data.export.busy") : t("settings.data.export.button")}</button>
       </div>
-      <label class="inline"><input type="checkbox" bind:checked={withSettings} /><span>Include These Settings</span></label>
-      <label class="inline"><input type="checkbox" bind:checked={locking} /><span>Lock It With a Password</span></label>
+      <label class="across m-0"><input type="checkbox" bind:checked={withSettings} /><span>{t("settings.data.export.includeSettings")}</span></label>
+      <label class="across m-0"><input type="checkbox" bind:checked={locking} /><span>{t("settings.data.export.lockWithPassword")}</span></label>
       {#if locking}
-        <div class="vstack fields" transition:slide={reveal()}>
-          <input type="password" bind:value={exportPassword} autocomplete="new-password" minlength={MIN_PASSWORD} placeholder="Password" aria-label="Password for the file" aria-describedby="pw-note" />
-          <p id="pw-note" class="small muted">At least {MIN_PASSWORD} characters, and longer is stronger. Encrypted with AES-256. Importing it takes this password, and a lost one can't be recovered, by you or by us.</p>
+        <div class="vstack fields items-start" transition:slide={reveal()}>
+          <input type="password" bind:value={exportPassword} autocomplete="new-password" minlength={MIN_PASSWORD} placeholder={t("settings.data.export.passwordPlaceholder")} aria-label={t("settings.data.export.passwordAriaLabel")} aria-describedby="pw-note" />
+          <p id="pw-note" class="small muted m-0">{t("settings.data.export.passwordNote", { n: MIN_PASSWORD })}</p>
         </div>
       {/if}
     </div>
   </div>
-  <div class="set top">
-    <div class="what">
-      <b>Import</b>
-      <span class="small muted">A game in progress picks up right where it left off, clock, players and TV code included.</span>
+  <div class="set top grid grid-cols-[minmax(0,280px)_minmax(0,1fr)] gap-x-7 gap-y-1.5 py-3 px-0 border-b-[length:var(--hair)] border-solid border-line last:border-b-0 max-[600px]:grid-cols-[1fr] items-start">
+    <div class="what flex flex-col gap-px">
+      <b class="inline-flex items-center gap-1.5 font-normal text-fg">{t("settings.data.import.label")}</b>
+      <span class="small muted">{t("settings.data.import.hint")}</span>
     </div>
     <div>
       {#if pending}
-        <div class="vstack fields block" transition:slide={reveal()}>
-          <p class="with-icon file"><Icon icon={FileJson} /><b>{pending.name}</b></p>
-          <p class="small muted">
-            {pending.backup.kind === "game" ? "One game" : "Everything"}, exported {day(pending.backup.exportedAt)} at {timeOfDay(pending.backup.exportedAt)}:
-            {contents(pending.backup.data)}{pending.backup.settings ? ", plus settings" : ""}.
+        <div class="vstack fields slab items-start" transition:slide={reveal()}>
+          <p class="with-icon file [overflow-wrap:anywhere]"><Icon icon={FileJson} /><b>{pending.name}</b></p>
+          <p class="small muted m-0">
+            {t(pending.backup.kind === "game" ? "settings.data.import.kindGame" : "settings.data.import.kindEverything")}, {t("settings.data.import.exportedAt", { day: day(pending.backup.exportedAt), time: timeOfDay(pending.backup.exportedAt) })}:
+            {contents(pending.backup.data)}{pending.backup.settings ? t("settings.data.import.plusSettings") : ""}.
           </p>
           {#if whole}
             <Seg
               labelledby="mode-l"
               value={mode}
               options={[
-                { id: "merge", label: "Add to This Browser", icon: Merge },
-                { id: "replace", label: "Replace Everything", icon: Replace },
+                { id: "merge", label: t("settings.data.import.modeMerge"), icon: Merge },
+                { id: "replace", label: t("settings.data.import.modeReplace"), icon: Replace },
               ]}
               onpick={(m: ImportMode) => (mode = m)}
             />
-            <span id="mode-l" class="sr-only">How to import</span>
+            <span id="mode-l" class="sr-only">{t("settings.data.import.modeAriaLabel")}</span>
           {/if}
           {#if plan}
             <p class="small">
               {#if whole && mode === "replace"}
-                <span class="bad">The {plural(plan.here, "game")} here {plan.here === 1 ? "is" : "are"} swapped for the file's {pending.backup.data.games.length}.</span> Chip sets, templates and pay links too.
+                <span class="bad">{tp("settings.data.import.replaceCount", plan.here, { n: plan.here })} {pending.backup.data.games.length}.</span> {t("settings.data.import.replaceOthers")}
               {:else}
-                {list([plan.added > 0 && `${plural(plan.added, "new game")}`, plan.updated > 0 && `${plan.updated} newer than the copy here`, plan.kept > 0 && `${plan.kept} already up to date`]) || "No games in it"}. Nothing here is deleted.
+                {list([plan.added > 0 && tp("settings.data.count.newGames", plan.added, { n: plan.added }), plan.updated > 0 && t("settings.data.import.newerCount", { n: plan.updated }), plan.kept > 0 && t("settings.data.import.keptCount", { n: plan.kept })]) || t("settings.data.import.noGames")}. {t("settings.data.import.nothingDeleted")}
               {/if}
             </p>
           {/if}
           {#if pending.backup.settings}
-            <label class="opt">
-              <input type="checkbox" bind:checked={takeSettings} />
-              <span><span class="name">Use Its Settings Too</span><span class="small muted">House rules, money, game defaults and the TV. This screen's theme and sounds stay as they are.</span></span>
+            <label class="opt grid grid-cols-[auto_1fr] gap-2 items-start cursor-pointer m-0">
+              <input type="checkbox" class="mt-[3px] mx-0" bind:checked={takeSettings} />
+              <span class="flex flex-col"><span class="name">{t("settings.data.import.useSettingsToo.label")}</span><span class="small muted">{t("settings.data.import.useSettingsToo.hint")}</span></span>
             </label>
           {/if}
           <div class="row">
             {#if whole && mode === "replace"}
-              <button class="danger" data-sound="thud" onclick={runImport}><Icon icon={Replace} />Replace Everything</button>
+              <button class="danger" data-sound="thud" onclick={runImport}><Icon icon={Replace} />{t("settings.data.import.modeReplace")}</button>
             {:else}
-              <button onclick={runImport}><Icon icon={Upload} />Import</button>
+              <button onclick={runImport}><Icon icon={Upload} />{t("settings.data.import.importButton")}</button>
             {/if}
-            <button class="link muted" data-sound="close" onclick={() => (pending = null)}>Cancel</button>
+            <button class="link muted" data-sound="close" onclick={() => (pending = null)}>{t("common.cancel")}</button>
           </div>
         </div>
       {:else if lockedFile}
-        <form class="vstack fields block" onsubmit={unlockFile} transition:slide={reveal()}>
-          <p class="with-icon file"><Icon icon={Lock} /><b>{lockedFile.name}</b></p>
+        <form class="vstack fields slab items-start" onsubmit={unlockFile} transition:slide={reveal()}>
+          <p class="with-icon file [overflow-wrap:anywhere]"><Icon icon={Lock} /><b>{lockedFile.name}</b></p>
           <p class="small muted">
-            {lockedFile.file.kind === "game" ? "One game" : "Everything"}, exported {day(lockedFile.file.exportedAt)} at {timeOfDay(lockedFile.file.exportedAt)}. It's locked with a password.
+            {t(lockedFile.file.kind === "game" ? "settings.data.import.kindGame" : "settings.data.import.kindEverything")}, {t("settings.data.import.exportedAt", { day: day(lockedFile.file.exportedAt), time: timeOfDay(lockedFile.file.exportedAt) })}. {t("settings.data.import.lockedWithPassword")}
           </p>
           <div class="row">
-            <input type="password" bind:value={password} autocomplete="off" placeholder="Password" aria-label="The file's password" aria-invalid={!!unlockErr} />
+            <input type="password" bind:value={password} autocomplete="off" placeholder={t("settings.data.export.passwordPlaceholder")} aria-label={t("settings.data.import.filePasswordAriaLabel")} aria-invalid={!!unlockErr} />
             <!-- (it clicks open, or doesn't, once the password's been tried) -->
-            <button data-sound="none" disabled={!password || unlocking} title={password ? undefined : "Type the file's password first"}><Icon icon={Lock} />{unlocking ? "Unlocking…" : "Unlock"}</button>
-            <button type="button" class="link muted" data-sound="close" onclick={() => (lockedFile = null)}>Cancel</button>
+            <button data-sound="none" disabled={!password || unlocking} title={password ? undefined : t("settings.data.import.typePasswordFirst")}><Icon icon={Lock} />{unlocking ? t("settings.data.import.unlockingBusy") : t("settings.data.import.unlockButton")}</button>
+            <button type="button" class="link muted" data-sound="close" onclick={() => (lockedFile = null)}>{t("common.cancel")}</button>
           </div>
           {#if unlockErr}<p class="small bad" aria-live="polite" transition:slide={reveal()}>{unlockErr}</p>{/if}
         </form>
       {:else}
         <!-- drop a file anywhere on this box, or pick one -->
         <div
-          class="drop"
+          class="drop flex items-center gap-2.5 flex-wrap p-[14px] border-[length:var(--hair)] border-dashed border-line-strong"
           class:over={dragging}
           role="group"
-          aria-label="Import a file"
+          aria-label={t("settings.data.import.dropAriaLabel")}
           ondragenter={(e) => (e.preventDefault(), (dragging = true))}
           ondragover={(e) => e.preventDefault()}
           ondragleave={(e) => !(e.currentTarget as HTMLElement).contains(e.relatedTarget as Node) && (dragging = false)}
           ondrop={onDrop}
         >
-          <label class="btn"><Icon icon={Upload} />Choose a File<input class="sr-only" type="file" accept=".json,application/json" onchange={pickFile} /></label>
-          <span class="small muted">Or Drop It Here</span>
+          <label class="btn m-0"><Icon icon={Upload} />{t("settings.data.import.chooseFile")}<input class="sr-only" type="file" accept=".json,application/json" onchange={pickFile} /></label>
+          <span class="small muted">{t("settings.data.import.orDropHere")}</span>
         </div>
         {#if undoable}
-          <p class="small links arrived" transition:slide={reveal()}>
-            <span class="good">Imported.</span>
+          <p class="small links arrived mt-2 mx-0" transition:slide={reveal()}>
+            <span class="good">{t("settings.data.import.importedLabel")}</span>
             {#if arrived.length}
-              {arrived.length === 1 ? "Ready to Run:" : "In Progress:"}
+              {arrived.length === 1 ? t("settings.data.import.readyToRun") : t("settings.data.import.inProgress")}
               {#each arrived.slice(0, 4) as g (g.id)}<a class="with-icon" href="/game/{g.id}">{g.name}<Icon icon={ArrowRight} size="1em" /></a>{/each}
             {/if}
-            <button class="link muted with-icon" data-sound="none" onclick={takeBack}><Icon icon={Undo2} size="1em" />Undo Import</button>
+            <button class="link muted with-icon" data-sound="none" onclick={takeBack}><Icon icon={Undo2} size="1em" />{t("settings.data.import.undoButton")}</button>
           </p>
         {/if}
       {/if}
     </div>
   </div>
-  <div class="set">
-    <div class="what"><b>Start Over</b><span class="small muted">Deletes every game and custom chip set in this browser. Can't be undone.</span></div>
-    <div><button class="danger" data-sound="thud" onclick={startOver}><Icon icon={Trash} />Delete Everything</button></div>
+  <div class="set grid grid-cols-[minmax(0,280px)_minmax(0,1fr)] gap-x-7 gap-y-1.5 py-3 px-0 border-b-[length:var(--hair)] border-solid border-line last:border-b-0 max-[600px]:grid-cols-[1fr] items-center">
+    <div class="what flex flex-col gap-px"><b class="inline-flex items-center gap-1.5 font-normal text-fg">{t("settings.data.startOver.label")}</b><span class="small muted">{t("settings.data.startOver.hint")}</span></div>
+    <div><button class="danger" data-sound="thud" onclick={startOver}><Icon icon={Trash} />{t("settings.data.startOver.button")}</button></div>
   </div>
 </section>
 {/if}
@@ -1110,39 +1093,13 @@
 </div>
 
 <style>
-  section {
-    max-width: 760px;
-    margin-bottom: 30px;
-  }
-  section.wide {
-    max-width: none;
-  }
-  h2 {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
   /* a subsection opens on its own rule, so the row above it drops its one */
-  h3 {
-    margin-top: 22px;
-  }
   .set:has(+ h3) {
     border-bottom: 0;
-  }
-  /* the tabs down the left, the open one beside them */
-  .settings {
-    display: grid;
-    grid-template-columns: 176px minmax(0, 1fr);
-    gap: 0 48px;
-    align-items: start;
-    margin-top: 26px;
   }
   .side {
     position: sticky;
     top: calc(var(--head, 0px) + 16px);
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
   }
   /* a short screen can't hold the whole list still: it scrolls with the page */
   @media (max-height: 500px) {
@@ -1150,22 +1107,7 @@
       position: static;
     }
   }
-  .group {
-    margin: 18px 0 4px;
-    padding-left: 11px;
-  }
-  .group:first-child {
-    margin-top: 0;
-  }
   .side a {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    min-height: var(--control-h-big);
-    padding: 0 10px;
-    border: var(--hair) solid transparent;
-    color: var(--fg);
-    text-decoration: none;
     transition:
       background-color var(--dur-hover) var(--ease-out),
       border-color var(--dur-hover) var(--ease-out);
@@ -1173,9 +1115,6 @@
   .side a :global(svg) {
     color: var(--muted);
     transition: color var(--dur-hover) var(--ease-out);
-  }
-  .side a:hover {
-    background: var(--block);
   }
   .side a[aria-current="page"] {
     background: var(--block);
@@ -1188,146 +1127,19 @@
   section:target {
     animation: none;
   }
-  section > h2:first-child {
-    margin-top: 0;
-  }
   /* a phone: the tabs become a small grid over the open one */
   @media (max-width: 760px) {
-    .settings {
-      grid-template-columns: minmax(0, 1fr);
-      margin-top: 18px;
-    }
     .side {
       position: static;
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 4px;
-      margin-bottom: 26px;
     }
-    .group {
-      display: none;
-    }
-    .side a {
-      gap: 7px;
-      padding: 0 8px;
-      border-color: var(--line);
-    }
-  }
-  @media (max-width: 380px) {
-    .side {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-  }
-  .set {
-    display: grid;
-    grid-template-columns: minmax(0, 280px) minmax(0, 1fr);
-    gap: 6px 28px;
-    align-items: center;
-    padding: 12px 0;
-    border-bottom: var(--hair) solid var(--line);
-  }
-  /* the heading's rule opens the section; the last row doesn't need one */
-  .set:last-child {
-    border-bottom: 0;
-  }
-  .set label {
-    margin: 0;
-  }
-  .what {
-    display: flex;
-    flex-direction: column;
-    gap: 1px;
-  }
-  .what b {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-weight: normal;
-    color: var(--fg);
-  }
-  /* rows whose control is tall (the rules box) line up at the top */
-  .set.top {
-    align-items: start;
-  }
-  .lede {
-    margin: -4px 0 4px;
-    max-width: 88ch;
-  }
-  .common {
-    margin: 6px 0 8px;
-  }
-  /* what a switch opens up, tucked under it */
-  .more {
-    margin-top: 8px;
-  }
-  /* a column of controls, each at its own width; the gap spaces them */
-  .fields {
-    align-items: flex-start;
-  }
-  .fields p {
-    margin: 0;
-  }
-  .fields label.inline {
-    margin-right: 0;
-  }
-  /* a switch's number, opening out beside it. its words stay on one line, so
-     while it opens they're cut off rather than folded onto two */
-  .beside {
-    white-space: nowrap;
-  }
-  /* a volume slider with its level beside it */
-  .vol {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .vol input {
-    width: 200px;
-  }
-  .vol .num {
-    min-width: 4ch;
-    text-align: right;
-  }
-  /* a switch with its name and a line on what it does */
-  .opt {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 8px;
-    align-items: start;
-    cursor: pointer;
-  }
-  .opt input {
-    margin: 3px 0 0;
-  }
-  /* a press anywhere on the row presses its box, as a press on the box does */
-  .opt:active input {
-    transform: scale(0.86);
-  }
-  .opt > span {
-    display: flex;
-    flex-direction: column;
-  }
-  .templates li {
-    display: flex;
-    gap: 8px;
-    align-items: baseline;
-    padding: 2px 0;
   }
   /* (global: some are drawn by shared components) */
   .set :global(select) {
     justify-self: start;
     min-width: 220px;
   }
-  #t-payouts {
-    width: 220px;
-  }
   /* the shortcut, shown as the keys themselves. while it records, its edge
      goes to ink over the lighter field face, like the picked side of a switch */
-  .keycap {
-    gap: 8px;
-    min-width: 170px;
-    justify-content: flex-start;
-  }
   .keycap kbd {
     pointer-events: none;
   }
@@ -1336,10 +1148,6 @@
     border-color: var(--fg);
     background: var(--field);
   }
-  .note {
-    min-height: 1.5em;
-    margin: 6px 0 0;
-  }
   /* the file box is hidden inside its label, so the label wears the focus ring */
   label.btn:has(:focus-visible) {
     outline: 2px solid var(--focus);
@@ -1347,12 +1155,6 @@
   }
   /* the import target: a quiet box that lights up when a file is over it */
   .drop {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-wrap: wrap;
-    padding: 14px;
-    border: var(--hair) dashed var(--line-strong);
     transition:
       background-color var(--dur-hover) var(--ease-out),
       border-color var(--dur-hover) var(--ease-out);
@@ -1362,16 +1164,11 @@
     border-color: var(--focus);
     border-style: solid;
   }
-  .file {
-    overflow-wrap: anywhere;
-  }
-  .arrived {
-    margin: 8px 0 0;
+  /* a press anywhere on the row presses its box, as a press on the box does */
+  .opt:active input {
+    transform: scale(0.86);
   }
   @media (max-width: 600px) {
-    .set {
-      grid-template-columns: 1fr;
-    }
     .set :global(select) {
       width: 100%;
     }

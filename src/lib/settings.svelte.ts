@@ -1,9 +1,10 @@
 // per-browser preferences. kept apart from the game data (store.ts) so a backup
 // restore or a wipe never flips someone's theme. encrypted like the games,
-// except the theme and motion, which app.html reads before the page paints.
+// except the theme, motion and language, which app.html reads before the page paints.
 import type { CashRake, HostPrefs } from "./types";
 import { DEFAULT_PALETTE_KEY } from "./keys";
 import { onSaved, readSlot, save } from "./vault";
+import { detectLanguage, isRtl } from "./i18n/langs";
 
 export type Theme = "system" | "light" | "dark";
 
@@ -17,7 +18,7 @@ export interface Settings {
   paletteKey: string; // what opens Commands, like "Mod+K" (see keys.ts)
   intro: boolean; // show How It Works on the home page (until Don't Show Again)
   toys: boolean; // the desk toys on the home page (cards, dice, the wheel...)
-  language: string; // saved for when translations arrive; nothing reads it yet
+  language: string; // an ISO code from i18n/langs.ts; guessed from the browser on the first visit
   currency: string;
   clock: "12h" | "24h";
   levelWarning: number; // minutes before a level ends, 0 = off
@@ -144,17 +145,23 @@ export const houseRules = () =>
     .map((r) => r.trim())
     .filter(Boolean);
 
-/** the theme and motion, the only settings kept readable */
+/** the theme, motion and language, the only settings kept readable */
 function look(): Partial<Settings> {
   try {
-    const { theme, motion } = JSON.parse(localStorage.getItem(LOOK_KEY) ?? "{}");
-    return { ...(theme && { theme }), ...(motion && { motion }) };
+    const { theme, motion, language } = JSON.parse(localStorage.getItem(LOOK_KEY) ?? "{}");
+    return { ...(theme && { theme }), ...(motion && { motion }), ...(language && { language }) };
   } catch {
     return {};
   }
 }
 
-export const settings = $state<Settings>({ ...defaults, ...look() });
+const firstLook = look();
+// first visit, no language picked yet: guess from the browser instead of defaulting to English
+export const settings = $state<Settings>({
+  ...defaults,
+  ...firstLook,
+  ...(firstLook.language ? {} : { language: detectLanguage() }),
+});
 
 /** decrypt the rest of the settings, once the vault's open */
 export async function openSettings(key: CryptoKey) {
@@ -163,6 +170,7 @@ export async function openSettings(key: CryptoKey) {
     if (saved) Object.assign(settings, JSON.parse(saved), look());
   } catch {} // unreadable: the defaults stand, and the next save replaces it
   applyTheme();
+  applyLang();
 }
 
 /** the settings as text, for sealing under a new key */
@@ -172,19 +180,21 @@ export const settingsText = () => JSON.stringify(settings);
 onSaved("settings", (t) => {
   Object.assign(settings, JSON.parse(t), look());
   applyTheme();
+  applyLang();
 });
 
 export function saveSettings() {
   try {
-    localStorage.setItem(LOOK_KEY, JSON.stringify({ theme: settings.theme, motion: settings.motion }));
+    localStorage.setItem(LOOK_KEY, JSON.stringify({ theme: settings.theme, motion: settings.motion, language: settings.language }));
   } catch {}
   save("settings", JSON.stringify(settings));
   applyTheme();
+  applyLang();
 }
 
 // how this screen looks and sounds is its own business: an imported backup
 // brings the house rules, money and defaults, but not these
-const THIS_SCREEN: (keyof Settings)[] = ["theme", "motion", "sounds", "volume", "paletteKey", "autoLock", "intro"];
+const THIS_SCREEN: (keyof Settings)[] = ["theme", "motion", "language", "sounds", "volume", "paletteKey", "autoLock", "intro"];
 
 /** take on the settings from another device's backup (unknown or mistyped keys are skipped) */
 export function adoptSettings(from: Record<string, unknown>) {
@@ -205,8 +215,8 @@ export function applyTheme() {
   if (!darkQuery) return;
   const root = document.documentElement;
   root.dataset.theme = resolvedTheme();
-  // the browser's bar follows, as app.html set it (the tv is always dark)
-  const bar = root.dataset.theme === "dark" || root.dataset.stage ? "#151515" : "#fdfdfd";
+  // the browser's bar follows, as app.html set it
+  const bar = root.dataset.theme === "dark" ? "#151515" : "#fdfdfd";
   document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]').forEach((m) => (m.content = bar));
   // motion.ts and app.css read this alongside prefers-reduced-motion
   if (settings.motion === "reduced") document.documentElement.dataset.motion = "reduced";
@@ -214,6 +224,15 @@ export function applyTheme() {
 }
 
 darkQuery?.addEventListener("change", applyTheme);
+
+// app.html guesses this from the browser before first paint; this keeps it in
+// sync once the real setting is known (a passcode's LockScreen, then the app)
+export function applyLang() {
+  if (typeof document === "undefined") return;
+  const root = document.documentElement;
+  root.lang = settings.language;
+  root.dir = isRtl(settings.language) ? "rtl" : "ltr";
+}
 
 // ---------- what the host picked, as the tv sees it ----------
 // a tv on another device has its own (probably untouched) settings. the host's

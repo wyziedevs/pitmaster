@@ -1,13 +1,23 @@
 <script lang="ts">
   import type { ChipDef } from "$lib/types";
-  import { edgeInserts } from "$lib/chips";
+  import { edgeInserts, faceText } from "$lib/chips";
   import { reducedMotion } from "$lib/motion";
+  import { t } from "$lib/i18n";
   import ChipFace from "./ChipFace.svelte";
 
   // a chip on the table, seen from a little above: its face (ChipFace.svelte)
   // and under it the front of its edge, a band with the edge inserts that face
-  // the viewer.
-  let { chip, size = 48, text, spin = true }: { chip: ChipDef; size?: number; text?: string; spin?: boolean } = $props();
+  // the viewer. `rest` is how far it's turned where it lies (a chip tossed on
+  // the felt never lands square); `shadow` off leaves the shadow to whatever
+  // it's lying on (Chip Sort draws its own, so it stays down while a chip hops).
+  let {
+    chip,
+    size = 48,
+    text,
+    spin = true,
+    rest = 0,
+    shadow = true,
+  }: { chip: ChipDef; size?: number; text?: string; spin?: boolean; rest?: number; shadow?: boolean } = $props();
 
   const uid = $props.id();
 
@@ -60,13 +70,14 @@
   const hover = (e: PointerEvent) => e.pointerType === "mouse" && spinOnce();
 
   // the inserts round the edge, turned with the face so it rolls round with it
-  const inserts = $derived(edgeInserts(chip, turn));
+  const inserts = $derived(edgeInserts(chip, rest + turn));
+  const label = $derived(text ?? faceText(chip));
 </script>
 
 <!-- data-v: tapped, a chip clacks on its own note (toys.ts) -->
 <svg
   bind:this={svg}
-  class="chip"
+  class="chip inline-block flex-none align-middle overflow-visible"
   class:spin
   onpointerenter={hover}
   data-v={chip.value}
@@ -74,18 +85,19 @@
   height={size}
   viewBox="-50 -50 100 100"
   role="img"
-  aria-label="{chip.label || 'chip'} worth {chip.value}"
+  aria-label={t("chips.chipAriaLabel", { label, value: chip.value })}
 >
-  <title>{chip.label || "chip"} = {chip.value}</title>
+  <title>{t("chips.chipTitle", { label, value: chip.value })}</title>
   <defs>
     <clipPath id="{uid}-edge"><path d={edgePath} /></clipPath>
-    <!-- the edge is round: dark at the sides, a soft light just left of center -->
+    <!-- the edge is round and faces out, not up, so it's a shade darker than
+         the face: darkest at the sides, a soft light just left of center -->
     <linearGradient id="{uid}-round">
-      <stop offset="0" stop-color="#000" stop-opacity="0.38" />
-      <stop offset="0.22" stop-color="#000" stop-opacity="0" />
-      <stop offset="0.42" stop-color="#fff" stop-opacity="0.16" />
-      <stop offset="0.64" stop-color="#000" stop-opacity="0" />
-      <stop offset="1" stop-color="#000" stop-opacity="0.42" />
+      <stop offset="0" stop-color="#000" stop-opacity="0.46" />
+      <stop offset="0.2" stop-color="#000" stop-opacity="0.12" />
+      <stop offset="0.4" stop-color="#fff" stop-opacity="0.1" />
+      <stop offset="0.62" stop-color="#000" stop-opacity="0.1" />
+      <stop offset="1" stop-color="#000" stop-opacity="0.5" />
     </linearGradient>
     <radialGradient id="{uid}-shade">
       <stop offset="0" stop-color="#000" stop-opacity="0.35" />
@@ -99,8 +111,8 @@
     </radialGradient>
   </defs>
 
-  <!-- its shadow on the table -->
-  <ellipse cy={(49 + EDGE) * TILT - LIFT - 2} rx="50" ry="9" fill="url(#{uid}-shade)" />
+  <!-- its shadow on the table, falling away from the light: down and right -->
+  {#if shadow}<ellipse cx="5" cy={(49 + EDGE) * TILT - LIFT - 1} rx="50" ry="9" fill="url(#{uid}-shade)" />{/if}
   <g transform="translate(0 {-LIFT}) scale(1 {TILT})">
   <g clip-path="url(#{uid}-edge)">
     <rect x="-50" y="0" width="100" height="60" fill={chip.color} />
@@ -110,19 +122,10 @@
   <path d={edgePath} fill="none" stroke="rgb(0 0 0 / 0.45)" stroke-width="1.2" />
 
   <!-- the face: what spins -->
-  <ChipFace {chip} {text} detail={size >= 34} {turn} id={uid} />
+  <ChipFace {chip} {text} {size} turn={rest + turn} id={uid} />
 
   <!-- the light stays where it is while the face turns under it -->
   <circle r="49" fill="url(#{uid}-lit)" />
   <circle r="49" fill="none" stroke="rgb(0 0 0 / 0.4)" stroke-width="1.2" />
   </g>
 </svg>
-
-<style>
-  .chip {
-    display: inline-block;
-    flex: none;
-    vertical-align: middle;
-    overflow: visible;
-  }
-</style>

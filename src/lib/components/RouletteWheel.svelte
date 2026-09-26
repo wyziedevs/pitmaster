@@ -7,6 +7,7 @@
   // finger. it's just a wheel to spin: nothing is bet, won or kept.
   import { play } from "$lib/sound";
   import { reducedMotion } from "$lib/motion";
+  import { t } from "$lib/i18n";
 
   // the pockets clockwise from the zero, as every single-zero wheel has them
   const ORDER = [0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26];
@@ -311,13 +312,13 @@
 </script>
 
 <div class="toy">
-  <div class="table">
+  <div class="table" dir="ltr">
     <button
       type="button"
       class="wheel"
       class:held={!!grab}
       data-sound="none"
-      aria-label="Roulette wheel, flick it to spin"
+      aria-label={t("toys.rouletteWheel.aria")}
       onpointerdown={down}
       onpointermove={move}
       onpointerup={up}
@@ -412,7 +413,7 @@
       {/if}
     </div>
   </div>
-  <p class="hint">Flick the wheel to spin it.</p>
+  <p class="hint">{t("toys.rouletteWheel.hint")}</p>
 </div>
 
 <style>
