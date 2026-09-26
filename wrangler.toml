@@ -1,0 +1,6 @@
+# the site, on cloudflare pages. sveltekit's adapter reads this file to know
+# it's building for pages, and `wrangler pages deploy` reads the project name
+# and output folder from it. the tv relay api has its own: wrangler.api.toml
+name = "pitmaster"
+pages_build_output_dir = ".svelte-kit/cloudflare"
+compatibility_date = "2026-09-01"

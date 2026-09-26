@@ -1,0 +1,46 @@
+{
+  "name": "pitmaster",
+  "version": "0.0.1",
+  "description": "Run a poker game of any size: blind clocks, chip math, buy-ins, payouts and a live TV display. Free, no account, encrypted on your device.",
+  "author": "Wyzie LLC (https://wyzie.io)",
+  "homepage": "https://pitmaster.cc",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.6.5",
+  "scripts": {
+    "dev": "concurrently -n web,api -c blue,green \"pnpm run dev:web\" \"pnpm run dev:api\"",
+    "dev:web": "vite dev",
+    "dev:api": "nitro dev --port 3001",
+    "build": "pnpm run build:web && pnpm run build:api",
+    "build:web": "vite build",
+    "build:api": "nitro build",
+    "preview": "vite preview",
+    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+    "deploy": "pnpm run build:web && wrangler pages deploy",
+    "deploy:api": "pnpm run build:api && wrangler deploy -c wrangler.api.toml"
+  },
+  "devDependencies": {
+    "@lucide/svelte": "^1.48.0",
+    "@sveltejs/adapter-cloudflare": "^7.2.9",
+    "@sveltejs/kit": "^2.70.3",
+    "@sveltejs/vite-plugin-svelte": "^5.1.1",
+    "concurrently": "^9.2.4",
+    "nitropack": "^2.13.4",
+    "svelte": "^5.57.1",
+    "svelte-check": "^4.7.6",
+    "typescript": "^5.9.3",
+    "vite": "^6.4.3",
+    "wrangler": "^4.141.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "cookie@<0.7.0": "^0.7.2"
+    },
+    "onlyBuiltDependencies": [
+      "@parcel/watcher",
+      "esbuild",
+      "sharp",
+      "workerd"
+    ]
+  }
+}

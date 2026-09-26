@@ -1,0 +1,19 @@
+# the tv relay api, a nitro worker. deploy with `pnpm run deploy:api`, which
+# points wrangler at this file (the site's config is wrangler.toml)
+name = "pitmaster-api"
+main = ".output/server/index.mjs"
+compatibility_date = "2025-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+# it answers at api.pitmaster.cc (cloudflare makes the dns record on the first
+# deploy; pitmaster.cc has to be a zone on the same account). the site finds it
+# through VITE_API_URL in .env.production
+routes = [{ pattern = "api.pitmaster.cc", custom_domain = true }]
+workers_dev = false
+
+# live tv sync. create it once with:
+#   pnpm exec wrangler kv namespace create LIVE -c wrangler.api.toml
+# then paste the id below.
+[[kv_namespaces]]
+binding = "LIVE"
+id = "REPLACE_WITH_KV_NAMESPACE_ID"

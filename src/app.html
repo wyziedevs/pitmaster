@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
+    <!--pitmaster:head-->
+    <meta name="author" content="Wyzie LLC" />
+    <meta name="application-name" content="PitMaster" />
+    <meta name="apple-mobile-web-app-title" content="PitMaster" />
+    <!-- blinds and chip counts aren't phone numbers -->
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="theme-color" content="#fdfdfd" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#151515" media="(prefers-color-scheme: dark)" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="PitMaster" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:image" content="https://pitmaster.cc/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="PitMaster: run a poker game of any size. Three stacks of poker chips beside the name." />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" href="%sveltekit.assets%/favicon.ico" sizes="32x32" />
+    <link rel="icon" href="%sveltekit.assets%/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="%sveltekit.assets%/apple-touch-icon.png" />
+    <link rel="manifest" href="%sveltekit.assets%/manifest.webmanifest" />
+    <script nonce="%sveltekit.nonce%">
+      // pick the theme (and reduced motion) before first paint so dark mode
+      // doesn't flash white. settings.svelte.ts takes over once the app loads.
+      (function () {
+        var s = {};
+        try {
+          s = JSON.parse(localStorage.getItem("pitmaster.look") || "{}");
+        } catch (e) {}
+        var t = s.theme;
+        if (t !== "light" && t !== "dark") t = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        document.documentElement.dataset.theme = t;
+        if (s.motion === "reduced") document.documentElement.dataset.motion = "reduced";
+        // the tv is dark whatever the theme
+        if (/\/tv\/?$/.test(location.pathname)) document.documentElement.dataset.stage = "tv";
+        // the browser's bar (and an installed app's title bar) in the same color
+        var bar = t === "dark" || document.documentElement.dataset.stage ? "#151515" : "#fdfdfd";
+        document.querySelectorAll('meta[name="theme-color"]').forEach(function (m) {
+          m.content = bar;
+        });
+      })();
+    </script>
+    <style>
+      /* the app draws everything once its script loads (ssr is off), and app.css
+         comes with it. until then this paints the page the right color, or dark
+         mode would flash white. :where keeps these at zero weight, so app.css
+         takes over the moment it arrives. the two colors repeat --bg and
+         --night-bg from app.css (and theme-color above, in hex). */
+      :where(:root) {
+        background: oklch(99.3% 0 0);
+        color-scheme: light;
+      }
+      :where(:root[data-theme="dark"], :root[data-stage="tv"]) {
+        background: oklch(19.5% 0 0);
+        color-scheme: dark;
+      }
+    </style>
+    %sveltekit.head%
+  </head>
+  <body data-sveltekit-preload-data="hover">
+    <noscript>
+      <div style="max-width: 68ch; margin: 48px auto; padding: 0 16px; font: 16px/1.5 Arial, Helvetica, sans-serif">
+        <h1>PitMaster</h1>
+        <p>
+          Run a poker game of any size: blind clocks, chip math, buy-ins, payouts and a live TV display. Free, no account,
+          and everything it keeps is encrypted on your device.
+        </p>
+        <h2>What It Does</h2>
+        <ul>
+          <li>Tournament blind clocks, with a structure sized to the time you have: levels, breaks, antes and rebuys.</li>
+          <li>Cash games: buy-ins, rebuys, a rake or seat fee, and a settle-up with pay links when it's over.</li>
+          <li>Chip math: which chips, and how many of each, every player starts with.</li>
+          <li>Payouts, bounties, an ICM and chip-chop deal calculator, seat draws and table balancing.</li>
+          <li>A live display for any TV, tablet or phone in the room, encrypted end to end.</li>
+        </ul>
+        <p><b>PitMaster runs in your browser and needs JavaScript turned on.</b></p>
+        <p>
+          <a href="/help">Help</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · Published by
+          <a href="https://wyzie.io">Wyzie LLC</a>
+        </p>
+      </div>
+    </noscript>
+    <div style="display: contents">%sveltekit.body%</div>
+  </body>
+</html>

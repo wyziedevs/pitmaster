@@ -1,0 +1,29 @@
+# dependencies
+node_modules/
+
+# build output
+.svelte-kit/
+.output/
+.nitro/
+build/
+dist/
+
+# env files
+.env
+.env.*
+!.env.example
+!.env.production
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# wrangler
+.wrangler/
+.dev.vars
+.data/

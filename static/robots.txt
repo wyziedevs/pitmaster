@@ -1,0 +1,7 @@
+# everything may be crawled. games, tv screens, players and settings are
+# someone's own: those pages say noindex themselves, and a crawler has to be
+# let in to read that
+User-agent: *
+Allow: /
+
+Sitemap: https://pitmaster.cc/sitemap.xml

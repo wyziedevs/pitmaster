@@ -1,0 +1,778 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-25T20:51:36.060Z",
+  "title": "Design System: PitMaster",
+  "extensions": {
+    "colorMeta": {
+      "paper": {
+        "role": "neutral",
+        "displayName": "Paper",
+        "canonical": "#fdfdfd",
+        "oklch": "oklch(99.4% 0.000 0)",
+        "tonalRamp": [
+          "oklch(15.0% 0.000 0)",
+          "oklch(26.0% 0.000 0)",
+          "oklch(37.0% 0.000 0)",
+          "oklch(48.0% 0.000 0)",
+          "oklch(60.0% 0.000 0)",
+          "oklch(72.0% 0.000 0)",
+          "oklch(84.0% 0.000 0)",
+          "oklch(95.0% 0.000 0)"
+        ]
+      },
+      "field": {
+        "role": "neutral",
+        "displayName": "Field",
+        "canonical": "#fefefe",
+        "oklch": "oklch(99.7% 0.000 0)",
+        "tonalRamp": [
+          "oklch(15.0% 0.000 0)",
+          "oklch(26.0% 0.000 0)",
+          "oklch(37.0% 0.000 0)",
+          "oklch(48.0% 0.000 0)",
+          "oklch(60.0% 0.000 0)",
+          "oklch(72.0% 0.000 0)",
+          "oklch(84.0% 0.000 0)",
+          "oklch(95.0% 0.000 0)"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "#333333",
+        "oklch": "oklch(32.1% 0.000 0)",
+        "tonalRamp": [
+          "oklch(15.0% 0.000 0)",
+          "oklch(26.0% 0.000 0)",
+          "oklch(37.0% 0.000 0)",
+          "oklch(48.0% 0.000 0)",
+          "oklch(60.0% 0.000 0)",
+          "oklch(72.0% 0.000 0)",
+          "oklch(84.0% 0.000 0)",
+          "oklch(95.0% 0.000 0)"
+        ]
+      },
+      "pencil-gray": {
+        "role": "neutral",
+        "displayName": "Pencil Gray",
+        "canonical": "#747474",
+        "oklch": "oklch(55.9% 0.000 0)",
+        "tonalRamp": [
+          "oklch(15.0% 0.000 0)",
+          "oklch(26.0% 0.000 0)",
+          "oklch(37.0% 0.000 0)",
+          "oklch(48.0% 0.000 0)",
+          "oklch(60.0% 0.000 0)",
+          "oklch(72.0% 0.000 0)",
+          "oklch(84.0% 0.000 0)",
+          "oklch(95.0% 0.000 0)"
+        ]
+      },
+      "rule-line": {
+        "role": "neutral",
+        "displayName": "Rule Line",
+        "canonical": "#e1e1e1",
+        "oklch": "oklch(91.0% 0.000 0)",
+        "tonalRamp": [
+          "oklch(15.0% 0.000 0)",
+          "oklch(26.0% 0.000 0)",
+          "oklch(37.0% 0.000 0)",
+          "oklch(48.0% 0.000 0)",
+          "oklch(60.0% 0.000 0)",
+          "oklch(72.0% 0.000 0)",
+          "oklch(84.0% 0.000 0)",
+          "oklch(95.0% 0.000 0)"
+        ]
+      },
+      "rule-line-strong": {
+        "role": "neutral",
+        "displayName": "Rule Line Strong",
+        "canonical": "#929292",
+        "oklch": "oklch(66.0% 0.000 0)",
+        "tonalRamp": [
+          "oklch(15.0% 0.000 0)",
+          "oklch(26.0% 0.000 0)",
+          "oklch(37.0% 0.000 0)",
+          "oklch(48.0% 0.000 0)",
+          "oklch(60.0% 0.000 0)",
+          "oklch(72.0% 0.000 0)",
+          "oklch(84.0% 0.000 0)",
+          "oklch(95.0% 0.000 0)"
+        ]
+      },
+      "concrete": {
+        "role": "neutral",
+        "displayName": "Concrete",
+        "canonical": "#f4f4f4",
+        "oklch": "oklch(96.7% 0.000 0)",
+        "tonalRamp": [
+          "oklch(15.0% 0.000 0)",
+          "oklch(26.0% 0.000 0)",
+          "oklch(37.0% 0.000 0)",
+          "oklch(48.0% 0.000 0)",
+          "oklch(60.0% 0.000 0)",
+          "oklch(72.0% 0.000 0)",
+          "oklch(84.0% 0.000 0)",
+          "oklch(95.0% 0.000 0)"
+        ]
+      },
+      "concrete-deep": {
+        "role": "neutral",
+        "displayName": "Concrete Deep",
+        "canonical": "#ebebeb",
+        "oklch": "oklch(94.0% 0.000 0)",
+        "tonalRamp": [
+          "oklch(15.0% 0.000 0)",
+          "oklch(26.0% 0.000 0)",
+          "oklch(37.0% 0.000 0)",
+          "oklch(48.0% 0.000 0)",
+          "oklch(60.0% 0.000 0)",
+          "oklch(72.0% 0.000 0)",
+          "oklch(84.0% 0.000 0)",
+          "oklch(95.0% 0.000 0)"
+        ]
+      },
+      "concrete-deeper": {
+        "role": "neutral",
+        "displayName": "Concrete Deeper",
+        "canonical": "#dfdfdf",
+        "oklch": "oklch(90.4% 0.000 0)",
+        "tonalRamp": [
+          "oklch(15.0% 0.000 0)",
+          "oklch(26.0% 0.000 0)",
+          "oklch(37.0% 0.000 0)",
+          "oklch(48.0% 0.000 0)",
+          "oklch(60.0% 0.000 0)",
+          "oklch(72.0% 0.000 0)",
+          "oklch(84.0% 0.000 0)",
+          "oklch(95.0% 0.000 0)"
+        ]
+      },
+      "hyperlink-blue": {
+        "role": "primary",
+        "displayName": "Hyperlink Blue",
+        "canonical": "#2c56a8",
+        "oklch": "oklch(46.9% 0.140 262.1)",
+        "tonalRamp": [
+          "oklch(15.0% 0.038 262.1)",
+          "oklch(26.0% 0.066 262.1)",
+          "oklch(37.0% 0.094 262.1)",
+          "oklch(48.0% 0.122 262.1)",
+          "oklch(60.0% 0.127 262.1)",
+          "oklch(72.0% 0.097 262.1)",
+          "oklch(84.0% 0.066 262.1)",
+          "oklch(95.0% 0.038 262.1)"
+        ]
+      },
+      "heart-red": {
+        "role": "secondary",
+        "displayName": "Heart Red",
+        "canonical": "#b6322d",
+        "oklch": "oklch(51.9% 0.170 27.1)",
+        "tonalRamp": [
+          "oklch(15.0% 0.046 27.1)",
+          "oklch(26.0% 0.080 27.1)",
+          "oklch(37.0% 0.114 27.1)",
+          "oklch(48.0% 0.148 27.1)",
+          "oklch(60.0% 0.154 27.1)",
+          "oklch(72.0% 0.117 27.1)",
+          "oklch(84.0% 0.080 27.1)",
+          "oklch(95.0% 0.046 27.1)"
+        ]
+      },
+      "ledger-green": {
+        "role": "secondary",
+        "displayName": "Ledger Green",
+        "canonical": "#27713d",
+        "oklch": "oklch(48.9% 0.110 150.1)",
+        "tonalRamp": [
+          "oklch(15.0% 0.030 150.1)",
+          "oklch(26.0% 0.052 150.1)",
+          "oklch(37.0% 0.074 150.1)",
+          "oklch(48.0% 0.096 150.1)",
+          "oklch(60.0% 0.100 150.1)",
+          "oklch(72.0% 0.076 150.1)",
+          "oklch(84.0% 0.052 150.1)",
+          "oklch(95.0% 0.030 150.1)"
+        ]
+      },
+      "table-felt": {
+        "role": "tertiary",
+        "displayName": "Table Felt",
+        "canonical": "#22563d",
+        "oklch": "oklch(41.0% 0.070 160.0)",
+        "tonalRamp": [
+          "oklch(15.0% 0.019 160.0)",
+          "oklch(26.0% 0.033 160.0)",
+          "oklch(37.0% 0.047 160.0)",
+          "oklch(48.0% 0.061 160.0)",
+          "oklch(60.0% 0.064 160.0)",
+          "oklch(72.0% 0.049 160.0)",
+          "oklch(84.0% 0.033 160.0)",
+          "oklch(95.0% 0.019 160.0)"
+        ]
+      },
+      "felt-chalk": {
+        "role": "neutral",
+        "displayName": "Felt Chalk",
+        "canonical": "#f2f2f2",
+        "oklch": "oklch(96.1% 0.000 0)",
+        "tonalRamp": [
+          "oklch(15.0% 0.000 0)",
+          "oklch(26.0% 0.000 0)",
+          "oklch(37.0% 0.000 0)",
+          "oklch(48.0% 0.000 0)",
+          "oklch(60.0% 0.000 0)",
+          "oklch(72.0% 0.000 0)",
+          "oklch(84.0% 0.000 0)",
+          "oklch(95.0% 0.000 0)"
+        ]
+      },
+      "legal-pad": {
+        "role": "tertiary",
+        "displayName": "Legal Pad",
+        "canonical": "#faf1cb",
+        "oklch": "oklch(95.6% 0.050 96.2)",
+        "tonalRamp": [
+          "oklch(15.0% 0.014 96.2)",
+          "oklch(26.0% 0.024 96.2)",
+          "oklch(37.0% 0.034 96.2)",
+          "oklch(48.0% 0.044 96.2)",
+          "oklch(60.0% 0.046 96.2)",
+          "oklch(72.0% 0.035 96.2)",
+          "oklch(84.0% 0.024 96.2)",
+          "oklch(95.0% 0.014 96.2)"
+        ]
+      },
+      "garage-night": {
+        "role": "neutral",
+        "displayName": "Garage Night",
+        "canonical": "#151515",
+        "oklch": "oklch(19.6% 0.000 0)",
+        "tonalRamp": [
+          "oklch(15.0% 0.000 0)",
+          "oklch(26.0% 0.000 0)",
+          "oklch(37.0% 0.000 0)",
+          "oklch(48.0% 0.000 0)",
+          "oklch(60.0% 0.000 0)",
+          "oklch(72.0% 0.000 0)",
+          "oklch(84.0% 0.000 0)",
+          "oklch(95.0% 0.000 0)"
+        ]
+      },
+      "chalk": {
+        "role": "neutral",
+        "displayName": "Chalk",
+        "canonical": "#dbdbdb",
+        "oklch": "oklch(89.1% 0.000 0)",
+        "tonalRamp": [
+          "oklch(15.0% 0.000 0)",
+          "oklch(26.0% 0.000 0)",
+          "oklch(37.0% 0.000 0)",
+          "oklch(48.0% 0.000 0)",
+          "oklch(60.0% 0.000 0)",
+          "oklch(72.0% 0.000 0)",
+          "oklch(84.0% 0.000 0)",
+          "oklch(95.0% 0.000 0)"
+        ]
+      },
+      "night-gray": {
+        "role": "neutral",
+        "displayName": "Night Gray",
+        "canonical": "#959595",
+        "oklch": "oklch(67.0% 0.000 0)",
+        "tonalRamp": [
+          "oklch(15.0% 0.000 0)",
+          "oklch(26.0% 0.000 0)",
+          "oklch(37.0% 0.000 0)",
+          "oklch(48.0% 0.000 0)",
+          "oklch(60.0% 0.000 0)",
+          "oklch(72.0% 0.000 0)",
+          "oklch(84.0% 0.000 0)",
+          "oklch(95.0% 0.000 0)"
+        ]
+      },
+      "night-line": {
+        "role": "neutral",
+        "displayName": "Night Line",
+        "canonical": "#303030",
+        "oklch": "oklch(30.9% 0.000 0)",
+        "tonalRamp": [
+          "oklch(15.0% 0.000 0)",
+          "oklch(26.0% 0.000 0)",
+          "oklch(37.0% 0.000 0)",
+          "oklch(48.0% 0.000 0)",
+          "oklch(60.0% 0.000 0)",
+          "oklch(72.0% 0.000 0)",
+          "oklch(84.0% 0.000 0)",
+          "oklch(95.0% 0.000 0)"
+        ]
+      },
+      "night-line-strong": {
+        "role": "neutral",
+        "displayName": "Night Line Strong",
+        "canonical": "#5d5d5d",
+        "oklch": "oklch(47.8% 0.000 0)",
+        "tonalRamp": [
+          "oklch(15.0% 0.000 0)",
+          "oklch(26.0% 0.000 0)",
+          "oklch(37.0% 0.000 0)",
+          "oklch(48.0% 0.000 0)",
+          "oklch(60.0% 0.000 0)",
+          "oklch(72.0% 0.000 0)",
+          "oklch(84.0% 0.000 0)",
+          "oklch(95.0% 0.000 0)"
+        ]
+      },
+      "night-block": {
+        "role": "neutral",
+        "displayName": "Night Block",
+        "canonical": "#1d1d1d",
+        "oklch": "oklch(23.1% 0.000 0)",
+        "tonalRamp": [
+          "oklch(15.0% 0.000 0)",
+          "oklch(26.0% 0.000 0)",
+          "oklch(37.0% 0.000 0)",
+          "oklch(48.0% 0.000 0)",
+          "oklch(60.0% 0.000 0)",
+          "oklch(72.0% 0.000 0)",
+          "oklch(84.0% 0.000 0)",
+          "oklch(95.0% 0.000 0)"
+        ]
+      },
+      "night-block-deep": {
+        "role": "neutral",
+        "displayName": "Night Block Deep",
+        "canonical": "#262626",
+        "oklch": "oklch(26.9% 0.000 0)",
+        "tonalRamp": [
+          "oklch(15.0% 0.000 0)",
+          "oklch(26.0% 0.000 0)",
+          "oklch(37.0% 0.000 0)",
+          "oklch(48.0% 0.000 0)",
+          "oklch(60.0% 0.000 0)",
+          "oklch(72.0% 0.000 0)",
+          "oklch(84.0% 0.000 0)",
+          "oklch(95.0% 0.000 0)"
+        ]
+      },
+      "night-field": {
+        "role": "neutral",
+        "displayName": "Night Field",
+        "canonical": "#101010",
+        "oklch": "oklch(17.3% 0.000 0)",
+        "tonalRamp": [
+          "oklch(15.0% 0.000 0)",
+          "oklch(26.0% 0.000 0)",
+          "oklch(37.0% 0.000 0)",
+          "oklch(48.0% 0.000 0)",
+          "oklch(60.0% 0.000 0)",
+          "oklch(72.0% 0.000 0)",
+          "oklch(84.0% 0.000 0)",
+          "oklch(95.0% 0.000 0)"
+        ]
+      },
+      "night-link": {
+        "role": "primary",
+        "displayName": "Night Link",
+        "canonical": "#8cb6f4",
+        "oklch": "oklch(77.0% 0.100 258.0)",
+        "tonalRamp": [
+          "oklch(15.0% 0.027 258.0)",
+          "oklch(26.0% 0.047 258.0)",
+          "oklch(37.0% 0.068 258.0)",
+          "oklch(48.0% 0.088 258.0)",
+          "oklch(60.0% 0.091 258.0)",
+          "oklch(72.0% 0.069 258.0)",
+          "oklch(84.0% 0.047 258.0)",
+          "oklch(95.0% 0.027 258.0)"
+        ]
+      },
+      "night-red": {
+        "role": "secondary",
+        "displayName": "Night Red",
+        "canonical": "#ea6b60",
+        "oklch": "oklch(67.9% 0.160 27.1)",
+        "tonalRamp": [
+          "oklch(15.0% 0.044 27.1)",
+          "oklch(26.0% 0.075 27.1)",
+          "oklch(37.0% 0.107 27.1)",
+          "oklch(48.0% 0.139 27.1)",
+          "oklch(60.0% 0.145 27.1)",
+          "oklch(72.0% 0.110 27.1)",
+          "oklch(84.0% 0.075 27.1)",
+          "oklch(95.0% 0.044 27.1)"
+        ]
+      },
+      "night-green": {
+        "role": "secondary",
+        "displayName": "Night Green",
+        "canonical": "#66be7b",
+        "oklch": "oklch(72.9% 0.129 149.9)",
+        "tonalRamp": [
+          "oklch(15.0% 0.035 149.9)",
+          "oklch(26.0% 0.061 149.9)",
+          "oklch(37.0% 0.087 149.9)",
+          "oklch(48.0% 0.113 149.9)",
+          "oklch(60.0% 0.118 149.9)",
+          "oklch(72.0% 0.089 149.9)",
+          "oklch(84.0% 0.061 149.9)",
+          "oklch(95.0% 0.035 149.9)"
+        ]
+      },
+      "night-felt": {
+        "role": "tertiary",
+        "displayName": "Night Felt",
+        "canonical": "#194430",
+        "oklch": "oklch(35.0% 0.060 160.7)",
+        "tonalRamp": [
+          "oklch(15.0% 0.016 160.7)",
+          "oklch(26.0% 0.028 160.7)",
+          "oklch(37.0% 0.040 160.7)",
+          "oklch(48.0% 0.052 160.7)",
+          "oklch(60.0% 0.054 160.7)",
+          "oklch(72.0% 0.041 160.7)",
+          "oklch(84.0% 0.028 160.7)",
+          "oklch(95.0% 0.016 160.7)"
+        ]
+      },
+      "night-pad": {
+        "role": "tertiary",
+        "displayName": "Night Pad",
+        "canonical": "#383014",
+        "oklch": "oklch(31.1% 0.045 93.7)",
+        "tonalRamp": [
+          "oklch(15.0% 0.012 93.7)",
+          "oklch(26.0% 0.021 93.7)",
+          "oklch(37.0% 0.030 93.7)",
+          "oklch(48.0% 0.039 93.7)",
+          "oklch(60.0% 0.041 93.7)",
+          "oklch(72.0% 0.031 93.7)",
+          "oklch(84.0% 0.021 93.7)",
+          "oklch(95.0% 0.012 93.7)"
+        ]
+      },
+      "tv-felt": {
+        "role": "tertiary",
+        "displayName": "TV Felt",
+        "canonical": "#123927",
+        "oklch": "oklch(31.1% 0.055 160.5)",
+        "tonalRamp": [
+          "oklch(15.0% 0.015 160.5)",
+          "oklch(26.0% 0.026 160.5)",
+          "oklch(37.0% 0.037 160.5)",
+          "oklch(48.0% 0.048 160.5)",
+          "oklch(60.0% 0.050 160.5)",
+          "oklch(72.0% 0.038 160.5)",
+          "oklch(84.0% 0.026 160.5)",
+          "oklch(95.0% 0.015 160.5)"
+        ]
+      },
+      "tv-banner": {
+        "role": "tertiary",
+        "displayName": "TV Banner",
+        "canonical": "#eed27d",
+        "oklch": "oklch(86.9% 0.109 91.7)",
+        "tonalRamp": [
+          "oklch(15.0% 0.030 91.7)",
+          "oklch(26.0% 0.052 91.7)",
+          "oklch(37.0% 0.074 91.7)",
+          "oklch(48.0% 0.096 91.7)",
+          "oklch(60.0% 0.100 91.7)",
+          "oklch(72.0% 0.076 91.7)",
+          "oklch(84.0% 0.052 91.7)",
+          "oklch(95.0% 0.030 91.7)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Page titles (h1) and the serif logo. One per page."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Section titles (h2) in Times; also the size of big buttons."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Sub-sections (h3), bold Arial."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "All other text. Prose under 75ch."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Form labels, table headers, hints in Pencil Gray."
+      },
+      "numeric": {
+        "displayName": "Numeric",
+        "purpose": "Every blind, stack, amount and clock. Tabular figures."
+      },
+      "tv-clock": {
+        "displayName": "TV Clock",
+        "purpose": "The level timer on the TV. Biggest thing in the house."
+      },
+      "tv-label": {
+        "displayName": "TV Label",
+        "purpose": "Level / Break / Blinds labels on the TV, uppercase via CSS."
+      }
+    },
+    "controlHeights": {
+      "default": "28px",
+      "big": "40px"
+    },
+    "icons": {
+      "library": "@lucide/svelte",
+      "wrapper": "src/lib/components/Icon.svelte",
+      "size": "1.15em",
+      "strokeWidth": 2,
+      "linecap": "square",
+      "linejoin": "miter"
+    },
+    "shadows": [
+      {
+        "name": "chip-edge",
+        "value": "0 1px 0 rgb(0 0 0 / 0.45)",
+        "purpose": "Under each disc in a side-view chip stack. The only shadow in the system."
+      }
+    ],
+    "motion": [
+      {
+        "name": "control-state",
+        "value": "background-color / border-color, 120ms ease-out-quart",
+        "purpose": "Button and field hover / press."
+      },
+      {
+        "name": "chip-drop",
+        "value": "translateY(-14px) → 0, 0.3s ease-out-quart, 18ms stagger per chip",
+        "purpose": "Chips falling into a stack."
+      },
+      {
+        "name": "chip-toss",
+        "value": "translateY(-18px) rotate(-40deg) → 0, 0.5s ease-out-expo, 60ms stagger, once",
+        "purpose": "Home page chip row on load."
+      },
+      {
+        "name": "chip-spin",
+        "value": "rotate 360deg, 0.6s ease",
+        "purpose": "Chip spins on hover."
+      },
+      {
+        "name": "banner-slide",
+        "value": "translateY(-100%) → 0, 0.5s ease-out-expo",
+        "purpose": "Host message banner entering the TV."
+      },
+      {
+        "name": "level-flash",
+        "value": "panel lifts to Night Block Deep + label goes TV Banner, 0.6s × 4",
+        "purpose": "TV main panel on a level change. No inversion."
+      },
+      {
+        "name": "hot-blink",
+        "value": "opacity 1 ↔ 0.35 steps(1), 1s infinite",
+        "purpose": "Clock in the final minute; Paused badge at 1.2s."
+      },
+      {
+        "name": "toast-pop",
+        "value": "scale 0.85 + opacity 0 → 1, 0.45s ease-out-expo",
+        "purpose": "Bust / win toast on the TV."
+      },
+      {
+        "name": "idle-fade",
+        "value": "opacity, 0.4s ease-out-quart",
+        "purpose": "TV controls fade when the mouse is idle."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "all animations and transitions collapse to 0.01ms, 1 iteration",
+        "purpose": "prefers-reduced-motion: reduce."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "tv-portrait",
+        "value": "700px"
+      },
+      {
+        "name": "chips-stack",
+        "value": "760px"
+      },
+      {
+        "name": "cols-stack",
+        "value": "800px"
+      },
+      {
+        "name": "wrap-max",
+        "value": "1100px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Button",
+      "kind": "button",
+      "refersTo": "button",
+      "description": "Square 28px button. Hover darkens the face one step; never inverts.",
+      "html": "<button class=\"ds-btn\">Duplicate</button>",
+      "css": ".ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:28px;padding:0 10px;border-radius:0;font:14px/1 Arial,Helvetica,sans-serif;cursor:pointer;white-space:nowrap;transition:background-color 120ms cubic-bezier(.25,1,.5,1),border-color 120ms cubic-bezier(.25,1,.5,1);background:var(--block-2,#ebebeb);color:var(--fg,#333);border:1px solid var(--line-strong,#929292)}.ds-btn:hover{background:var(--block-3,#dfdfdf);border-color:var(--muted,#747474)}.ds-btn:active{background:var(--line,#e1e1e1)}.ds-btn:focus-visible{outline:2px solid var(--link,#2c56a8);outline-offset:2px}"
+    },
+    {
+      "name": "Big Button",
+      "kind": "button",
+      "refersTo": "button-big",
+      "description": "The one main action on a screen. 40px tall, with a Lucide icon.",
+      "html": "<button class=\"ds-btn-big\"><svg width=\"1.15em\" height=\"1.15em\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"square\" aria-hidden=\"true\"><path d=\"M5 12h14M12 5v14\"/></svg>New Tournament</button>",
+      "css": ".ds-btn-big{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:28px;padding:0 10px;border-radius:0;font:14px/1 Arial,Helvetica,sans-serif;cursor:pointer;white-space:nowrap;transition:background-color 120ms cubic-bezier(.25,1,.5,1),border-color 120ms cubic-bezier(.25,1,.5,1);height:40px;padding:0 18px;gap:8px;font-size:16px;background:var(--block-2,#ebebeb);color:var(--fg,#333);border:1px solid var(--line-strong,#929292)}.ds-btn-big:hover{background:var(--block-3,#dfdfdf);border-color:var(--muted,#747474)}.ds-btn-big:focus-visible{outline:2px solid var(--link,#2c56a8);outline-offset:2px}"
+    },
+    {
+      "name": "Link Button",
+      "kind": "button",
+      "refersTo": "button-link",
+      "description": "Inline and table-row actions. No face, no fixed height.",
+      "html": "<button class=\"ds-btn-link\">Edit</button>",
+      "css": ".ds-btn-link{background:none;border:0;padding:0;color:var(--link,#2c56a8);font:14px Arial,Helvetica,sans-serif;cursor:pointer}.ds-btn-link:hover{text-decoration:underline;text-underline-offset:2px}.ds-btn-link:focus-visible{outline:2px solid var(--link,#2c56a8);outline-offset:2px}"
+    },
+    {
+      "name": "Danger Button",
+      "kind": "button",
+      "refersTo": "button-danger",
+      "description": "Bust and delete. Red text, red-leaning edge, red-tinted hover.",
+      "html": "<button class=\"ds-btn-danger\"><svg width=\"1.15em\" height=\"1.15em\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"square\" aria-hidden=\"true\"><circle cx=\"9\" cy=\"12\" r=\"1\"/><circle cx=\"15\" cy=\"12\" r=\"1\"/><path d=\"M8 20v2h8v-2M12.5 17l-.5-1-.5 1h1zM16 20a2 2 0 0 0 1.56-3.25 8 8 0 1 0-11.12 0A2 2 0 0 0 8 20\"/></svg>Bust</button>",
+      "css": ".ds-btn-danger{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:28px;padding:0 10px;border-radius:0;font:14px/1 Arial,Helvetica,sans-serif;cursor:pointer;white-space:nowrap;transition:background-color 120ms cubic-bezier(.25,1,.5,1),border-color 120ms cubic-bezier(.25,1,.5,1);background:var(--block-2,#ebebeb);color:var(--accent,#b6322d);border:1px solid color-mix(in oklch,var(--accent,#b6322d) 60%,var(--line-strong,#929292))}.ds-btn-danger:hover{background:color-mix(in oklch,var(--accent,#b6322d) 12%,var(--block-2,#ebebeb));border-color:var(--accent,#b6322d)}.ds-btn-danger:focus-visible{outline:2px solid var(--link,#2c56a8);outline-offset:2px}"
+    },
+    {
+      "name": "Labeled Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Stacked 12px grey Title Case label over a square 28px field.",
+      "html": "<label class=\"ds-field\"><span>Buy-In $</span><input type=\"number\" value=\"20\"></label>",
+      "css": ".ds-field{display:block;font:14px Arial,Helvetica,sans-serif;color:var(--fg,#333)}.ds-field span{display:block;font-size:12px;color:var(--muted,#747474);margin-bottom:3px}.ds-field input{width:90px;height:28px;background:var(--field,#fefefe);color:inherit;border:1px solid var(--line-strong,#929292);border-radius:0;padding:0 6px;font:14px ui-monospace,'Cascadia Mono','Courier New',monospace}.ds-field input:hover{border-color:var(--muted,#747474)}.ds-field input:focus-visible{outline:2px solid var(--link,#2c56a8);outline-offset:0;border-color:var(--link,#2c56a8)}"
+    },
+    {
+      "name": "Top Nav",
+      "kind": "nav",
+      "refersTo": "navigation",
+      "description": "Serif logo plus blue text links on a 1px rule; the current page gets an ink tab rule.",
+      "html": "<header class=\"ds-nav\"><a class=\"ds-logo\" href=\"#\">♠<span>♥</span> PitMaster</a><nav><a href=\"#\" aria-current=\"page\">Games</a><a href=\"#\"><svg width=\"1.15em\" height=\"1.15em\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"square\" aria-hidden=\"true\"><path d=\"M5 12h14M12 5v14\"/></svg>Cash Game</a><a href=\"#\"><svg width=\"1.15em\" height=\"1.15em\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"square\" aria-hidden=\"true\"><path d=\"M5 12h14M12 5v14\"/></svg>Tournament</a><a href=\"#\">Chip Sets</a><a href=\"#\">TV Code</a></nav></header>",
+      "css": ".ds-nav{display:flex;gap:22px;align-items:baseline;flex-wrap:wrap;border-bottom:1px solid var(--line,#e1e1e1);padding:14px 0 0;font:14px Arial,Helvetica,sans-serif}.ds-logo{font:23px 'Times New Roman',Times,serif;color:var(--fg,#333);text-decoration:none;padding-bottom:8px}.ds-logo span{color:var(--accent,#b6322d)}.ds-nav nav{display:flex;gap:4px 16px;flex-wrap:wrap}.ds-nav nav a{display:inline-flex;align-items:center;gap:3px;color:var(--link,#2c56a8);text-decoration:none;padding-bottom:8px;border-bottom:2px solid transparent;margin-bottom:-1px}.ds-nav nav a svg{width:1em;height:1em}.ds-nav nav a:hover{text-decoration:underline}.ds-nav nav a[aria-current=page]{color:var(--fg,#333);border-bottom-color:var(--fg,#333)}.ds-nav a:focus-visible{outline:2px solid var(--link,#2c56a8);outline-offset:2px}"
+    },
+    {
+      "name": "Pill",
+      "kind": "chip",
+      "refersTo": "pill",
+      "description": "Outlined state tag, uppercase via CSS. Running tints green, Paused gets a legal-pad fill.",
+      "html": "<span class=\"ds-pill\">Not Started</span> <span class=\"ds-pill\" data-s=\"running\">Running</span> <span class=\"ds-pill\" data-s=\"paused\">Paused</span>",
+      "css": ".ds-pill{display:inline-block;border:1px solid currentColor;padding:0 6px;font:11px/1.6 Arial,Helvetica,sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--fg,#333)}.ds-pill[data-s=running]{color:var(--good,#27713d)}.ds-pill[data-s=paused]{background:var(--warn-bg,#faf1cb)}"
+    },
+    {
+      "name": "Gray Block",
+      "kind": "card",
+      "refersTo": "block",
+      "description": "are.na-style tonal block. Never nested, no border, no shadow.",
+      "html": "<div class=\"ds-block\"><b>Chip Set in Use:</b> Monte Carlo 500 (Low Stakes) · <a href=\"#\">Change</a></div>",
+      "css": ".ds-block{background:var(--block,#f4f4f4);padding:12px 14px;font:12px Arial,Helvetica,sans-serif;color:var(--fg,#333)}.ds-block a{color:var(--link,#2c56a8)}"
+    },
+    {
+      "name": "Warning",
+      "kind": "custom",
+      "refersTo": "warn",
+      "description": "Legal-pad yellow note for warnings and the current level.",
+      "html": "<p class=\"ds-warn\">The bank is off by $5. Recount someone.</p>",
+      "css": ".ds-warn{background:var(--warn-bg,#faf1cb);color:var(--fg,#333);padding:8px 12px;margin:0;font:12px Arial,Helvetica,sans-serif}"
+    },
+    {
+      "name": "TV Board",
+      "kind": "custom",
+      "refersTo": "tv-board",
+      "description": "Room-scale clock and blinds: the dark site blown up.",
+      "html": "<div class=\"ds-tv\"><div class=\"ds-tv-label\">Level 3</div><div class=\"ds-tv-clock\">14:52</div><div class=\"ds-tv-blinds\"><span>Blinds</span> 50 / 100</div></div>",
+      "css": ".ds-tv{background:var(--tv-bg,#151515);color:var(--tv-fg,#dbdbdb);padding:20px 24px;font-family:Arial,Helvetica,sans-serif}.ds-tv-label{font-size:20px;letter-spacing:.08em;text-transform:uppercase}.ds-tv-clock{font:700 96px/.9 Arial,Helvetica,sans-serif;letter-spacing:-.04em;font-variant-numeric:tabular-nums}.ds-tv-blinds{font:36px ui-monospace,'Cascadia Mono','Courier New',monospace;margin-top:8px}.ds-tv-blinds span{font:14px Arial,Helvetica,sans-serif;color:var(--tv-muted,#959595);text-transform:uppercase;letter-spacing:.1em}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Garage Casino",
+    "overview": "",
+    "keyCharacteristics": [
+      "Browser-native shell: Times + Arial + monospace numbers, blue hyperlinks, square bordered buttons, zero radius, zero decorative shadow.",
+      "Neutral and soft, never harsh: pure greys with zero tint (are.na), #333 ink instead of black, a near-white page and light grey blocks.",
+      "One control height: buttons, inputs and selects that sit in a row are all 28px (big actions 40px), so rows line up like a real toolbar.",
+      "Icons come from one library (Lucide, via `Icon.svelte`), square-capped and sized to the text. No unicode arrows or emoji as UI glyphs.",
+      "Tonal gray blocks (are.na) and 1px rules (craigslist) instead of cards.",
+      "The objects are the craft: SVG chips, chip stacks, the blinds clock.",
+      "One system at two scales: the TV is the dark site blown up to room size.",
+      "Drama is an event, never an ambient state.",
+      "Layout is a single 1100px column with 16px gutters; two columns at most, collapsing below 800px."
+    ],
+    "rules": [
+      {
+        "name": "The Signal-Only Rule",
+        "body": "Red, green, yellow and felt each mean one thing. A color that doesn't signal a game state or a link has no business on the page.",
+        "section": "colors"
+      },
+      {
+        "name": "The Never-Alone Rule",
+        "body": "Color never carries meaning by itself. Every red number has a sign or word, every chip shows its printed value, every state has a label. Color-blind hosts run games too.",
+        "section": "colors"
+      },
+      {
+        "name": "The One Stage Rule",
+        "body": "The TV palette is the garage-night palette at room scale, not a separate brand. In code the `--tv-*` tokens are aliases of the `--night-*` tokens, so the TV and dark mode cannot drift apart.",
+        "section": "colors"
+      },
+      {
+        "name": "The Neutral Grey Rule",
+        "body": "Neutrals are true greys (OKLCH chroma 0), never tinted warm or cool; the user rejected a brownish paper tint. No #000 and no pure-black text: the darkest thing on a page is Ink (#333), and nothing is harsher than Ink on Paper. Hue belongs only to signals.",
+        "section": "colors"
+      },
+      {
+        "name": "The Ledger Rule",
+        "body": "Numbers are always monospace with tabular figures. Money and blinds must line up in columns and never jitter while a clock ticks.",
+        "section": "typography"
+      },
+      {
+        "name": "The Couch Test Rule",
+        "body": "On the TV, anything the table needs mid-hand (clock, blinds, next level, players left) is readable from 10 feet in a dim room. Nothing critical is thinner than regular weight or smaller than 2.2vw.",
+        "section": "typography"
+      },
+      {
+        "name": "The Case Rule",
+        "body": "Headings, labels, buttons and links are Title Case. Sentences are sentence case. Uppercase comes only from CSS on pills and TV labels, never typed into the source.",
+        "section": "typography"
+      },
+      {
+        "name": "The Flat Table Rule",
+        "body": "Surfaces are flat at rest and flat on hover. Hover darkens a button face one Concrete step and firms its edge; press goes one step further. Nothing lifts and nothing inverts. The TV toast is separated with a double border (6px background-colored border plus a 3px chalk outline), not a shadow.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do keep the shell browser-native: Times headings, Arial body, blue underlined links, square bordered buttons, 1px rules, all in neutral greys.",
+      "Do put the craft into the real objects (chips, stacks, clock, blinds, payouts) before touching the shell.",
+      "Do set every number in monospace with tabular figures.",
+      "Do pair every color signal with text, a sign or a shape (The Never-Alone Rule).",
+      "Do build TV screens from the dark-mode tokens scaled up (The One Stage Rule), sized to pass the Couch Test.",
+      "Do save motion, sound and color spikes for real game events: level up, bust, color-up, winner.",
+      "Do give every control the shared `:focus-visible` ring and a logical tab order.",
+      "Do keep controls that share a row at one height (28px, or 40px for a big row).",
+      "Do use `Icon.svelte` for every UI glyph, with the meaning always in the text beside it.",
+      "Do respect `prefers-reduced-motion`; the global stylesheet collapses animations to a single instant frame.",
+      "Do ease motion out with exponential curves (ease-out-quart or ease-out-expo)."
+    ],
+    "donts": [
+      "Don't make it look like a SaaS dashboard: no rounded cards on cards, no gradients, no hero-metric stat tiles, no Inter plus a purple primary button, no \"Welcome back!\" chrome.",
+      "Don't make it look like an online casino: no neon, no gold glitter, no slot-machine flashing, no jackpot fonts. Drama is a moment, never a wallpaper.",
+      "Don't round corners. Radius is 0px everywhere; the only curves are the chips.",
+      "Don't add drop shadows to surfaces or lift things on hover.",
+      "Don't use `border-left` or `border-right` wider than 1px as a colored stripe on anything.",
+      "Don't nest blocks, or wrap content in a container that doesn't need one.",
+      "Don't use bounce or overshoot easing, or loop decorative motion. Only real game states (the final minute, Paused) repeat.",
+      "Don't tint the neutrals (no beige, cream or brown paper), and don't use #000 or full inversions (ink faces with paper text) for hover or emphasis.",
+      "Don't use unicode arrows, geometric shapes or emoji (▶ ◀ ❚❚ ⛶ 💀 ☕ 🏆) as interface icons.",
+      "Don't introduce a new color that doesn't signal a game state.",
+      "Don't type uppercase into the source; use CSS on pills and TV labels.",
+      "Don't use em dashes in copy."
+    ]
+  }
+}

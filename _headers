@@ -1,0 +1,14 @@
+# cloudflare pages: headers for the site's static files (the pages themselves
+# get theirs from src/hooks.server.ts). the adapter copies this into the build,
+# and adds a year-long cache for /_app/immutable/* on its own.
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: no-referrer
+  Cross-Origin-Resource-Policy: same-origin
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+
+# the link preview picture: chat apps and search results show it from their own sites
+/og.png
+  ! Cross-Origin-Resource-Policy
+  Cache-Control: public, max-age=86400

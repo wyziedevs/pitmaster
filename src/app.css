@@ -1,0 +1,1556 @@
+/* pitmaster: raw shell styles.
+   deliberately plain (craigslist / are.na energy): true neutral greys, soft #333-ish
+   ink instead of black, light grey blocks and hairlines. color is only for signals.
+   every color + font is a token up here so the whole thing can be re-skinned
+   without hunting. */
+
+:root {
+  /* garage night: the dark set. the site's dark mode AND the tv both read these,
+     so the tv is literally the dark site at room scale (the one stage rule).
+     app.html repeats --night-bg and --bg to paint the page before this file
+     loads, so change them there too. */
+  --night-bg: oklch(19.5% 0 0);
+  --night-fg: oklch(89% 0 0);
+  --night-muted: oklch(67% 0 0);
+  --night-line: oklch(31% 0 0);
+  --night-line-strong: oklch(48% 0 0);
+  --night-block: oklch(23% 0 0);
+  --night-block-2: oklch(27% 0 0);
+  --night-block-3: oklch(31% 0 0);
+  --night-accent: oklch(68% 0.16 27);
+  --night-good: oklch(73% 0.13 150);
+  --night-felt: oklch(31% 0.055 160);
+  --night-banner: oklch(87% 0.11 92);
+
+  /* paper: the light set */
+  --bg: oklch(99.3% 0 0);
+  --field: oklch(99.8% 0 0);
+  --fg: oklch(32% 0 0);
+  --muted: oklch(52% 0 0);
+  --line: oklch(91% 0 0);
+  --line-strong: oklch(66% 0 0);
+  --block: oklch(96.6% 0 0);
+  --block-2: oklch(94% 0 0);
+  --block-3: oklch(90.5% 0 0);
+  --link: oklch(47% 0.14 262);
+  --accent: oklch(52% 0.17 27);
+  --good: oklch(49% 0.11 150);
+  --felt: oklch(41% 0.07 160);
+  --felt-fg: oklch(96% 0 0);
+  --warn-bg: oklch(95.5% 0.05 95);
+  --focus: var(--link);
+
+  --font: Arial, Helvetica, sans-serif;
+  --font-serif: "Times New Roman", Times, serif;
+  --font-mono: ui-monospace, "Cascadia Mono", "Courier New", monospace;
+
+  /* type under the body's 14px: small print, and the smallest labels */
+  --fs-sm: 12px;
+  --fs-xs: 11px;
+
+  /* what sits under something floating over the page: the page dimmed behind
+     it, and one soft shadow under it */
+  --scrim: color-mix(in oklch, var(--bg) 55%, transparent);
+  --shadow-float: 0 18px 44px -18px oklch(10% 0 0 / 0.48);
+
+  /* the nap of a felt, laid over var(--felt) with background-blend-mode:
+     soft-light, so the toys' tables read as cloth, not paint */
+  --cloth: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='table' tableValues='1 1'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='96' height='96' filter='url(%23n)'/%3E%3C/svg%3E");
+
+  /* one control height: anything that sits in a row with a button lines up */
+  --control-h: 28px;
+  --control-h-big: 40px;
+
+  /* a hairline: one real pixel of the screen. every border, rule and divider is
+     one. only a few things are heavier on purpose: the focus ring, the current
+     tab's rule and the chips. */
+  --hair: 1px;
+
+  --ease-out: cubic-bezier(0.25, 1, 0.5, 1); /* quart */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  /* three speeds: a press, a hover, a thing moving somewhere */
+  --dur-press: 70ms;
+  --dur-hover: 120ms;
+  --dur-move: 260ms;
+  /* and the longer ones: a thing popping into place, a slow color change, a
+     big piece settling in */
+  --dur-pop: 420ms;
+  --dur-slow: 400ms;
+  --dur-settle: 520ms;
+  /* every focusable thing carries these so the focus ring can snap in */
+  --t-focus: outline-color var(--dur-hover) var(--ease-out), outline-offset 200ms var(--ease-out-expo);
+
+  --tv-bg: var(--night-bg);
+  --tv-fg: var(--night-fg);
+  --tv-muted: var(--night-muted);
+  --tv-line: var(--night-line);
+  --tv-raise: var(--night-block-2);
+  --tv-hot: var(--night-accent);
+  --tv-felt: var(--night-felt);
+  --tv-banner: var(--night-banner);
+  --tv-banner-fg: var(--night-bg);
+
+  color-scheme: light;
+}
+
+/* dark mode. app.html resolves "system" to light/dark before first paint and
+   settings.svelte.ts keeps it current, so this is the only dark block. */
+:root[data-theme="dark"] {
+  --bg: var(--night-bg);
+  --field: oklch(17.5% 0 0);
+  --fg: var(--night-fg);
+  --muted: var(--night-muted);
+  --line: var(--night-line);
+  --line-strong: var(--night-line-strong);
+  --block: var(--night-block);
+  --block-2: var(--night-block-2);
+  --block-3: var(--night-block-3);
+  --link: oklch(77% 0.1 258);
+  --accent: var(--night-accent);
+  --good: var(--night-good);
+  --felt: oklch(35% 0.06 160);
+  --warn-bg: oklch(31% 0.045 92);
+  color-scheme: dark;
+}
+
+/* on a sharp screen one css pixel is two or three real ones; the hairline stays one */
+@media (min-resolution: 2dppx) {
+  :root {
+    --hair: 0.5px;
+  }
+}
+@media (min-resolution: 3dppx) {
+  :root {
+    --hair: 0.34px;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font: 14px/1.5 var(--font);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  /* a long unbroken name, link or code breaks where it has to rather than
+     running off the side */
+  overflow-wrap: break-word;
+}
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* the underline is always there, just transparent: text-decoration-line can't
+   animate, but its color can, so hover fades the line in instead of popping it.
+   it also rises a hair to meet the text as it arrives. */
+a {
+  color: var(--link);
+  text-decoration: underline;
+  text-decoration-thickness: 1.4px;
+  text-underline-offset: 4.5px;
+  text-decoration-color: transparent;
+  transition:
+    text-decoration-color var(--dur-hover) var(--ease-out),
+    text-underline-offset 200ms var(--ease-out-expo),
+    opacity var(--dur-press) var(--ease-out),
+    var(--t-focus);
+}
+a:hover {
+  text-decoration-color: currentColor;
+  text-underline-offset: 2.8px;
+}
+/* pressed: the ink gives a little, like the buttons do */
+a:active {
+  opacity: 0.65;
+}
+
+/* one focus ring for everything, keyboard only. it rests invisible a few px out
+   and snaps in to 2px when focus lands, so tabbing feels like it clicks into place */
+:where(a, button, input, select, textarea, summary, label.btn) {
+  outline: 0 solid transparent;
+  outline-offset: 6px;
+}
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline-offset: 0;
+  border-color: var(--focus);
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-serif);
+  font-weight: normal;
+  margin: 0 0 0.4em;
+  line-height: 1.2;
+}
+/* section headings sit on a hairline, like a ruled ledger page; the gap under
+   the text scales with the heading. page titles (h1) stand on their own. */
+h2,
+h3,
+.ruled {
+  border-bottom: var(--hair) solid var(--line);
+}
+h1 {
+  font-size: 30px;
+  letter-spacing: -0.01em;
+}
+h2 {
+  font-size: 21px;
+  padding-bottom: 6px;
+  margin-bottom: 10px;
+}
+h3,
+.ruled {
+  padding-bottom: 4px;
+  margin-bottom: 8px;
+}
+h3 {
+  font-size: 15px;
+  font-weight: bold;
+  font-family: var(--font);
+}
+/* heading with something beside it (a Switch link, an Edit button, a status):
+   the rule runs under the whole row instead of stopping at the heading */
+.spread:has(> :is(h2, h3)) {
+  align-items: baseline;
+  border-bottom: var(--hair) solid var(--line);
+}
+.spread:has(> h2) {
+  padding-bottom: 6px;
+  margin-bottom: 10px;
+}
+.spread:has(> h3) {
+  padding-bottom: 4px;
+  margin-bottom: 8px;
+}
+.spread > :is(h2, h3) {
+  padding-bottom: 0;
+  margin-bottom: 0;
+  border-bottom: 0;
+}
+
+/* big breaks between areas are space, not a full-width line. the hairlines
+   live under section headings, list rows, tables and the footer instead. */
+/* a page's title row (pagehead.ts) pins under the header too. the padding
+   lets it breathe when stuck; the negative top margin keeps it where it was
+   at rest. no rule under it: once content scrolls beneath, a short paper
+   fade softens the edge instead. */
+.pagehead {
+  position: sticky;
+  top: var(--head, 0px);
+  z-index: 40;
+  background: var(--bg);
+  padding: 10px 0 6px;
+  margin: -10px 0 6px;
+}
+.pagehead::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  height: 14px;
+  background: linear-gradient(var(--bg), transparent);
+  pointer-events: none;
+  opacity: 0;
+}
+@supports (animation-timeline: scroll()) {
+  .pagehead::after {
+    animation: stuck linear both;
+    animation-timeline: scroll();
+    animation-range: 0 40px;
+  }
+}
+@keyframes stuck {
+  to {
+    opacity: 1;
+  }
+}
+/* on a phone, or any short screen (a phone on its side), pinning the title
+   under the site header too would eat a quarter of the screen */
+@media (max-width: 600px), (max-height: 500px) {
+  .pagehead {
+    position: static;
+    margin-top: 0;
+    padding-top: 0;
+  }
+  .pagehead::after {
+    display: none;
+  }
+}
+.pagehead h1 {
+  margin-bottom: 0;
+}
+
+hr {
+  border: 0;
+  margin: 34px 0;
+}
+
+/* the sticky header's height (set in +layout) so a jump to #anchor lands below it */
+html {
+  scroll-padding-top: calc(var(--head, 0px) + var(--title, 0px) + 16px);
+  /* the scrollbar's lane is always kept, so pages don't jump sideways when
+     they grow long enough to scroll */
+  scrollbar-gutter: stable;
+}
+/* the tv is one fixed full screen that never scrolls: no empty lane beside it */
+html:has(.tv) {
+  scrollbar-gutter: auto;
+}
+
+.wrap {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 12px 16px 60px;
+  /* a phone on its side puts its notch beside the page: keep clear of it */
+  padding-left: max(16px, env(safe-area-inset-left));
+  padding-right: max(16px, env(safe-area-inset-right));
+}
+
+.muted {
+  color: var(--muted);
+}
+.small {
+  font-size: var(--fs-sm);
+}
+/* the smallest label: a column's name, a stat's name, a group in a list */
+.eyebrow {
+  font-size: var(--fs-xs);
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+/* a list that's just a column of things: no bullets, no indent */
+.bare {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+/* things stacked one over the next with a little air */
+.vstack {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+/* an icon beside its words, on their baseline */
+.with-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+/* reading width for paragraphs */
+.measure {
+  max-width: 68ch;
+}
+/* nothing here yet: one quiet line, the same everywhere */
+.empty {
+  color: var(--muted);
+  padding: 10px 0;
+}
+/* a button that's only an icon: square, the height of every other control */
+.icon-btn {
+  all: unset;
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: var(--control-h);
+  height: var(--control-h);
+  color: var(--muted);
+  cursor: pointer;
+  transition:
+    color var(--dur-hover) var(--ease-out),
+    background-color var(--dur-hover) var(--ease-out),
+    scale var(--dur-press) var(--ease-out),
+    var(--t-focus);
+}
+.icon-btn:hover {
+  color: var(--fg);
+  background: var(--block);
+}
+.icon-btn:active {
+  scale: 0.9;
+  background: var(--block-2);
+}
+.icon-btn:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+}
+/* anything floating over the page (the palette, the calculator, a toast, a
+   dropdown): a field face and one ink hairline, a soft shadow under it */
+.float {
+  background: var(--field);
+  border: var(--hair) solid var(--fg);
+  box-shadow: var(--shadow-float);
+}
+.mono,
+.num {
+  font-family: var(--font-mono);
+}
+.num {
+  font-variant-numeric: tabular-nums;
+}
+.accent {
+  color: var(--accent);
+}
+.good {
+  color: var(--good);
+}
+.bad {
+  color: var(--accent);
+}
+.nowrap {
+  white-space: nowrap;
+}
+/* secondary columns step aside on phones */
+@media (max-width: 700px) {
+  .hide-sm {
+    display: none;
+  }
+}
+/* keyboard shortcuts mean nothing on a phone or tablet: hide their hints */
+@media (hover: none) and (pointer: coarse) {
+  .keys-hint {
+    display: none;
+  }
+}
+/* a finger, not a pointer: every control grows to one taller height (still one
+   height, so rows line up), fields read at 16px (anything smaller and phones
+   zoom the page in when one is tapped), and link buttons and action links get
+   a finger-sized hit area without moving at all */
+@media (pointer: coarse) {
+  :root {
+    --control-h: 40px;
+    --control-h-big: 46px;
+  }
+  input:is([type="text"], [type="search"], [type="number"], [type="password"], :not([type])),
+  select,
+  textarea {
+    font-size: 16px;
+  }
+  input[type="checkbox"] {
+    width: 22px;
+    height: 22px;
+  }
+  input[type="checkbox"]::before {
+    width: 13px;
+    height: 13px;
+  }
+  label.inline {
+    min-height: 40px;
+  }
+  .links,
+  .jump {
+    row-gap: 12px;
+  }
+}
+.row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.spread {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+/* text and the links after it, or a run of links: set apart by space on one
+   baseline, never joined with a dot. dots only separate facts
+   (Cash Game · 1/2 · Sep 25). */
+.links,
+label > span.links:first-child {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 12px;
+}
+span.links {
+  display: inline-flex;
+}
+.grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+}
+.cols {
+  display: grid;
+  gap: 32px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+@media (max-width: 800px) {
+  .cols {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+/* a table wider than a phone scrolls inside its own box, not the page. it's
+   also the box for anything absolutely placed inside (screen-reader-only
+   headers), which would otherwise poke out and widen the page. */
+.scroll-x {
+  position: relative;
+  overflow-x: auto;
+}
+
+/* are.na-ish gray blocks */
+.block {
+  background: var(--block);
+  padding: 12px 14px;
+}
+.box {
+  padding: 0;
+}
+.warn {
+  background: var(--warn-bg);
+  padding: 8px 12px;
+}
+
+/* felt: only where chips sit */
+.felt {
+  --fg: var(--felt-fg);
+  --muted: color-mix(in oklch, var(--felt-fg) 70%, var(--felt));
+  --accent: oklch(82% 0.1 40);
+  background: var(--felt);
+  color: var(--fg);
+  padding: 14px;
+}
+
+/* forms: native-looking on purpose */
+label {
+  display: block;
+  margin: 0 0 10px;
+}
+label > span:first-child {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 3px;
+}
+label.inline {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  margin-right: 12px;
+}
+label.inline > span:first-child {
+  display: inline;
+  font-size: inherit;
+  color: inherit;
+  margin: 0;
+}
+input,
+select,
+textarea,
+button {
+  font: inherit;
+  color: inherit;
+}
+input[type="checkbox"],
+input[type="radio"],
+input[type="range"] {
+  accent-color: var(--fg);
+}
+/* checkboxes give under the finger */
+input[type="checkbox"],
+input[type="radio"] {
+  cursor: pointer;
+  transition:
+    transform var(--dur-press) var(--ease-out),
+    var(--t-focus);
+}
+input[type="checkbox"]:active,
+input[type="radio"]:active {
+  transform: scale(0.86);
+}
+/* square, like every other control: a hairline box that fills with ink when
+   it's checked, with the check cut out of it in the page's color */
+input[type="checkbox"] {
+  appearance: none;
+  display: inline-grid;
+  place-content: center;
+  flex: none;
+  width: 15px;
+  height: 15px;
+  margin: 0;
+  border: var(--hair) solid var(--line-strong);
+  border-radius: 0;
+  background: var(--field);
+  vertical-align: middle;
+  transition:
+    background-color var(--dur-hover) var(--ease-out),
+    border-color var(--dur-hover) var(--ease-out),
+    transform var(--dur-press) var(--ease-out),
+    var(--t-focus);
+}
+input[type="checkbox"]:hover,
+label:hover > input[type="checkbox"]:not(:disabled) {
+  border-color: var(--muted);
+}
+input[type="checkbox"]:checked {
+  background: var(--fg);
+  border-color: var(--fg);
+}
+input[type="checkbox"]::before {
+  content: "";
+  width: 9px;
+  height: 9px;
+  background: var(--field);
+  clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+  transform: scale(0);
+  transition: transform 140ms var(--ease-out-expo);
+}
+input[type="checkbox"]:checked::before {
+  transform: scale(1);
+}
+input[type="checkbox"]:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+/* windows high contrast paints over backgrounds, and the check above is only
+   a background: the system's own box, which it knows how to draw */
+@media (forced-colors: active) {
+  input[type="checkbox"] {
+    appearance: auto;
+  }
+  input[type="checkbox"]::before {
+    display: none;
+  }
+}
+input[type="range"] {
+  cursor: pointer;
+}
+input[type="text"],
+input[type="search"],
+input[type="number"],
+input[type="password"],
+input:not([type]),
+select,
+textarea {
+  background: var(--field);
+  border: var(--hair) solid var(--line-strong);
+  border-radius: 0;
+  padding: 0 6px;
+  max-width: 100%;
+  caret-color: var(--focus);
+  transition:
+    border-color var(--dur-hover) var(--ease-out),
+    background-color var(--dur-hover) var(--ease-out),
+    var(--t-focus);
+}
+input[type="text"],
+input[type="search"],
+input[type="number"],
+input[type="password"],
+input:not([type]),
+select {
+  height: var(--control-h);
+  vertical-align: middle;
+}
+textarea {
+  padding: 4px 6px;
+}
+input[type="text"]:hover,
+input[type="search"]:hover,
+input[type="number"]:hover,
+input[type="password"]:hover,
+input:not([type]):hover,
+select:hover,
+textarea:hover {
+  border-color: var(--muted);
+}
+input[type="search"] {
+  appearance: none;
+}
+/* dropdown lists are square like everything else. where the browser lets a
+   <select> be styled all the way down, its list is a hairline box on the field
+   face instead of the system's rounded popup, with a Lucide chevron that turns
+   over while it's open. elsewhere it stays the system's own. */
+@supports (appearance: base-select) {
+  select,
+  ::picker(select) {
+    appearance: base-select;
+  }
+  select {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 6px;
+  }
+  select::picker-icon {
+    content: "";
+    flex: none;
+    width: 1em;
+    height: 1em;
+    background: var(--muted);
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='square' stroke-linejoin='miter'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")
+      center / contain no-repeat;
+    transition: rotate var(--dur-move) var(--ease-out-expo);
+  }
+  select:open::picker-icon {
+    rotate: 180deg;
+  }
+  ::picker(select) {
+    border: var(--hair) solid var(--line-strong);
+    border-radius: 0;
+    background: var(--field);
+    color: var(--fg);
+    padding: 0;
+    box-shadow: none;
+  }
+  option {
+    padding: 5px 8px;
+    border-radius: 0;
+  }
+  option:hover,
+  option:focus-visible {
+    background: var(--block-2);
+    outline: none;
+  }
+  option:checked {
+    font-weight: bold;
+  }
+  option::checkmark {
+    display: none;
+  }
+  option:disabled {
+    color: var(--muted);
+  }
+}
+input::placeholder,
+textarea::placeholder {
+  color: var(--muted);
+  opacity: 0.8;
+}
+input[type="number"] {
+  width: 90px;
+  font-family: var(--font-mono);
+}
+input[type="color"] {
+  width: 36px;
+  height: var(--control-h);
+  vertical-align: middle;
+  padding: 0;
+  border: var(--hair) solid var(--line-strong);
+  background: none;
+}
+/* a text box only grows taller: its width belongs to the layout */
+textarea {
+  width: 100%;
+  min-height: 60px;
+  resize: vertical;
+}
+
+/* buttons: square and bordered like an unstyled <button>. hover darkens the
+   face a step; press goes one step further and sinks 1px, like a real key.
+   never lifts. */
+button,
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: var(--control-h);
+  vertical-align: middle;
+  white-space: nowrap;
+  background: var(--block-2);
+  border: var(--hair) solid var(--line-strong);
+  border-radius: 0;
+  padding: 0 10px;
+  cursor: pointer;
+  text-decoration: none;
+  color: var(--fg);
+  line-height: 1;
+  user-select: none;
+  transition:
+    background-color var(--dur-hover) var(--ease-out),
+    border-color var(--dur-hover) var(--ease-out),
+    color var(--dur-hover) var(--ease-out),
+    transform 160ms var(--ease-out-expo),
+    var(--t-focus);
+}
+.btn:visited {
+  color: var(--fg);
+}
+button:hover,
+.btn:hover {
+  background: var(--block-3);
+  border-color: var(--muted);
+}
+/* .down = pressed from a keyboard shortcut, so the screen button goes down too */
+button:active,
+.btn:active,
+button.down {
+  background: var(--line);
+  transform: translateY(1px);
+  transition-duration: var(--dur-press);
+}
+button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+button:disabled:hover,
+button:disabled:active {
+  background: var(--block-2);
+  border-color: var(--line-strong);
+  transform: none;
+}
+
+/* icons answer a hover in the direction they point. small, and only where
+   there's a real pointer. */
+.icon {
+  transition: transform var(--dur-move) var(--ease-out-expo);
+}
+@media (hover: hover) {
+  :is(button, .btn, a):hover:not(:disabled) :is(.lucide-arrow-right, .lucide-chevron-right) {
+    transform: translateX(2px);
+  }
+  :is(button, .btn, a):hover:not(:disabled) :is(.lucide-arrow-left, .lucide-chevron-left) {
+    transform: translateX(-2px);
+  }
+  :is(button, .btn, a):hover:not(:disabled) .lucide-plus {
+    transform: rotate(90deg);
+  }
+  :is(button, .btn, a):hover:not(:disabled) .lucide-external-link {
+    transform: translate(1px, -1px);
+  }
+  :is(button, .btn, a):hover:not(:disabled) .lucide-download {
+    transform: translateY(1.5px);
+  }
+  :is(button, .btn, a):hover:not(:disabled) .lucide-upload {
+    transform: translateY(-1.5px);
+  }
+  :is(button, .btn, a):hover:not(:disabled) .lucide-rotate-cw {
+    transform: rotate(120deg);
+  }
+  :is(button, .btn, a):hover:not(:disabled) .lucide-trash {
+    transform: rotate(-10deg);
+  }
+  :is(button, .btn, a):hover:not(:disabled) .lucide-sun {
+    transform: rotate(45deg);
+  }
+  :is(button, .btn, a):hover:not(:disabled) .lucide-moon {
+    transform: rotate(-20deg);
+  }
+  :is(button, .btn, a):hover:not(:disabled) :is(.lucide-play, .lucide-send) {
+    transform: translateX(1.5px);
+  }
+  :is(button, .btn, a):hover:not(:disabled) .lucide-undo-2 {
+    transform: translateX(-2px);
+  }
+  /* the two arrows trade places, like the deck */
+  :is(button, .btn, a):hover:not(:disabled) .lucide-shuffle {
+    transform: scaleY(-1);
+  }
+  /* one lap round the loop */
+  :is(button, .btn, a):hover:not(:disabled) .lucide-repeat {
+    transform: rotate(180deg);
+  }
+  :is(button, .btn, a):hover:not(:disabled) .lucide-skull {
+    transform: rotate(-12deg);
+  }
+  :is(button, .btn, a):hover:not(:disabled) :is(.lucide-bookmark, .lucide-file-spreadsheet) {
+    transform: translateY(1.5px);
+  }
+  :is(button, .btn, a):hover:not(:disabled) .lucide-maximize {
+    transform: scale(1.15);
+  }
+}
+/* a check only ever shows up because something just worked (saved, copied, the
+   bank balances), so it writes itself in: short stroke first, like a pen */
+.lucide-check path {
+  stroke-dasharray: 24;
+  animation: draw var(--dur-pop) var(--ease-out-expo) 60ms backwards;
+}
+@keyframes draw {
+  from {
+    stroke-dashoffset: -24;
+  }
+}
+button.big,
+.btn.big {
+  height: var(--control-h-big);
+  font-size: 16px;
+  padding: 0 18px;
+  gap: 8px;
+}
+/* a big button sets the height for its whole row */
+.row:has(> .big) > button,
+.row:has(> .big) > .btn,
+.row:has(> .big) > input,
+.row:has(> .big) > select {
+  height: var(--control-h-big);
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+button.link {
+  display: inline;
+  height: auto;
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--link);
+  line-height: inherit;
+  white-space: normal;
+  text-decoration: underline;
+  text-decoration-thickness: 1.4px;
+  text-underline-offset: 4.5px;
+  text-decoration-color: transparent;
+  transition:
+    text-decoration-color var(--dur-hover) var(--ease-out),
+    text-underline-offset 200ms var(--ease-out-expo),
+    transform 160ms var(--ease-out-expo),
+    var(--t-focus);
+}
+button.link:hover {
+  background: none;
+  text-decoration-color: currentColor;
+  text-underline-offset: 2.8px;
+}
+button.link:active {
+  background: none;
+}
+button.link.muted {
+  color: var(--muted);
+}
+/* a link button with an icon (+ House Cut, + Level): icon and words centered on
+   one line */
+button.link:has(> .icon) {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+/* on a touch screen, link buttons and the links in action rows get a
+   finger-sized hit area, drawn exactly where they were: the padding and the
+   negative margin cancel out. (tabs and menu items set their own.) */
+@media (pointer: coarse) {
+  button.link:not(.tab, .menu *),
+  :is(.links, .spread, .jump, td) > a,
+  .row > a:not(.btn),
+  footer nav a {
+    padding: 7px 5px;
+    margin: -7px -5px;
+  }
+  /* at a table row's right edge the hit area grows left instead, so nothing
+     pokes out of a table that scrolls */
+  td:last-child > :is(button.link, a):last-child {
+    padding-right: 0;
+    margin-right: 0;
+    /* 12px: even a lone × comes out 24px wide, a fingertip's minimum */
+    padding-left: 12px;
+    margin-left: -12px;
+  }
+}
+button.danger {
+  border-color: color-mix(in oklch, var(--accent) 60%, var(--line-strong));
+  color: var(--accent);
+}
+button.danger:hover {
+  background: color-mix(in oklch, var(--accent) 12%, var(--block-2));
+  border-color: var(--accent);
+}
+
+/* tables: craigslist listing style */
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+th,
+td {
+  text-align: left;
+  padding: 5px 10px 5px 0;
+  border-bottom: var(--hair) solid var(--line);
+  vertical-align: middle;
+  /* the current-level highlight glides to the next row instead of jumping */
+  transition:
+    background-color var(--dur-slow) var(--ease-out),
+    color var(--dur-slow) var(--ease-out);
+}
+th {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: normal;
+}
+td.num,
+th.num {
+  text-align: right;
+}
+/* headers are labels, not numbers: a right-aligned heading stays in Arial,
+   and so does a word-button inside a number cell (Fix, Go) */
+th.num,
+.num :is(button, .btn) {
+  font-family: var(--font);
+}
+tr.current td {
+  background: var(--warn-bg);
+}
+@media (forced-colors: active) {
+  tr.current td {
+    forced-color-adjust: none;
+    background: Highlight;
+    color: HighlightText;
+  }
+}
+tr.dim td {
+  color: var(--muted);
+}
+
+/* ---------- the dealer screen (cash and tournament share these) ---------- */
+
+/* the clock sits in the one framed box on the page */
+.clockbox {
+  border: var(--hair) solid var(--line-strong);
+  background: var(--field);
+  padding: 14px 16px 12px;
+  margin-bottom: 14px;
+  transition: background-color var(--dur-slow) var(--ease-out);
+}
+/* one size for the dealer's clock, cash or tournament: by the width, and on a
+   short screen (a phone on its side) by the height, so the buttons under it
+   stay in view */
+.clockbox .clockface {
+  font-size: clamp(56px, min(11vw, 18vh), 120px);
+  line-height: 1;
+  font-weight: bold;
+  transition:
+    color var(--dur-slow) var(--ease-out),
+    opacity 300ms var(--ease-out);
+}
+/* paused reads at a glance: the time goes quiet until it's running again */
+.clockbox.paused .clockface {
+  opacity: 0.45;
+}
+.clockbox .lvl {
+  font-size: 18px;
+  letter-spacing: 0.05em;
+}
+.clockbox .bb {
+  font-size: clamp(28px, 5vw, 52px);
+  font-weight: bold;
+}
+
+/* the running numbers under the clock: a ledger strip, one rule between cells */
+/* one row of cells when they fit, otherwise even rows (six go three across,
+   four go two by two): never a cell left on its own */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(var(--cells, 3), minmax(0, 1fr));
+  gap: var(--hair);
+  background: var(--line);
+  border: var(--hair) solid var(--line);
+  margin-bottom: 16px;
+}
+.stats > div {
+  background: var(--bg);
+  padding: 8px 10px;
+}
+.stats span {
+  display: block;
+  font-size: var(--fs-xs);
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.stats b {
+  font-size: 20px;
+}
+.stats small {
+  margin-left: 4px;
+  color: var(--muted);
+}
+.stats:has(> :nth-child(4):last-child) {
+  --cells: 4;
+}
+.stats:has(> :nth-child(6):last-child) {
+  --cells: 6;
+}
+@media (max-width: 900px) {
+  .stats:has(> :nth-child(6):last-child) {
+    --cells: 3;
+  }
+}
+@media (max-width: 600px) {
+  .stats:has(> :nth-child(4):last-child) {
+    --cells: 2;
+  }
+  .stats > div {
+    padding: 6px 8px;
+  }
+  .stats b {
+    font-size: 16px;
+  }
+  .stats small {
+    display: block;
+    margin: 0;
+  }
+}
+
+/* a name you can fix in place: dashed rule on hover, solid while typing */
+input.edit-name {
+  border: 0;
+  border-bottom: var(--hair) dashed transparent;
+  background: transparent;
+  padding-left: 0;
+  width: 140px;
+}
+input.edit-name:hover {
+  border-bottom-color: var(--line-strong);
+}
+/* a finger can't hover: the dashes stay, faintly, so the name reads as editable */
+@media (hover: none) {
+  input.edit-name {
+    border-bottom-color: var(--line);
+  }
+}
+input.edit-name:focus-visible,
+input.edit-name:focus {
+  border-bottom-style: solid;
+  border-bottom-color: var(--focus);
+}
+/* seats drawn: each label is dealt to its row in turn, like cards off the top */
+.dealt {
+  display: inline-block;
+  animation: dealt 380ms var(--ease-out-expo) backwards;
+  animation-delay: calc(var(--i, 0) * 45ms);
+}
+@keyframes dealt {
+  from {
+    opacity: 0;
+    transform: translate(-10px, -4px) rotate(-6deg);
+  }
+}
+/* a busted player's finishing place lands like a rubber stamp */
+.stamp {
+  animation: stamp var(--dur-pop) var(--ease-out-expo) backwards;
+}
+@keyframes stamp {
+  from {
+    opacity: 0;
+    transform: scale(1.8) rotate(-8deg);
+  }
+  60% {
+    opacity: 1;
+  }
+}
+td.seat {
+  color: var(--muted);
+  width: 1%;
+  white-space: nowrap;
+}
+
+/* the players table on a phone, upright or on its side: one player per block,
+   name and main action on top, the counts underneath with their labels, so
+   nothing hides off the edge. .acts-below puts the actions on their own line
+   instead (cash: four controls). */
+@media (max-width: 600px), (pointer: coarse) and (max-height: 500px) {
+  .roster {
+    display: block;
+    min-width: 0 !important;
+  }
+  .roster thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .roster tbody {
+    display: block;
+  }
+  .roster tr {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 14px;
+    padding: 7px 0;
+    border-bottom: var(--hair) solid var(--line);
+  }
+  /* a zero-height line break between the top line and the counts */
+  .roster tr::after {
+    content: "";
+    order: 3;
+    flex-basis: 100%;
+  }
+  .roster td {
+    display: block;
+    padding: 0;
+    border: 0;
+  }
+  /* the seat keeps its own width (a table's 1% would squash it under the name) */
+  .roster td.seat {
+    width: auto;
+    flex: none;
+  }
+  /* the name takes whatever the line has left, so a long one shows in full */
+  .roster td.who {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .roster td.who .edit-name {
+    flex: 1;
+    min-width: 0;
+    width: auto;
+  }
+  .roster td.acts {
+    order: 2;
+    margin-left: auto;
+    width: auto;
+  }
+  /* a busted player's actions (who knocked them out, undo) ride at the end of
+     the counts line, and the name gets the top line to itself */
+  .roster:not(.acts-below) tr.dim td.acts {
+    order: 5;
+  }
+  /* remove sits at the row's edge: a finger-sized target that doesn't move it */
+  .roster td.acts > button.link {
+    padding: 8px 0 8px 12px;
+    margin: 0;
+  }
+  .roster td[data-l] {
+    order: 4;
+    text-align: left;
+  }
+  .roster td[data-l]::before {
+    content: attr(data-l);
+    margin-right: 5px;
+    font: 11px var(--font);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .roster td.blank,
+  .roster .hide-sm {
+    display: none;
+  }
+  /* the little − / + beside a count get a thumb-sized hit area */
+  .roster td[data-l] button.link {
+    padding: 6px 5px;
+    margin: -6px 0;
+  }
+  .roster td[colspan] {
+    flex-basis: 100%;
+  }
+  .roster.acts-below td[data-l] {
+    order: 1;
+  }
+  .roster.acts-below td.acts {
+    order: 4;
+    margin-left: 0;
+    /* they wrap to a second line rather than run off the narrowest phones */
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 0;
+    white-space: normal;
+  }
+}
+
+/* ---------- chips ---------- */
+
+/* chips themselves are svg: src/lib/components/Chip.svelte */
+
+/* a stack seen from a little above, like on the table in front of you. every
+   disc is a short cylinder: a pill whose round ends are the foreshortened
+   ellipse of its face (--e tall), set one chip's thickness (--t) above the one
+   under it. so each disc shows only its curved edge band below the next, and
+   the top chip shows its face. */
+.stack {
+  --w: 44px;
+  --t: calc(var(--w) * 0.1);
+  --e: calc(var(--w) * 0.34);
+  /* drawn on whole pixels: a disc that dropped in or zipped back in from a
+     shuffle is drawn on its own layer while it moves, and a disc at a
+     fraction of a pixel shimmered as it went back onto the page */
+  --step: round(var(--t), 1px);
+  --face: round(var(--e), 1px);
+  position: relative;
+  isolation: isolate; /* a shuffle reorders the discs without reaching past the stack */
+  display: inline-block;
+  flex: none;
+  width: var(--w);
+  height: calc(var(--n, 1) * var(--step) + var(--face));
+  vertical-align: bottom;
+}
+/* a stack being shuffled is lifted onto the top layer of the page (toys.ts):
+   over everything, and its chips don't drop in again */
+.stack.lifted {
+  position: absolute;
+  z-index: 1000;
+  margin: 0;
+  pointer-events: none;
+}
+.stack.lifted i {
+  animation: none;
+}
+/* its shadow on the felt */
+.stack::before {
+  content: "";
+  position: absolute;
+  left: -8%;
+  right: -8%;
+  bottom: calc(var(--face) * -0.14);
+  height: calc(var(--face) * 1.15);
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(0 0 0 / 0.32), rgb(0 0 0 / 0));
+  z-index: -1;
+}
+/* each disc is drawn by ChipStack.svelte with Chip.svelte's own parts: the
+   edge with its inserts (turned a different amount on every disc, so they
+   never stack into stripes) and, on the discs whose top shows, the chip's
+   face. a shade layer rounds the edge like a cylinder, and a dark hairline
+   under each disc is the seam between two chips. */
+.stack i {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(var(--i) * var(--step));
+  height: calc(var(--face) + var(--step));
+  border-radius: 50% / calc(var(--face) / 2);
+  overflow: hidden;
+  isolation: isolate;
+  background: var(--c);
+  translate: var(--x, 0px) 0;
+  box-shadow: 0 1px 0 rgb(0 0 0 / 0.45);
+  animation: drop 0.36s var(--ease-out-expo) backwards;
+  animation-delay: calc(var(--i) * 18ms + var(--d, 0ms));
+}
+.stack svg {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  overflow: visible;
+}
+.stack .edge {
+  top: 0;
+  height: 100%;
+}
+/* the edge is round: dark at the sides, a soft light just left of center */
+.stack i::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgb(0 0 0 / 0.38), rgb(0 0 0 / 0) 22%, rgb(255 255 255 / 0.16) 42%, rgb(0 0 0 / 0) 64%, rgb(0 0 0 / 0.42));
+}
+/* the face, over the shade */
+.stack .top {
+  top: 0;
+  z-index: 1;
+  height: var(--face);
+}
+@keyframes drop {
+  from {
+    transform: translateY(-14px);
+    opacity: 0;
+  }
+}
+
+/* ---------- misc ---------- */
+
+.pill {
+  display: inline-block;
+  border: var(--hair) solid currentColor;
+  padding: 0 6px;
+  font-size: 11px;
+  line-height: 1.6;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  vertical-align: 0.1em;
+  transition:
+    color 300ms var(--ease-out),
+    background-color 300ms var(--ease-out);
+}
+/* status pills: the label carries the meaning, the tint just helps it pop */
+.pill[data-s="running"] {
+  color: var(--good);
+}
+.pill[data-s="paused"] {
+  background: var(--warn-bg);
+}
+.suit-r {
+  color: var(--accent);
+}
+.icon {
+  flex-shrink: 0;
+  vertical-align: -0.2em;
+}
+kbd {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.6em;
+  vertical-align: middle;
+  font-family: var(--font-mono);
+  border: var(--hair) solid var(--line-strong);
+  padding: 0 4px;
+  font-size: 11px;
+  background: var(--field);
+  transition:
+    transform var(--dur-press) var(--ease-out),
+    background-color var(--dur-press) var(--ease-out),
+    border-color var(--dur-press) var(--ease-out);
+}
+/* the on-screen key goes down when the real one does */
+kbd.down {
+  transform: translateY(1px);
+  background: var(--block-2);
+}
+code {
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  background: var(--block);
+  padding: 0 4px;
+}
+
+/* ---------- motion helpers ---------- */
+
+/* use:bump (motion.ts): a number that just changed gets a legal-pad swipe */
+.bump {
+  display: inline-block;
+  animation: bump 700ms var(--ease-out);
+}
+@keyframes bump {
+  from {
+    background-color: var(--warn-bg);
+    transform: translateY(-2px);
+  }
+  30% {
+    transform: none;
+  }
+}
+
+/* landing on an anchor (/settings#data) briefly marks the spot */
+:target {
+  animation: target 1.8s var(--ease-out);
+}
+@keyframes target {
+  from,
+  25% {
+    background-color: var(--warn-bg);
+    box-shadow: 0 0 0 10px var(--warn-bg);
+  }
+}
+
+/* things that pop into place (the winner note, a balanced bank) */
+.pop {
+  animation: pop var(--dur-pop) var(--ease-out-expo) backwards;
+}
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: translateY(4px) scale(0.98);
+  }
+}
+
+/* page changes: the old page steps out fast, the new one settles in from a few
+   px below. the header stays put and the active tab's rule slides across. */
+::view-transition-group(page) {
+  animation: none;
+}
+::view-transition-old(page) {
+  animation: vt-out 110ms var(--ease-out) both;
+}
+::view-transition-new(page) {
+  animation: vt-in 260ms var(--ease-out-expo) 50ms both;
+}
+@keyframes vt-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes vt-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+::view-transition-group(masthead) {
+  animation: none;
+}
+::view-transition-old(masthead) {
+  display: none;
+}
+::view-transition-new(masthead) {
+  animation: none;
+}
+/* the calculator floats above the page and stays put while the page changes under it */
+::view-transition-group(calculator) {
+  animation: none;
+}
+::view-transition-old(calculator) {
+  display: none;
+}
+::view-transition-new(calculator) {
+  animation: none;
+}
+::view-transition-group(tab-rule) {
+  animation-duration: 340ms;
+  animation-timing-function: var(--ease-out-expo);
+}
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 160ms;
+}
+/* the theme swap is one circular wipe of the whole page (motion.ts), so nothing
+   inside gets its own transition */
+:root[data-vt="theme"] * {
+  view-transition-name: none !important;
+}
+:root[data-vt="theme"]::view-transition-old(root),
+:root[data-vt="theme"]::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+/* Settings > Motion > Reduced: the same, whatever the computer says */
+:root[data-motion="reduced"] {
+  scroll-behavior: auto;
+}
+:root[data-motion="reduced"] *,
+:root[data-motion="reduced"] *::before,
+:root[data-motion="reduced"] *::after {
+  animation-duration: 0.01ms !important;
+  animation-delay: 0s !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+:root[data-motion="reduced"]::view-transition-group(*),
+:root[data-motion="reduced"]::view-transition-old(*),
+:root[data-motion="reduced"]::view-transition-new(*) {
+  animation: none !important;
+}

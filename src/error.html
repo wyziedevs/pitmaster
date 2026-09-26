@@ -1,0 +1,35 @@
+<!doctype html>
+<!-- what the server sends when it can't even start the app (the app's own
+     errors get +error.svelte). plain on purpose: nothing here can fail. -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>%sveltekit.status% · PitMaster</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        background: light-dark(oklch(99.3% 0 0), oklch(19.5% 0 0));
+        color: light-dark(oklch(32% 0 0), oklch(89% 0 0));
+        font: 16px/1.5 Arial, Helvetica, sans-serif;
+      }
+      body {
+        max-width: 68ch;
+        margin: 64px auto;
+        padding: 0 16px;
+      }
+      h1 {
+        font: normal 30px/1.2 "Times New Roman", Times, serif;
+      }
+      a {
+        color: inherit;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Something Broke.</h1>
+    <p>PitMaster couldn't load just now (%sveltekit.status%). Your games are safe: they're kept in this browser, not here.</p>
+    <p><a href="/">Try Again</a></p>
+  </body>
+</html>
