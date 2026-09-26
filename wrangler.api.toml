@@ -11,9 +11,10 @@ compatibility_flags = ["nodejs_compat"]
 routes = [{ pattern = "api.pitmaster.cc", custom_domain = true }]
 workers_dev = false
 
-# live tv sync. create it once with:
+# live tv sync: the encrypted tv snapshots (an id, not a secret). a fresh
+# account makes its own with
 #   pnpm exec wrangler kv namespace create LIVE -c wrangler.api.toml
-# then paste the id below.
+# and puts that id here.
 [[kv_namespaces]]
 binding = "LIVE"
-id = "REPLACE_WITH_KV_NAMESPACE_ID"
+id = "f5ff8e6ed4044521b90aa00755d2c9b3"
