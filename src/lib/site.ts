@@ -5,6 +5,8 @@
 // the tab title after that comes from each page's own <svelte:head>, so keep
 // the titles here matching those.
 export const SITE = "https://pitmaster.cc";
+/** where the code is, public under the MIT license */
+export const REPO = "https://github.com/wyziedevs/pitmaster";
 export const NAME = "PitMaster";
 export const HOME_TITLE = "PitMaster · Poker Blind Clock & Home Game Manager";
 const DESCRIPTION =
@@ -99,7 +101,17 @@ const LD = JSON.stringify({
       operatingSystem: "Any",
       browserRequirements: "Requires JavaScript",
       isAccessibleForFree: true,
+      license: "https://opensource.org/license/mit",
       offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+      publisher: { "@id": "https://wyzie.io/#organization" },
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      name: NAME,
+      codeRepository: REPO,
+      programmingLanguage: ["TypeScript", "Svelte"],
+      license: "https://opensource.org/license/mit",
+      targetProduct: { "@id": `${SITE}/#app` },
       publisher: { "@id": "https://wyzie.io/#organization" },
     },
   ],

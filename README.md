@@ -1,6 +1,6 @@
 # PitMaster
 
-live at [pitmaster.cc](https://pitmaster.cc). made by [Wyzie LLC](https://wyzie.io).
+live at [pitmaster.cc](https://pitmaster.cc). made by [Wyzie LLC](https://wyzie.io), open source under the [MIT license](LICENSE).
 
 run a poker game of any size, from a kitchen table to a room full of tables: pick your chips, set blinds / buy-ins / length, run cash games or tournaments, and put a live view on the tv. no accounts, and everything it keeps is encrypted.
 
@@ -116,3 +116,7 @@ the build finds the api through `VITE_API_URL` in `.env.production` (committed; 
 ## ui
 
 the ui is a deliberate shell: raw, craigslist / are.na style. the plan is to polish it later with impeccable and keep the vibe. start with the tokens in `src/app.css` and the TV styles in `TvView.svelte`.
+
+## license
+
+[MIT](LICENSE), © Wyzie LLC. the license covers the code, not the PitMaster name: if you publish your own copy, give it a name of its own. found a security problem? see [SECURITY.md](SECURITY.md) rather than opening an issue.

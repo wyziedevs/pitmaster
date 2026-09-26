@@ -4,7 +4,7 @@
 
 <DocPage title="Privacy" sub="Last updated September 26, 2026" other={{ href: "/terms", label: "Terms of Use" }}>
   <p>
-    PitMaster (<a href="https://pitmaster.cc">pitmaster.cc</a>) is a free side project, built entirely by one person
+    PitMaster (<a href="https://pitmaster.cc">pitmaster.cc</a>) is a free, open source side project, built entirely by one person
     and published by Wyzie LLC (“we”, “us”). It's built so your games never have to leave your device, and this page
     says exactly when something does.
   </p>
@@ -16,6 +16,7 @@
       <li>Everything you enter is saved in this browser, on this device, encrypted with a key only this browser holds. Add a passcode and nothing opens without it. We can't see any of it, and we can't recover it if it's lost.</li>
       <li>The one exception: while a game has a TV code, an encrypted copy of it sits on our server so other screens can show it. It's locked with a key made from the TV code, which we never see, and it's deleted when you stop sharing, or two days after it last changed.</li>
       <li>No ads, no analytics, no tracking cookies and no third-party scripts.</li>
+      <li>PitMaster's code is public on <a href="https://github.com/wyziedevs/pitmaster" target="_blank" rel="noopener">GitHub</a>, so anyone can check that it does what this page says.</li>
     </ul>
   </div>
 
@@ -118,7 +119,7 @@
   <h2>Other Services</h2>
   <ul>
     <li>Pay links open Venmo, Cash App or PayPal with an amount and the game's name filled in. What happens there is between you and them.</li>
-    <li>The announcer uses your device's text-to-speech. Some browsers' online voices send the text to the browser's maker to be spoken.</li>
+    <li>The announcer only uses the voices built into your device, so what it reads out never leaves it. Where a browser only offers online voices, the announcer stays quiet.</li>
     <li>Links to other sites follow those sites' own policies.</li>
   </ul>
 

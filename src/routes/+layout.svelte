@@ -550,10 +550,12 @@
     <div class="foot">
       <p class="made muted">
         © {new Date().getFullYear()}
-        <a href="https://wyzie.io" target="_blank" rel="noopener">Wyzie LLC</a>. All rights reserved.
+        <a href="https://wyzie.io" target="_blank" rel="noopener">Wyzie LLC</a>. Open source under the
+        <a href="https://github.com/wyziedevs/pitmaster/blob/main/LICENSE" target="_blank" rel="noopener">MIT License</a>.
       </p>
       <nav aria-label="More">
         <a href="/help" aria-current={page.url.pathname === "/help" ? "page" : undefined}>Help</a>
+        <a href="https://github.com/wyziedevs/pitmaster" target="_blank" rel="noopener">Source Code</a>
         <a
           href="/privacy"
           aria-current={page.url.pathname === "/privacy" ? "page" : undefined}

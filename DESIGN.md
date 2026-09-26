@@ -287,7 +287,7 @@ Settings is six tabs, one open at a time: a column of tabs down the left (a Luci
 
 ### Footer and Legal Pages
 
-The footer is one quiet line over a ledger rule: the copyright (linking to Wyzie LLC) on the left, Pencil Gray links (Export & Import, Privacy, Terms) on the right that come up to Ink on hover. Privacy and Terms are one 68ch column of Arial, dated under the title, the short version in a Concrete block at the top, and the other page linked at the foot. Plain words, no legalese headings in capitals.
+The footer is one quiet line over a ledger rule: the copyright (linking to Wyzie LLC) and the MIT License (linking to it on GitHub) on the left, Pencil Gray links (Help, Source Code, Privacy, Terms) on the right that come up to Ink on hover. Privacy and Terms are one 68ch column of Arial, dated under the title, the short version in a Concrete block at the top, and the other page linked at the foot. Plain words, no legalese headings in capitals.
 
 ### Command Palette
 Ctrl/⌘ K anywhere, or whatever the host set in Settings > Keyboard. The shortcut is recorded by clicking a keycap button (it rings in Link Blue while listening, Esc backs out) and refused, with a reason, when it would type, belongs to the browser, or is undo/copy/paste. A key on its own (like /) never fires inside a text box. Every hint that names the shortcut reads the saved one. The toast's face at desk size: field fill and a hairline ink edge, over a scrim of page color at 55%. Groups are small uppercase Pencil Gray labels; the highlighted row is a Block 2 fill, never an accent. Commands that need text (Add Player, Change Blinds) turn the input into a prompt with the command's name in bold before it. Pages add their own commands while they're on screen.

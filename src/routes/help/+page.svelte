@@ -140,11 +140,15 @@
     <h3>What If I Clear My Browser?</h3>
     <p>Clearing this site's data deletes what's saved here for good, so export first if you want to keep it.</p>
     <h3>Does It Cost Anything?</h3>
-    <p>No. PitMaster is free, with no ads and no tracking. The <a href="/privacy">Privacy</a> page has the details.</p>
+    <p>
+      No. PitMaster is free, with no ads and no tracking, and its code is open source on
+      <a href="https://github.com/wyziedevs/pitmaster" target="_blank" rel="noopener">GitHub</a>. The <a href="/privacy">Privacy</a> page has the details.
+    </p>
     <h3>Something's Not Right?</h3>
     <p>
-      Tell us at <a href="https://wyzie.io/contact" target="_blank" rel="noopener">wyzie.io/contact</a>. Please don't send
-      anything from your games; we never need it.
+      Tell us at <a href="https://wyzie.io/contact" target="_blank" rel="noopener">wyzie.io/contact</a>, or open an issue on
+      <a href="https://github.com/wyziedevs/pitmaster/issues" target="_blank" rel="noopener">GitHub</a>. Please don't send anything from your games; we never
+      need it.
     </p>
   </section>
 </DocPage>

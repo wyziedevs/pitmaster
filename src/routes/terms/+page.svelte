@@ -10,7 +10,7 @@
 
   <h2>What PitMaster Is</h2>
   <p>
-    PitMaster is a free side project, built entirely by one person and published by Wyzie LLC, for anyone to use for
+    PitMaster is a free, open source side project, built entirely by one person and published by Wyzie LLC, for anyone to use for
     their own poker games, of any size. It handles chip math, blind clocks, buy-ins, rake, payouts, settle-up and a TV
     display. It keeps records and does arithmetic. It doesn't take bets, hold or move money, or run any game itself, and
     it isn't a gambling service. It comes with no support, no guarantees and no promise that it will keep existing.
@@ -58,6 +58,16 @@
     Don't misuse PitMaster or its TV code server: no overloading it, trying to guess or collect other people's codes,
     getting around its security, using it to break the law, or storing anything in it but poker games. Only enter
     information you have the right to share. We may limit or block use that breaks these rules.
+  </p>
+
+  <h2>The Code</h2>
+  <p>
+    PitMaster's code is public at <a href="https://github.com/wyziedevs/pitmaster" target="_blank" rel="noopener">github.com/wyziedevs/pitmaster</a>
+    under the <a href="https://github.com/wyziedevs/pitmaster/blob/main/LICENSE" target="_blank" rel="noopener">MIT License</a>: you're free to read it,
+    copy it, change it and run your own copy, on that license's terms. The license covers the code; these terms cover
+    using PitMaster at pitmaster.cc. A copy someone else runs is theirs, not ours: these terms and our Privacy Policy
+    don't apply to it, and we aren't responsible for it. The license doesn't include the PitMaster name, so if you
+    publish your own copy, give it a name of its own so nobody mistakes it for this one.
   </p>
 
   <h2>Names and Trademarks</h2>

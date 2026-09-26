@@ -21,7 +21,8 @@
   </header>
   {@render children()}
   <p class="small muted end">
-    PitMaster is a side project published by <a href="https://wyzie.io" target="_blank" rel="noopener">Wyzie LLC</a>. See also the <a href={other.href}>{other.label}</a>.
+    PitMaster is an open source side project published by <a href="https://wyzie.io" target="_blank" rel="noopener">Wyzie LLC</a>, and its code is on
+    <a href="https://github.com/wyziedevs/pitmaster" target="_blank" rel="noopener">GitHub</a>. See also the <a href={other.href}>{other.label}</a>.
   </p>
 </article>
 

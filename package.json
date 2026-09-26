@@ -3,7 +3,15 @@
   "version": "0.0.1",
   "description": "Run a poker game of any size: blind clocks, chip math, buy-ins, payouts and a live TV display. Free, no account, encrypted on your device.",
   "author": "Wyzie LLC (https://wyzie.io)",
+  "license": "MIT",
   "homepage": "https://pitmaster.cc",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wyziedevs/pitmaster.git"
+  },
+  "bugs": {
+    "url": "https://github.com/wyziedevs/pitmaster/issues"
+  },
   "private": true,
   "type": "module",
   "packageManager": "pnpm@10.6.5",
