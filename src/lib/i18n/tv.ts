@@ -127,7 +127,7 @@ export interface TvDict {
     inTheMoney: string;
     seats: string;
     avgStack: string;
-    bigBlinds: Plural; // {n}
+    bigBlinds: Plural; // {count}
     rebuys: string;
     addOns: string;
     lateRegOpen: string; // {level}
@@ -137,7 +137,7 @@ export interface TvDict {
     payouts: string;
     pays: string;
     topN: string; // {n}
-    morePaid: Plural; // {n}
+    morePaid: Plural; // {count}
     seat: string;
     satelliteSeats: Plural;
     shootoutTables: string;
@@ -275,14 +275,14 @@ export interface TvDict {
     fullscreen: string;
   };
   voice: {
-    breakTime: Plural; // {n}
+    breakTime: Plural; // {count}
     levelBlinds: string; // {level}, {sb}, {bb}
     levelBlindsAnte: string; // {level}, {sb}, {bb}, {ante}
     levelGame: string;
     levelGameAnte: string;
     levelLimit: string;
     levelStud: string;
-    minutesLeftAtBlinds: Plural; // {n}
+    minutesLeftAtBlinds: Plural; // {count}
   };
 }
 
@@ -402,7 +402,7 @@ export const tv: Record<Lang, TvDict> = {
       inTheMoney: "In the Money",
       seats: "Seats",
       avgStack: "Avg Stack",
-      bigBlinds: { one: "{n} Big Blind", other: "{n} Big Blinds" },
+      bigBlinds: { one: "{count} Big Blind", other: "{count} Big Blinds" },
       rebuys: "Rebuys",
       addOns: "Add-Ons",
       lateRegOpen: "Late Reg Open Through Level {level}",
@@ -412,7 +412,7 @@ export const tv: Record<Lang, TvDict> = {
       payouts: "Payouts",
       pays: "Pays",
       topN: "Top {n}",
-      morePaid: { one: "+ {n} More Paid", other: "+ {n} More Paid" },
+      morePaid: { one: "+ {count} More Paid", other: "+ {count} More Paid" },
       seat: "Seat",
       satelliteSeats: { one: "Satellite: {count} seat", other: "Satellite: {count} seats" },
       shootoutTables: "Shootout: {won} of {tables} tables won",
@@ -550,14 +550,14 @@ export const tv: Record<Lang, TvDict> = {
       fullscreen: "Fullscreen",
     },
     voice: {
-      breakTime: { one: "Break time. {n} minute.", other: "Break time. {n} minutes." },
+      breakTime: { one: "Break time. {count} minute.", other: "Break time. {count} minutes." },
       levelBlinds: "Level {level}. Blinds are {sb}, {bb}.",
       levelBlindsAnte: "Level {level}. Blinds are {sb}, {bb}, with a {ante} ante.",
       levelGame: "Level {level}. {game}. Blinds are {sb}, {bb}.",
       levelGameAnte: "Level {level}. {game}. Blinds are {sb}, {bb}, with a {ante} ante.",
       levelLimit: "Level {level}. {game}. Limits are {small}, {big}.",
       levelStud: "Level {level}. {game}. Ante {ante}, bring-in {bringIn}. Limits are {small}, {big}.",
-      minutesLeftAtBlinds: { one: "One minute left at these blinds.", other: "{n} minutes left at these blinds." },
+      minutesLeftAtBlinds: { one: "One minute left at these blinds.", other: "{count} minutes left at these blinds." },
     },
   },
   zh: {
@@ -675,7 +675,7 @@ export const tv: Record<Lang, TvDict> = {
       inTheMoney: "已进入奖金圈",
       seats: "座位",
       avgStack: "平均筹码",
-      bigBlinds: { other: "{n} 个大盲" },
+      bigBlinds: { other: "{count} 个大盲" },
       rebuys: "补码次数",
       addOns: "补充次数",
       lateRegOpen: "延迟报名开放至第 {level} 级",
@@ -685,7 +685,7 @@ export const tv: Record<Lang, TvDict> = {
       payouts: "奖金分配",
       pays: "支付名次",
       topN: "前 {n} 名",
-      morePaid: { other: "另有 {n} 人获奖" },
+      morePaid: { other: "另有 {count} 人获奖" },
       seat: "席位",
       satelliteSeats: { one: "卫星赛：{count} 个席位", other: "卫星赛：{count} 个席位" },
       shootoutTables: "淘汰赛：{tables} 桌中已决出 {won} 桌",
@@ -823,14 +823,14 @@ export const tv: Record<Lang, TvDict> = {
       fullscreen: "全屏",
     },
     voice: {
-      breakTime: { other: "休息时间,{n} 分钟。" },
+      breakTime: { other: "休息时间,{count} 分钟。" },
       levelBlinds: "第 {level} 级,盲注为 {sb},{bb}。",
       levelBlindsAnte: "第 {level} 级,盲注为 {sb},{bb},前注 {ante}。",
       levelGame: "第 {level} 级,{game}。盲注为 {sb},{bb}。",
       levelGameAnte: "第 {level} 级,{game}。盲注为 {sb},{bb},前注 {ante}。",
       levelLimit: "第 {level} 级,{game}。限注为 {small},{big}。",
       levelStud: "第 {level} 级,{game}。前注 {ante},强制开注 {bringIn}。限注为 {small},{big}。",
-      minutesLeftAtBlinds: { other: "本级别还剩 {n} 分钟。" },
+      minutesLeftAtBlinds: { other: "本级别还剩 {count} 分钟。" },
     },
   },
   hi: {
@@ -948,7 +948,7 @@ export const tv: Record<Lang, TvDict> = {
       inTheMoney: "पैसों में",
       seats: "सीटें",
       avgStack: "औसत स्टैक",
-      bigBlinds: { one: "{n} बिग ब्लाइंड", other: "{n} बिग ब्लाइंड्स" },
+      bigBlinds: { one: "{count} बिग ब्लाइंड", other: "{count} बिग ब्लाइंड्स" },
       rebuys: "रीबाय",
       addOns: "ऐड-ऑन",
       lateRegOpen: "लेट रजिस्ट्रेशन लेवल {level} तक खुला है",
@@ -958,7 +958,7 @@ export const tv: Record<Lang, TvDict> = {
       payouts: "पेआउट",
       pays: "भुगतान",
       topN: "टॉप {n}",
-      morePaid: { one: "+ {n} और भुगतान", other: "+ {n} और भुगतान" },
+      morePaid: { one: "+ {count} और भुगतान", other: "+ {count} और भुगतान" },
       seat: "सीट",
       satelliteSeats: { one: "सैटेलाइट: {count} सीट", other: "सैटेलाइट: {count} सीटें" },
       shootoutTables: "शूटआउट: {tables} में से {won} टेबल तय",
@@ -1096,14 +1096,14 @@ export const tv: Record<Lang, TvDict> = {
       fullscreen: "फुलस्क्रीन",
     },
     voice: {
-      breakTime: { one: "ब्रेक टाइम। {n} मिनट।", other: "ब्रेक टाइम। {n} मिनट।" },
+      breakTime: { one: "ब्रेक टाइम। {count} मिनट।", other: "ब्रेक टाइम। {count} मिनट।" },
       levelBlinds: "लेवल {level}। ब्लाइंड्स हैं {sb}, {bb}।",
       levelBlindsAnte: "लेवल {level}। ब्लाइंड्स हैं {sb}, {bb}, साथ में {ante} की एंटी।",
       levelGame: "लेवल {level}। {game}। ब्लाइंड्स हैं {sb}, {bb}।",
       levelGameAnte: "लेवल {level}। {game}। ब्लाइंड्स हैं {sb}, {bb}, साथ में {ante} की एंटी।",
       levelLimit: "लेवल {level}। {game}। लिमिट्स हैं {small}, {big}।",
       levelStud: "लेवल {level}। {game}। एंटी {ante}, ब्रिंग-इन {bringIn}। लिमिट्स हैं {small}, {big}।",
-      minutesLeftAtBlinds: { one: "इन ब्लाइंड्स पर एक मिनट बचा है।", other: "इन ब्लाइंड्स पर {n} मिनट बचे हैं।" },
+      minutesLeftAtBlinds: { one: "इन ब्लाइंड्स पर एक मिनट बचा है।", other: "इन ब्लाइंड्स पर {count} मिनट बचे हैं।" },
     },
   },
   es: {
@@ -1221,7 +1221,7 @@ export const tv: Record<Lang, TvDict> = {
       inTheMoney: "En los Premios",
       seats: "Asientos",
       avgStack: "Stack Promedio",
-      bigBlinds: { one: "{n} Ciega Grande", other: "{n} Ciegas Grandes" },
+      bigBlinds: { one: "{count} Ciega Grande", other: "{count} Ciegas Grandes" },
       rebuys: "Recompras",
       addOns: "Add-Ons",
       lateRegOpen: "Inscripción Tardía Abierta Hasta el Nivel {level}",
@@ -1231,7 +1231,7 @@ export const tv: Record<Lang, TvDict> = {
       payouts: "Premios",
       pays: "Pagan",
       topN: "Top {n}",
-      morePaid: { one: "+ {n} Más Pagado", other: "+ {n} Más Pagados" },
+      morePaid: { one: "+ {count} Más Pagado", other: "+ {count} Más Pagados" },
       seat: "Plaza",
       satelliteSeats: { one: "Satélite: {count} plaza", other: "Satélite: {count} plazas" },
       shootoutTables: "Shootout: {won} de {tables} mesas ganadas",
@@ -1369,14 +1369,14 @@ export const tv: Record<Lang, TvDict> = {
       fullscreen: "Pantalla Completa",
     },
     voice: {
-      breakTime: { one: "Hora de descanso. {n} minuto.", other: "Hora de descanso. {n} minutos." },
+      breakTime: { one: "Hora de descanso. {count} minuto.", other: "Hora de descanso. {count} minutos." },
       levelBlinds: "Nivel {level}. Las ciegas son {sb}, {bb}.",
       levelBlindsAnte: "Nivel {level}. Las ciegas son {sb}, {bb}, con un ante de {ante}.",
       levelGame: "Nivel {level}. {game}. Las ciegas son {sb}, {bb}.",
       levelGameAnte: "Nivel {level}. {game}. Las ciegas son {sb}, {bb}, con un ante de {ante}.",
       levelLimit: "Nivel {level}. {game}. Los límites son {small}, {big}.",
       levelStud: "Nivel {level}. {game}. Ante de {ante}, bring-in de {bringIn}. Los límites son {small}, {big}.",
-      minutesLeftAtBlinds: { one: "Queda un minuto en estas ciegas.", other: "Quedan {n} minutos en estas ciegas." },
+      minutesLeftAtBlinds: { one: "Queda un minuto en estas ciegas.", other: "Quedan {count} minutos en estas ciegas." },
     },
   },
   fr: {
@@ -1494,7 +1494,7 @@ export const tv: Record<Lang, TvDict> = {
       inTheMoney: "Dans les Places Payées",
       seats: "Places",
       avgStack: "Tapis Moyen",
-      bigBlinds: { one: "{n} Grosse Blinde", other: "{n} Grosses Blindes" },
+      bigBlinds: { one: "{count} Grosse Blinde", other: "{count} Grosses Blindes" },
       rebuys: "Recaves",
       addOns: "Recharges",
       lateRegOpen: "Inscriptions Tardives Ouvertes Jusqu'au Niveau {level}",
@@ -1504,7 +1504,7 @@ export const tv: Record<Lang, TvDict> = {
       payouts: "Répartition des Gains",
       pays: "Places Payées",
       topN: "Top {n}",
-      morePaid: { one: "+ {n} Autre Payé", other: "+ {n} Autres Payés" },
+      morePaid: { one: "+ {count} Autre Payé", other: "+ {count} Autres Payés" },
       seat: "Place",
       satelliteSeats: { one: "Satellite : {count} place", other: "Satellite : {count} places" },
       shootoutTables: "Shootout : {won} tables gagnées sur {tables}",
@@ -1642,14 +1642,14 @@ export const tv: Record<Lang, TvDict> = {
       fullscreen: "Plein Écran",
     },
     voice: {
-      breakTime: { one: "C'est la pause. {n} minute.", other: "C'est la pause. {n} minutes." },
+      breakTime: { one: "C'est la pause. {count} minute.", other: "C'est la pause. {count} minutes." },
       levelBlinds: "Niveau {level}. Les blindes sont {sb}, {bb}.",
       levelBlindsAnte: "Niveau {level}. Les blindes sont {sb}, {bb}, avec un ante de {ante}.",
       levelGame: "Niveau {level}. {game}. Les blindes sont {sb}, {bb}.",
       levelGameAnte: "Niveau {level}. {game}. Les blindes sont {sb}, {bb}, avec un ante de {ante}.",
       levelLimit: "Niveau {level}. {game}. Les limites sont {small}, {big}.",
       levelStud: "Niveau {level}. {game}. Ante de {ante}, bring-in de {bringIn}. Les limites sont {small}, {big}.",
-      minutesLeftAtBlinds: { one: "Il reste une minute à ces blindes.", other: "Il reste {n} minutes à ces blindes." },
+      minutesLeftAtBlinds: { one: "Il reste une minute à ces blindes.", other: "Il reste {count} minutes à ces blindes." },
     },
   },
   ar: {
@@ -1767,7 +1767,7 @@ export const tv: Record<Lang, TvDict> = {
       inTheMoney: "ضمن الفائزين بالمال",
       seats: "المقاعد",
       avgStack: "متوسط الرقائق",
-      bigBlinds: { zero: "صفر بيغ بلايند", one: "بيغ بلايند واحد", two: "بيغ بلايندان", few: "{n} بيغ بلايند", many: "{n} بيغ بلايند", other: "{n} بيغ بلايند" },
+      bigBlinds: { zero: "صفر بيغ بلايند", one: "بيغ بلايند واحد", two: "بيغ بلايندان", few: "{count} بيغ بلايند", many: "{count} بيغ بلايند", other: "{count} بيغ بلايند" },
       rebuys: "إعادات الشراء",
       addOns: "الإضافات",
       lateRegOpen: "التسجيل المتأخر مفتوح حتى المستوى {level}",
@@ -1777,7 +1777,7 @@ export const tv: Record<Lang, TvDict> = {
       payouts: "توزيع الجوائز",
       pays: "عدد الفائزين بالمال",
       topN: "أفضل {n}",
-      morePaid: { zero: "لا فائزين إضافيين", one: "+ فائز واحد إضافي", two: "+ فائزان إضافيان", few: "+ {n} فائزين إضافيين", many: "+ {n} فائزًا إضافيًا", other: "+ {n} فائز إضافي" },
+      morePaid: { zero: "لا فائزين إضافيين", one: "+ فائز واحد إضافي", two: "+ فائزان إضافيان", few: "+ {count} فائزين إضافيين", many: "+ {count} فائزًا إضافيًا", other: "+ {count} فائز إضافي" },
       seat: "مقعد",
       satelliteSeats: { one: "تأهيلية: مقعد واحد", other: "تأهيلية: {count} مقاعد" },
       shootoutTables: "مواجهة الطاولات: حُسمت {won} من {tables} طاولات",
@@ -1915,14 +1915,14 @@ export const tv: Record<Lang, TvDict> = {
       fullscreen: "ملء الشاشة",
     },
     voice: {
-      breakTime: { zero: "وقت الاستراحة.", one: "وقت الاستراحة. دقيقة واحدة.", two: "وقت الاستراحة. دقيقتان.", few: "وقت الاستراحة. {n} دقائق.", many: "وقت الاستراحة. {n} دقيقة.", other: "وقت الاستراحة. {n} دقيقة." },
+      breakTime: { zero: "وقت الاستراحة.", one: "وقت الاستراحة. دقيقة واحدة.", two: "وقت الاستراحة. دقيقتان.", few: "وقت الاستراحة. {count} دقائق.", many: "وقت الاستراحة. {count} دقيقة.", other: "وقت الاستراحة. {count} دقيقة." },
       levelBlinds: "المستوى {level}. الرهانات العمياء {sb}، {bb}.",
       levelBlindsAnte: "المستوى {level}. الرهانات العمياء {sb}، {bb}، مع أنتي {ante}.",
       levelGame: "المستوى {level}. {game}. الرهانات العمياء {sb}، {bb}.",
       levelGameAnte: "المستوى {level}. {game}. الرهانات العمياء {sb}، {bb}، مع أنتي {ante}.",
       levelLimit: "المستوى {level}. {game}. الحدود {small}، {big}.",
       levelStud: "المستوى {level}. {game}. أنتي {ante}، وبرينغ إن {bringIn}. الحدود {small}، {big}.",
-      minutesLeftAtBlinds: { zero: "لم يتبق وقت عند هذه الرهانات.", one: "بقيت دقيقة واحدة عند هذه الرهانات.", two: "بقيت دقيقتان عند هذه الرهانات.", few: "بقيت {n} دقائق عند هذه الرهانات.", many: "بقيت {n} دقيقة عند هذه الرهانات.", other: "بقيت {n} دقيقة عند هذه الرهانات." },
+      minutesLeftAtBlinds: { zero: "لم يتبق وقت عند هذه الرهانات.", one: "بقيت دقيقة واحدة عند هذه الرهانات.", two: "بقيت دقيقتان عند هذه الرهانات.", few: "بقيت {count} دقائق عند هذه الرهانات.", many: "بقيت {count} دقيقة عند هذه الرهانات.", other: "بقيت {count} دقيقة عند هذه الرهانات." },
     },
   },
   bn: {
@@ -2040,7 +2040,7 @@ export const tv: Record<Lang, TvDict> = {
       inTheMoney: "টাকার মধ্যে",
       seats: "আসন",
       avgStack: "গড় স্ট্যাক",
-      bigBlinds: { one: "{n} বিগ ব্লাইন্ড", other: "{n} বিগ ব্লাইন্ড" },
+      bigBlinds: { one: "{count} বিগ ব্লাইন্ড", other: "{count} বিগ ব্লাইন্ড" },
       rebuys: "রিবাই",
       addOns: "অ্যাড-অন",
       lateRegOpen: "লেট রেজিস্ট্রেশন লেভেল {level} পর্যন্ত খোলা",
@@ -2050,7 +2050,7 @@ export const tv: Record<Lang, TvDict> = {
       payouts: "পেআউট",
       pays: "পে হয়",
       topN: "শীর্ষ {n}",
-      morePaid: { one: "+ {n} জন আরও পেয়েছেন", other: "+ {n} জন আরও পেয়েছেন" },
+      morePaid: { one: "+ {count} জন আরও পেয়েছেন", other: "+ {count} জন আরও পেয়েছেন" },
       seat: "সিট",
       satelliteSeats: { one: "স্যাটেলাইট: {count}টি সিট", other: "স্যাটেলাইট: {count}টি সিট" },
       shootoutTables: "শুটআউট: {tables}টির মধ্যে {won}টি টেবিল জেতা হয়েছে",
@@ -2188,14 +2188,14 @@ export const tv: Record<Lang, TvDict> = {
       fullscreen: "ফুলস্ক্রিন",
     },
     voice: {
-      breakTime: { one: "বিরতির সময়। {n} মিনিট।", other: "বিরতির সময়। {n} মিনিট।" },
+      breakTime: { one: "বিরতির সময়। {count} মিনিট।", other: "বিরতির সময়। {count} মিনিট।" },
       levelBlinds: "লেভেল {level}। ব্লাইন্ড হলো {sb}, {bb}।",
       levelBlindsAnte: "লেভেল {level}। ব্লাইন্ড হলো {sb}, {bb}, সাথে {ante} অ্যান্টি।",
       levelGame: "লেভেল {level}। {game}। ব্লাইন্ড হলো {sb}, {bb}।",
       levelGameAnte: "লেভেল {level}। {game}। ব্লাইন্ড হলো {sb}, {bb}, সাথে {ante} অ্যান্টি।",
       levelLimit: "লেভেল {level}। {game}। লিমিট হলো {small}, {big}।",
       levelStud: "লেভেল {level}। {game}। অ্যান্টি {ante}, ব্রিং-ইন {bringIn}। লিমিট হলো {small}, {big}।",
-      minutesLeftAtBlinds: { one: "এই ব্লাইন্ডে এক মিনিট বাকি।", other: "এই ব্লাইন্ডে {n} মিনিট বাকি।" },
+      minutesLeftAtBlinds: { one: "এই ব্লাইন্ডে এক মিনিট বাকি।", other: "এই ব্লাইন্ডে {count} মিনিট বাকি।" },
     },
   },
   pt: {
@@ -2313,7 +2313,7 @@ export const tv: Record<Lang, TvDict> = {
       inTheMoney: "Premiado",
       seats: "Assentos",
       avgStack: "Stack Médio",
-      bigBlinds: { one: "{n} Big Blind", other: "{n} Big Blinds" },
+      bigBlinds: { one: "{count} Big Blind", other: "{count} Big Blinds" },
       rebuys: "Recompras",
       addOns: "Add-Ons",
       lateRegOpen: "Inscrição Tardia Aberta Até o Nível {level}",
@@ -2323,7 +2323,7 @@ export const tv: Record<Lang, TvDict> = {
       payouts: "Premiação",
       pays: "Pagam",
       topN: "Top {n}",
-      morePaid: { one: "+ {n} A Mais Premiado", other: "+ {n} A Mais Premiados" },
+      morePaid: { one: "+ {count} A Mais Premiado", other: "+ {count} A Mais Premiados" },
       seat: "Vaga",
       satelliteSeats: { one: "Satélite: {count} vaga", other: "Satélite: {count} vagas" },
       shootoutTables: "Shootout: {won} de {tables} mesas vencidas",
@@ -2461,14 +2461,14 @@ export const tv: Record<Lang, TvDict> = {
       fullscreen: "Tela Cheia",
     },
     voice: {
-      breakTime: { one: "Hora da pausa. {n} minuto.", other: "Hora da pausa. {n} minutos." },
+      breakTime: { one: "Hora da pausa. {count} minuto.", other: "Hora da pausa. {count} minutos." },
       levelBlinds: "Nível {level}. Os blinds são {sb}, {bb}.",
       levelBlindsAnte: "Nível {level}. Os blinds são {sb}, {bb}, com um ante de {ante}.",
       levelGame: "Nível {level}. {game}. Os blinds são {sb}, {bb}.",
       levelGameAnte: "Nível {level}. {game}. Os blinds são {sb}, {bb}, com um ante de {ante}.",
       levelLimit: "Nível {level}. {game}. Os limites são {small}, {big}.",
       levelStud: "Nível {level}. {game}. Ante de {ante}, bring-in de {bringIn}. Os limites são {small}, {big}.",
-      minutesLeftAtBlinds: { one: "Falta um minuto nestes blinds.", other: "Faltam {n} minutos nestes blinds." },
+      minutesLeftAtBlinds: { one: "Falta um minuto nestes blinds.", other: "Faltam {count} minutos nestes blinds." },
     },
   },
 };

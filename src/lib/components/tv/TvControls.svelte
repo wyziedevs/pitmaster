@@ -80,13 +80,13 @@
   }
   .status {
     color: var(--tv-muted);
-    font-size: var(--fs-sm);
+    font-size: max(13px, calc(var(--u) * 1.3));
   }
   .controls button {
     background: var(--tv-raise);
     color: var(--tv-fg);
     border-color: var(--tv-line);
-    font-size: var(--fs-sm);
+    font-size: max(13px, calc(var(--u) * 1.3));
   }
   .controls button:hover {
     border-color: var(--tv-muted);

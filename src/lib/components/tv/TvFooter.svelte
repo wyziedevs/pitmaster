@@ -41,7 +41,7 @@
   .k {
     display: block;
     color: var(--tv-muted);
-    font-size: max(12px, calc(var(--u) * 1.05));
+    font-size: max(15px, calc(var(--u) * 1.4));
     font-weight: 400;
     letter-spacing: 0.14em;
     text-transform: uppercase;
@@ -57,7 +57,7 @@
     align-items: center;
     justify-content: space-between;
     flex-wrap: wrap;
-    font-size: max(13px, calc(var(--u) * 1.3));
+    font-size: max(16px, calc(var(--u) * 1.6));
   }
   .foot :global(.legend) {
     gap: calc(var(--u) * 1.4);
@@ -70,7 +70,7 @@
     margin: 0;
     max-width: 60ch;
     text-align: right;
-    font-size: 1.1em;
+    font-size: 1.15em;
   }
   .rules .k {
     display: inline;

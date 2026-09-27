@@ -134,7 +134,7 @@
   /* one unit for the whole board: 1% of the width on a 16:9 screen, and the
      same share of the height on anything wider, so nothing ever overflows */
   .tv {
-    --u: min(1vw, 1.7778vh);
+    --u: min(1.12vw, 1.9911vh);
     --tv-good: var(--good);
     /* across a room a single real pixel disappears, so the board's hairline is
        one css pixel on any screen */
@@ -194,7 +194,7 @@
     grid-area: banner;
     background: var(--tv-banner);
     color: var(--tv-banner-fg);
-    font-size: max(18px, calc(var(--u) * 2.5));
+    font-size: max(21px, calc(var(--u) * 2.8));
     font-weight: 700;
     padding: calc(var(--u) * 0.9) calc(var(--u) * 2);
     text-align: center;
@@ -228,7 +228,7 @@
   @media (orientation: portrait) {
     .tv,
     .tv.two {
-      --u: 1.5vw;
+      --u: 1.68vw;
       grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
       grid-template-rows: auto auto minmax(0, 1fr) auto auto;
       grid-template-areas: "head head" "banner banner" "main main" "left right" "foot foot";
@@ -242,7 +242,7 @@
   @media (max-width: 700px), (max-height: 500px) {
     .tv,
     .tv.two {
-      --u: 1.6vw;
+      --u: 1.8vw;
       grid-template-columns: 1fr;
       grid-template-areas: "head" "banner" "main" "find" "left" "right" "foot";
       grid-template-rows: none;
@@ -269,7 +269,7 @@
   @media (min-width: 701px) and (max-height: 500px) {
     .tv,
     .tv.two {
-      --u: min(1.6vw, 2.2vh);
+      --u: min(1.8vw, 2.46vh);
     }
   }
 </style>

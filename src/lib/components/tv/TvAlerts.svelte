@@ -71,7 +71,7 @@
     transform: translate(-50%, -50%);
     background: var(--tv-fg);
     color: var(--tv-bg);
-    font: bold max(24px, calc(var(--u) * 4.6)) / 1.1 var(--font);
+    font: bold max(27px, calc(var(--u) * 5.1)) / 1.1 var(--font);
     padding: calc(var(--u) * 1.8) calc(var(--u) * 3);
     animation: pop 0.45s var(--ease-out-expo);
     text-align: center;

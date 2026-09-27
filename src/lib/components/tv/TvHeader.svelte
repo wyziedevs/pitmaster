@@ -30,7 +30,7 @@
     border-bottom: var(--hair) solid var(--tv-line);
   }
   .name {
-    font: calc(var(--u) * 2.3) / 1.1 var(--font-serif);
+    font: calc(var(--u) * 2.5) / 1.1 var(--font-serif);
     letter-spacing: -0.01em;
   }
   /* the logo's suits: each is a window one glyph tall, and a new level rolls
@@ -62,11 +62,11 @@
   }
   .meta {
     color: var(--tv-muted);
-    font-size: max(13px, calc(var(--u) * 1.35));
+    font-size: max(16px, calc(var(--u) * 1.7));
   }
   .tod {
     margin-left: auto;
-    font-size: max(14px, calc(var(--u) * 1.7));
+    font-size: max(17px, calc(var(--u) * 2));
     font-weight: 700;
   }
   /* a phone, or any short screen (a phone on its side): one column that
