@@ -171,7 +171,7 @@ export interface LeagueLine {
 }
 
 /** the games that count toward a league, oldest first: linked, the right kind, and over */
-export const leagueGames = (league: League, games: Game[]) =>
+const leagueGames = (league: League, games: Game[]) =>
   games
     .filter((g) => g.leagueId === league.id && league.types.includes(g.type) && settled(g))
     .sort((a, b) => playedAt(a) - playedAt(b));

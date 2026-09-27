@@ -15,10 +15,10 @@ function seedOrder(size: number): number[] {
 }
 
 /** how many rounds a bracket of this field plays */
-export const bracketRounds = (n: number) => Math.log2(bracketSize(n));
+const bracketRounds = (n: number) => Math.log2(bracketSize(n));
 
 /** where a player out in `round` finishes: everyone out that round shares the best of those places */
-export const roundPlace = (entrants: number, round: number) => bracketSize(entrants) / 2 ** round + 1;
+const roundPlace = (entrants: number, round: number) => bracketSize(entrants) / 2 ** round + 1;
 
 /** a bracket's paid places in groups by round: 1st, 2nd, 3rd to 4th, 5th to 8th ... */
 export function payGroups(entrants: number, paid: number) {

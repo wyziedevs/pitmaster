@@ -58,7 +58,7 @@ export function newGame(p: { name: string; type: GameType; notes: string; player
   return game;
 }
 
-export function newPlayer(name: string): Player {
+function newPlayer(name: string): Player {
   return { id: uid(), name, cashIn: 0, cashOut: null, rebuys: 0, addOns: 0, out: false, place: null, bustedAt: null };
 }
 
@@ -383,7 +383,7 @@ export const mysteryStartsAt = (game: Game) => game.tourney?.mysteryFrom || tour
  * plenty of small ones, each a round amount (the payout rounding, where the
  * money allows). worked in cents so nothing is lost to rounding.
  */
-export function makeEnvelopes(pool: number, n: number, unit = 1) {
+function makeEnvelopes(pool: number, n: number, unit = 1) {
   const total = Math.round(pool * 100);
   if (n < 1 || total <= 0) return [];
   const u = Math.round(([unit, 1, 0.01].find((x) => x <= unit && pool / n >= x) ?? 0.01) * 100);
