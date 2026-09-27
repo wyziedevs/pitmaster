@@ -109,9 +109,10 @@ function save(d: Data) {
 export const getChipSets = () => copy(data().chipSets);
 export const getDefaultChipSetId = () => data().defaultChipSetId;
 
-export function getChipSet(id: string) {
+/** that set, or the first one (none at all once every set's been deleted) */
+export function getChipSet(id: string): ChipSet | undefined {
   const sets = data().chipSets;
-  return copy(sets.find((s) => s.id === id) ?? sets[0]);
+  return copy(sets.find((s) => s.id === id) ?? sets.at(0));
 }
 
 export function saveChipSet(set: ChipSet) {
@@ -366,8 +367,8 @@ export async function unlockBackup(b: LockedBackup, password: string) {
 
 export type ImportMode = "merge" | "replace";
 
-/** what an import would do, counted up front so the host knows before they commit */
-export function planImport(b: Backup, mode: ImportMode) {
+/** what an import would do, counted up front so the host knows before they commit: a merge's new, newer and kept games, and how many are here now (what a replace takes away) */
+export function planImport(b: Backup) {
   const here = data();
   const mine = new Map(here.games.map((g) => [g.id, g]));
   let added = 0;

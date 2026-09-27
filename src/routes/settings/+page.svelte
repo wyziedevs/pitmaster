@@ -446,7 +446,7 @@
   /** an import just went in: it can be taken back (the settings as they were, if it brought its own) */
   let undoable = $state<{ settings: Record<string, unknown> | null } | null>(null);
   const whole = $derived(pending?.backup.kind === "everything");
-  const plan = $derived(pending ? planImport(pending.backup, whole ? mode : "merge") : null);
+  const plan = $derived(pending ? planImport(pending.backup) : null);
 
   // far bigger than any real export, and small enough not to freeze the tab
   const MAX_IMPORT = 50 * 1024 * 1024;

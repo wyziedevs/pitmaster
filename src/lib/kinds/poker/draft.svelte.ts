@@ -52,7 +52,7 @@ export class PokerDraft {
     return this.typeOf();
   }
   readonly isCash = $derived(this.type === "cash");
-  readonly chipSet = $derived(this.sets.find((s) => s.id === this.chipSetId) ?? this.sets[0]);
+  readonly chipSet = $derived(this.sets.find((s) => s.id === this.chipSetId) ?? this.sets.at(0));
   readonly chips = $derived(this.chipSet ? gameChips(this.chipSet, this.multiplier) : []);
   readonly names = $derived(
     this.playerNames
