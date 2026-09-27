@@ -162,7 +162,7 @@ export const legal: Record<Lang, LegalDict> = {
       dealing: {
         cashTitle: "Cash Games",
         cashBody:
-          "Set the blinds and buy-in range, then add players as they sit down. Rebuys and cash-outs are a tap each, and the bank keeps count of every chip on the table. When the game's over, Settle Up works out who pays whom, with Venmo, Cash App and PayPal links if you want them. Side games have their own switches too: bomb pots on a timer or when called, the 7-2 game, and a high hand prize the house pays in settle-up. Shared costs split what was bought for the game, and Who Owes Who ticks off payments and keeps a running tab on the Players page.",
+          "Set the blinds and buy-in range, then add players as they sit down. Rebuys and cash-outs are a tap each, and the bank keeps count of every chip on the table. When the game's over, Settle Up works out who pays whom, with Venmo, Cash App and PayPal links if you want them. Side games have their own switches too: bomb pots on a timer or when called, the 7-2 game, and a high hand prize the house pays in settle-up. Shared costs split what was bought for the game, and Who Owes Who ticks off payments and keeps a running tab on the Players page. A waitlist keeps track of who's next for a seat, and the TV says when one opens.",
         tourneyTitle: "Tournaments",
         tourneyBody:
           "Pick how long you want to play and PitMaster builds the blind structure to fit: starting stacks, breaks, antes, rebuys, add-ons and bounties. Bust players as they go and the payouts, average stack and table balancing follow along. At the final table the deal calculator splits the prize pool by chip count or ICM. Bounties can be flat, progressive (PKO) or mystery envelopes, and Start From has ready-made setups like Turbo, Deepstack and Sit & Go. Once there's a winner, Settle Up shows what the house pays each player. Satellites pay out seats in another game, and shootouts play each table down to one winner before a final table.",
@@ -186,7 +186,7 @@ export const legal: Record<Lang, LegalDict> = {
         body2a:
           "The TV shows the clock, blinds, payouts and messages you send the table, and keeps up by itself. It can't change anything, and a live game is end-to-end encrypted on its way there. Press",
         body2b: "on the TV for full screen and",
-        body2c: "for sound.",
+        body2c: "for sound. Phones can follow along too: scan the QR code on the TV or the dealer screen, then type your name into Find Me to see your seat and where you stand.",
       },
       calculator: {
         press: "Press",
@@ -288,7 +288,7 @@ export const legal: Record<Lang, LegalDict> = {
         li3: "Our server stores the locked copy, the ID and a one-way hash (SHA-256) of a separate write key that only your browser holds, so only you can change or delete it. It has no way to unlock the copy.",
         li4: "A screen given the code makes the same ID and key, fetches the copy and unlocks it. TV links carry the code after a “#”, a part of the address browsers never send to a server.",
         li5: "The copy is deleted as soon as you press Stop Sharing or delete the game, or automatically two days after its last update. After Stop Sharing, a blank record with no game in it keeps the code from being reused until those two days are up.",
-        p3: "Anyone who has the code, or guesses it, can see the game while it's shared, so leave out anything you wouldn't show the room.",
+        p3: "Anyone who has the code, or guesses it, can see the game while it's shared, so leave out anything you wouldn't show the room. That includes phones: the TV and the dealer screen show the link as a QR code, drawn on the device, and a phone gets the same copy the TV does. Find Me searches that copy on the phone itself, and nothing typed into it is saved or sent.",
       },
       protected: {
         title: "How It's Protected",
@@ -412,7 +412,7 @@ export const legal: Record<Lang, LegalDict> = {
       dealing: {
         cashTitle: "现金局",
         cashBody:
-          "设置盲注和买入范围,然后在玩家入座时把他们加进来。补码和兑现都只需轻点一下,账房会记录桌上每一枚筹码。牌局结束后,「结算」会算出谁该付给谁,如果需要,还带有 Venmo、Cash App 和 PayPal 的收款链接。附加玩法也各有开关：定时或手动叫的炸弹底池、7-2 玩法，以及由主办方在结算时支付的最大牌奖。 共同费用会分摊为牌局买的东西；“谁欠谁”可以勾掉已付的款项，并在玩家页记下所有还欠的钱。",
+          "设置盲注和买入范围,然后在玩家入座时把他们加进来。补码和兑现都只需轻点一下,账房会记录桌上每一枚筹码。牌局结束后,「结算」会算出谁该付给谁,如果需要,还带有 Venmo、Cash App 和 PayPal 的收款链接。附加玩法也各有开关：定时或手动叫的炸弹底池、7-2 玩法，以及由主办方在结算时支付的最大牌奖。 共同费用会分摊为牌局买的东西；“谁欠谁”可以勾掉已付的款项，并在玩家页记下所有还欠的钱。 候补名单记录谁下一个入座，有空位时电视会提示。",
         tourneyTitle: "锦标赛",
         tourneyBody:
           "选好想玩多久,PitMaster 就会据此搭建盲注结构:起始筹码、休息时间、前注、补码、加购和奖金。玩家出局时随手记录,奖金分配、平均筹码量和并桌都会自动跟上。到了决赛桌,分牌计算器可以按筹码量或 ICM 分配奖池。赏金可以是固定、累进（PKO）或神秘信封；“从这里开始”里还有快速赛、深筹码赛、坐满即玩等现成设置。 决出冠军后，结算会显示主办方要付给每位玩家多少。 卫星赛的奖品是另一场比赛的席位；淘汰赛每桌打到只剩一位赢家，再进决赛桌。",
@@ -434,7 +434,7 @@ export const legal: Record<Lang, LegalDict> = {
         body1d: "并输入 8 位字符的代码。",
         body2a: "电视画面会显示时钟、盲注、奖金分配和你发给牌桌的消息,并自动保持同步。它不能修改任何内容,牌局在传输过程中是端到端加密的。在电视上按",
         body2b: "可以进入全屏,按",
-        body2c: "可以开关声音。",
+        body2c: "可以开关声音。 手机也能跟看：扫描电视或荷官页面上的二维码，然后在「找到我」里输入名字，就能看到你的座位和名次。",
       },
       calculator: {
         press: "在任意页面按",
@@ -535,7 +535,7 @@ export const legal: Record<Lang, LegalDict> = {
         li3: "我们的服务器只存储加密后的副本、ID,以及一个只有你的浏览器才持有的独立「写入密钥」的单向哈希值(SHA-256),这样只有你能修改或删除它。服务器没有任何办法解密这份副本。",
         li4: "拿到代码的屏幕会生成同样的 ID 和密钥,取回副本并解密它。电视链接会把代码放在「#」符号之后,这是浏览器从不会发送给服务器的一部分地址。",
         li5: "副本会在你点击「停止分享」或删除该牌局时立即删除,或者在最后一次更新之后两天自动删除。点击「停止分享」后,一条不含任何牌局内容的空白记录会在这两天内占用该代码,防止它被重复使用。",
-        p3: "任何拿到代码,或者猜中代码的人,都能在分享期间看到这局牌局,所以不要在里面留下任何你不愿意让全桌人看到的内容。",
+        p3: "任何拿到代码,或者猜中代码的人,都能在分享期间看到这局牌局,所以不要在里面留下任何你不愿意让全桌人看到的内容。 手机也一样：电视和荷官页面会把链接显示成二维码（在设备上生成），手机拿到的就是电视那份副本。「找到我」只在手机上搜索这份副本，输入的内容不会被保存或发送。",
       },
       protected: {
         title: "安全防护措施",
@@ -658,7 +658,7 @@ export const legal: Record<Lang, LegalDict> = {
       dealing: {
         cashTitle: "कैश गेम्स",
         cashBody:
-          "ब्लाइंड्स और बाय-इन की सीमा तय करें, फिर खिलाड़ी बैठते ही उन्हें जोड़ें. रीबाय और कैश-आउट एक टैप में हो जाते हैं, और बैंक मेज़ पर मौजूद हर चिप का हिसाब खुद रखता है. गेम खत्म होने पर, Settle Up यह हिसाब लगा देता है कि किसे किसको पैसे देने हैं, और अगर चाहें तो Venmo, Cash App और PayPal के लिंक भी साथ में देता है. साइड गेम के भी अपने स्विच हैं: टाइमर पर या बुलाने पर बॉम्ब पॉट, 7-2 गेम, और हाई हैंड का इनाम जो हाउस सेटल-अप में देता है। साझा खर्च गेम के लिए खरीदी चीज़ें बांटते हैं, और किसका किस पर बाकी भुगतान टिक करता है और खिलाड़ी पेज पर पूरा हिसाब रखता है।",
+          "ब्लाइंड्स और बाय-इन की सीमा तय करें, फिर खिलाड़ी बैठते ही उन्हें जोड़ें. रीबाय और कैश-आउट एक टैप में हो जाते हैं, और बैंक मेज़ पर मौजूद हर चिप का हिसाब खुद रखता है. गेम खत्म होने पर, Settle Up यह हिसाब लगा देता है कि किसे किसको पैसे देने हैं, और अगर चाहें तो Venmo, Cash App और PayPal के लिंक भी साथ में देता है. साइड गेम के भी अपने स्विच हैं: टाइमर पर या बुलाने पर बॉम्ब पॉट, 7-2 गेम, और हाई हैंड का इनाम जो हाउस सेटल-अप में देता है। साझा खर्च गेम के लिए खरीदी चीज़ें बांटते हैं, और किसका किस पर बाकी भुगतान टिक करता है और खिलाड़ी पेज पर पूरा हिसाब रखता है। वेटलिस्ट बताती है कि अगली सीट किसकी है, और सीट खाली होते ही टीवी बता देता है।",
         tourneyTitle: "टूर्नामेंट",
         tourneyBody:
           "आप कितनी देर खेलना चाहते हैं यह चुनें, और PitMaster उसी हिसाब से ब्लाइंड स्ट्रक्चर बना देगा: शुरुआती स्टैक, ब्रेक, एंटी, रीबाय, ऐड-ऑन और बाउंटी. जैसे-जैसे खिलाड़ी बाहर होते जाएं, पेआउट, औसत स्टैक और टेबल बैलेंसिंग खुद-ब-खुद अपडेट होते रहते हैं. फाइनल टेबल पर डील कैलकुलेटर प्राइज़ पूल को चिप काउंट या ICM के हिसाब से बांट देता है. बाउंटी फ़्लैट, प्रोग्रेसिव (PKO) या मिस्ट्री लिफ़ाफ़े हो सकती है, और \"यहाँ से शुरू करें\" में टर्बो, डीपस्टैक और सिट एंड गो जैसे तैयार सेटअप हैं। विजेता तय होते ही हिसाब चुकाएं दिखाता है कि हाउस हर खिलाड़ी को कितना देगा। सैटेलाइट में इनाम दूसरे गेम की सीटें होते हैं, और शूटआउट में हर टेबल एक विजेता तक खेलती है, फिर फाइनल टेबल।",
@@ -680,7 +680,7 @@ export const legal: Record<Lang, LegalDict> = {
         body1d: "और 8 अक्षरों वाला कोड डालें.",
         body2a: "टीवी पर घड़ी, ब्लाइंड्स, पेआउट और आपके भेजे गए संदेश दिखते हैं, और यह खुद-ब-खुद अपडेट होता रहता है. यह कुछ भी बदल नहीं सकता, और गेम वहां तक पहुंचते समय एंड-टू-एंड एन्क्रिप्टेड रहता है. टीवी पर पूरी स्क्रीन के लिए",
         body2b: "दबाएं और आवाज़ के लिए",
-        body2c: "दबाएं.",
+        body2c: "दबाएं. फ़ोन भी साथ देख सकते हैं: टीवी या डीलर स्क्रीन पर QR कोड स्कैन करें, फिर मुझे ढूंढें में अपना नाम लिखकर अपनी सीट और स्थिति देखें।",
       },
       calculator: {
         press: "किसी भी पेज पर",
@@ -781,7 +781,7 @@ export const legal: Record<Lang, LegalDict> = {
         li3: "हमारा सर्वर सिर्फ लॉक की हुई कॉपी, ID, और सिर्फ आपके ब्राउज़र के पास मौजूद एक अलग write key का वन-वे हैश (SHA-256) रखता है, ताकि सिर्फ आप ही उसे बदल या मिटा सकें. सर्वर के पास इस कॉपी को अनलॉक करने का कोई तरीका नहीं है.",
         li4: "जिस स्क्रीन को कोड दिया गया है, वह वही ID और कुंजी बना लेती है, कॉपी लाकर उसे अनलॉक कर लेती है. टीवी लिंक कोड को “#” के बाद रखते हैं, जो पते का वह हिस्सा है जिसे ब्राउज़र कभी सर्वर तक नहीं भेजते.",
         li5: "कॉपी तब मिट जाती है जब आप Stop Sharing दबाते हैं या गेम को डिलीट करते हैं, या आखिरी अपडेट के दो दिन बाद अपने आप. Stop Sharing के बाद, बिना किसी गेम वाला एक खाली रिकॉर्ड उस कोड को उन दो दिनों तक दोबारा इस्तेमाल होने से रोके रखता है.",
-        p3: "जिसके पास भी वह कोड है, या जो उसका अंदाज़ा लगा लेता है, वह शेयर किए जाने के दौरान गेम देख सकता है, इसलिए उसमें ऐसी कोई भी चीज़ न रखें जो आप पूरी मेज़ को नहीं दिखाना चाहते.",
+        p3: "जिसके पास भी वह कोड है, या जो उसका अंदाज़ा लगा लेता है, वह शेयर किए जाने के दौरान गेम देख सकता है, इसलिए उसमें ऐसी कोई भी चीज़ न रखें जो आप पूरी मेज़ को नहीं दिखाना चाहते. इसमें फ़ोन भी शामिल हैं: टीवी और डीलर स्क्रीन लिंक को QR कोड के रूप में दिखाते हैं, जो डिवाइस पर ही बनता है, और फ़ोन को वही कॉपी मिलती है जो टीवी को। मुझे ढूंढें उसी कॉपी में फ़ोन पर ही खोजता है, और उसमें लिखा कुछ भी न सहेजा जाता है, न भेजा जाता है।",
       },
       protected: {
         title: "यह कैसे सुरक्षित रखा जाता है",
@@ -904,7 +904,7 @@ export const legal: Record<Lang, LegalDict> = {
       dealing: {
         cashTitle: "Partidas de Efectivo",
         cashBody:
-          "Define las ciegas y el rango de entrada, y luego añade a los jugadores a medida que se sientan. Las recompras y los retiros son un toque cada uno, y la banca lleva la cuenta de cada ficha en la mesa. Cuando la partida termina, Settle Up calcula quién le paga a quién, con enlaces de Venmo, Cash App y PayPal si los quieres. Los juegos extra también tienen su propio interruptor: bomb pots con temporizador o cuando se pidan, el juego del 7-2 y un premio a la mano más alta que la casa paga en la liquidación. Los gastos compartidos reparten lo que se compró para la partida, y Quién Debe a Quién marca los pagos y lleva la cuenta en la página de Jugadores.",
+          "Define las ciegas y el rango de entrada, y luego añade a los jugadores a medida que se sientan. Las recompras y los retiros son un toque cada uno, y la banca lleva la cuenta de cada ficha en la mesa. Cuando la partida termina, Settle Up calcula quién le paga a quién, con enlaces de Venmo, Cash App y PayPal si los quieres. Los juegos extra también tienen su propio interruptor: bomb pots con temporizador o cuando se pidan, el juego del 7-2 y un premio a la mano más alta que la casa paga en la liquidación. Los gastos compartidos reparten lo que se compró para la partida, y Quién Debe a Quién marca los pagos y lleva la cuenta en la página de Jugadores. Una lista de espera lleva la cuenta de quién sigue para sentarse, y la TV avisa cuando se libera un asiento.",
         tourneyTitle: "Torneos",
         tourneyBody:
           "Elige cuánto tiempo quieres jugar y PitMaster arma la estructura de ciegas a medida: pilas iniciales, descansos, antes, recompras, add-ons y bounties. Elimina jugadores a medida que caen y los pagos, la pila promedio y el balanceo de mesas se ajustan solos. En la mesa final, la calculadora de reparto divide el pozo por número de fichas o por ICM. Los bounties pueden ser fijos, progresivos (PKO) o sobres misteriosos, y Empezar desde trae configuraciones listas como Turbo, Deepstack y Sit & Go. Cuando hay un ganador, Saldar Cuentas muestra lo que la casa le paga a cada jugador. Los satélites dan plazas para otra partida, y en los shootouts cada mesa juega hasta un ganador antes de la mesa final.",
@@ -926,7 +926,7 @@ export const legal: Record<Lang, LegalDict> = {
         body1d: "en esa pantalla y escribe el código de 8 caracteres.",
         body2a: "La televisión muestra el reloj, las ciegas, los pagos y los mensajes que le envías a la mesa, y se mantiene al día por sí sola. No puede cambiar nada, y una partida en vivo va cifrada de extremo a extremo en su camino hasta allí. Pulsa",
         body2b: "en la televisión para pantalla completa y",
-        body2c: "para el sonido.",
+        body2c: "para el sonido. Los teléfonos también pueden seguirla: escanea el código QR de la TV o de la pantalla del dealer y escribe tu nombre en Búscame para ver tu asiento y cómo vas.",
       },
       calculator: {
         press: "Pulsa",
@@ -1027,7 +1027,7 @@ export const legal: Record<Lang, LegalDict> = {
         li3: "Nuestro servidor guarda la copia bloqueada, el ID y un hash de una sola vía (SHA-256) de una clave de escritura separada que solo tiene tu navegador, así que solo tú puedes cambiarla o borrarla. No tiene forma de desbloquear la copia.",
         li4: "Una pantalla a la que se le da el código genera el mismo ID y clave, obtiene la copia y la desbloquea. Los enlaces de TV llevan el código después de un “#”, una parte de la dirección que los navegadores nunca envían a un servidor.",
         li5: "La copia se borra en cuanto pulsas Dejar de Compartir o borras la partida, o automáticamente dos días después de su última actualización. Tras Dejar de Compartir, un registro vacío sin ninguna partida evita que el código se reutilice hasta que pasen esos dos días.",
-        p3: "Cualquiera que tenga el código, o lo adivine, puede ver la partida mientras se comparte, así que no incluyas nada que no le mostrarías a toda la mesa.",
+        p3: "Cualquiera que tenga el código, o lo adivine, puede ver la partida mientras se comparte, así que no incluyas nada que no le mostrarías a toda la mesa. Eso incluye los teléfonos: la TV y la pantalla del dealer muestran el enlace como código QR, generado en el propio dispositivo, y un teléfono recibe la misma copia que la TV. Búscame busca en esa copia dentro del teléfono, y lo que escribas ahí no se guarda ni se envía.",
       },
       protected: {
         title: "Cómo Está Protegido",
@@ -1150,7 +1150,7 @@ export const legal: Record<Lang, LegalDict> = {
       dealing: {
         cashTitle: "Parties en Cash",
         cashBody:
-          "Réglez les blinds et la fourchette de buy-in, puis ajoutez les joueurs à mesure qu'ils s'installent. Recaves et cash-outs se font en un geste, et la banque compte chaque jeton sur la table. Une fois la partie terminée, Settle Up calcule qui doit payer qui, avec des liens Venmo, Cash App et PayPal si vous le souhaitez. Les jeux annexes ont aussi leur interrupteur : bomb pots sur minuteur ou à la demande, le jeu du 7-2, et un prix pour la meilleure main que la maison paie au règlement. Les frais partagés répartissent ce qui a été acheté pour la partie, et Qui Doit Quoi coche les paiements et tient les comptes sur la page Joueurs.",
+          "Réglez les blinds et la fourchette de buy-in, puis ajoutez les joueurs à mesure qu'ils s'installent. Recaves et cash-outs se font en un geste, et la banque compte chaque jeton sur la table. Une fois la partie terminée, Settle Up calcule qui doit payer qui, avec des liens Venmo, Cash App et PayPal si vous le souhaitez. Les jeux annexes ont aussi leur interrupteur : bomb pots sur minuteur ou à la demande, le jeu du 7-2, et un prix pour la meilleure main que la maison paie au règlement. Les frais partagés répartissent ce qui a été acheté pour la partie, et Qui Doit Quoi coche les paiements et tient les comptes sur la page Joueurs. Une liste d'attente suit qui est le prochain à s'asseoir, et la TV annonce quand une place se libère.",
         tourneyTitle: "Tournois",
         tourneyBody:
           "Choisissez la durée de jeu souhaitée et PitMaster construit la structure de blinds en conséquence : tapis de départ, pauses, antes, recaves, add-ons et bounties. Éliminez les joueurs au fil de l'eau, et les gains, le tapis moyen et l'équilibrage des tables suivent automatiquement. À la table finale, le calculateur de deal répartit le prize pool selon le nombre de jetons ou l'ICM. Les bounties peuvent être fixes, progressifs (PKO) ou en enveloppes mystère, et Partir de propose des formats tout prêts comme Turbo, Deepstack et Sit & Go. Dès qu'il y a un gagnant, Régler les Comptes montre ce que la maison verse à chaque joueur. Les satellites offrent des places pour une autre partie, et en shootout chaque table joue jusqu'à un gagnant avant la table finale.",
@@ -1172,7 +1172,7 @@ export const legal: Record<Lang, LegalDict> = {
         body1d: "sur cet écran et tapez le code à 8 caractères.",
         body2a: "La télévision affiche l'horloge, les blinds, les gains et les messages que vous envoyez à la table, et se met à jour toute seule. Elle ne peut rien modifier, et une partie en direct est chiffrée de bout en bout sur son chemin jusque-là. Appuyez sur",
         body2b: "sur la télévision pour le plein écran et sur",
-        body2c: "pour le son.",
+        body2c: "pour le son. Les téléphones peuvent suivre aussi : scannez le QR code sur la TV ou l'écran du croupier, puis tapez votre nom dans Me Trouver pour voir votre place et où vous en êtes.",
       },
       calculator: {
         press: "Appuyez sur",
@@ -1273,7 +1273,7 @@ export const legal: Record<Lang, LegalDict> = {
         li3: "Notre serveur stocke la copie verrouillée, l'identifiant et un hachage à sens unique (SHA-256) d'une clé d'écriture distincte que seul votre navigateur détient, si bien que vous seul pouvez la modifier ou la supprimer. Il n'a aucun moyen de déverrouiller la copie.",
         li4: "Un écran auquel on donne le code génère le même identifiant et la même clé, récupère la copie et la déverrouille. Les liens TV portent le code après un « # », une partie de l'adresse que les navigateurs n'envoient jamais à un serveur.",
         li5: "La copie est supprimée dès que vous appuyez sur Arrêter le Partage ou supprimez la partie, ou automatiquement deux jours après sa dernière mise à jour. Après Arrêter le Partage, un enregistrement vide sans aucune partie empêche le code d'être réutilisé pendant ces deux jours.",
-        p3: "Quiconque a le code, ou le devine, peut voir la partie tant qu'elle est partagée, alors n'y laissez rien que vous ne montreriez pas à toute la table.",
+        p3: "Quiconque a le code, ou le devine, peut voir la partie tant qu'elle est partagée, alors n'y laissez rien que vous ne montreriez pas à toute la table. Cela vaut aussi pour les téléphones : la TV et l'écran du croupier affichent le lien en QR code, généré sur l'appareil, et un téléphone reçoit la même copie que la TV. Me Trouver cherche dans cette copie sur le téléphone même, et rien de ce qui y est tapé n'est enregistré ni envoyé.",
       },
       protected: {
         title: "Comment C'Est Protégé",
@@ -1396,7 +1396,7 @@ export const legal: Record<Lang, LegalDict> = {
       dealing: {
         cashTitle: "ألعاب الكاش",
         cashBody:
-          "حدد قيمة البلايند ونطاق الشراء، ثم أضف اللاعبين بمجرد جلوسهم. عمليات إعادة الشراء والتصفية تتم بنقرة واحدة لكل منها، ويحتفظ البنك بعدّ كل رقاقة على الطاولة. عند انتهاء اللعبة، تحسب Settle Up من يدفع لمن، مع روابط Venmo وCash App وPayPal إذا أردت ذلك. للألعاب الجانبية مفاتيحها أيضًا: بومب بوت بمؤقت أو عند الطلب، ولعبة 7-2، وجائزة لأعلى يد تدفعها الجهة المنظمة عند التسوية. تقسم التكاليف المشتركة ما اشتُري للعبة، ويعلّم «من يدين لمن» الدفعات ويحفظ الحساب في صفحة اللاعبين.",
+          "حدد قيمة البلايند ونطاق الشراء، ثم أضف اللاعبين بمجرد جلوسهم. عمليات إعادة الشراء والتصفية تتم بنقرة واحدة لكل منها، ويحتفظ البنك بعدّ كل رقاقة على الطاولة. عند انتهاء اللعبة، تحسب Settle Up من يدفع لمن، مع روابط Venmo وCash App وPayPal إذا أردت ذلك. للألعاب الجانبية مفاتيحها أيضًا: بومب بوت بمؤقت أو عند الطلب، ولعبة 7-2، وجائزة لأعلى يد تدفعها الجهة المنظمة عند التسوية. تقسم التكاليف المشتركة ما اشتُري للعبة، ويعلّم «من يدين لمن» الدفعات ويحفظ الحساب في صفحة اللاعبين. تتابع قائمة الانتظار من التالي للجلوس، ويعلن التلفاز عندما يفرغ مقعد.",
         tourneyTitle: "البطولات",
         tourneyBody:
           "اختر المدة التي تريد اللعب خلالها، ويبني PitMaster هيكل البلايند المناسب: الرصيد الابتدائي، فترات الراحة، الأنتي، عمليات إعادة الشراء، الإضافات والمكافآت. أخرج اللاعبين المستبعدين أولاً بأول، وتتبع الجوائز ومتوسط الرصيد وتوازن الطاولات ذلك تلقائياً. عند الطاولة الأخيرة، توزّع حاسبة التقسيم الجائزة حسب عدد الرقائق أو ICM. يمكن أن تكون مكافآت الإقصاء ثابتة أو تصاعدية (PKO) أو أظرفًا غامضة، وفي «ابدأ من» إعدادات جاهزة مثل توربو ورصيد عميق وسيت آند غو. عند وجود فائز، تعرض تسوية الحسابات ما تدفعه الجهة المنظمة لكل لاعب. تمنح البطولات التأهيلية مقاعد في لعبة أخرى، وفي مواجهة الطاولات تلعب كل طاولة حتى فائز واحد قبل الطاولة النهائية.",
@@ -1418,7 +1418,7 @@ export const legal: Record<Lang, LegalDict> = {
         body1d: "على تلك الشاشة واكتب الرمز المكون من 8 خانات.",
         body2a: "تعرض شاشة التلفاز الساعة والبلايند والجوائز والرسائل التي ترسلها للطاولة، وتبقى محدّثة من تلقائها. لا يمكنها تغيير أي شيء، وتُشفّر اللعبة المباشرة من طرف إلى طرف في طريقها إليها. اضغط",
         body2b: "على التلفاز لملء الشاشة و",
-        body2c: "للصوت.",
+        body2c: "للصوت. يمكن للهواتف المتابعة أيضًا: امسح رمز QR على التلفاز أو شاشة الموزّع، ثم اكتب اسمك في «ابحث عني» لترى مقعدك وترتيبك.",
       },
       calculator: {
         press: "اضغط",
@@ -1519,7 +1519,7 @@ export const legal: Record<Lang, LegalDict> = {
         li3: "يخزّن خادمنا النسخة المقفلة، والمعرّف، وتجزئة أحادية الاتجاه (SHA-256) لمفتاح كتابة منفصل يملكه متصفحك وحده، بحيث تكون أنت وحدك من يستطيع تعديلها أو حذفها. لا توجد لدى الخادم أي وسيلة لفتح النسخة.",
         li4: "تُنشئ الشاشة التي تحصل على الرمز نفس المعرّف والمفتاح، وتجلب النسخة وتفتحها. تحمل روابط التلفاز الرمز بعد علامة “#”، وهو جزء من العنوان لا ترسله المتصفحات أبداً إلى أي خادم.",
         li5: "تُحذف النسخة بمجرد ضغطك على إيقاف المشاركة أو حذف اللعبة، أو تلقائياً بعد يومين من آخر تحديث لها. بعد إيقاف المشاركة، يمنع سجل فارغ لا يحوي أي لعبة إعادة استخدام الرمز حتى تنقضي هذان اليومان.",
-        p3: "يمكن لأي شخص يملك الرمز، أو يخمّنه، رؤية اللعبة أثناء مشاركتها، لذا لا تترك فيها أي شيء لا تريد إظهاره لكل من على الطاولة.",
+        p3: "يمكن لأي شخص يملك الرمز، أو يخمّنه، رؤية اللعبة أثناء مشاركتها، لذا لا تترك فيها أي شيء لا تريد إظهاره لكل من على الطاولة. ويشمل ذلك الهواتف: يعرض التلفاز وشاشة الموزّع الرابط كرمز QR يُنشأ على الجهاز نفسه، ويحصل الهاتف على النسخة نفسها التي يحصل عليها التلفاز. تبحث «ابحث عني» في تلك النسخة على الهاتف نفسه، ولا يُحفظ أو يُرسل أي شيء يُكتب فيها.",
       },
       protected: {
         title: "كيف تتم الحماية",
@@ -1642,7 +1642,7 @@ export const legal: Record<Lang, LegalDict> = {
       dealing: {
         cashTitle: "ক্যাশ গেম",
         cashBody:
-          "ব্লাইন্ড আর বাই-ইনের পরিসীমা ঠিক করুন, তারপর খেলোয়াড়রা বসার সাথে সাথে তাদের যোগ করুন। রিবাই আর ক্যাশ-আউট প্রতিটিই এক ট্যাপে হয়ে যায়, আর ব্যাংক টেবিলের প্রতিটি চিপের হিসাব রাখে। গেম শেষ হলে, Settle Up হিসাব করে দেয় কে কাকে টাকা দেবে, চাইলে Venmo, Cash App আর PayPal-এর লিংকসহ। সাইড গেমেরও নিজস্ব সুইচ আছে: টাইমারে বা ডাকলে বম্ব পট, 7-2 গেম, আর হাউসের দেওয়া হাই হ্যান্ড পুরস্কার, যা সেটল-আপে আসে। ভাগের খরচ গেমের জন্য কেনা জিনিস ভাগ করে, আর কে কার কাছে পাবে পেমেন্টে টিক দেয় এবং খেলোয়াড় পেজে পুরো হিসাব রাখে।",
+          "ব্লাইন্ড আর বাই-ইনের পরিসীমা ঠিক করুন, তারপর খেলোয়াড়রা বসার সাথে সাথে তাদের যোগ করুন। রিবাই আর ক্যাশ-আউট প্রতিটিই এক ট্যাপে হয়ে যায়, আর ব্যাংক টেবিলের প্রতিটি চিপের হিসাব রাখে। গেম শেষ হলে, Settle Up হিসাব করে দেয় কে কাকে টাকা দেবে, চাইলে Venmo, Cash App আর PayPal-এর লিংকসহ। সাইড গেমেরও নিজস্ব সুইচ আছে: টাইমারে বা ডাকলে বম্ব পট, 7-2 গেম, আর হাউসের দেওয়া হাই হ্যান্ড পুরস্কার, যা সেটল-আপে আসে। ভাগের খরচ গেমের জন্য কেনা জিনিস ভাগ করে, আর কে কার কাছে পাবে পেমেন্টে টিক দেয় এবং খেলোয়াড় পেজে পুরো হিসাব রাখে। ওয়েটলিস্ট মনে রাখে পরের সিট কার, আর সিট খালি হলেই টিভি জানিয়ে দেয়।",
         tourneyTitle: "টুর্নামেন্ট",
         tourneyBody:
           "আপনি কতক্ষণ খেলতে চান তা বেছে নিন, আর PitMaster সেই অনুযায়ী ব্লাইন্ড স্ট্রাকচার তৈরি করবে: শুরুর স্ট্যাক, বিরতি, অ্যান্টি, রিবাই, অ্যাড-অন আর বাউন্টি। খেলোয়াড়রা বাদ পড়ার সাথে সাথে তাদের বাদ দিন, আর পেআউট, গড় স্ট্যাক আর টেবিল ব্যালান্সিং নিজে থেকেই চলতে থাকে। ফাইনাল টেবিলে ডিল ক্যালকুলেটর প্রাইজ পুল চিপ সংখ্যা বা ICM অনুযায়ী ভাগ করে দেয়। বাউন্টি ফ্ল্যাট, প্রগ্রেসিভ (PKO) বা মিস্ট্রি খাম হতে পারে, আর \"এখান থেকে শুরু করুন\"-এ টার্বো, ডিপস্ট্যাক, সিট অ্যান্ড গো-র মতো তৈরি সেটআপ আছে। বিজয়ী ঠিক হলে হিসাব মেটান দেখায় আয়োজক প্রত্যেক খেলোয়াড়কে কত দেবে। স্যাটেলাইটে পুরস্কার হয় অন্য গেমের সিট, আর শুটআউটে প্রতিটি টেবিল একজন বিজয়ী পর্যন্ত খেলে, তারপর ফাইনাল টেবিল।",
@@ -1664,7 +1664,7 @@ export const legal: Record<Lang, LegalDict> = {
         body1d: "আর 8 অক্ষরের কোডটি টাইপ করুন।",
         body2a: "টিভিতে ঘড়ি, ব্লাইন্ড, পেআউট আর আপনার পাঠানো বার্তাগুলো দেখা যায়, আর এটি নিজে থেকেই আপডেট থাকে। এটি কিছুই পরিবর্তন করতে পারে না, আর একটি লাইভ গেম সেখানে পৌঁছানোর পথে এন্ড-টু-এন্ড এনক্রিপ্টেড থাকে। টিভিতে ফুল স্ক্রিনের জন্য চাপুন",
         body2b: "আর শব্দের জন্য চাপুন",
-        body2c: "।",
+        body2c: "। ফোনেও দেখা যায়: টিভি বা ডিলার স্ক্রিনের QR কোড স্ক্যান করুন, তারপর ‘আমাকে খুঁজুন’-এ নাম লিখে আপনার আসন আর অবস্থান দেখুন।",
       },
       calculator: {
         press: "যেকোনো পাতায় চাপুন",
@@ -1765,7 +1765,7 @@ export const legal: Record<Lang, LegalDict> = {
         li3: "আমাদের সার্ভার শুধু লক করা কপি, ID, আর একটি আলাদা write key-এর একটি ওয়ান-ওয়ে হ্যাশ (SHA-256) সংরক্ষণ করে যা শুধু আপনার ব্রাউজারই ধরে রাখে, তাই শুধু আপনিই এটি পরিবর্তন বা মুছতে পারেন। কপিটি আনলক করার কোনো উপায় সার্ভারের নেই।",
         li4: "যে স্ক্রিনকে কোডটি দেওয়া হয়েছে সেটি একই ID আর কী তৈরি করে, কপিটি নিয়ে আসে আর তা আনলক করে। টিভি লিংকগুলো একটি “#” এর পরে কোডটি বহন করে, ঠিকানার এমন একটি অংশ যা ব্রাউজার কখনো কোনো সার্ভারে পাঠায় না।",
         li5: "আপনি Stop Sharing চাপার সাথে সাথে বা গেমটি মুছে ফেললে, অথবা এর শেষ আপডেটের দুই দিন পর স্বয়ংক্রিয়ভাবে, কপিটি মুছে যায়। Stop Sharing-এর পর, কোনো গেম নেই এমন একটি ফাঁকা রেকর্ড কোডটিকে সেই দুই দিন পার হওয়া পর্যন্ত পুনরায় ব্যবহার হওয়া থেকে আটকে রাখে।",
-        p3: "যার কাছেই কোডটি আছে, বা যে এটি অনুমান করে ফেলে, সে শেয়ার করার সময় গেমটি দেখতে পারবে, তাই এতে এমন কিছু রাখবেন না যা আপনি পুরো টেবিলকে দেখাতে চান না।",
+        p3: "যার কাছেই কোডটি আছে, বা যে এটি অনুমান করে ফেলে, সে শেয়ার করার সময় গেমটি দেখতে পারবে, তাই এতে এমন কিছু রাখবেন না যা আপনি পুরো টেবিলকে দেখাতে চান না। ফোনও এর মধ্যে পড়ে: টিভি আর ডিলার স্ক্রিন লিংকটি QR কোড হিসেবে দেখায়, যা ডিভাইসেই তৈরি হয়, আর ফোন সেই একই কপি পায় যা টিভি পায়। ‘আমাকে খুঁজুন’ ফোনেই সেই কপিতে খোঁজে, আর সেখানে লেখা কিছুই সেভ বা পাঠানো হয় না।",
       },
       protected: {
         title: "এটি কীভাবে সুরক্ষিত",
@@ -1888,7 +1888,7 @@ export const legal: Record<Lang, LegalDict> = {
       dealing: {
         cashTitle: "Partidas em Dinheiro",
         cashBody:
-          "Defina as blinds e a faixa de buy-in, depois adicione os jogadores conforme se sentarem. Recompras e cash-outs levam um toque cada, e o banco mantém a contagem de cada ficha na mesa. Quando a partida termina, o Settle Up calcula quem paga a quem, com links do Venmo, Cash App e PayPal caso você queira. Os jogos extras também têm seus interruptores: bomb pots com cronômetro ou quando pedido, o jogo do 7-2 e um prêmio para a mão mais alta que a casa paga no acerto. Os custos divididos repartem o que foi comprado para o jogo, e Quem Deve a Quem marca os pagamentos e mantém a conta na página Jogadores.",
+          "Defina as blinds e a faixa de buy-in, depois adicione os jogadores conforme se sentarem. Recompras e cash-outs levam um toque cada, e o banco mantém a contagem de cada ficha na mesa. Quando a partida termina, o Settle Up calcula quem paga a quem, com links do Venmo, Cash App e PayPal caso você queira. Os jogos extras também têm seus interruptores: bomb pots com cronômetro ou quando pedido, o jogo do 7-2 e um prêmio para a mão mais alta que a casa paga no acerto. Os custos divididos repartem o que foi comprado para o jogo, e Quem Deve a Quem marca os pagamentos e mantém a conta na página Jogadores. Uma lista de espera guarda quem é o próximo a sentar, e a TV avisa quando um lugar abre.",
         tourneyTitle: "Torneios",
         tourneyBody:
           "Escolha por quanto tempo quer jogar e o PitMaster monta a estrutura de blinds sob medida: pilhas iniciais, intervalos, antes, recompras, add-ons e bounties. Elimine jogadores conforme saem e os pagamentos, a pilha média e o balanceamento de mesas acompanham sozinhos. Na mesa final, a calculadora de acordo divide o prêmio por contagem de fichas ou por ICM. Os bounties podem ser fixos, progressivos (PKO) ou envelopes misteriosos, e Começar de traz formatos prontos como Turbo, Deepstack e Sit & Go. Quando há um vencedor, Acertar as Contas mostra o que a casa paga a cada jogador. Os satélites dão vagas em outro jogo, e nos shootouts cada mesa joga até um vencedor antes da mesa final.",
@@ -1910,7 +1910,7 @@ export const legal: Record<Lang, LegalDict> = {
         body1d: "nessa tela e digite o código de 8 caracteres.",
         body2a: "A TV mostra o relógio, as blinds, os pagamentos e as mensagens que você envia à mesa, e se mantém atualizada sozinha. Ela não pode mudar nada, e uma partida ao vivo é criptografada de ponta a ponta no caminho até lá. Pressione",
         body2b: "na TV para tela cheia e",
-        body2c: "para o som.",
+        body2c: "para o som. Os celulares também podem acompanhar: escaneie o QR code na TV ou na tela do dealer e digite seu nome em Me Encontre para ver seu assento e sua posição.",
       },
       calculator: {
         press: "Pressione",
@@ -2011,7 +2011,7 @@ export const legal: Record<Lang, LegalDict> = {
         li3: "Nosso servidor guarda a cópia trancada, o ID e um hash de mão única (SHA-256) de uma chave de escrita separada que só o seu navegador possui, então só você pode alterá-la ou apagá-la. Ele não tem como destrancar a cópia.",
         li4: "Uma tela que recebe o código gera o mesmo ID e chave, busca a cópia e a destranca. Links de TV carregam o código depois de um “#”, uma parte do endereço que os navegadores nunca enviam a um servidor.",
         li5: "A cópia é apagada assim que você pressiona Parar de Compartilhar ou apaga a partida, ou automaticamente dois dias após sua última atualização. Depois de Parar de Compartilhar, um registro em branco sem nenhuma partida impede que o código seja reutilizado até que esses dois dias passem.",
-        p3: "Quem tiver o código, ou adivinhá-lo, pode ver a partida enquanto ela estiver sendo compartilhada, então não deixe nela nada que você não mostraria para a mesa toda.",
+        p3: "Quem tiver o código, ou adivinhá-lo, pode ver a partida enquanto ela estiver sendo compartilhada, então não deixe nela nada que você não mostraria para a mesa toda. Isso inclui celulares: a TV e a tela do dealer mostram o link como QR code, gerado no próprio aparelho, e um celular recebe a mesma cópia que a TV. Me Encontre procura nessa cópia no próprio celular, e nada digitado ali é salvo ou enviado.",
       },
       protected: {
         title: "Como Isso É Protegido",

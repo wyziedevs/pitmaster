@@ -248,6 +248,13 @@ export interface Cost {
   split: string[];
 }
 
+/** someone waiting for a seat at a cash game, since `at` */
+export interface Waiting {
+  id: string;
+  name: string;
+  at: number;
+}
+
 /** a settle-up payment the host ticked off: from paid to this much */
 export interface Payment {
   from: string;
@@ -303,6 +310,8 @@ export interface Game {
   costs?: Cost[];
   /** settle-up payments marked paid; what's still owed is worked out from these */
   paid?: Payment[];
+  /** cash: who's waiting for a seat, first in line first */
+  waitlist?: Waiting[];
   /** only on published snapshots: the host's display prefs, so a tv on another device matches */
   prefs?: HostPrefs;
   /** cash: what's been dropped in the rake box so far */

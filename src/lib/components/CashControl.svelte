@@ -9,7 +9,7 @@
   import { bump, reveal, leave, slide } from "$lib/motion";
   import type { Game } from "$lib/types";
   import { cashElapsed, cashToggle } from "$lib/clock";
-  import { addPlayer, cashStats, cashSettle, cashRake, logEvent, flash, reseat, seatsDrawn, seatLabel, tableCounts, highHandPrizes } from "$lib/game";
+  import { addPlayer, cashStats, cashSettle, cashRake, logEvent, flash, reseat, seatsDrawn, seatLabel, tableCounts, highHandPrizes, seatWaiting, waitingReturn } from "$lib/game";
   import { getHandles } from "$lib/store";
   import { distribute, faceText } from "$lib/chips";
   import { clock, clockFace, currencySymbol, duration, money, nameKey, round2, signed, timeOfDay } from "$lib/util";
@@ -23,6 +23,7 @@
   import SideGames from "./SideGames.svelte";
   import SettleMoves from "./SettleMoves.svelte";
   import Costs from "./Costs.svelte";
+  import Waitlist from "./Waitlist.svelte";
   import { settings } from "$lib/settings.svelte";
   import Count from "./Count.svelte";
   import RemoveButton from "./RemoveButton.svelte";
@@ -46,6 +47,8 @@
   // shared costs: the switch, unless this game already has some
   const costsOn = $derived(settings.useCosts || !!game.costs?.length);
   const anyHandles = $derived(moves.some((m) => handles[nameKey(m.to)]));
+  // the waitlist: the switch, unless someone's already on this game's list
+  const waitOn = $derived(settings.useWaitlist || !!game.waitlist?.length);
 
   let newName = $state("");
   let newSb = $state(game.cash!.sb);
@@ -121,18 +124,31 @@
     if (amount < c.minBuyIn || amount > c.maxBuyIn) {
       if (!confirm(t("gamePlay.cash.buyInOutsideRangeConfirm", { amount: money(amount), min: money(c.minBuyIn), max: money(c.maxBuyIn) }))) return false;
     }
-    act(() => {
-      p.cashIn = round2(p.cashIn + amount);
-      if (p.cashOut !== null) {
-        // back in the game
-        p.cashOut = null;
-        p.leftAt = null;
-        reseat(game, p);
-      }
-      logEvent(game, t("gamePlay.cash.boughtInLog", { name: p.name, amount: money(amount), total: money(p.cashIn) }));
-      flash(game, t("gamePlay.cash.reloadsFlash", { name: p.name, amount: money(amount) }), "chips");
-    });
+    act(() => addBuyIn(p, amount));
     return true;
+  }
+
+  function addBuyIn(p: (typeof game.players)[number], amount: number) {
+    p.cashIn = round2(p.cashIn + amount);
+    if (p.cashOut !== null) {
+      // back in the game
+      p.cashOut = null;
+      p.leftAt = null;
+      reseat(game, p);
+    }
+    logEvent(game, t("gamePlay.cash.boughtInLog", { name: p.name, amount: money(amount), total: money(p.cashIn) }));
+    flash(game, t("gamePlay.cash.reloadsFlash", { name: p.name, amount: money(amount) }), "chips");
+  }
+
+  // off the waitlist and into a seat. someone who played earlier tonight gets
+  // their own row back with a standard buy-in, so their night adds up as one
+  function seatFromList(id: string) {
+    const back = waitingReturn(game, id);
+    act(() => {
+      if (!back) return void seatWaiting(game, id);
+      game.waitlist = game.waitlist!.filter((w) => w.id !== id);
+      addBuyIn(back, c.defaultBuyIn);
+    });
   }
 
   function addOther(e: SubmitEvent, id: string) {
@@ -170,12 +186,16 @@
     const p = counter;
     if (!p || !(outTotal >= 0)) return;
     const amount = round2(outTotal);
+    // a seat opening with people waiting is the news: the tv says who's next
+    const nextUp = p.cashOut === null && game.waitlist?.[0];
     act(() => {
       p.cashOut = amount;
       p.leftAt = Date.now();
       const net = round2(amount - p.cashIn);
       logEvent(game, t("gamePlay.cash.cashedOutLog", { name: p.name, amount: money(amount), net: signed(net) }));
-      flash(game, t("gamePlay.cash.racksUpFlash", { name: p.name, net: signed(net) }), "rack");
+      const racks = t("gamePlay.cash.racksUpFlash", { name: p.name, net: signed(net) });
+      if (nextUp) flash(game, `${racks} · ${t("gameEvents.seatOpenFlash", { name: nextUp.name })}`, "seat");
+      else flash(game, racks, "rack");
     });
     counting = null;
   }
@@ -387,6 +407,7 @@
       <input type="text" bind:value={newName} placeholder={t("gamePlay.shared.playerNamePlaceholder")} list="regulars" autocomplete="off" aria-label={t("gamePlay.shared.playerNamePlaceholder")} />
       <button data-sound="chips"><Icon icon={Plus} />{t("gamePlay.cash.sitDownButton", { amount: money(c.defaultBuyIn) })}</button>
     </form>
+    {#if waitOn}<div class="part mt-[22px]" transition:slide={reveal()}><Waitlist bind:game {persist} seat={seatFromList} /></div>{/if}
 </section>
 
 <div class="cols">

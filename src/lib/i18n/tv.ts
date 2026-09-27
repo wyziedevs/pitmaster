@@ -20,6 +20,8 @@ export interface TvDict {
     tvCodeInstructions: string; // {host}
     copyCodeTitle: string;
     copyLink: string;
+    qrLabel: string;
+    qrCaption: string;
     stopSharing: string;
     stopConfirm: string;
     stopServerError: string;
@@ -148,6 +150,8 @@ export interface TvDict {
     sevenTwoGame: string;
     sevenTwoPays: string; // {amount}
     highHandTimesUp: string;
+    waitlist: string;
+    waitlistMore: Plural;
     buyIn: string;
     onTable: string;
     rake: string;
@@ -166,6 +170,33 @@ export interface TvDict {
   seatList: {
     table: string; // {n}
     noSeatYet: string;
+  };
+  find: {
+    heading: string;
+    placeholder: string;
+    which: string;
+    noMatch: string;
+    tableSeat: string;
+    seat: string;
+    noSeat: string;
+    stillIn: string;
+    left: Plural;
+    playing: string;
+    inFor: string;
+    cashedOut: string;
+    cashedOutFor: string;
+    winner: string;
+    wonSeat: string;
+    outIn: string;
+    won: string;
+    bountyOn: string;
+    knockouts: Plural;
+    waiting: string;
+    waited: string;
+  };
+  phone: {
+    follow: string;
+    qrLabel: string;
   };
   rules: {
     houseRules: string;
@@ -193,6 +224,8 @@ export const tv: Record<Lang, TvDict> = {
       tvCodeInstructions: "TV code: on any screen, open {host}/live and type",
       copyCodeTitle: "Copy the Code",
       copyLink: "Copy Link",
+      qrLabel: "QR code for the live link",
+      qrCaption: "Scan to follow on a phone",
       stopSharing: "Stop Sharing",
       stopConfirm: "Stop sharing? Screens using the code stop updating, and the copy on the server is deleted.",
       stopServerError: "Couldn't reach the server to delete its copy. It's deleted on its own two days after the last update.",
@@ -321,6 +354,8 @@ export const tv: Record<Lang, TvDict> = {
       sevenTwoGame: "7-2 Game",
       sevenTwoPays: "{amount} From Everyone",
       highHandTimesUp: "Time's Up",
+      waitlist: "Waitlist",
+      waitlistMore: { one: "+{count} more", other: "+{count} more" },
       buyIn: "Buy-In",
       onTable: "On the Table",
       rake: "Rake",
@@ -339,6 +374,33 @@ export const tv: Record<Lang, TvDict> = {
     seatList: {
       table: "Table {n}",
       noSeatYet: "No Seat Yet",
+    },
+    find: {
+      heading: "Find Me",
+      placeholder: "Your Name",
+      which: "Which one are you?",
+      noMatch: "No one by that name yet.",
+      tableSeat: "Table {table}, Seat {seat}",
+      seat: "Seat {seat}",
+      noSeat: "No seat yet",
+      stillIn: "Still in",
+      left: { one: "{count} player left", other: "{count} players left" },
+      playing: "Playing",
+      inFor: "In for {amount}",
+      cashedOut: "Cashed out",
+      cashedOutFor: "Cashed out {amount}",
+      winner: "Winner!",
+      wonSeat: "Won a seat!",
+      outIn: "Out in {place}",
+      won: "Won {amount}",
+      bountyOn: "Bounty: {amount}",
+      knockouts: { one: "{count} knockout", other: "{count} knockouts" },
+      waiting: "{place} on the waitlist",
+      waited: "Waiting {time}",
+    },
+    phone: {
+      follow: "Follow on your phone",
+      qrLabel: "QR code for this game's live link",
     },
     rules: {
       houseRules: "House Rules",
@@ -364,6 +426,8 @@ export const tv: Record<Lang, TvDict> = {
       tvCodeInstructions: "电视代码:在任意屏幕上打开 {host}/live 并输入",
       copyCodeTitle: "复制代码",
       copyLink: "复制链接",
+      qrLabel: "直播链接的二维码",
+      qrCaption: "用手机扫码跟看",
       stopSharing: "停止分享",
       stopConfirm: "停止分享?使用该代码的屏幕将不再更新,服务器上的副本也会被删除。",
       stopServerError: "无法连接服务器删除副本。它会在最后一次更新两天后自动删除。",
@@ -492,6 +556,8 @@ export const tv: Record<Lang, TvDict> = {
       sevenTwoGame: "7-2 玩法",
       sevenTwoPays: "每人付 {amount}",
       highHandTimesUp: "时间到",
+      waitlist: "候补名单",
+      waitlistMore: { one: "还有 {count} 人", other: "还有 {count} 人" },
       buyIn: "买入",
       onTable: "桌面筹码",
       rake: "抽水",
@@ -510,6 +576,33 @@ export const tv: Record<Lang, TvDict> = {
     seatList: {
       table: "第 {n} 桌",
       noSeatYet: "尚未安排",
+    },
+    find: {
+      heading: "找到我",
+      placeholder: "你的名字",
+      which: "你是哪一位？",
+      noMatch: "还没有这个名字。",
+      tableSeat: "第 {table} 桌，{seat} 号座",
+      seat: "{seat} 号座",
+      noSeat: "还没有座位",
+      stillIn: "还在场上",
+      left: { one: "剩 {count} 位玩家", other: "剩 {count} 位玩家" },
+      playing: "在打",
+      inFor: "买入 {amount}",
+      cashedOut: "已兑现离场",
+      cashedOutFor: "已兑现 {amount}",
+      winner: "冠军！",
+      wonSeat: "赢得席位！",
+      outIn: "{place}名出局",
+      won: "赢得 {amount}",
+      bountyOn: "赏金：{amount}",
+      knockouts: { one: "淘汰 {count} 人", other: "淘汰 {count} 人" },
+      waiting: "候补名单{place}位",
+      waited: "已等待 {time}",
+    },
+    phone: {
+      follow: "用手机跟看",
+      qrLabel: "本局直播链接的二维码",
     },
     rules: {
       houseRules: "场地规则",
@@ -535,6 +628,8 @@ export const tv: Record<Lang, TvDict> = {
       tvCodeInstructions: "टीवी कोड: किसी भी स्क्रीन पर {host}/live खोलें और टाइप करें",
       copyCodeTitle: "कोड कॉपी करें",
       copyLink: "लिंक कॉपी करें",
+      qrLabel: "लाइव लिंक का QR कोड",
+      qrCaption: "फ़ोन पर देखने के लिए स्कैन करें",
       stopSharing: "साझा करना बंद करें",
       stopConfirm: "साझा करना बंद करें? कोड इस्तेमाल करने वाली स्क्रीनें अपडेट होना बंद कर देंगी, और सर्वर पर मौजूद कॉपी मिटा दी जाएगी।",
       stopServerError: "सर्वर से कॉपी मिटाने के लिए संपर्क नहीं हो सका। यह आखिरी अपडेट के दो दिन बाद अपने आप मिट जाती है।",
@@ -663,6 +758,8 @@ export const tv: Record<Lang, TvDict> = {
       sevenTwoGame: "7-2 गेम",
       sevenTwoPays: "हर किसी से {amount}",
       highHandTimesUp: "समय पूरा",
+      waitlist: "वेटलिस्ट",
+      waitlistMore: { one: "+{count} और", other: "+{count} और" },
       buyIn: "बाय-इन",
       onTable: "टेबल पर",
       rake: "रेक",
@@ -681,6 +778,33 @@ export const tv: Record<Lang, TvDict> = {
     seatList: {
       table: "टेबल {n}",
       noSeatYet: "अभी सीट नहीं",
+    },
+    find: {
+      heading: "मुझे ढूंढें",
+      placeholder: "आपका नाम",
+      which: "आप कौन से हैं?",
+      noMatch: "इस नाम से अभी कोई नहीं।",
+      tableSeat: "टेबल {table}, सीट {seat}",
+      seat: "सीट {seat}",
+      noSeat: "अभी सीट नहीं",
+      stillIn: "अभी खेल में",
+      left: { one: "{count} खिलाड़ी बाकी", other: "{count} खिलाड़ी बाकी" },
+      playing: "खेल रहे हैं",
+      inFor: "{amount} का बाय-इन",
+      cashedOut: "कैश आउट किया",
+      cashedOutFor: "{amount} पर कैश आउट",
+      winner: "विजेता!",
+      wonSeat: "सीट जीती!",
+      outIn: "{place} स्थान पर बाहर",
+      won: "{amount} जीते",
+      bountyOn: "बाउंटी: {amount}",
+      knockouts: { one: "{count} नॉकआउट", other: "{count} नॉकआउट" },
+      waiting: "वेटलिस्ट में {place}",
+      waited: "{time} से इंतज़ार",
+    },
+    phone: {
+      follow: "फ़ोन पर देखें",
+      qrLabel: "इस गेम के लाइव लिंक का QR कोड",
     },
     rules: {
       houseRules: "हाउस रूल्स",
@@ -706,6 +830,8 @@ export const tv: Record<Lang, TvDict> = {
       tvCodeInstructions: "Código de TV: en cualquier pantalla, abre {host}/live y escribe",
       copyCodeTitle: "Copiar el Código",
       copyLink: "Copiar Enlace",
+      qrLabel: "Código QR del enlace en vivo",
+      qrCaption: "Escanéalo para seguirla en un teléfono",
       stopSharing: "Dejar de Compartir",
       stopConfirm: "¿Dejar de compartir? Las pantallas que usan el código dejan de actualizarse, y la copia en el servidor se elimina.",
       stopServerError: "No se pudo conectar con el servidor para borrar su copia. Se borra sola dos días después de la última actualización.",
@@ -834,6 +960,8 @@ export const tv: Record<Lang, TvDict> = {
       sevenTwoGame: "Juego del 7-2",
       sevenTwoPays: "{amount} de Cada Uno",
       highHandTimesUp: "Se Acabó el Tiempo",
+      waitlist: "Lista de Espera",
+      waitlistMore: { one: "+{count} más", other: "+{count} más" },
       buyIn: "Buy-In",
       onTable: "Sobre la Mesa",
       rake: "Rake",
@@ -852,6 +980,33 @@ export const tv: Record<Lang, TvDict> = {
     seatList: {
       table: "Mesa {n}",
       noSeatYet: "Sin Asiento Todavía",
+    },
+    find: {
+      heading: "Búscame",
+      placeholder: "Tu Nombre",
+      which: "¿Cuál eres?",
+      noMatch: "Nadie con ese nombre todavía.",
+      tableSeat: "Mesa {table}, Asiento {seat}",
+      seat: "Asiento {seat}",
+      noSeat: "Sin asiento todavía",
+      stillIn: "Sigue en juego",
+      left: { one: "Queda {count} jugador", other: "Quedan {count} jugadores" },
+      playing: "Jugando",
+      inFor: "Entró con {amount}",
+      cashedOut: "Se retiró",
+      cashedOutFor: "Se retiró con {amount}",
+      winner: "¡Ganador!",
+      wonSeat: "¡Ganó una plaza!",
+      outIn: "Eliminado en {place}",
+      won: "Ganó {amount}",
+      bountyOn: "Recompensa: {amount}",
+      knockouts: { one: "{count} eliminación", other: "{count} eliminaciones" },
+      waiting: "{place} en la lista de espera",
+      waited: "Esperando {time}",
+    },
+    phone: {
+      follow: "Síguela en tu teléfono",
+      qrLabel: "Código QR del enlace en vivo de esta partida",
     },
     rules: {
       houseRules: "Reglas de la Casa",
@@ -877,6 +1032,8 @@ export const tv: Record<Lang, TvDict> = {
       tvCodeInstructions: "Code TV : sur n'importe quel écran, ouvrez {host}/live et tapez",
       copyCodeTitle: "Copier le Code",
       copyLink: "Copier le Lien",
+      qrLabel: "QR code du lien en direct",
+      qrCaption: "Scannez pour suivre sur un téléphone",
       stopSharing: "Arrêter le Partage",
       stopConfirm: "Arrêter le partage ? Les écrans utilisant le code cessent de se mettre à jour, et la copie sur le serveur est supprimée.",
       stopServerError: "Impossible de joindre le serveur pour supprimer sa copie. Elle se supprime d'elle-même deux jours après la dernière mise à jour.",
@@ -1005,6 +1162,8 @@ export const tv: Record<Lang, TvDict> = {
       sevenTwoGame: "Jeu du 7-2",
       sevenTwoPays: "{amount} de Chacun",
       highHandTimesUp: "Temps Écoulé",
+      waitlist: "Liste d'Attente",
+      waitlistMore: { one: "+{count} de plus", other: "+{count} de plus" },
       buyIn: "Buy-In",
       onTable: "Sur la Table",
       rake: "Rake",
@@ -1023,6 +1182,33 @@ export const tv: Record<Lang, TvDict> = {
     seatList: {
       table: "Table {n}",
       noSeatYet: "Pas Encore de Place",
+    },
+    find: {
+      heading: "Me Trouver",
+      placeholder: "Votre Nom",
+      which: "Lequel êtes-vous ?",
+      noMatch: "Personne à ce nom pour l'instant.",
+      tableSeat: "Table {table}, Place {seat}",
+      seat: "Place {seat}",
+      noSeat: "Pas encore de place",
+      stillIn: "Toujours en jeu",
+      left: { one: "{count} joueur restant", other: "{count} joueurs restants" },
+      playing: "En jeu",
+      inFor: "Entré pour {amount}",
+      cashedOut: "Parti",
+      cashedOutFor: "Parti avec {amount}",
+      winner: "Vainqueur !",
+      wonSeat: "Place gagnée !",
+      outIn: "Éliminé en {place}",
+      won: "A gagné {amount}",
+      bountyOn: "Prime : {amount}",
+      knockouts: { one: "{count} élimination", other: "{count} éliminations" },
+      waiting: "{place} sur la liste d'attente",
+      waited: "Attend depuis {time}",
+    },
+    phone: {
+      follow: "Suivez sur votre téléphone",
+      qrLabel: "QR code du lien en direct de cette partie",
     },
     rules: {
       houseRules: "Règles de la Maison",
@@ -1048,6 +1234,8 @@ export const tv: Record<Lang, TvDict> = {
       tvCodeInstructions: "رمز التلفاز: على أي شاشة، افتح {host}/live واكتب",
       copyCodeTitle: "نسخ الرمز",
       copyLink: "نسخ الرابط",
+      qrLabel: "رمز QR للرابط المباشر",
+      qrCaption: "امسحه للمتابعة على الهاتف",
       stopSharing: "إيقاف المشاركة",
       stopConfirm: "إيقاف المشاركة؟ ستتوقف الشاشات التي تستخدم الرمز عن التحديث، وسيتم حذف النسخة من الخادم.",
       stopServerError: "تعذر الوصول إلى الخادم لحذف نسخته. سيُحذف تلقائيًا بعد يومين من آخر تحديث.",
@@ -1176,6 +1364,8 @@ export const tv: Record<Lang, TvDict> = {
       sevenTwoGame: "لعبة 7-2",
       sevenTwoPays: "{amount} من كل لاعب",
       highHandTimesUp: "انتهى الوقت",
+      waitlist: "قائمة الانتظار",
+      waitlistMore: { one: "+{count} آخر", other: "+{count} آخرون" },
       buyIn: "الدخول",
       onTable: "على الطاولة",
       rake: "العمولة",
@@ -1194,6 +1384,33 @@ export const tv: Record<Lang, TvDict> = {
     seatList: {
       table: "الطاولة {n}",
       noSeatYet: "لا مقعد بعد",
+    },
+    find: {
+      heading: "ابحث عني",
+      placeholder: "اسمك",
+      which: "أيّهم أنت؟",
+      noMatch: "لا أحد بهذا الاسم بعد.",
+      tableSeat: "الطاولة {table}، المقعد {seat}",
+      seat: "المقعد {seat}",
+      noSeat: "لا مقعد بعد",
+      stillIn: "ما زال في اللعب",
+      left: { one: "بقي {count} لاعب", other: "بقي {count} لاعبين" },
+      playing: "يلعب",
+      inFor: "دخل بـ {amount}",
+      cashedOut: "صرف رقائقه",
+      cashedOutFor: "صرف {amount}",
+      winner: "الفائز!",
+      wonSeat: "فاز بمقعد!",
+      outIn: "خرج في المركز {place}",
+      won: "ربح {amount}",
+      bountyOn: "المكافأة: {amount}",
+      knockouts: { one: "{count} إقصاء", other: "{count} إقصاءات" },
+      waiting: "{place} في قائمة الانتظار",
+      waited: "ينتظر منذ {time}",
+    },
+    phone: {
+      follow: "تابع على هاتفك",
+      qrLabel: "رمز QR للرابط المباشر لهذه اللعبة",
     },
     rules: {
       houseRules: "قواعد المكان",
@@ -1219,6 +1436,8 @@ export const tv: Record<Lang, TvDict> = {
       tvCodeInstructions: "টিভি কোড: যেকোনো স্ক্রিনে {host}/live খুলে টাইপ করুন",
       copyCodeTitle: "কোড কপি করুন",
       copyLink: "লিংক কপি করুন",
+      qrLabel: "লাইভ লিংকের QR কোড",
+      qrCaption: "ফোনে দেখতে স্ক্যান করুন",
       stopSharing: "শেয়ার করা বন্ধ করুন",
       stopConfirm: "শেয়ার করা বন্ধ করবেন? কোড ব্যবহারকারী স্ক্রিনগুলো আপডেট হওয়া বন্ধ হয়ে যাবে, এবং সার্ভারের কপিটি মুছে ফেলা হবে।",
       stopServerError: "সার্ভার থেকে কপি মুছতে যোগাযোগ করা যায়নি। শেষ আপডেটের দুই দিন পর এটি নিজে থেকেই মুছে যায়।",
@@ -1347,6 +1566,8 @@ export const tv: Record<Lang, TvDict> = {
       sevenTwoGame: "7-2 গেম",
       sevenTwoPays: "প্রত্যেকের কাছ থেকে {amount}",
       highHandTimesUp: "সময় শেষ",
+      waitlist: "ওয়েটলিস্ট",
+      waitlistMore: { one: "+আরও {count} জন", other: "+আরও {count} জন" },
       buyIn: "বাই-ইন",
       onTable: "টেবিলে",
       rake: "রেক",
@@ -1365,6 +1586,33 @@ export const tv: Record<Lang, TvDict> = {
     seatList: {
       table: "টেবিল {n}",
       noSeatYet: "এখনও আসন নেই",
+    },
+    find: {
+      heading: "আমাকে খুঁজুন",
+      placeholder: "আপনার নাম",
+      which: "আপনি কোনজন?",
+      noMatch: "এই নামে এখনো কেউ নেই।",
+      tableSeat: "টেবিল {table}, আসন {seat}",
+      seat: "আসন {seat}",
+      noSeat: "এখনো আসন নেই",
+      stillIn: "এখনো খেলায়",
+      left: { one: "{count} জন খেলোয়াড় বাকি", other: "{count} জন খেলোয়াড় বাকি" },
+      playing: "খেলছেন",
+      inFor: "{amount} দিয়ে ঢুকেছেন",
+      cashedOut: "ক্যাশ আউট করেছেন",
+      cashedOutFor: "{amount}-এ ক্যাশ আউট",
+      winner: "বিজয়ী!",
+      wonSeat: "সিট জিতেছেন!",
+      outIn: "{place} স্থানে বাদ",
+      won: "{amount} জিতেছেন",
+      bountyOn: "বাউন্টি: {amount}",
+      knockouts: { one: "{count}টি নকআউট", other: "{count}টি নকআউট" },
+      waiting: "ওয়েটলিস্টে {place}",
+      waited: "{time} ধরে অপেক্ষা",
+    },
+    phone: {
+      follow: "ফোনে দেখুন",
+      qrLabel: "এই গেমের লাইভ লিংকের QR কোড",
     },
     rules: {
       houseRules: "হাউস রুলস",
@@ -1390,6 +1638,8 @@ export const tv: Record<Lang, TvDict> = {
       tvCodeInstructions: "Código da TV: em qualquer tela, abra {host}/live e digite",
       copyCodeTitle: "Copiar o Código",
       copyLink: "Copiar Link",
+      qrLabel: "QR code do link ao vivo",
+      qrCaption: "Escaneie para acompanhar no celular",
       stopSharing: "Parar de Compartilhar",
       stopConfirm: "Parar de compartilhar? As telas que usam o código param de atualizar, e a cópia no servidor é excluída.",
       stopServerError: "Não foi possível contatar o servidor para excluir sua cópia. Ela se apaga sozinha dois dias após a última atualização.",
@@ -1518,6 +1768,8 @@ export const tv: Record<Lang, TvDict> = {
       sevenTwoGame: "Jogo do 7-2",
       sevenTwoPays: "{amount} de Cada Um",
       highHandTimesUp: "Acabou o Tempo",
+      waitlist: "Lista de Espera",
+      waitlistMore: { one: "+{count} a mais", other: "+{count} a mais" },
       buyIn: "Buy-In",
       onTable: "Na Mesa",
       rake: "Rake",
@@ -1536,6 +1788,33 @@ export const tv: Record<Lang, TvDict> = {
     seatList: {
       table: "Mesa {n}",
       noSeatYet: "Ainda Sem Assento",
+    },
+    find: {
+      heading: "Me Encontre",
+      placeholder: "Seu Nome",
+      which: "Qual deles é você?",
+      noMatch: "Ninguém com esse nome ainda.",
+      tableSeat: "Mesa {table}, Assento {seat}",
+      seat: "Assento {seat}",
+      noSeat: "Sem assento ainda",
+      stillIn: "Ainda no jogo",
+      left: { one: "Resta {count} jogador", other: "Restam {count} jogadores" },
+      playing: "Jogando",
+      inFor: "Entrou com {amount}",
+      cashedOut: "Saiu",
+      cashedOutFor: "Saiu com {amount}",
+      winner: "Vencedor!",
+      wonSeat: "Ganhou uma vaga!",
+      outIn: "Eliminado em {place}",
+      won: "Ganhou {amount}",
+      bountyOn: "Recompensa: {amount}",
+      knockouts: { one: "{count} eliminação", other: "{count} eliminações" },
+      waiting: "{place} na lista de espera",
+      waited: "Esperando há {time}",
+    },
+    phone: {
+      follow: "Acompanhe no celular",
+      qrLabel: "QR code do link ao vivo deste jogo",
     },
     rules: {
       houseRules: "Regras da Casa",

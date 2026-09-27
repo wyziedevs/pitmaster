@@ -45,7 +45,7 @@
 <svelte:head><title>Live · PitMaster</title></svelte:head>
 
 {#if game}
-  <TvView {game} {status} />
+  <TvView {game} {status} {code} />
 {:else}
   <main class="wrap">
     <h1 class="mono">{showCode(code)}</h1>

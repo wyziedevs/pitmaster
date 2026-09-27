@@ -96,6 +96,8 @@ The extras cash tables actually play. Each has its own switch, off to start. Eve
 
 ## Phase 5: Waitlist and phones
 
+**Status: done.** One switch, off to start: Waitlist (`game.waitlist: { id, name, at }[]`, `Waitlist.svelte`). Someone on the list who played earlier that night gets their own row back with a standard buy-in, so their night adds up as one. The phone view is the TV's own one-column layout (the same `TvView`, under 700px wide or 500px tall) plus `FindMe.svelte`, rather than a second board, so the two never drift apart. The QR code is drawn on the device (`QrCode.svelte`, with `uqr`).
+
 **5a. Waitlist (cash).** `game.waitlist: { name; at }[]`.
 - **Seat Next** adds the next name as a player and seats them with `seatNewcomer`. When someone cashes out and a seat opens, a flash says so.
 - The TV shows the list and how long each person has waited.

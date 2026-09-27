@@ -78,6 +78,36 @@ export function addPlayer(game: Game, name: string, quiet = false) {
   return p;
 }
 
+// ---------- the waitlist (cash) ----------
+
+export function joinWaitlist(game: Game, name: string) {
+  const w = { id: uid(), name: name.trim(), at: Date.now() };
+  if (!w.name) return;
+  game.waitlist = [...(game.waitlist ?? []), w];
+  logEvent(game, t("gameEvents.waitlistJoinedLog", { name: w.name }));
+}
+
+export function leaveWaitlist(game: Game, id: string) {
+  const w = game.waitlist?.find((x) => x.id === id);
+  if (!w) return;
+  game.waitlist = game.waitlist!.filter((x) => x.id !== id);
+  logEvent(game, t("gameEvents.waitlistLeftLog", { name: w.name }));
+}
+
+/** someone on the list who played earlier tonight comes back to their own row */
+export const waitingReturn = (game: Game, id: string) => {
+  const w = game.waitlist?.find((x) => x.id === id);
+  return w ? game.players.find((p) => p.cashOut !== null && nameKey(p.name) === nameKey(w.name)) : undefined;
+};
+
+/** the next on the list (or anyone on it) sits down, and gets a seat if seats are drawn */
+export function seatWaiting(game: Game, id = game.waitlist?.[0]?.id) {
+  const w = game.waitlist?.find((x) => x.id === id);
+  if (!w) return null;
+  game.waitlist = game.waitlist!.filter((x) => x.id !== id);
+  return addPlayer(game, w.name);
+}
+
 // ---------- tournament ----------
 
 export function tourneyStats(game: Game) {

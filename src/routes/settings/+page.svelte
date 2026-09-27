@@ -210,7 +210,7 @@
   }
 
   // the extras a host can switch off; a game that already uses one keeps it
-  type Extra = "useBounties" | "useRebuys" | "useSeats" | "useDeals" | "usePayLinks" | "useBombPots" | "useSevenTwo" | "useHighHand" | "useCosts" | "useLedger" | "useSatellites" | "useShootouts";
+  type Extra = "useBounties" | "useRebuys" | "useSeats" | "useDeals" | "usePayLinks" | "useBombPots" | "useSevenTwo" | "useHighHand" | "useCosts" | "useLedger" | "useSatellites" | "useShootouts" | "useWaitlist";
   const EXTRAS = $derived<{ key: Extra; label: string; hint: string }[]>([
     { key: "useBounties", label: t("settings.game.extras.bounties.label"), hint: t("settings.game.extras.bounties.hint") },
     { key: "useRebuys", label: t("settings.game.extras.rebuys.label"), hint: t("settings.game.extras.rebuys.hint") },
@@ -224,6 +224,7 @@
     { key: "useBombPots", label: t("settings.game.extras.bombPots.label"), hint: t("settings.game.extras.bombPots.hint") },
     { key: "useSevenTwo", label: t("settings.game.extras.sevenTwo.label"), hint: t("settings.game.extras.sevenTwo.hint") },
     { key: "useHighHand", label: t("settings.game.extras.highHand.label"), hint: t("settings.game.extras.highHand.hint") },
+    { key: "useWaitlist", label: t("settings.game.extras.waitlist.label"), hint: t("settings.game.extras.waitlist.hint") },
   ]);
 
   function pickMotion(m: "system" | "reduced") {

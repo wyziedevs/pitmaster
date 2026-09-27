@@ -7,6 +7,7 @@
   import Dealing from "./Dealing.svelte";
   import CopyButton from "./CopyButton.svelte";
   import Kbd from "./Kbd.svelte";
+  import QrCode from "./QrCode.svelte";
   import { fade } from "svelte/transition";
   import { reveal, leave, slide } from "$lib/motion";
   import { toast } from "$lib/toast.svelte";
@@ -83,20 +84,27 @@
   {#if game.live}
     {@const code = showCode(game.live.code)}
     <div class="live mb-2" in:slide={reveal()}>
-      <div class="slab">
-        <div class="small muted">{t("tv.panel.tvCodeInstructions", { host: location.host })}</div>
-        <!-- the code itself is the copy button: it's what people ask for -->
-        <CopyButton text={code} plain title={t("tv.panel.copyCodeTitle")}>
-          {#snippet children(copied)}
-            <span class="code mono font-bold text-[44px] tracking-[0.12em]">{code}</span>
-            <span class="small with-icon" class:muted={!copied}>{#if copied}<Icon icon={Check} size="1em" />{t("common.copied")}{:else}<Icon icon={Copy} size="1em" />{t("common.copy")}{/if}</span>
-          {/snippet}
-        </CopyButton>
-        <div class="small row">
-          <a href={liveUrl} target="_blank">{liveUrl}</a>
-          <CopyButton text={liveUrl} link label={t("tv.panel.copyLink")} />
+      <div class="slab flex flex-wrap items-start gap-x-5 gap-y-3">
+        <div class="grow min-w-0">
+          <div class="small muted">{t("tv.panel.tvCodeInstructions", { host: location.host })}</div>
+          <!-- the code itself is the copy button: it's what people ask for -->
+          <CopyButton text={code} plain title={t("tv.panel.copyCodeTitle")}>
+            {#snippet children(copied)}
+              <span class="code mono font-bold text-[44px] tracking-[0.12em]">{code}</span>
+              <span class="small with-icon" class:muted={!copied}>{#if copied}<Icon icon={Check} size="1em" />{t("common.copied")}{:else}<Icon icon={Copy} size="1em" />{t("common.copy")}{/if}</span>
+            {/snippet}
+          </CopyButton>
+          <div class="small row">
+            <a href={liveUrl} target="_blank">{liveUrl}</a>
+            <CopyButton text={liveUrl} link label={t("tv.panel.copyLink")} />
+          </div>
+          <button class="link small" data-sound="thud" onclick={stopLive}>{t("tv.panel.stopSharing")}</button>
         </div>
-        <button class="link small" data-sound="thud" onclick={stopLive}>{t("tv.panel.stopSharing")}</button>
+        <!-- phones scan it to follow along: the same link, made on this computer -->
+        <figure class="m-0 text-center">
+          <QrCode text={liveUrl} label={t("tv.panel.qrLabel")} />
+          <figcaption class="small muted mt-1">{t("tv.panel.qrCaption")}</figcaption>
+        </figure>
       </div>
       {#if onLocalhost}
         <p class="small warn mt-2 mx-0">{t("tv.panel.localhostBefore")}<b>localhost</b>{t("tv.panel.localhostAfter", { openWindow: t("tv.panel.openWindow") })}</p>

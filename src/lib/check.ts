@@ -86,6 +86,7 @@ const side = (e: unknown) =>
 /** a line of the game's log: when, and what happened (game.ts keeps the latest 300) */
 const cost = (c: unknown) => obj(c) && id(c.id) && str(c.label) && num(c.amount) && orNull(id)(c.paidBy) && list(id)(c.split);
 const payment = (p: unknown) => obj(p) && str(p.from) && str(p.to) && num(p.amount) && num(p.at);
+const waiting = (w: unknown) => obj(w) && id(w.id) && str(w.name) && num(w.at);
 const entry = (e: unknown) => obj(e) && num(e.t) && str(e.text);
 
 export function isGame(g: unknown): g is Game {
@@ -114,6 +115,7 @@ export function isGame(g: unknown): g is Game {
     maybe(list(cost))(g.costs) &&
     maybe(num)(g.finalAt) &&
     maybe(list(payment))(g.paid) &&
+    maybe(list(waiting))(g.waitlist) &&
     // a tournament's clock needs at least one level to count down
     (g.type === "cash" ? cash(g.cash) : g.type === "tournament" && tourney(g.tourney) && (g.levels as unknown[]).length > 0)
   );

@@ -280,6 +280,17 @@ export interface GamePlayDict {
       cmdHighHand: string;
       cmdPayHighHand: string;
     };
+    waitlist: {
+      heading: string;
+      add: string;
+      seat: string;
+      seatNext: string;
+      remove: string;
+      empty: string;
+      justNow: string;
+      typeName: string;
+      cmdAdd: string;
+    };
     countsOnlyCashedOut: string;
     savePlayersNoteBefore: string;
     savePlayersNoteAfter: string;
@@ -675,6 +686,17 @@ export const gamePlay: Record<Lang, GamePlayDict> = {
         cmdHighHand: "High Hand: {name}",
         cmdPayHighHand: "Pay the High Hand",
       },
+      waitlist: {
+        heading: "Waitlist",
+        add: "Add to List",
+        seat: "Seat",
+        seatNext: "Seat {name}",
+        remove: "Take {name} off the list",
+        empty: "No one's waiting.",
+        justNow: "Just now",
+        typeName: "Type a name first",
+        cmdAdd: "Add to Waitlist",
+      },
       countsOnlyCashedOut: "Counts only players who have cashed out so far.",
       savePlayersNoteBefore: "Save players' Venmo, Cash App or PayPal on the",
       savePlayersNoteAfter: "page to get pay links here with the amount filled in.",
@@ -1067,6 +1089,17 @@ export const gamePlay: Record<Lang, GamePlayDict> = {
         cmdSevenTwo: "7-2 获胜：{name}",
         cmdHighHand: "最大牌：{name}",
         cmdPayHighHand: "支付最大牌奖金",
+      },
+      waitlist: {
+        heading: "候补名单",
+        add: "加入名单",
+        seat: "入座",
+        seatNext: "让 {name} 入座",
+        remove: "把 {name} 移出名单",
+        empty: "没有人在等。",
+        justNow: "刚刚",
+        typeName: "先输入名字",
+        cmdAdd: "加入候补名单",
       },
       countsOnlyCashedOut: "仅统计已经兑现的玩家。",
       savePlayersNoteBefore: "在",
@@ -1461,6 +1494,17 @@ export const gamePlay: Record<Lang, GamePlayDict> = {
         cmdHighHand: "हाई हैंड: {name}",
         cmdPayHighHand: "हाई हैंड का इनाम दें",
       },
+      waitlist: {
+        heading: "वेटलिस्ट",
+        add: "लिस्ट में जोड़ें",
+        seat: "बैठाएं",
+        seatNext: "{name} को बैठाएं",
+        remove: "{name} को लिस्ट से हटाएं",
+        empty: "कोई इंतज़ार नहीं कर रहा।",
+        justNow: "अभी",
+        typeName: "पहले नाम लिखें",
+        cmdAdd: "वेटलिस्ट में जोड़ें",
+      },
       countsOnlyCashedOut: "इसमें सिर्फ वे खिलाड़ी गिने गए हैं जिन्होंने कैश आउट कर लिया है।",
       savePlayersNoteBefore: "खिलाड़ियों का Venmo, Cash App या PayPal",
       savePlayersNoteAfter: "पेज पर सहेजें ताकि यहाँ राशि भरे हुए भुगतान लिंक मिल सकें।",
@@ -1853,6 +1897,17 @@ export const gamePlay: Record<Lang, GamePlayDict> = {
         cmdSevenTwo: "Gana con 7-2: {name}",
         cmdHighHand: "Mano más alta: {name}",
         cmdPayHighHand: "Pagar la mano más alta",
+      },
+      waitlist: {
+        heading: "Lista de Espera",
+        add: "Añadir a la Lista",
+        seat: "Sentar",
+        seatNext: "Sentar a {name}",
+        remove: "Quitar a {name} de la lista",
+        empty: "Nadie está esperando.",
+        justNow: "Ahora mismo",
+        typeName: "Escribe un nombre primero",
+        cmdAdd: "Añadir a la Lista de Espera",
       },
       countsOnlyCashedOut: "Solo cuenta a los jugadores que ya han cobrado.",
       savePlayersNoteBefore: "Guarda el Venmo, Cash App o PayPal de los jugadores en la página",
@@ -2247,6 +2302,17 @@ export const gamePlay: Record<Lang, GamePlayDict> = {
         cmdHighHand: "Meilleure main : {name}",
         cmdPayHighHand: "Payer la meilleure main",
       },
+      waitlist: {
+        heading: "Liste d'Attente",
+        add: "Ajouter à la Liste",
+        seat: "Asseoir",
+        seatNext: "Asseoir {name}",
+        remove: "Retirer {name} de la liste",
+        empty: "Personne n'attend.",
+        justNow: "À l'instant",
+        typeName: "Tapez d'abord un nom",
+        cmdAdd: "Ajouter à la Liste d'Attente",
+      },
       countsOnlyCashedOut: "Ne compte que les joueurs qui ont déjà encaissé.",
       savePlayersNoteBefore: "Enregistrez le Venmo, Cash App ou PayPal des joueurs sur la page",
       savePlayersNoteAfter: "pour avoir ici des liens de paiement avec le montant déjà rempli.",
@@ -2639,6 +2705,17 @@ export const gamePlay: Record<Lang, GamePlayDict> = {
         cmdSevenTwo: "فوز بـ 7-2: {name}",
         cmdHighHand: "أعلى يد: {name}",
         cmdPayHighHand: "ادفع جائزة أعلى يد",
+      },
+      waitlist: {
+        heading: "قائمة الانتظار",
+        add: "أضف إلى القائمة",
+        seat: "أجلِس",
+        seatNext: "أجلِس {name}",
+        remove: "أزل {name} من القائمة",
+        empty: "لا أحد ينتظر.",
+        justNow: "الآن",
+        typeName: "اكتب اسمًا أولًا",
+        cmdAdd: "أضف إلى قائمة الانتظار",
       },
       countsOnlyCashedOut: "يحسب فقط اللاعبين الذين صرفوا رصيدهم حتى الآن.",
       savePlayersNoteBefore: "احفظ حسابات Venmo أو Cash App أو PayPal الخاصة باللاعبين في صفحة",
@@ -3033,6 +3110,17 @@ export const gamePlay: Record<Lang, GamePlayDict> = {
         cmdHighHand: "হাই হ্যান্ড: {name}",
         cmdPayHighHand: "হাই হ্যান্ডের পুরস্কার দিন",
       },
+      waitlist: {
+        heading: "ওয়েটলিস্ট",
+        add: "লিস্টে যোগ করুন",
+        seat: "বসান",
+        seatNext: "{name}-কে বসান",
+        remove: "{name}-কে লিস্ট থেকে সরান",
+        empty: "কেউ অপেক্ষা করছে না।",
+        justNow: "এইমাত্র",
+        typeName: "আগে একটি নাম লিখুন",
+        cmdAdd: "ওয়েটলিস্টে যোগ করুন",
+      },
       countsOnlyCashedOut: "শুধু যারা এখনো পর্যন্ত ক্যাশ আউট করেছেন তাদেরই গোনা হয়েছে।",
       savePlayersNoteBefore: "খেলোয়াড়দের Venmo, Cash App বা PayPal",
       savePlayersNoteAfter: "পাতায় সংরক্ষণ করুন, যাতে এখানে পরিমাণসহ পেমেন্ট লিংক পাওয়া যায়।",
@@ -3425,6 +3513,17 @@ export const gamePlay: Record<Lang, GamePlayDict> = {
         cmdSevenTwo: "Vitória com 7-2: {name}",
         cmdHighHand: "Mão mais alta: {name}",
         cmdPayHighHand: "Pagar a mão mais alta",
+      },
+      waitlist: {
+        heading: "Lista de Espera",
+        add: "Adicionar à Lista",
+        seat: "Sentar",
+        seatNext: "Sentar {name}",
+        remove: "Tirar {name} da lista",
+        empty: "Ninguém esperando.",
+        justNow: "Agora mesmo",
+        typeName: "Digite um nome primeiro",
+        cmdAdd: "Adicionar à Lista de Espera",
       },
       countsOnlyCashedOut: "Conta apenas os jogadores que já sacaram.",
       savePlayersNoteBefore: "Salve o Venmo, Cash App ou PayPal dos jogadores na página",

@@ -43,7 +43,7 @@
 
   $effect(() =>
     provide("costs", () => [
-      { id: "c:add", label: t("gamePlay.shared.costs.add"), group: t("gamePlay.shared.groupThisGame"), keywords: "cost expense food drinks split", run: () => what?.focus() },
+      { id: "costs:add", label: t("gamePlay.shared.costs.add"), group: t("gamePlay.shared.groupThisGame"), keywords: "cost expense food drinks split", run: () => what?.focus() },
     ])
   );
 </script>

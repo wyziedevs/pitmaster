@@ -43,6 +43,7 @@ export interface Settings {
   useLedger: boolean; // tick off settle-up payments, and see who still owes whom on Players
   useSatellites: boolean; // tournaments whose prizes are seats in another game
   useShootouts: boolean; // tournaments where each table plays down to one winner
+  useWaitlist: boolean; // cash games: a list of who's next for a seat
 
   // ---- the house ----
   houseRules: string; // one per line
@@ -123,6 +124,7 @@ const defaults: Settings = {
   useLedger: false,
   useSatellites: false,
   useShootouts: false,
+  useWaitlist: false,
 
   houseRules: "",
   rulesOnNew: true,

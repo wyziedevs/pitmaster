@@ -20,6 +20,9 @@ export interface GameEventsDict {
   satDownWithAmount: string;
   registered: string;
   satDownFlash: string;
+  waitlistJoinedLog: string;
+  waitlistLeftLog: string;
+  seatOpenFlash: string;
   isInFlash: string;
   bustedLog: string;
   bustedFlash: string;
@@ -70,6 +73,9 @@ export const gameEvents: Record<Lang, GameEventsDict> = {
     satDownWithAmount: "{name} sat down ({amount})",
     registered: "{name} registered",
     satDownFlash: "{name} sat down",
+    waitlistJoinedLog: "{name} joined the waitlist",
+    waitlistLeftLog: "{name} left the waitlist",
+    seatOpenFlash: "Seat open: {name} is next.",
     isInFlash: "{name} is in",
     bustedLog: "{name} busted in {place}",
     bustedFlash: "{name} is out in {place}",
@@ -118,6 +124,9 @@ export const gameEvents: Record<Lang, GameEventsDict> = {
     satDownWithAmount: "{name} 入座（{amount}）",
     registered: "{name} 已报名",
     satDownFlash: "{name} 入座",
+    waitlistJoinedLog: "{name} 加入了候补名单",
+    waitlistLeftLog: "{name} 离开了候补名单",
+    seatOpenFlash: "有空位了：下一位是 {name}。",
     isInFlash: "{name} 已加入",
     bustedLog: "{name} 第 {place} 出局",
     bustedFlash: "{name} 第 {place} 出局",
@@ -166,6 +175,9 @@ export const gameEvents: Record<Lang, GameEventsDict> = {
     satDownWithAmount: "{name} बैठे ({amount})",
     registered: "{name} ने रजिस्टर किया",
     satDownFlash: "{name} बैठे",
+    waitlistJoinedLog: "{name} वेटलिस्ट में जुड़े",
+    waitlistLeftLog: "{name} वेटलिस्ट से हटे",
+    seatOpenFlash: "सीट खाली: अगली बारी {name} की।",
     isInFlash: "{name} शामिल हुए",
     bustedLog: "{name} {place} स्थान पर आउट हुए",
     bustedFlash: "{name} {place} स्थान पर आउट",
@@ -214,6 +226,9 @@ export const gameEvents: Record<Lang, GameEventsDict> = {
     satDownWithAmount: "{name} se sentó ({amount})",
     registered: "{name} se inscribió",
     satDownFlash: "{name} se sentó",
+    waitlistJoinedLog: "{name} se apuntó a la lista de espera",
+    waitlistLeftLog: "{name} salió de la lista de espera",
+    seatOpenFlash: "Asiento libre: sigue {name}.",
     isInFlash: "{name} ya está",
     bustedLog: "{name} eliminado en el puesto {place}",
     bustedFlash: "{name} eliminado en el puesto {place}",
@@ -262,6 +277,9 @@ export const gameEvents: Record<Lang, GameEventsDict> = {
     satDownWithAmount: "{name} s'est assis ({amount})",
     registered: "{name} s'est inscrit",
     satDownFlash: "{name} s'est assis",
+    waitlistJoinedLog: "{name} s'est inscrit sur la liste d'attente",
+    waitlistLeftLog: "{name} a quitté la liste d'attente",
+    seatOpenFlash: "Place libre : {name} est le prochain.",
     isInFlash: "{name} est là",
     bustedLog: "{name} éliminé en {place} place",
     bustedFlash: "{name} éliminé en {place} place",
@@ -310,6 +328,9 @@ export const gameEvents: Record<Lang, GameEventsDict> = {
     satDownWithAmount: "جلس {name} ({amount})",
     registered: "سجّل {name}",
     satDownFlash: "جلس {name}",
+    waitlistJoinedLog: "انضم {name} إلى قائمة الانتظار",
+    waitlistLeftLog: "غادر {name} قائمة الانتظار",
+    seatOpenFlash: "مقعد شاغر: {name} هو التالي.",
     isInFlash: "انضم {name}",
     bustedLog: "خرج {name} في المركز {place}",
     bustedFlash: "خرج {name} في المركز {place}",
@@ -365,6 +386,9 @@ export const gameEvents: Record<Lang, GameEventsDict> = {
     satDownWithAmount: "{name} বসেছেন ({amount})",
     registered: "{name} নিবন্ধন করেছেন",
     satDownFlash: "{name} বসেছেন",
+    waitlistJoinedLog: "{name} ওয়েটলিস্টে যোগ দিলেন",
+    waitlistLeftLog: "{name} ওয়েটলিস্ট থেকে সরে গেলেন",
+    seatOpenFlash: "সিট খালি: এরপর {name}।",
     isInFlash: "{name} যোগ দিয়েছেন",
     bustedLog: "{name} {place} স্থানে আউট হয়েছেন",
     bustedFlash: "{name} {place} স্থানে আউট",
@@ -413,6 +437,9 @@ export const gameEvents: Record<Lang, GameEventsDict> = {
     satDownWithAmount: "{name} sentou-se ({amount})",
     registered: "{name} se inscreveu",
     satDownFlash: "{name} sentou-se",
+    waitlistJoinedLog: "{name} entrou na lista de espera",
+    waitlistLeftLog: "{name} saiu da lista de espera",
+    seatOpenFlash: "Lugar livre: {name} é o próximo.",
     isInFlash: "{name} está dentro",
     bustedLog: "{name} eliminado em {place} lugar",
     bustedFlash: "{name} eliminado em {place} lugar",

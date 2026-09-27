@@ -19,7 +19,7 @@
   import type { EventKind, Game } from "$lib/types";
   import { derive, cashElapsed } from "$lib/clock";
   import { tourneyStats, cashStats, cashRake, seatLabel, tableCounts, paidFor, bountyBook, envelopesLeft, mysteryStartsAt, sideStats, shootout } from "$lib/game";
-  import { amt, clock, clockFace, money, ordinal, timeOfDay } from "$lib/util";
+  import { amt, clock, clockFace, duration, money, ordinal, timeOfDay } from "$lib/util";
   import { play, sounds, resumeAudio, audioReady, speak } from "$lib/sound";
   import { hostPrefs, prefs } from "$lib/settings.svelte";
   import { time } from "$lib/now.svelte";
@@ -30,13 +30,17 @@
   import ProgressBar from "./ProgressBar.svelte";
   import Dealing from "./Dealing.svelte";
   import Kbd from "./Kbd.svelte";
+  import { MediaQuery } from "svelte/reactivity";
+  import FindMe from "./FindMe.svelte";
+  import QrCode from "./QrCode.svelte";
   import { fade, fly } from "svelte/transition";
   import { replay, fresh, rise, leave, slide } from "$lib/motion";
   // the local "t" below is tourney stats (t.left, t.pool…), already established
   // through this file, so the translator is imported under another name
   import { t as tr, tp } from "$lib/i18n";
 
-  let { game, status = "" }: { game: Game; status?: string } = $props();
+  // code: the tv code this board was opened with (a tv on this computer has it on the game)
+  let { game, status = "", code = "" }: { game: Game; status?: string; code?: string } = $props();
 
   const isCash = $derived(game.type === "cash");
 
@@ -81,6 +85,12 @@
     vw <= 700 ? vw * 0.016 : vh <= 500 ? Math.min(vw * 0.016, vh * 0.022) : vh > vw ? vw * 0.015 : Math.min(vw / 100, (vh * 1.7778) / 100)
   );
   const chipPx = $derived(Math.round(Math.max(40, Math.min(96, u * 3.9))));
+  // a phone (the same test as the css): one column, and Find Me under the clock
+  const phone = new MediaQuery("(max-width: 700px), (max-height: 500px)", false);
+  const narrow = $derived(phone.current);
+  // phones follow along from a qr code on the board: the same link, drawn here
+  const phoneCode = $derived(code || game.live?.code || "");
+  const followUrl = $derived(phoneCode ? `${location.origin}/tv#${phoneCode}` : "");
 
   // ---------- tournament ----------
   // only a running clock needs the time: paused or not started, the board sits still
@@ -331,6 +341,10 @@
       : []
   );
   const seated = $derived(isCash ? game.players.filter((p) => p.cashOut === null) : []);
+  // who's next for a seat, and how long they've waited
+  const WAITLIST = 6;
+  const waitlist = $derived(isCash ? (game.waitlist ?? []) : []);
+  const waited = (at: number) => duration(Math.max(1, (time.now - at) / 60000));
   // several tables list side by side, one column a table
   const byTable = (list: typeof game.players) =>
     [...new Set(list.map((p) => p.seat?.table ?? 0))]
@@ -589,6 +603,7 @@
     <footer class="foot">
       <ChipLegend chips={game.chips} size={chipPx} dim={gone} />
       {@render houseRules()}
+      {@render follow()}
     </footer>
   {:else if cash && game.cash}
     <!-- ================= CASH ================= -->
@@ -598,6 +613,13 @@
         {@render seatList(seated)}
         {#if !seated.length}<div class="sub">{tr("tv.cash.openSeats")}</div>{/if}
       </div>
+      {#if waitlist.length}
+        <div class="stat seats">
+          <span class="k">{tr("tv.cash.waitlist")}</span>
+          {#each waitlist.slice(0, WAITLIST) as w, i (w.id)}<div class="seat" use:later={"deal-in"} out:fade={leave()}><span class="fig">{i + 1}</span>{w.name}<span class="waited fig">{waited(w.at)}</span></div>{/each}
+          {#if waitlist.length > WAITLIST}<span class="sub">{tp("tv.cash.waitlistMore", waitlist.length - WAITLIST)}</span>{/if}
+        </div>
+      {/if}
     </aside>
 
     <section class="main">
@@ -660,10 +682,13 @@
     <footer class="foot">
       <ChipLegend chips={game.chips} size={chipPx} isCash />
       {@render houseRules()}
+      {@render follow()}
     </footer>
   {:else}
     <section class="main wait"><div class="level"><Dealing label={tr("tv.wait.waitingForHost")} />{tr("tv.wait.waitingForHost")}</div></section>
   {/if}
+
+  {#if narrow && (game.players.length || waitlist.length)}<FindMe {game} />{/if}
 
   {#if toast}
     {#key toast.at}
@@ -700,6 +725,15 @@
     </div>
   {:else}
     {#each byTable(list).flatMap((tb) => tb.players) as p, i (p.id)}<div class="seat" style:--i={i} use:later={"deal-in"} out:fade={leave()}>{#if p.seat}<span class="fig">{seatLabel(p.seat, tables)}</span>{/if}{p.name}</div>{/each}
+  {/if}
+{/snippet}
+
+{#snippet follow()}
+  {#if followUrl && !narrow}
+    <figure class="follow">
+      <QrCode text={followUrl} label={tr("tv.phone.qrLabel")} size="max(64px, calc(var(--u) * 6.5))" />
+      <figcaption>{tr("tv.phone.follow")}</figcaption>
+    </figure>
   {/if}
 {/snippet}
 
@@ -1305,6 +1339,24 @@
   .rule {
     display: inline-block;
   }
+  .follow {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: calc(var(--u) * 0.9);
+    color: var(--tv-muted);
+    font-size: 0.8em;
+    line-height: 1.25;
+    max-width: 9em;
+  }
+  .rules + .follow {
+    margin-left: calc(var(--u) * -1);
+  }
+  .seat .waited {
+    margin-left: auto;
+    min-width: 0;
+    color: var(--tv-muted);
+  }
 
   /* ---------- winner ---------- */
   .winner {
@@ -1587,7 +1639,7 @@
     .tv.two {
       --u: 1.6vw;
       grid-template-columns: 1fr;
-      grid-template-areas: "head" "banner" "main" "left" "right" "foot";
+      grid-template-areas: "head" "banner" "main" "find" "left" "right" "foot";
       grid-template-rows: none;
       grid-auto-rows: auto;
       align-content: start;
@@ -1601,6 +1653,11 @@
     header {
       flex-wrap: wrap;
       row-gap: 2px;
+    }
+    /* the results take the clock's place, and Find Me still comes after them */
+    .winner {
+      grid-area: main;
+      padding-block: calc(var(--u) * 5);
     }
     .name {
       flex: 1 1 auto;
