@@ -18,7 +18,7 @@
   import Crown from "@lucide/svelte/icons/crown";
   import type { EventKind, Game } from "$lib/types";
   import { derive, cashElapsed } from "$lib/clock";
-  import { tourneyStats, cashStats, cashRake, seatLabel, tableCounts, paidFor, bountyBook, envelopesLeft, mysteryStartsAt, sideStats } from "$lib/game";
+  import { tourneyStats, cashStats, cashRake, seatLabel, tableCounts, paidFor, bountyBook, envelopesLeft, mysteryStartsAt, sideStats, shootout } from "$lib/game";
   import { amt, clock, clockFace, money, ordinal, timeOfDay } from "$lib/util";
   import { play, sounds, resumeAudio, audioReady, speak } from "$lib/sound";
   import { hostPrefs, prefs } from "$lib/settings.svelte";
@@ -131,6 +131,11 @@
     return top ? { name: top.name, amount: head[top.id] ?? 0 } : null;
   });
   const envelopes = $derived(bountyKind === "mystery" ? envelopesLeft(game) : []);
+
+  // a satellite's places pay seats; a shootout says how many tables have their winner
+  const seats = $derived(game.tourney?.satellite && t ? t.seats : 0);
+  const shoot = $derived(shootout(game));
+  const tablesWon = $derived(shoot ? shoot.tables.filter((x) => x.left.length === 1).length : 0);
 
   // the winner's pot: a row of stacks from the game's own chips, biggest first
   const pot = $derived([...game.chips].sort((a, b) => b.value - a.value).slice(0, 5));
@@ -414,8 +419,8 @@
     <!-- ================= WINNER ================= -->
     <section class="winner" class:entrance={justWon}>
       <div class="trophy"><Icon icon={Trophy} size="11vh" /></div>
-      <div class="k">{game.deal ? tr("tv.winner.dealMade") : tr("tv.winner.champion")}</div>
-      <div class="big">{game.deal ? tr("tv.winner.dealBig") : winner.name}</div>
+      <div class="k">{game.deal ? tr("tv.winner.dealMade") : seats > 1 ? tr("tv.winner.satellite") : tr("tv.winner.champion")}</div>
+      <div class="big">{game.deal ? tr("tv.winner.dealBig") : seats > 1 ? tp("tv.winner.seatsWon", seats) : winner.name}</div>
       <!-- the pot, pushed across the felt and stacked one chip at a time -->
       <div class="pot" aria-hidden="true">
         {#each pot as c, i (c.id)}<span style:--d="{500 + i * 160}ms"><ChipStack chip={c} n={[12, 18, 9, 15, 7][i]} width="min(6vw, 10vh)" /></span>{/each}
@@ -429,7 +434,7 @@
             <li class:top={i % rows === 0} style:--i={i}>
               <span class="place">{ordinal(i + 1)}</span>
               <b>{who?.name ?? tr("tv.winner.nobodyYet")}</b>
-              {#if showMoney}<span class="fig">{money(paidFor(game, who?.id, i + 1, t.payouts))}</span>{/if}
+              {#if i < seats}<span class="fig">{tr("tv.tourney.seat")}</span>{:else if showMoney}<span class="fig">{money(paidFor(game, who?.id, i + 1, t.payouts))}</span>{/if}
             </li>
           {/each}
         </ol>
@@ -462,6 +467,9 @@
         {/if}
       {/if}
       <div class="notes-col">
+        {#if seats}<span>{tp("tv.tourney.satelliteSeats", seats)}{#if showMoney}{" · "}<span class="fig">{money(game.tourney!.satellite!.seatValue)}</span>{/if}</span>{/if}
+        {#if shoot && shoot.tables.length > 1 && !shoot.final}<span use:replay={[tablesWon, "pop"]}>{tr("tv.tourney.shootoutTables", { won: String(tablesWon), tables: String(shoot.tables.length) })}</span>
+        {:else if shoot?.final}<span class="good-text">{tr("tv.tourney.shootoutFinal")}</span>{/if}
         {#if lateRegOpen}<span class="good-text">{tr("tv.tourney.lateRegOpen", { level: String(game.tourney!.lateRegLevel) })}</span>{/if}
         {#if rebuyOpen}<span class="good-text">{tr("tv.tourney.rebuysOpen", { level: String(game.tourney!.rebuy.untilLevel) })}</span>{/if}
         {#if game.clock.status !== "idle"}<span>{tr("tv.tourney.elapsed")} <span class="fig">{clock(d.totalElapsedMs)}</span></span>{/if}
@@ -551,7 +559,7 @@
               <li style:--i={i}>
                 <span class="place">{ordinal(i + 1)}</span>
                 {#if who}<span class="who" use:fresh={[who.bustedAt, "stamp"]}>{who.name}</span>{/if}
-                <span class="fig">{money(p)}</span>
+                <span class="fig">{i < seats ? tr("tv.tourney.seat") : money(p)}</span>
               </li>
             {/each}
           </ol>

@@ -132,6 +132,19 @@ export interface GameSetupDict {
       optional: string;
       remove: string;
     };
+    format: {
+      legend: string;
+      addable: string;
+      remove: string;
+      shootout: string;
+      shootoutHint: string;
+      satellite: string;
+      satelliteHint: string;
+      seatValue: string;
+      seats: PluralForms;
+      seatsCaption: string;
+      restCaption: string;
+    };
   };
   addable: {
     caption: string;
@@ -146,6 +159,8 @@ export interface GameSetupDict {
     namesLabel: string;
     namesPlaceholder: string;
     regulars: string;
+    satelliteWinners: string;
+    seatsFrom: string;
     gamesCount: PluralForms;
     notesLabel: string;
     notesPlaceholder: string;
@@ -326,6 +341,19 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
         optional: "Optional",
         remove: "Remove",
       },
+      format: {
+        legend: "Format",
+        addable: "Shootout or Satellite",
+        remove: "Remove",
+        shootout: "Shootout",
+        shootoutHint: "Each table plays down to one winner, then the winners meet at a final table. Seats are drawn and the tables aren't balanced.",
+        satellite: "Satellite",
+        satelliteHint: "The prizes are seats in another game. The winners come in on that game's New Game with their buy-in paid.",
+        seatValue: "Seat Worth ({sym})",
+        seats: { one: "{count} seat", other: "{count} seats" },
+        seatsCaption: "With {n} players the pool is {pool}: {seats} worth {value}.",
+        restCaption: "{amount} goes to the next place.",
+      },
     },
     addable: {
       caption: "Also for This Game:",
@@ -340,6 +368,8 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       namesLabel: "Names, One per Line or Split by Commas",
       namesPlaceholder: "Alex, Sam, Jordan",
       regulars: "Regulars:",
+      satelliteWinners: "Satellite Winners",
+      seatsFrom: "Seats won in {game}",
       gamesCount: { one: "{count} game", other: "{count} games" },
       notesLabel: "House Rules / Notes, One per Line (Shown on the TV)",
       notesPlaceholder: "No string bets. One player to a hand. Cards stay on the table.",
@@ -518,6 +548,19 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
         optional: "可选",
         remove: "移除",
       },
+      format: {
+        legend: "赛制",
+        addable: "淘汰赛或卫星赛",
+        remove: "移除",
+        shootout: "淘汰赛",
+        shootoutHint: "每桌打到只剩一位赢家，然后赢家们在决赛桌相遇。会抽座位，各桌不做平衡。",
+        satellite: "卫星赛",
+        satelliteHint: "奖品是另一场比赛的席位。赢家在那场比赛的新建页面加入，买入已付。",
+        seatValue: "每席价值（{sym}）",
+        seats: { one: "{count} 个席位", other: "{count} 个席位" },
+        seatsCaption: "{n} 位玩家时奖池为 {pool}：{seats}，每个价值 {value}。",
+        restCaption: "{amount} 给下一名。",
+      },
     },
     addable: {
       caption: "本局还可以加入：",
@@ -532,6 +575,8 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       namesLabel: "姓名，每行一个或用逗号分隔",
       namesPlaceholder: "小明, 小华, 小刚",
       regulars: "常客：",
+      satelliteWinners: "卫星赛赢家",
+      seatsFrom: "在{game}赢得的席位",
       gamesCount: { one: "{count} 场游戏", other: "{count} 场游戏" },
       notesLabel: "场地规则/备注，每行一条（会显示在电视面板上）",
       notesPlaceholder: "禁止分批下注。一人一手牌。牌不能离开桌面。",
@@ -710,6 +755,19 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
         optional: "वैकल्पिक",
         remove: "हटाएं",
       },
+      format: {
+        legend: "फॉर्मेट",
+        addable: "शूटआउट या सैटेलाइट",
+        remove: "हटाएं",
+        shootout: "शूटआउट",
+        shootoutHint: "हर टेबल एक विजेता तक खेलती है, फिर विजेता फाइनल टेबल पर मिलते हैं। सीटें निकाली जाती हैं और टेबल बैलेंस नहीं होतीं।",
+        satellite: "सैटेलाइट",
+        satelliteHint: "इनाम दूसरे गेम की सीटें हैं। विजेता उस गेम के नया गेम पेज पर बाय-इन चुकाए हुए आते हैं।",
+        seatValue: "सीट की कीमत ({sym})",
+        seats: { one: "{count} सीट", other: "{count} सीटें" },
+        seatsCaption: "{n} खिलाड़ियों पर पूल {pool} है: {seats}, हर एक {value} की।",
+        restCaption: "{amount} अगली जगह को।",
+      },
     },
     addable: {
       caption: "इस गेम के लिए और भी जोड़ें:",
@@ -724,6 +782,8 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       namesLabel: "नाम, एक लाइन में एक या कॉमा से अलग करें",
       namesPlaceholder: "अमन, रोहन, प्रिया",
       regulars: "नियमित खिलाड़ी:",
+      satelliteWinners: "सैटेलाइट विजेता",
+      seatsFrom: "{game} में जीती सीटें",
       gamesCount: { one: "{count} गेम", other: "{count} गेम" },
       notesLabel: "हाउस रूल्स / नोट्स, एक लाइन में एक (टीवी पर दिखेंगे)",
       notesPlaceholder: "स्ट्रिंग बेट मान्य नहीं। एक खिलाड़ी, एक हाथ। कार्ड्स टेबल पर ही रहेंगे।",
@@ -902,6 +962,19 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
         optional: "Opcional",
         remove: "Quitar",
       },
+      format: {
+        legend: "Formato",
+        addable: "Shootout o Satélite",
+        remove: "Quitar",
+        shootout: "Shootout",
+        shootoutHint: "Cada mesa juega hasta un ganador y luego los ganadores se enfrentan en una mesa final. Se sortean los asientos y las mesas no se equilibran.",
+        satellite: "Satélite",
+        satelliteHint: "Los premios son plazas en otra partida. Los ganadores entran desde la Nueva Partida de esa partida con la entrada pagada.",
+        seatValue: "Valor de la Plaza ({sym})",
+        seats: { one: "{count} plaza", other: "{count} plazas" },
+        seatsCaption: "Con {n} jugadores el bote es {pool}: {seats} de {value}.",
+        restCaption: "{amount} va al siguiente puesto.",
+      },
     },
     addable: {
       caption: "También para esta partida:",
@@ -916,6 +989,8 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       namesLabel: "Nombres, uno por línea o separados por comas",
       namesPlaceholder: "Álex, Sam, Jordan",
       regulars: "Habituales:",
+      satelliteWinners: "Ganadores del Satélite",
+      seatsFrom: "Plazas ganadas en {game}",
       gamesCount: { one: "{count} partida", other: "{count} partidas" },
       notesLabel: "Reglas de la casa / notas, una por línea (se muestran en la pantalla)",
       notesPlaceholder: "No se permiten apuestas en dos tiempos. Un jugador por mano. Las cartas no salen de la mesa.",
@@ -1094,6 +1169,19 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
         optional: "Optionnel",
         remove: "Retirer",
       },
+      format: {
+        legend: "Format",
+        addable: "Shootout ou Satellite",
+        remove: "Retirer",
+        shootout: "Shootout",
+        shootoutHint: "Chaque table joue jusqu'à un gagnant, puis les gagnants se retrouvent à une table finale. Les places sont tirées et les tables ne sont pas rééquilibrées.",
+        satellite: "Satellite",
+        satelliteHint: "Les gains sont des places dans une autre partie. Les gagnants arrivent depuis la Nouvelle Partie de celle-ci, buy-in payé.",
+        seatValue: "Valeur de la Place ({sym})",
+        seats: { one: "{count} place", other: "{count} places" },
+        seatsCaption: "Avec {n} joueurs la cagnotte est de {pool} : {seats} de {value}.",
+        restCaption: "{amount} va à la place suivante.",
+      },
     },
     addable: {
       caption: "Aussi pour cette partie :",
@@ -1108,6 +1196,8 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       namesLabel: "Noms, un par ligne ou séparés par des virgules",
       namesPlaceholder: "Alex, Sam, Jordan",
       regulars: "Habitués :",
+      satelliteWinners: "Gagnants du Satellite",
+      seatsFrom: "Places gagnées dans {game}",
       gamesCount: { one: "{count} partie", other: "{count} parties" },
       notesLabel: "Règles de la maison / notes, une par ligne (affichées sur l'écran)",
       notesPlaceholder: "Pas de mises en plusieurs temps. Un joueur par main. Les cartes restent sur la table.",
@@ -1286,6 +1376,19 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
         optional: "اختياري",
         remove: "إزالة",
       },
+      format: {
+        legend: "النظام",
+        addable: "مواجهة الطاولات أو تأهيلية",
+        remove: "إزالة",
+        shootout: "مواجهة الطاولات",
+        shootoutHint: "تلعب كل طاولة حتى يبقى فائز واحد، ثم يلتقي الفائزون على طاولة نهائية. تُسحب المقاعد ولا تُوازَن الطاولات.",
+        satellite: "بطولة تأهيلية",
+        satelliteHint: "الجوائز مقاعد في لعبة أخرى. يدخل الفائزون من صفحة اللعبة الجديدة لتلك اللعبة ورسوم دخولهم مدفوعة.",
+        seatValue: "قيمة المقعد ({sym})",
+        seats: { one: "{count} مقعد", other: "{count} مقاعد" },
+        seatsCaption: "مع {n} لاعبين يكون المجموع {pool}: {seats} بقيمة {value}.",
+        restCaption: "يذهب {amount} للمركز التالي.",
+      },
     },
     addable: {
       caption: "يمكن أيضًا إضافة ما يلي لهذه اللعبة:",
@@ -1300,6 +1403,8 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       namesLabel: "الأسماء، اسم في كل سطر أو مفصولة بفواصل",
       namesPlaceholder: "علي, سام, جودي",
       regulars: "اللاعبون المعتادون:",
+      satelliteWinners: "الفائزون في التأهيلية",
+      seatsFrom: "مقاعد فازوا بها في {game}",
       gamesCount: {
         zero: "{count} لعبة",
         one: "{count} لعبة",
@@ -1485,6 +1590,19 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
         optional: "ঐচ্ছিক",
         remove: "সরান",
       },
+      format: {
+        legend: "ফরম্যাট",
+        addable: "শুটআউট বা স্যাটেলাইট",
+        remove: "সরান",
+        shootout: "শুটআউট",
+        shootoutHint: "প্রতিটি টেবিল একজন বিজয়ী পর্যন্ত খেলে, তারপর বিজয়ীরা ফাইনাল টেবিলে মেলেন। সিট টানা হয় আর টেবিল ব্যালান্স হয় না।",
+        satellite: "স্যাটেলাইট",
+        satelliteHint: "পুরস্কার অন্য গেমের সিট। বিজয়ীরা সেই গেমের নতুন গেম পেজে বাই-ইন দেওয়া অবস্থায় আসেন।",
+        seatValue: "সিটের দাম ({sym})",
+        seats: { one: "{count}টি সিট", other: "{count}টি সিট" },
+        seatsCaption: "{n} জন খেলোয়াড়ে পুল {pool}: {seats}, প্রতিটি {value}।",
+        restCaption: "{amount} পরের স্থানে যায়।",
+      },
     },
     addable: {
       caption: "এই খেলার জন্য আরও যোগ করা যায়:",
@@ -1499,6 +1617,8 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       namesLabel: "নাম, প্রতি লাইনে একটি অথবা কমা দিয়ে আলাদা",
       namesPlaceholder: "অমিত, রাহুল, প্রিয়া",
       regulars: "নিয়মিত খেলোয়াড়:",
+      satelliteWinners: "স্যাটেলাইট বিজয়ী",
+      seatsFrom: "{game}-এ জেতা সিট",
       gamesCount: { one: "{count} টি খেলা", other: "{count} টি খেলা" },
       notesLabel: "হাউস রুলস / নোট, প্রতি লাইনে একটি (টিভিতে দেখানো হবে)",
       notesPlaceholder: "স্ট্রিং বেট নিষেধ। প্রতি হাতে একজন খেলোয়াড়। কার্ড টেবিলেই থাকবে।",
@@ -1677,6 +1797,19 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
         optional: "Opcional",
         remove: "Remover",
       },
+      format: {
+        legend: "Formato",
+        addable: "Shootout ou Satélite",
+        remove: "Remover",
+        shootout: "Shootout",
+        shootoutHint: "Cada mesa joga até um vencedor, depois os vencedores se enfrentam numa mesa final. Os lugares são sorteados e as mesas não são equilibradas.",
+        satellite: "Satélite",
+        satelliteHint: "Os prêmios são vagas em outro jogo. Os vencedores entram pelo Novo Jogo daquele jogo com a entrada paga.",
+        seatValue: "Valor da Vaga ({sym})",
+        seats: { one: "{count} vaga", other: "{count} vagas" },
+        seatsCaption: "Com {n} jogadores o prêmio é {pool}: {seats} de {value}.",
+        restCaption: "{amount} vai para o próximo lugar.",
+      },
     },
     addable: {
       caption: "Também disponível para esta partida:",
@@ -1691,6 +1824,8 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       namesLabel: "Nomes, um por linha ou separados por vírgulas",
       namesPlaceholder: "Alex, Sam, Jordan",
       regulars: "Frequentes:",
+      satelliteWinners: "Vencedores do Satélite",
+      seatsFrom: "Vagas ganhas em {game}",
       gamesCount: { one: "{count} jogo", other: "{count} jogos" },
       notesLabel: "Regras da casa / notas, uma por linha (exibidas na tela)",
       notesPlaceholder: "Sem apostas em duas etapas. Um jogador por mão. As cartas ficam na mesa.",

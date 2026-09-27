@@ -25,6 +25,10 @@ export interface GameEventsDict {
   bustedFlash: string;
   bubbleLog: string;
   bubbleFlash: string;
+  seatsWonFlash: string;
+  tableWonFlash: string;
+  tablesDoneFlash: string;
+  finalTableFlash: string;
   wins: string;
   unbustLog: string;
   dealKindIcm: string;
@@ -71,6 +75,10 @@ export const gameEvents: Record<Lang, GameEventsDict> = {
     bustedFlash: "{name} is out in {place}",
     bubbleLog: "{name} went out on the bubble",
     bubbleFlash: "{name} is out on the bubble. Everyone left gets paid!",
+    seatsWonFlash: "{names} win seats!",
+    tableWonFlash: "{name} wins Table {table}",
+    tablesDoneFlash: "{name} wins Table {table}. Every table has its winner!",
+    finalTableFlash: "Final table: {names}",
     wins: "{name} wins!",
     unbustLog: "{name}'s bust undone",
     dealKindIcm: "ICM",
@@ -115,6 +123,10 @@ export const gameEvents: Record<Lang, GameEventsDict> = {
     bustedFlash: "{name} 第 {place} 出局",
     bubbleLog: "{name} 在泡沫圈出局",
     bubbleFlash: "{name} 在泡沫圈出局，其余玩家全部获得奖金！",
+    seatsWonFlash: "{names} 赢得了席位！",
+    tableWonFlash: "{name} 赢下了第 {table} 桌",
+    tablesDoneFlash: "{name} 赢下了第 {table} 桌。每桌都有赢家了！",
+    finalTableFlash: "决赛桌：{names}",
     wins: "{name} 获胜！",
     unbustLog: "已撤销 {name} 的出局",
     dealKindIcm: "ICM",
@@ -159,6 +171,10 @@ export const gameEvents: Record<Lang, GameEventsDict> = {
     bustedFlash: "{name} {place} स्थान पर आउट",
     bubbleLog: "{name} बबल पर आउट हुए",
     bubbleFlash: "{name} बबल पर आउट, बाकी सभी को भुगतान मिलेगा!",
+    seatsWonFlash: "{names} ने सीटें जीतीं!",
+    tableWonFlash: "{name} ने टेबल {table} जीती",
+    tablesDoneFlash: "{name} ने टेबल {table} जीती। हर टेबल का विजेता तय!",
+    finalTableFlash: "फाइनल टेबल: {names}",
     wins: "{name} जीत गए!",
     unbustLog: "{name} का आउट होना पूर्ववत किया गया",
     dealKindIcm: "ICM",
@@ -203,6 +219,10 @@ export const gameEvents: Record<Lang, GameEventsDict> = {
     bustedFlash: "{name} eliminado en el puesto {place}",
     bubbleLog: "{name} eliminado justo antes de la burbuja",
     bubbleFlash: "{name} eliminado en la burbuja. ¡Todos los que quedan cobran!",
+    seatsWonFlash: "¡{names} ganan plaza!",
+    tableWonFlash: "{name} gana la mesa {table}",
+    tablesDoneFlash: "{name} gana la mesa {table}. ¡Cada mesa tiene su ganador!",
+    finalTableFlash: "Mesa final: {names}",
     wins: "¡{name} gana!",
     unbustLog: "Se deshizo la eliminación de {name}",
     dealKindIcm: "ICM",
@@ -247,6 +267,10 @@ export const gameEvents: Record<Lang, GameEventsDict> = {
     bustedFlash: "{name} éliminé en {place} place",
     bubbleLog: "{name} éliminé juste avant la bulle",
     bubbleFlash: "{name} éliminé sur la bulle. Tous les restants sont payés !",
+    seatsWonFlash: "{names} gagnent une place !",
+    tableWonFlash: "{name} gagne la table {table}",
+    tablesDoneFlash: "{name} gagne la table {table}. Chaque table a son gagnant !",
+    finalTableFlash: "Table finale : {names}",
     wins: "{name} gagne !",
     unbustLog: "Élimination de {name} annulée",
     dealKindIcm: "ICM",
@@ -291,6 +315,10 @@ export const gameEvents: Record<Lang, GameEventsDict> = {
     bustedFlash: "خرج {name} في المركز {place}",
     bubbleLog: "خرج {name} قبل مرحلة الفقاعة مباشرة",
     bubbleFlash: "خرج {name} في الفقاعة. جميع من تبقوا يحصلون على جائزة!",
+    seatsWonFlash: "{names} يفوزون بمقاعد!",
+    tableWonFlash: "{name} يفوز بالطاولة {table}",
+    tablesDoneFlash: "{name} يفوز بالطاولة {table}. لكل طاولة فائزها!",
+    finalTableFlash: "الطاولة النهائية: {names}",
     wins: "{name} يفوز!",
     unbustLog: "تم التراجع عن خروج {name}",
     dealKindIcm: "ICM",
@@ -342,6 +370,10 @@ export const gameEvents: Record<Lang, GameEventsDict> = {
     bustedFlash: "{name} {place} স্থানে আউট",
     bubbleLog: "{name} বাবল পর্বে আউট হয়েছেন",
     bubbleFlash: "{name} বাবলে আউট, বাকি সবাই পুরস্কার পাবেন!",
+    seatsWonFlash: "{names} সিট জিতেছেন!",
+    tableWonFlash: "{name} টেবিল {table} জিতেছেন",
+    tablesDoneFlash: "{name} টেবিল {table} জিতেছেন। প্রতিটি টেবিলের বিজয়ী ঠিক!",
+    finalTableFlash: "ফাইনাল টেবিল: {names}",
     wins: "{name} জিতেছেন!",
     unbustLog: "{name} এর আউট বাতিল করা হয়েছে",
     dealKindIcm: "ICM",
@@ -386,6 +418,10 @@ export const gameEvents: Record<Lang, GameEventsDict> = {
     bustedFlash: "{name} eliminado em {place} lugar",
     bubbleLog: "{name} eliminado bem antes da bolha",
     bubbleFlash: "{name} eliminado na bolha. Todos os que restam são pagos!",
+    seatsWonFlash: "{names} ganham vaga!",
+    tableWonFlash: "{name} vence a mesa {table}",
+    tablesDoneFlash: "{name} vence a mesa {table}. Cada mesa tem seu vencedor!",
+    finalTableFlash: "Mesa final: {names}",
     wins: "{name} vence!",
     unbustLog: "Eliminação de {name} desfeita",
     dealKindIcm: "ICM",

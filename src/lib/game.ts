@@ -96,13 +96,17 @@ export function tourneyStats(game: Game) {
   const chipsInPlay = entrants * t.stack + rebuys * t.rebuy.chips + addOns * t.addOn.chips;
   const left = game.players.filter((p) => !p.out).length;
   const avgStack = left ? chipsInPlay / left : 0;
-  const pcts = t.payouts.length ? t.payouts : defaultPayouts(entrants);
-  const payouts = payoutAmounts(pool, pcts, t.payoutRound || 1);
+  // a satellite pays in seats: as many as the pool covers, and what's left over to the next place
+  const seatValue = t.satellite?.seatValue ?? 0;
+  const seats = seatValue > 0 ? Math.floor(round2(pool / seatValue)) : 0;
+  const rest = round2(pool - seats * seatValue);
+  const payouts = seatValue > 0 ? [...Array<number>(seats).fill(seatValue), ...(rest > 0.004 ? [rest] : [])] : payoutAmounts(pool, t.payouts.length ? t.payouts : defaultPayouts(entrants), t.payoutRound || 1);
+  const pcts = seatValue > 0 ? payouts.map((p) => (pool ? Math.round((p / pool) * 100) : 0)) : t.payouts.length ? t.payouts : defaultPayouts(entrants);
   // one out from the money, and in it
   const paid = payouts.filter((p) => p > 0).length;
   const bubble = !game.finished && left === paid + 1 && entrants > paid;
   const itm = !game.finished && left <= paid && left > 1;
-  return { entrants, rebuys, addOns, gross, bounty, bounties, fees, rake, pool, chipsInPlay, left, avgStack, pcts, payouts, paid, bubble, itm };
+  return { entrants, rebuys, addOns, gross, bounty, bounties, fees, rake, pool, chipsInPlay, left, avgStack, pcts, payouts, paid, bubble, itm, seats };
 }
 
 export function bust(game: Game, playerId: string) {
@@ -133,6 +137,25 @@ export function bust(game: Game, playerId: string) {
     startMystery(game, alive.length, p.bustedAt);
     if (alive.length > 1)
       flash(game, burst ? t("gameEvents.mysteryBubbleFlash", { name: p.name }) : tp("gameEvents.mysteryStartFlash", alive.length), "bounty");
+  }
+  // a shootout table down to its last player has its winner
+  const shoot = shootout(game);
+  const table = p.seat?.table;
+  const last = shoot && !shoot.final && shoot.tables.length > 1 ? shoot.tables.find((x) => x.table === table)?.left : undefined;
+  if (last?.length === 1) {
+    logEvent(game, t("gameEvents.tableWonFlash", { name: last[0].name, table: String(table) }));
+    flash(game, t(shoot!.ready ? "gameEvents.tablesDoneFlash" : "gameEvents.tableWonFlash", { name: last[0].name, table: String(table) }), "win");
+  }
+  // a satellite is over once everyone left has a seat
+  const seats = tourneyStats(game).seats;
+  if (tr.satellite && alive.length > 1 && alive.length <= seats) {
+    alive.forEach((x, i) => (x.place = i + 1));
+    game.finished = true;
+    game.endedAt = Date.now();
+    const names = alive.map((x) => x.name).join(", ");
+    logEvent(game, t("gameEvents.seatsWonFlash", { names }));
+    flash(game, t("gameEvents.seatsWonFlash", { names }), "win");
+    openOwnEnvelopes(game);
   }
   if (alive.length === 1) {
     alive[0].place = 1;
@@ -578,7 +601,9 @@ export function tourneySettle(game: Game) {
   if (game.finished && game.tourney) {
     const s = tourneyStats(game);
     const book = bountyBook(game);
-    for (const p of game.players) addTo(nets, p.name, (p.place ? paidFor(game, p.id, p.place, s.payouts) : 0) + (book.won[p.id] ?? 0));
+    // a satellite seat is paid in the next game, not in cash
+    const cash = (place: number | null, id: string) => (!place || place <= s.seats ? 0 : paidFor(game, id, place, s.payouts));
+    for (const p of game.players) addTo(nets, p.name, cash(p.place, p.id) + (book.won[p.id] ?? 0));
     addTo(nets, house, -nets.reduce((a, x) => a + x.net, 0));
   }
   return settle(withCosts(game, nets, house));
@@ -724,6 +749,8 @@ export type TableAdvice =
  * advice doesn't flicker between renders.
  */
 export function tableAdvice(game: Game): TableAdvice | null {
+  // shootout tables play on short-handed until each has its winner
+  if (shootout(game)?.final === false) return null;
   const tables = tableCounts(game);
   if (tables.length < 2) return null;
   const per = seatsPer(game);
@@ -775,6 +802,45 @@ export function applyAdvice(game: Game, a: TableAdvice) {
     logEvent(game, t("gameEvents.tableBrokeLog", { table: a.table, details }));
     flash(game, t("gameEvents.tableBreakingFlash", { table: a.table }), "seat");
   }
+}
+
+// ---------- shootouts and satellites ----------
+
+/**
+ * a shootout's tables: who's still in at each, and whether every table is down
+ * to its winner (then the final table can be drawn). null when it's not a shootout.
+ */
+export function shootout(game: Game) {
+  if (game.tourney?.format !== "shootout") return null;
+  const alive = game.players.filter((p) => !p.out);
+  const nums = [...new Set(alive.map((p) => p.seat?.table ?? 0).filter(Boolean))].sort((a, b) => a - b);
+  const tables = nums.map((table) => ({ table, left: alive.filter((p) => p.seat?.table === table) }));
+  const final = !!game.finalAt;
+  const ready = !final && !game.finished && tables.length > 1 && tables.every((x) => x.left.length === 1) && alive.every((p) => p.seat);
+  return { final, tables, ready };
+}
+
+/** the table winners take their seats at the final table */
+export function drawFinalTable(game: Game) {
+  const alive = shuffle(game.players.filter((p) => !p.out));
+  const chairs = shuffle(range(Math.max(seatsPer(game), alive.length)));
+  alive.forEach((p) => (p.seat = { table: 1, seat: chairs.pop()! }));
+  game.finalAt = Date.now();
+  const names = alive.map((p) => p.name).join(", ");
+  logEvent(game, t("gameEvents.finalTableFlash", { names }));
+  flash(game, t("gameEvents.finalTableFlash", { names }), "draw");
+}
+
+/** seats won in finished satellites that haven't been used in another game yet */
+export function unusedSeats(games: Game[]) {
+  const used = new Set(games.flatMap((g) => g.players.filter((p) => p.ticket).map((p) => `${p.ticket}>${nameKey(p.name)}`)));
+  return games
+    .filter((g) => g.finished && g.tourney?.satellite)
+    .map((g) => {
+      const seats = tourneyStats(g).seats;
+      return { game: g, winners: g.players.filter((p) => p.place && p.place <= seats && !used.has(`${g.id}>${nameKey(p.name)}`)) };
+    })
+    .filter((x) => x.winners.length);
 }
 
 export const seatLabel = (s: Seat | null | undefined, tables: number) => (!s ? "" : tables > 1 ? `T${s.table} · ${s.seat}` : `${s.seat}`);

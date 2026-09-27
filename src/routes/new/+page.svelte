@@ -7,13 +7,13 @@
   import Plus from "@lucide/svelte/icons/plus";
   import { page } from "$app/state";
   import { goto } from "$app/navigation";
-  import { getChipSets, getDefaultChipSetId, saveGame, getTemplates, getTemplate, saveTemplate, getGame, knownPlayers } from "$lib/store";
+  import { getChipSets, getDefaultChipSetId, saveGame, getTemplates, getTemplate, saveTemplate, getGame, getGames, knownPlayers } from "$lib/store";
   import { gameChips, distribute, maxStack } from "$lib/chips";
   import { generateStructure, defaultPayouts, payoutAmounts, plannedMinutes, structureMinutes } from "$lib/blinds";
-  import { newGame } from "$lib/game";
+  import { newGame, unusedSeats } from "$lib/game";
   import type { BountyKind, CashRake, CashSettings, GameType, Level, Template, TourneySettings } from "$lib/types";
   import { PRESETS, getPreset, type Preset } from "$lib/presets";
-  import { amt, currencySymbol, duration, money, nameKey, timeOfDay, uid } from "$lib/util";
+  import { amt, currencySymbol, duration, money, nameKey, round2, timeOfDay, uid } from "$lib/util";
   import { toast } from "$lib/toast.svelte";
   import { time } from "$lib/now.svelte";
   import ChipLegend from "$lib/components/ChipLegend.svelte";
@@ -108,6 +108,10 @@
   let bounty = $state(settings.tBounty);
   let bountyKind = $state<BountyKind>(settings.tBountyKind);
   let mysteryFrom = $state(0);
+  // the format: a shootout, and a satellite whose prizes are seats worth this much
+  let shootoutOn = $state(false);
+  let satelliteOn = $state(false);
+  let seatValue = $state(0);
   let levels = $state<Level[]>([]);
   let customized = $state(false);
 
@@ -187,7 +191,7 @@
   // what the host switched on (Settings > Your Game) decides what's on the form.
   // anything off can still be added for just this game, and a template or rerun
   // that used it brings it along. off means off: it isn't in the game at all.
-  let tonight = $state({ rake: false, cut: false, bounty: false, rebuys: false, bomb: false, sevenTwo: false, highHand: false });
+  let tonight = $state({ rake: false, cut: false, bounty: false, rebuys: false, bomb: false, sevenTwo: false, highHand: false, format: false });
   const rakeOn = $derived(settings.useRake || tonight.rake);
   const cutOn = $derived(settings.useHouseCut || tonight.cut);
   const bountyOn = $derived(settings.useBounties || tonight.bounty);
@@ -195,6 +199,9 @@
   const bombShown = $derived(settings.useBombPots || tonight.bomb);
   const sevenTwoShown = $derived(settings.useSevenTwo || tonight.sevenTwo);
   const highHandShown = $derived(settings.useHighHand || tonight.highHand);
+  const satelliteShown = $derived(settings.useSatellites || tonight.format);
+  const shootoutShown = $derived(settings.useShootouts || tonight.format);
+  const satellite = $derived(satelliteShown && satelliteOn && seatValue > 0);
   const addable = $derived(
     (isCash
       ? [
@@ -207,6 +214,7 @@
           !rebuysOn && { key: "rebuys", labelKey: "gameSetup.addable.rebuysAddOns" },
           !bountyOn && { key: "bounty", labelKey: "gameSetup.addable.bounty" },
           !cutOn && { key: "cut", labelKey: "gameSetup.tournament.houseCut.legend" },
+          !(satelliteShown && shootoutShown) && { key: "format", labelKey: "gameSetup.tournament.format.addable" },
         ]
     ).filter((x) => !!x) as { key: keyof typeof tonight; labelKey: string }[]
   );
@@ -225,6 +233,9 @@
 
   const estPool = $derived(expected * Math.max(0, buyIn - useBounty - useFee) * (1 - useRakePct / 100));
   const estHouse = $derived(expected * Math.max(0, buyIn - useBounty) - estPool);
+  // a satellite: how many seats that pool covers, and what's left for the next place
+  const estSeats = $derived(satellite ? Math.floor(round2(estPool / seatValue)) : 0);
+  const estRest = $derived(satellite ? round2(estPool - estSeats * seatValue) : 0);
   const sym = $derived(currencySymbol());
   const deepBB = $derived(bb ? Math.round(defaultBuyIn / bb) : 0); // the standard buy-in, in big blinds
 
@@ -257,6 +268,8 @@
     bounty: useBounty,
     bountyKind,
     mysteryFrom: Math.max(0, Math.round(mysteryFrom || 0)),
+    satellite: satellite ? { seatValue } : null,
+    format: shootoutShown && shootoutOn ? "shootout" : "standard",
   });
   const cashSettings = (): CashSettings => ({
     sb,
@@ -317,6 +330,10 @@
       if (bounty) tonight.bounty = true;
       if (fee || rakePct) tonight.cut = true;
       if (ts.rebuy.on || ts.addOn.on) tonight.rebuys = true;
+      satelliteOn = !!ts.satellite;
+      if (ts.satellite) seatValue = ts.satellite.seatValue;
+      shootoutOn = ts.format === "shootout";
+      if (satelliteOn || shootoutOn) tonight.format = true;
     }
     if (x.levels?.length) {
       levels = x.levels;
@@ -425,6 +442,20 @@
     playerNames = (playerNames.trim() ? playerNames.trim() + "\n" : "") + n;
   }
 
+  // seats won in satellites come in with their buy-in paid by the ticket
+  const seatWinners = unusedSeats(getGames());
+  let tickets = $state<Record<string, string>>({});
+  // each satellite's winners not brought in yet
+  const seatsWaiting = $derived(
+    type === "tournament" ? seatWinners.map((w) => ({ ...w, winners: w.winners.filter((p) => tickets[nameKey(p.name)] !== w.game.id) })).filter((w) => w.winners.length) : []
+  );
+  function addWinners(from: string, winners: { name: string }[]) {
+    for (const p of winners) {
+      if (!names.some((n) => nameKey(n) === nameKey(p.name))) addRegular(p.name);
+      tickets[nameKey(p.name)] = from;
+    }
+  }
+
   function create() {
     if (!chipSet) return alert(t("gameSetup.alerts.makeChipSetFirst"));
     if (type === "tournament" && !levels.length) return alert(t("gameSetup.alerts.structureEmpty"));
@@ -444,6 +475,7 @@
     if (from) g.from = from;
     if (type === "cash" && useRake !== "none") g.house = houseName.trim() || t("gameSetup.cash.rake.defaultHouseName");
     if (settings.seatsPerTable !== 9) g.seatsPerTable = settings.seatsPerTable;
+    for (const p of g.players) if (type === "tournament" && tickets[nameKey(p.name)]) p.ticket = tickets[nameKey(p.name)];
     // cash players named up front get the default buy-in
     saveGame(g);
     goto(`/game/${g.id}`);
@@ -647,8 +679,32 @@
         {/if}
       </fieldset>
 
+      {#if satelliteShown || shootoutShown}
+      <fieldset class="border-0 mt-0 mx-0 mb-[22px] p-0 min-w-0" transition:slide={reveal()}>
+        <legend class="ruled w-full px-0">{t("gameSetup.tournament.format.legend")}{#if tonight.format}<button class="link small opt ml-2" data-sound="off" onclick={() => ((tonight.format = false), (satelliteOn = false), (shootoutOn = false))}>{t("gameSetup.tournament.format.remove")}</button>{/if}</legend>
+        {#if shootoutShown}
+          <label class="across"><input type="checkbox" bind:checked={shootoutOn} /><span>{t("gameSetup.tournament.format.shootout")}</span></label>
+          <p class="small muted -mt-1 mx-0 mb-[10px]">{t("gameSetup.tournament.format.shootoutHint")}</p>
+        {/if}
+        {#if satelliteShown}
+          <label class="across"><input type="checkbox" bind:checked={satelliteOn} onchange={() => satelliteOn && !seatValue && (seatValue = buyIn * 10)} /><span>{t("gameSetup.tournament.format.satellite")}</span></label>
+          {#if satelliteOn}
+            <div class="row" transition:slide={reveal()}>
+              <label><span>{t("gameSetup.tournament.format.seatValue", { sym })}</span><input type="number" min="0" step="any" bind:value={seatValue} /></label>
+            </div>
+          {/if}
+          <p class="small muted -mt-1 mx-0 mb-[10px]">{t("gameSetup.tournament.format.satelliteHint")}</p>
+        {/if}
+      </fieldset>
+      {/if}
+
       <fieldset class="border-0 mt-0 mx-0 mb-[22px] p-0 min-w-0">
         <legend class="ruled w-full px-0">{t("gameSetup.tournament.payouts.legend")}</legend>
+        {#if satellite}
+        <p class="small">
+          {t("gameSetup.tournament.format.seatsCaption", { n: expected, pool: money(estPool), seats: tp("gameSetup.tournament.format.seats", estSeats), value: money(seatValue) })}{#if estRest > 0.004}{" "}{t("gameSetup.tournament.format.restCaption", { amount: money(estRest) })}{/if}
+        </p>
+        {:else}
         <label>
           <span>{t("gameSetup.tournament.payouts.percentagesLabel")}</span>
           <input type="text" bind:value={payoutText} placeholder={defaultPayouts(expected).join(", ")} />
@@ -662,6 +718,7 @@
           {t("gameSetup.tournament.payouts.poolCaption", { n: expected, pool: money(estPool) })}{#if useBounty || estHouse > 0.001}{" "}{t("gameSetup.tournament.payouts.poolAfter", { parts: [useBounty ? t("gameSetup.tournament.payouts.bountyPart", { amount: money(useBounty) }) : "", estHouse > 0.001 ? t("gameSetup.tournament.payouts.housePart", { amount: money(estHouse) }) : ""].filter(Boolean).join(` ${t("gameSetup.tournament.payouts.joinAnd")} `) })}{/if}:
           {#each payoutAmounts(estPool, payouts, payoutRound) as p, i (i)}<span class="num ml-2" use:bump={p}>{i + 1}. {money(p)}</span>{/each}
         </p>
+        {/if}
       </fieldset>
 
       {#if cutOn}
@@ -690,6 +747,14 @@
         <p class="small links -mt-1 mx-0 mb-[10px]">
           <span class="muted">{t("gameSetup.players.regulars")}</span>
           {#each unlisted as r (r.name)}<button class="link" data-sound="chips" onclick={() => addRegular(r.name)} title={tp("gameSetup.players.gamesCount", r.games)}><Icon icon={Plus} size="1em" />{r.name}</button>{/each}
+        </p>
+      {/if}
+      {#if seatsWaiting.length}
+        <p class="small links -mt-1 mx-0 mb-[10px]">
+          <span class="muted">{t("gameSetup.players.satelliteWinners")}</span>
+          {#each seatsWaiting as w (w.game.id)}
+            <button class="link" data-sound="chips" onclick={() => addWinners(w.game.id, w.winners)} title={t("gameSetup.players.seatsFrom", { game: w.game.name })}><Icon icon={Plus} size="1em" />{w.winners.map((p) => p.name).join(", ")}</button>
+          {/each}
         </p>
       {/if}
       {#if isCash}

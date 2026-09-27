@@ -84,6 +84,8 @@ export interface Player {
   /** cash: when they sat down and when they racked up (for hours played) */
   joinedAt?: number;
   leftAt?: number | null;
+  /** tournaments: the satellite whose seat paid this buy-in */
+  ticket?: string;
 }
 
 export interface Seat {
@@ -146,6 +148,13 @@ export interface TourneySettings {
   bountyKind: BountyKind;
   /** mystery: how many players are left when the envelopes come out, 0 = when the money is reached */
   mysteryFrom: number;
+  /** a satellite: the prizes are seats in another game, each worth this much (null = cash prizes) */
+  satellite: { seatValue: number } | null;
+  /**
+   *  standard: one field, tables balanced as they shrink
+   *  shootout: each table plays down to one winner, then the winners meet at a final table
+   */
+  format: "standard" | "shootout";
 }
 
 export type BountyKind = "flat" | "progressive" | "mystery";
@@ -286,6 +295,8 @@ export interface Game {
   deal?: { kind: "icm" | "chop"; amounts: Record<string, number>; at: number };
   /** mystery bounties, once they've started */
   mystery?: Mystery;
+  /** shootouts: when the table winners were seated at the final table */
+  finalAt?: number;
   /** cash: the side games' bomb pots, 7-2 wins and high hands, in order */
   sides?: SideEvent[];
   /** shared costs: they go into settle-up, not into anyone's results */

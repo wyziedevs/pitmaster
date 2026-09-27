@@ -79,6 +79,8 @@ The extras cash tables actually play. Each has its own switch, off to start. Eve
 
 ## Phase 4: Tournament formats
 
+**Status: done.** Two switches, both off to start: Satellites and Shootouts (one Format section on New Game). A satellite is `TourneySettings.satellite: { seatValue } | null`, and `tourneyStats` turns the pool into seats plus the rest, so the bubble, results and settle-up follow from it (a seat is never paid in cash). Which seats are still unused is worked out from `Player.ticket` across games, so nothing on the satellite changes when its winners sit down. A shootout is `format: "shootout"`; table winners come from who's left at each table, and `game.finalAt` marks the final table.
+
 **4a. Satellites.** The prizes are seats in another game instead of cash.
 - `TourneySettings.prize: { kind: "cash" } | { kind: "seats"; seatValue: number; target?: string }`. The number of seats is `floor(pool / seatValue)`, and the remainder goes to the next place as cash.
 - The TV payout table shows "Seat" in place of an amount.

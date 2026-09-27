@@ -103,7 +103,9 @@ export function recap(game: Game) {
       const r = done.find((x) => x.name === p.name.trim());
       const label = p.place ? pad(ordinal(p.place), 6) : pad(t("players.report.tourney.stillIn"), 6);
       const kos = koCount(game, p.id);
-      const tail = [r && r.won ? money(r.won) : "", kos ? tp("players.report.tourney.kos", kos) : ""].filter(Boolean).join(" · ");
+      // a satellite seat is won, not paid in cash
+      const won = r && r.won ? (p.place && p.place <= s.seats ? t("players.report.tourney.seat", { amount: money(r.won) }) : money(r.won)) : "";
+      const tail = [won, kos ? tp("players.report.tourney.kos", kos) : ""].filter(Boolean).join(" · ");
       lines.push(`${label}${pad(p.name, w)}${tail}`.trimEnd());
     }
     lines.push(...settleLines(game));

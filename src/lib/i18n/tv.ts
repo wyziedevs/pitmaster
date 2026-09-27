@@ -123,6 +123,10 @@ export interface TvDict {
     pays: string;
     topN: string; // {n}
     morePaid: Plural; // {n}
+    seat: string;
+    satelliteSeats: Plural;
+    shootoutTables: string;
+    shootoutFinal: string;
     bountyOnEveryHead: string;
     progressiveBounties: string;
     biggestBounty: string;
@@ -155,6 +159,8 @@ export interface TvDict {
     dealMade: string;
     champion: string;
     dealBig: string;
+    satellite: string;
+    seatsWon: Plural;
     nobodyYet: string;
   };
   seatList: {
@@ -290,6 +296,10 @@ export const tv: Record<Lang, TvDict> = {
       pays: "Pays",
       topN: "Top {n}",
       morePaid: { one: "+ {n} More Paid", other: "+ {n} More Paid" },
+      seat: "Seat",
+      satelliteSeats: { one: "Satellite: {count} seat", other: "Satellite: {count} seats" },
+      shootoutTables: "Shootout: {won} of {tables} tables won",
+      shootoutFinal: "Shootout Final Table",
       bountyOnEveryHead: "Bounty on Every Head",
       progressiveBounties: "Progressive Bounties",
       biggestBounty: "Biggest Bounty",
@@ -322,6 +332,8 @@ export const tv: Record<Lang, TvDict> = {
       dealMade: "The Final Table Made a Deal",
       champion: "Champion",
       dealBig: "It's a Deal",
+      satellite: "Satellite",
+      seatsWon: { one: "{count} Seat Won", other: "{count} Seats Won" },
       nobodyYet: "Nobody Yet",
     },
     seatList: {
@@ -455,6 +467,10 @@ export const tv: Record<Lang, TvDict> = {
       pays: "支付名次",
       topN: "前 {n} 名",
       morePaid: { other: "另有 {n} 人获奖" },
+      seat: "席位",
+      satelliteSeats: { one: "卫星赛：{count} 个席位", other: "卫星赛：{count} 个席位" },
+      shootoutTables: "淘汰赛：{tables} 桌中已决出 {won} 桌",
+      shootoutFinal: "淘汰赛决赛桌",
       bountyOnEveryHead: "每人都有赏金",
       progressiveBounties: "累进赏金",
       biggestBounty: "最高赏金",
@@ -487,6 +503,8 @@ export const tv: Record<Lang, TvDict> = {
       dealMade: "决赛桌达成协议",
       champion: "冠军",
       dealBig: "已达成协议",
+      satellite: "卫星赛",
+      seatsWon: { one: "赢得 {count} 个席位", other: "赢得 {count} 个席位" },
       nobodyYet: "暂无",
     },
     seatList: {
@@ -620,6 +638,10 @@ export const tv: Record<Lang, TvDict> = {
       pays: "भुगतान",
       topN: "टॉप {n}",
       morePaid: { one: "+ {n} और भुगतान", other: "+ {n} और भुगतान" },
+      seat: "सीट",
+      satelliteSeats: { one: "सैटेलाइट: {count} सीट", other: "सैटेलाइट: {count} सीटें" },
+      shootoutTables: "शूटआउट: {tables} में से {won} टेबल तय",
+      shootoutFinal: "शूटआउट फाइनल टेबल",
       bountyOnEveryHead: "हर खिलाड़ी पर बाउंटी",
       progressiveBounties: "प्रोग्रेसिव बाउंटी",
       biggestBounty: "सबसे बड़ी बाउंटी",
@@ -652,6 +674,8 @@ export const tv: Record<Lang, TvDict> = {
       dealMade: "फाइनल टेबल ने डील कर ली",
       champion: "चैंपियन",
       dealBig: "डील हो गई",
+      satellite: "सैटेलाइट",
+      seatsWon: { one: "{count} सीट जीती", other: "{count} सीटें जीतीं" },
       nobodyYet: "अभी कोई नहीं",
     },
     seatList: {
@@ -785,6 +809,10 @@ export const tv: Record<Lang, TvDict> = {
       pays: "Pagan",
       topN: "Top {n}",
       morePaid: { one: "+ {n} Más Pagado", other: "+ {n} Más Pagados" },
+      seat: "Plaza",
+      satelliteSeats: { one: "Satélite: {count} plaza", other: "Satélite: {count} plazas" },
+      shootoutTables: "Shootout: {won} de {tables} mesas ganadas",
+      shootoutFinal: "Mesa Final del Shootout",
       bountyOnEveryHead: "Recompensa por Cada Cabeza",
       progressiveBounties: "Recompensas Progresivas",
       biggestBounty: "Mayor Recompensa",
@@ -817,6 +845,8 @@ export const tv: Record<Lang, TvDict> = {
       dealMade: "La Mesa Final Hizo un Trato",
       champion: "Campeón",
       dealBig: "Hay Trato",
+      satellite: "Satélite",
+      seatsWon: { one: "{count} Plaza Ganada", other: "{count} Plazas Ganadas" },
       nobodyYet: "Nadie Todavía",
     },
     seatList: {
@@ -950,6 +980,10 @@ export const tv: Record<Lang, TvDict> = {
       pays: "Places Payées",
       topN: "Top {n}",
       morePaid: { one: "+ {n} Autre Payé", other: "+ {n} Autres Payés" },
+      seat: "Place",
+      satelliteSeats: { one: "Satellite : {count} place", other: "Satellite : {count} places" },
+      shootoutTables: "Shootout : {won} tables gagnées sur {tables}",
+      shootoutFinal: "Table Finale du Shootout",
       bountyOnEveryHead: "Prime sur Chaque Tête",
       progressiveBounties: "Primes Progressives",
       biggestBounty: "Plus Grosse Prime",
@@ -982,6 +1016,8 @@ export const tv: Record<Lang, TvDict> = {
       dealMade: "La Table Finale a Conclu un Accord",
       champion: "Champion",
       dealBig: "C'est un Accord",
+      satellite: "Satellite",
+      seatsWon: { one: "{count} Place Gagnée", other: "{count} Places Gagnées" },
       nobodyYet: "Personne Encore",
     },
     seatList: {
@@ -1115,6 +1151,10 @@ export const tv: Record<Lang, TvDict> = {
       pays: "عدد الفائزين بالمال",
       topN: "أفضل {n}",
       morePaid: { zero: "لا فائزين إضافيين", one: "+ فائز واحد إضافي", two: "+ فائزان إضافيان", few: "+ {n} فائزين إضافيين", many: "+ {n} فائزًا إضافيًا", other: "+ {n} فائز إضافي" },
+      seat: "مقعد",
+      satelliteSeats: { one: "تأهيلية: مقعد واحد", other: "تأهيلية: {count} مقاعد" },
+      shootoutTables: "مواجهة الطاولات: حُسمت {won} من {tables} طاولات",
+      shootoutFinal: "الطاولة النهائية",
       bountyOnEveryHead: "مكافأة على كل لاعب",
       progressiveBounties: "مكافآت تصاعدية",
       biggestBounty: "أكبر مكافأة",
@@ -1147,6 +1187,8 @@ export const tv: Record<Lang, TvDict> = {
       dealMade: "توصلت الطاولة الأخيرة إلى اتفاق",
       champion: "البطل",
       dealBig: "تم الاتفاق",
+      satellite: "بطولة تأهيلية",
+      seatsWon: { one: "فوز بمقعد واحد", other: "فوز بـ {count} مقاعد" },
       nobodyYet: "لا أحد بعد",
     },
     seatList: {
@@ -1280,6 +1322,10 @@ export const tv: Record<Lang, TvDict> = {
       pays: "পে হয়",
       topN: "শীর্ষ {n}",
       morePaid: { one: "+ {n} জন আরও পেয়েছেন", other: "+ {n} জন আরও পেয়েছেন" },
+      seat: "সিট",
+      satelliteSeats: { one: "স্যাটেলাইট: {count}টি সিট", other: "স্যাটেলাইট: {count}টি সিট" },
+      shootoutTables: "শুটআউট: {tables}টির মধ্যে {won}টি টেবিল জেতা হয়েছে",
+      shootoutFinal: "শুটআউট ফাইনাল টেবিল",
       bountyOnEveryHead: "প্রতিটি মাথায় বাউন্টি",
       progressiveBounties: "প্রগ্রেসিভ বাউন্টি",
       biggestBounty: "সবচেয়ে বড় বাউন্টি",
@@ -1312,6 +1358,8 @@ export const tv: Record<Lang, TvDict> = {
       dealMade: "ফাইনাল টেবিল একটি চুক্তি করেছে",
       champion: "চ্যাম্পিয়ন",
       dealBig: "চুক্তি হয়ে গেছে",
+      satellite: "স্যাটেলাইট",
+      seatsWon: { one: "{count}টি সিট জেতা হয়েছে", other: "{count}টি সিট জেতা হয়েছে" },
       nobodyYet: "এখনও কেউ না",
     },
     seatList: {
@@ -1445,6 +1493,10 @@ export const tv: Record<Lang, TvDict> = {
       pays: "Pagam",
       topN: "Top {n}",
       morePaid: { one: "+ {n} A Mais Premiado", other: "+ {n} A Mais Premiados" },
+      seat: "Vaga",
+      satelliteSeats: { one: "Satélite: {count} vaga", other: "Satélite: {count} vagas" },
+      shootoutTables: "Shootout: {won} de {tables} mesas vencidas",
+      shootoutFinal: "Mesa Final do Shootout",
       bountyOnEveryHead: "Recompensa em Cada Cabeça",
       progressiveBounties: "Recompensas Progressivas",
       biggestBounty: "Maior Recompensa",
@@ -1477,6 +1529,8 @@ export const tv: Record<Lang, TvDict> = {
       dealMade: "A Mesa Final Fechou um Acordo",
       champion: "Campeão",
       dealBig: "Fechou Acordo",
+      satellite: "Satélite",
+      seatsWon: { one: "{count} Vaga Ganha", other: "{count} Vagas Ganhas" },
       nobodyYet: "Ninguém Ainda",
     },
     seatList: {

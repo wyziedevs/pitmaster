@@ -119,6 +119,7 @@ export interface PlayersDict {
       rakeKept: string;
       endedAt: string;
       stillIn: string;
+      seat: string;
       kos: PluralText;
       stillPlayingNote: string;
     };
@@ -255,6 +256,7 @@ export const players: Record<Lang, PlayersDict> = {
         rakeKept: "(house kept {amount})",
         endedAt: "{duration}, ended at {stakes}",
         stillIn: "in",
+        seat: "Seat ({amount})",
         kos: { one: "{n} KO", other: "{n} KOs" },
         stillPlayingNote: "(Still playing.)",
       },
@@ -389,6 +391,7 @@ export const players: Record<Lang, PlayersDict> = {
         rakeKept: "（主办方抽水 {amount}）",
         endedAt: "{duration}，结束于 {stakes}",
         stillIn: "进行中",
+        seat: "席位（{amount}）",
         kos: { one: "{n} 次淘汰", other: "{n} 次淘汰" },
         stillPlayingNote: "（比赛仍在进行。）",
       },
@@ -523,6 +526,7 @@ export const players: Record<Lang, PlayersDict> = {
         rakeKept: "(हाउस ने {amount} रखे)",
         endedAt: "{duration}, समाप्ति {stakes} पर",
         stillIn: "जारी",
+        seat: "सीट ({amount})",
         kos: { one: "{n} नॉकआउट", other: "{n} नॉकआउट" },
         stillPlayingNote: "(अभी खेल जारी है।)",
       },
@@ -657,6 +661,7 @@ export const players: Record<Lang, PlayersDict> = {
         rakeKept: "(la casa se quedó con {amount})",
         endedAt: "{duration}, terminó en {stakes}",
         stillIn: "en juego",
+        seat: "Plaza ({amount})",
         kos: { one: "{n} KO", other: "{n} KOs" },
         stillPlayingNote: "(Todavía en juego.)",
       },
@@ -791,6 +796,7 @@ export const players: Record<Lang, PlayersDict> = {
         rakeKept: "(la maison a gardé {amount})",
         endedAt: "{duration}, terminé à {stakes}",
         stillIn: "en cours",
+        seat: "Place ({amount})",
         kos: { one: "{n} KO", other: "{n} KO" },
         stillPlayingNote: "(Toujours en cours.)",
       },
@@ -925,6 +931,7 @@ export const players: Record<Lang, PlayersDict> = {
         rakeKept: "(احتفظت الجهة المنظمة بـ {amount})",
         endedAt: "{duration}، وانتهت عند {stakes}",
         stillIn: "مستمر",
+        seat: "مقعد ({amount})",
         kos: { one: "إقصاء واحد", other: "{n} إقصاء" },
         stillPlayingNote: "(البطولة ما زالت مستمرة.)",
       },
@@ -1059,6 +1066,7 @@ export const players: Record<Lang, PlayersDict> = {
         rakeKept: "(আয়োজক {amount} রেখেছেন)",
         endedAt: "{duration}, শেষ হয়েছে {stakes}-এ",
         stillIn: "চলছে",
+        seat: "সিট ({amount})",
         kos: { one: "{n} নকআউট", other: "{n} নকআউট" },
         stillPlayingNote: "(এখনো চলছে।)",
       },
@@ -1193,6 +1201,7 @@ export const players: Record<Lang, PlayersDict> = {
         rakeKept: "(a casa ficou com {amount})",
         endedAt: "{duration}, terminou em {stakes}",
         stillIn: "em jogo",
+        seat: "Vaga ({amount})",
         kos: { one: "{n} KO", other: "{n} KOs" },
         stillPlayingNote: "(Ainda em jogo.)",
       },

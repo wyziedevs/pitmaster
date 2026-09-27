@@ -11,6 +11,7 @@
   import Skull from "@lucide/svelte/icons/skull";
   import Coffee from "@lucide/svelte/icons/coffee";
   import Handshake from "@lucide/svelte/icons/handshake";
+  import Ticket from "@lucide/svelte/icons/ticket";
   import type { Game } from "$lib/types";
   import * as clk from "$lib/clock";
   import {
@@ -33,11 +34,14 @@
     setEnvelopes,
     settleUp,
     HOUSE,
+    shootout,
+    drawFinalTable,
   } from "$lib/game";
   import { annotate } from "$lib/blinds";
   import { distribute } from "$lib/chips";
   import { amt, clock, clockFace, money, ordinal, timeOfDay } from "$lib/util";
   import { time } from "$lib/now.svelte";
+  import { getGame } from "$lib/store";
   import StructureTable from "./StructureTable.svelte";
   import DealCalc from "./DealCalc.svelte";
   import SettleMoves from "./SettleMoves.svelte";
@@ -99,7 +103,13 @@
   const costsOn = $derived(settings.useCosts || !!game.costs?.length);
   const moves = $derived(settleUp(game));
   const settleShown = $derived(game.finished || !!game.costs?.length);
-  const canDeal = $derived(!game.finished && alive.length >= 2 && alive.length <= 9 && game.clock.status !== "idle");
+  // a shootout plays each table down to one winner, then a final table
+  const shoot = $derived(shootout(game));
+  // the satellite's seats, and the game each ticket holder won theirs in
+  const seats = $derived(t.satellite ? s.seats : 0);
+  const ticketFrom = (id: string) => getGame(id)?.name ?? "";
+  // no chop in a satellite (the seats are the prize), or before a shootout's final table
+  const canDeal = $derived(!game.finished && alive.length >= 2 && alive.length <= 9 && game.clock.status !== "idle" && !t.satellite && (!shoot || shoot.final));
 
   // bounties: who's taken what, and (progressive) what's on each head now
   const book = $derived(bountyBook(game));
@@ -124,6 +134,11 @@
     persist();
     editingEnvelopes = false;
   }
+  function finalTable() {
+    play("seats", { n: alive.length });
+    act(() => drawFinalTable(game));
+  }
+
   function credit(outId: string, byId: string | null) {
     act(() => creditKo(game, outId, byId));
     // an envelope opened or a bounty collected, right here
@@ -231,6 +246,7 @@
       { id: "t:add", label: tt("gamePlay.tournament.cmdAddPlayer"), group: tt("gamePlay.shared.groupThisGame"), keywords: "register entry seat", prompt: tt("gamePlay.tournament.cmdAddPlayerPrompt"), run: (name: string) => (play("chips"), addNamed(name)) },
       ...(seatsOn ? [{ id: "t:seats", label: drawn ? tt("gamePlay.shared.redrawSeats") : tt("gamePlay.shared.drawSeats"), group: tt("gamePlay.shared.groupThisGame"), keywords: "tables shuffle", run: () => seatTools?.draw() }] : []),
       { id: "t:structure", label: tt("gamePlay.tournament.cmdEditStructure"), group: tt("gamePlay.shared.groupThisGame"), keywords: "blinds levels", run: () => (play("open"), (editStructure = true)) },
+      ...(shoot?.ready ? [{ id: "t:final", label: tt("gamePlay.tournament.drawFinalTable"), group: tt("gamePlay.shared.groupThisGame"), keywords: "shootout final table seats", run: finalTable }] : []),
       ...(canDeal && dealsOn ? [{ id: "t:deal", label: tt("gamePlay.tournament.cmdDealCalculator"), group: tt("gamePlay.shared.groupThisGame"), keywords: "icm chop split", run: () => (play("open"), (showDeal = true)) }] : []),
       ...alive.map((p) => ({ id: `t:bust:${p.id}`, label: tt("gamePlay.tournament.bustCommandLabel", { name: p.name }), group: tt("gamePlay.shared.groupPlayers"), keywords: "out eliminate", run: () => (play("bust"), act(() => bust(game, p.id))) })),
       ...(t.rebuy.on && rebuyOpen ? game.players.map((p) => ({ id: `t:rebuy:${p.id}`, label: tt("gamePlay.tournament.rebuyCommandLabel", { name: p.name }), group: tt("gamePlay.shared.groupPlayers"), hint: money(t.rebuy.cost), run: () => (play("chips"), rebuy(p.id, 1)) })) : []),
@@ -316,6 +332,7 @@
   <div class="warn pop won my-[14px] flex items-end flex-wrap gap-x-4 gap-y-1.5">
     <p class="m-0 self-center">
       {#if game.deal}<Icon icon={Handshake} /> {tt("gamePlay.tournament.dealBanner", { names: game.players.filter((p) => p.id in game.deal!.amounts).map((p) => p.name).join(", ") })}
+      {:else if seats > 1}<Icon icon={Ticket} /> {tt("gameEvents.seatsWonFlash", { names: game.players.filter((p) => p.place && p.place <= seats).map((p) => p.name).join(", ") })}
       {:else}<Icon icon={Trophy} /> <b>{game.players.find((p) => p.place === 1)?.name}</b> {tt("gamePlay.tournament.winnerSuffix")}{/if}
       {tt("gamePlay.tournament.tvShowingResults")}
     </p>
@@ -354,8 +371,9 @@
           <tr class:dim={p.out} in:fade={reveal()} animate:flip={reorder()}>
             {#if drawn}<td class="num seat"><span class:dealt={dealing} style:--i={i}>{p.out ? "" : seatLabel(p.seat, tables)}</span></td>{/if}
             <td class="nowrap who">
-              {#if p.out}<span class="num place inline-block min-w-[2.2em] text-muted" use:fresh={[p.bustedAt, "stamp"]}>{ordinal(p.place ?? 0)}</span>{:else if p.place === 1}<Icon icon={Trophy} label={tt("gamePlay.tournament.winnerLabel")} />{/if}
+              {#if p.out}<span class="num place inline-block min-w-[2.2em] text-muted" use:fresh={[p.bustedAt, "stamp"]}>{ordinal(p.place ?? 0)}</span>{:else if p.place && p.place <= seats}<Icon icon={Ticket} label={tt("gamePlay.tournament.seatWonLabel")} />{:else if p.place === 1}<Icon icon={Trophy} label={tt("gamePlay.tournament.winnerLabel")} />{/if}
               <input type="text" bind:value={p.name} onchange={persist} class="edit-name" aria-label={tt("gamePlay.shared.nameHeader")} />
+              {#if p.ticket}<span class="muted inline-flex align-middle" title={tt("gamePlay.tournament.ticketTitle", { game: ticketFrom(p.ticket) })}><Icon icon={Ticket} size="1em" label={tt("gamePlay.tournament.ticketTitle", { game: ticketFrom(p.ticket) })} /></span>{/if}
             </td>
             {#if t.rebuy.on}
               <td class="num nowrap" data-l={tt("gamePlay.tournament.rebuysHeader")}>
@@ -398,6 +416,24 @@
       <button data-sound="chips"><Icon icon={Plus} />{tt("gamePlay.tournament.addPlayerButton", { amount: money(t.buyIn) })}</button>
     </form>
 
+    {#if shoot && !game.finished}
+      <div class="part mt-[22px]" transition:slide={reveal()}>
+        <h2>{tt("gamePlay.tournament.shootoutHeading")}</h2>
+        {#if !drawn}
+          <p class="small muted">{tt("gamePlay.tournament.shootoutDrawFirst")}</p>
+        {:else if shoot.final}
+          <p class="small">{tt("gamePlay.tournament.shootoutFinal")}</p>
+        {:else}
+          <ul class="list-none p-0 m-0 small">
+            {#each shoot.tables as x (x.table)}
+              <li class="mb-1">{#if x.left.length === 1}<Icon icon={Trophy} size="1em" /> {tt("gamePlay.tournament.tableWinner", { table: String(x.table), name: x.left[0].name })}{:else}<span class="muted">{tp("gamePlay.tournament.tableLeft", x.left.length, { table: String(x.table) })}</span>{/if}</li>
+            {/each}
+          </ul>
+          {#if shoot.ready}<button class="mt-2" data-sound="none" onclick={finalTable} transition:slide={reveal()}><Icon icon={Trophy} />{tt("gamePlay.tournament.drawFinalTable")}</button>{/if}
+        {/if}
+      </div>
+    {/if}
+
     <h2 class="part mt-[22px]">{tt("gamePlay.tournament.payoutsHeading")}{#if game.deal} <span class="pill">{tt("gamePlay.shared.dealPill")}</span>{/if}</h2>
     <table>
       <tbody>
@@ -406,8 +442,8 @@
           {@const owed = paidFor(game, who?.id, i + 1, s.payouts)}
           <tr>
             <td>{ordinal(i + 1)}</td>
-            <td class="num muted">{game.deal ? "" : `${s.pcts[i]}%`}</td>
-            <td class="num"><b>{money(owed)}</b></td>
+            <td class="num muted">{game.deal || seats ? "" : `${s.pcts[i]}%`}</td>
+            <td class="num">{#if i < seats}<b>{tt("gamePlay.tournament.seat")}</b> <span class="small muted">{money(owed)}</span>{:else}<b>{money(owed)}</b>{/if}</td>
             <td>
               <!-- a name lands in its place like the busted player's stamp -->
               {#if who}<span class="paid inline-block" use:fresh={[who.bustedAt ?? game.endedAt, "stamp"]}>{who.name}</span>{/if}
@@ -419,6 +455,7 @@
     <p class="small muted">
       {s.entrants} × {money(t.buyIn)}{#if s.rebuys} + {tp("gamePlay.tournament.rebuysCount", s.rebuys)}{/if}{#if s.addOns} + {tp("gamePlay.tournament.addOnsCount", s.addOns)}{/if} = {money(s.gross)}{#if s.bounties} − {tt(pko ? "gamePlay.tournament.bountiesNotePko" : mystery ? "gamePlay.tournament.bountiesNoteMystery" : "gamePlay.tournament.bountiesNote", { bounties: money(s.bounties), bounty: money(s.bounty) })}{/if}{#if s.rake} − {tt("gamePlay.tournament.rakeNote", { rake: money(s.rake) })}{/if}
     </p>
+    {#if t.satellite}<p class="small muted">{tt("gamePlay.tournament.satelliteNote", { value: money(t.satellite.seatValue) })}</p>{/if}
     {#if book.unclaimed > 0.004 && (game.finished || !mystery)}
       <p class="small warn" transition:slide={reveal()}>{tt(mystery ? "gamePlay.tournament.unopenedNote" : "gamePlay.tournament.uncreditedNote", { amount: money(book.unclaimed) })}</p>
     {/if}

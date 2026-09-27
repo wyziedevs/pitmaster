@@ -40,7 +40,8 @@ const player = (p: unknown) =>
   bool(p.out) &&
   orNull(num)(p.place) &&
   orNull(num)(p.bustedAt) &&
-  maybe(orNull((s) => obj(s) && num(s.table) && num(s.seat)))(p.seat);
+  maybe(orNull((s) => obj(s) && num(s.table) && num(s.seat)))(p.seat) &&
+  maybe(id)(p.ticket);
 
 const level = (l: unknown) => obj(l) && num(l.sb) && num(l.bb) && num(l.ante) && num(l.minutes) && maybe(list(str))(l.colorUp);
 const said = orNull((n) => obj(n) && str(n.text) && num(n.at));
@@ -56,7 +57,9 @@ const tourney = (t: unknown) =>
   obj(t.addOn) &&
   num(t.bounty) &&
   ["flat", "progressive", "mystery"].includes(t.bountyKind as string) &&
-  num(t.mysteryFrom);
+  num(t.mysteryFrom) &&
+  orNull((x) => obj(x) && num(x.seatValue))(t.satellite) &&
+  ["standard", "shootout"].includes(t.format as string);
 /** one elimination, and (mystery bounties) the envelope it opened */
 const knockout = (k: unknown) => obj(k) && id(k.out) && orNull(id)(k.by) && num(k.at) && maybe(num)(k.prize);
 const mystery = (m: unknown) => obj(m) && num(m.at) && list(num)(m.prizes) && obj(m.own) && Object.values(m.own).every(num);
@@ -109,6 +112,7 @@ export function isGame(g: unknown): g is Game {
     maybe(mystery)(g.mystery) &&
     maybe(list(side))(g.sides) &&
     maybe(list(cost))(g.costs) &&
+    maybe(num)(g.finalAt) &&
     maybe(list(payment))(g.paid) &&
     // a tournament's clock needs at least one level to count down
     (g.type === "cash" ? cash(g.cash) : g.type === "tournament" && tourney(g.tourney) && (g.levels as unknown[]).length > 0)

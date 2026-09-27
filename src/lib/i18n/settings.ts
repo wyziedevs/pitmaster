@@ -67,6 +67,8 @@ export interface SettingsDict {
       seats: { label: string; hint: string };
       deals: { label: string; hint: string };
       payLinks: { label: string; hint: string };
+      satellites: { label: string; hint: string };
+      shootouts: { label: string; hint: string };
       costs: { label: string; hint: string };
       ledger: { label: string; hint: string };
       bombPots: { label: string; hint: string };
@@ -362,6 +364,8 @@ export const settings: Record<Lang, SettingsDict> = {
         seats: { label: "Seat Draw & Tables", hint: "Drawing seats, and balancing tables as players bust." },
         deals: { label: "Final Table Deals", hint: "The ICM and chip-chop calculator." },
         payLinks: { label: "Pay Links", hint: "Venmo, Cash App and PayPal links in settle-up and payouts." },
+        satellites: { label: "Satellites", hint: "Tournaments whose prizes are seats in another game. The winners come in on New Game with their buy-in paid." },
+        shootouts: { label: "Shootouts", hint: "Each table plays down to one winner, then the winners meet at a final table." },
         costs: { label: "Shared Costs", hint: "Split what was bought for the game, like food or a new deck. It goes into settle-up, not into anyone's results." },
         ledger: { label: "Who Owes Who", hint: "Tick off settle-up payments as they're made. Players shows what's still owed across every game." },
         bombPots: { label: "Bomb Pots", hint: "Cash games: everyone antes and the flop comes with no betting first. Called by hand or on a timer." },
@@ -719,6 +723,8 @@ export const settings: Record<Lang, SettingsDict> = {
         seats: { label: "抽座与分桌", hint: "抽取座位,并在玩家出局时重新分配桌次。" },
         deals: { label: "决赛桌协议", hint: "ICM 和筹码分配计算器。" },
         payLinks: { label: "收款链接", hint: "在结算和派奖中使用的 Venmo、Cash App 和 PayPal 链接。" },
+        satellites: { label: "卫星赛", hint: "奖品是另一场比赛席位的锦标赛。赢家在新建比赛时加入，买入已付。" },
+        shootouts: { label: "淘汰赛", hint: "每桌打到只剩一位赢家，然后赢家们在决赛桌相遇。" },
         costs: { label: "共同费用", hint: "分摊为这场牌局买的东西，比如食物或新牌。计入结算，不计入任何人的成绩。" },
         ledger: { label: "谁欠谁", hint: "付款后在结算中勾掉。玩家页会显示所有牌局中还欠的钱。" },
         bombPots: { label: "炸弹底池", hint: "现金局：每人下底注，翻牌前不下注直接发翻牌。可手动叫或定时。" },
@@ -1075,6 +1081,8 @@ export const settings: Record<Lang, SettingsDict> = {
         seats: { label: "सीट ड्रॉ और टेबल्स", hint: "सीटें बांटना, और खिलाड़ियों के बस्ट होने पर टेबल्स को बैलेंस करना।" },
         deals: { label: "फाइनल टेबल डील्स", hint: "ICM और चिप-चॉप कैलकुलेटर।" },
         payLinks: { label: "पे लिंक्स", hint: "सेटल-अप और पेआउट्स में Venmo, Cash App और PayPal के लिंक्स।" },
+        satellites: { label: "सैटेलाइट", hint: "ऐसे टूर्नामेंट जिनका इनाम दूसरे गेम की सीट है। विजेता नया गेम में बाय-इन चुकाए हुए आते हैं।" },
+        shootouts: { label: "शूटआउट", hint: "हर टेबल एक विजेता तक खेलती है, फिर विजेता फाइनल टेबल पर मिलते हैं।" },
         costs: { label: "साझा खर्च", hint: "गेम के लिए खरीदी चीज़ें बांटें, जैसे खाना या नई ताश। ये हिसाब में जाते हैं, किसी के नतीजों में नहीं।" },
         ledger: { label: "किसका किस पर बाकी", hint: "भुगतान होते ही हिसाब में टिक करें। खिलाड़ी पेज पर हर गेम का बाकी पैसा दिखता है।" },
         bombPots: { label: "बॉम्ब पॉट", hint: "कैश गेम: सब एंटी डालते हैं और बिना बेटिंग के फ़्लॉप आता है। हाथ से बुलाएँ या टाइमर पर।" },
@@ -1431,6 +1439,8 @@ export const settings: Record<Lang, SettingsDict> = {
         seats: { label: "Sorteo de Asientos y Mesas", hint: "Sortear asientos, y equilibrar mesas cuando los jugadores quedan eliminados." },
         deals: { label: "Acuerdos de Mesa Final", hint: "La calculadora de ICM y reparto de fichas." },
         payLinks: { label: "Enlaces de Pago", hint: "Enlaces de Venmo, Cash App y PayPal en el saldo final y los premios." },
+        satellites: { label: "Satélites", hint: "Torneos cuyos premios son plazas en otra partida. Los ganadores entran en Nueva Partida con la entrada pagada." },
+        shootouts: { label: "Shootouts", hint: "Cada mesa juega hasta un ganador y luego los ganadores se enfrentan en una mesa final." },
         costs: { label: "Gastos Compartidos", hint: "Reparte lo que se compró para la partida, como comida o una baraja nueva. Entra en el saldo de cuentas, no en los resultados de nadie." },
         ledger: { label: "Quién Debe a Quién", hint: "Marca los pagos del saldo de cuentas a medida que se hacen. Jugadores muestra lo que aún se debe de todas las partidas." },
         bombPots: { label: "Bomb pots", hint: "Partidas de cash: todos ponen un ante y el flop sale sin apuestas antes. A mano o con temporizador." },
@@ -1787,6 +1797,8 @@ export const settings: Record<Lang, SettingsDict> = {
         seats: { label: "Tirage des Places et Tables", hint: "Tirer les places, et équilibrer les tables à mesure que les joueurs sont éliminés." },
         deals: { label: "Accords de Table Finale", hint: "Le calculateur d'ICM et de partage des jetons." },
         payLinks: { label: "Liens de Paiement", hint: "Liens Venmo, Cash App et PayPal dans les règlements et les gains." },
+        satellites: { label: "Satellites", hint: "Des tournois dont les gains sont des places dans une autre partie. Les gagnants arrivent dans Nouvelle Partie, buy-in payé." },
+        shootouts: { label: "Shootouts", hint: "Chaque table joue jusqu'à un gagnant, puis les gagnants se retrouvent à une table finale." },
         costs: { label: "Frais Partagés", hint: "Partagez ce qui a été acheté pour la partie, comme à manger ou un nouveau jeu de cartes. Ça entre dans le règlement, pas dans les résultats." },
         ledger: { label: "Qui Doit Quoi", hint: "Cochez les paiements du règlement au fur et à mesure. Joueurs affiche ce qui reste dû sur toutes les parties." },
         bombPots: { label: "Bomb pots", hint: "Parties cash : tout le monde met une ante et le flop sort sans enchères avant. À la demande ou sur minuteur." },
@@ -2143,6 +2155,8 @@ export const settings: Record<Lang, SettingsDict> = {
         seats: { label: "توزيع المقاعد والطاولات", hint: "توزيع المقاعد، وموازنة الطاولات مع خروج اللاعبين." },
         deals: { label: "اتفاقات الطاولة الأخيرة", hint: "حاسبة ICM وتقسيم الرقائق." },
         payLinks: { label: "روابط الدفع", hint: "روابط Venmo وCash App وPayPal في التسوية والجوائز." },
+        satellites: { label: "بطولات تأهيلية", hint: "بطولات جوائزها مقاعد في لعبة أخرى. يدخل الفائزون من اللعبة الجديدة ورسوم دخولهم مدفوعة." },
+        shootouts: { label: "مواجهة الطاولات", hint: "تلعب كل طاولة حتى يبقى فائز واحد، ثم يلتقي الفائزون على طاولة نهائية." },
         costs: { label: "تكاليف مشتركة", hint: "قسّم ما اشتُري للعبة، مثل الطعام أو ورق لعب جديد. يدخل في التسوية لا في نتائج أحد." },
         ledger: { label: "من يدين لمن", hint: "علّم دفعات التسوية عند سدادها. تعرض صفحة اللاعبين ما زال مستحقًا من كل الألعاب." },
         bombPots: { label: "بومب بوت", hint: "ألعاب الكاش: الجميع يدفع رهانًا إجباريًا ويُكشف الفلوب بلا رهان قبله. عند الطلب أو بمؤقت." },
@@ -2506,6 +2520,8 @@ export const settings: Record<Lang, SettingsDict> = {
         seats: { label: "সিট ড্র ও টেবিল", hint: "সিট বণ্টন করা, আর খেলোয়াড় আউট হলে টেবিল সমান করা।" },
         deals: { label: "ফাইনাল টেবিল চুক্তি", hint: "ICM ও চিপ-চপ ক্যালকুলেটর।" },
         payLinks: { label: "পে লিংক", hint: "সেটল-আপ আর পেআউটে Venmo, Cash App আর PayPal লিংক।" },
+        satellites: { label: "স্যাটেলাইট", hint: "যেসব টুর্নামেন্টের পুরস্কার অন্য গেমের সিট। বিজয়ীরা নতুন গেমে বাই-ইন দেওয়া অবস্থায় আসেন।" },
+        shootouts: { label: "শুটআউট", hint: "প্রতিটি টেবিল একজন বিজয়ী পর্যন্ত খেলে, তারপর বিজয়ীরা ফাইনাল টেবিলে মেলেন।" },
         costs: { label: "ভাগের খরচ", hint: "গেমের জন্য কেনা জিনিস ভাগ করুন, যেমন খাবার বা নতুন তাস। এটা হিসাবে যায়, কারও ফলাফলে নয়।" },
         ledger: { label: "কে কার কাছে পাবে", hint: "পেমেন্ট হলে হিসাবে টিক দিন। খেলোয়াড় পেজে সব গেমের বাকি টাকা দেখায়।" },
         bombPots: { label: "বম্ব পট", hint: "ক্যাশ গেম: সবাই অ্যান্টি দেন আর আগে বেটিং ছাড়াই ফ্লপ আসে। হাতে ডাকুন বা টাইমারে।" },
@@ -2862,6 +2878,8 @@ export const settings: Record<Lang, SettingsDict> = {
         seats: { label: "Sorteio de Assentos e Mesas", hint: "Sortear assentos, e equilibrar mesas conforme os jogadores são eliminados." },
         deals: { label: "Acordos de Mesa Final", hint: "A calculadora de ICM e divisão de fichas." },
         payLinks: { label: "Links de Pagamento", hint: "Links de Venmo, Cash App e PayPal no acerto de contas e nos pagamentos." },
+        satellites: { label: "Satélites", hint: "Torneios cujos prêmios são vagas em outro jogo. Os vencedores entram no Novo Jogo com a entrada paga." },
+        shootouts: { label: "Shootouts", hint: "Cada mesa joga até um vencedor, depois os vencedores se enfrentam numa mesa final." },
         costs: { label: "Custos Divididos", hint: "Divida o que foi comprado para o jogo, como comida ou um baralho novo. Entra no acerto de contas, não nos resultados de ninguém." },
         ledger: { label: "Quem Deve a Quem", hint: "Marque os pagamentos do acerto de contas conforme forem feitos. Jogadores mostra o que ainda se deve em todos os jogos." },
         bombPots: { label: "Bomb pots", hint: "Jogos a dinheiro: todos põem um ante e o flop sai sem apostas antes. Na hora ou com cronômetro." },
