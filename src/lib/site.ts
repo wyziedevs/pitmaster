@@ -15,44 +15,42 @@ const DESCRIPTION =
 /** `path` is the page's canonical address; null keeps it out of search (it's someone's own data, or nothing) */
 type Meta = { title: string; description: string; path: string | null };
 
+/** each kind's new-game form (the server can't ask the kinds: they carry the app with them) */
+const NEW_GAME: Record<string, Meta> = {
+  cash: {
+    title: "New Cash Game · PitMaster",
+    description: "Set up a poker cash game: blinds, buy-in range, rake or seat fees, chips per buy-in, and a settle-up with pay links when it's over.",
+    path: "/new?type=cash",
+  },
+  tournament: {
+    title: "New Tournament · PitMaster",
+    description:
+      "Build a poker tournament blind structure sized to your time: starting stacks, breaks, antes, rebuys, bounties and payouts, for any number of players.",
+    path: "/new?type=tournament",
+  },
+  dice: {
+    title: "New Liar's Dice · PitMaster",
+    description: "Run a game of liar's dice: every bid and call, dice lost, money per die or a pot, and players' phones as their cups.",
+    path: "/new?type=dice",
+  },
+  lives: {
+    title: "New Lives Game · PitMaster",
+    description: "Keep score in 31, knockout whist or any game played for lives: lives lost each round, who's out, and the money at the end.",
+    path: "/new?type=lives",
+  },
+  pot: {
+    title: "New Pot Game · PitMaster",
+    description: "Run in-between, guts, bourré or pass the pigs: antes, a pot limit, every win and match, and a settle-up at the end.",
+    path: "/new?type=pot",
+  },
+};
+
 export function metaFor(route: string | null, url: URL): Meta {
   switch (route) {
     case "/":
       return { title: HOME_TITLE, description: DESCRIPTION, path: "/" };
-    case "/new": {
-      const type = url.searchParams.get("type");
-      if (type === "dice")
-        return {
-          title: "New Liar's Dice · PitMaster",
-          description: "Run a game of liar's dice: every bid and call, dice lost, money per die or a pot, and players' phones as their cups.",
-          path: "/new?type=dice",
-        };
-      if (type === "lives")
-        return {
-          title: "New Lives Game · PitMaster",
-          description: "Keep score in 31, knockout whist or any game played for lives: lives lost each round, who's out, and the money at the end.",
-          path: "/new?type=lives",
-        };
-      if (type === "pot")
-        return {
-          title: "New Pot Game · PitMaster",
-          description: "Run in-between, guts, bourré or pass the pigs: antes, a pot limit, every win and match, and a settle-up at the end.",
-          path: "/new?type=pot",
-        };
-      return type === "tournament"
-        ? {
-            title: "New Tournament · PitMaster",
-            description:
-              "Build a poker tournament blind structure sized to your time: starting stacks, breaks, antes, rebuys, bounties and payouts, for any number of players.",
-            path: "/new?type=tournament",
-          }
-        : {
-            title: "New Cash Game · PitMaster",
-            description:
-              "Set up a poker cash game: blinds, buy-in range, rake or seat fees, chips per buy-in, and a settle-up with pay links when it's over.",
-            path: "/new?type=cash",
-          };
-    }
+    case "/new":
+      return NEW_GAME[url.searchParams.get("type") ?? ""] ?? NEW_GAME.cash;
     case "/live":
       return {
         title: "Put a Poker Game on Any TV · PitMaster",
