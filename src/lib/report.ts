@@ -8,6 +8,7 @@ import { cashElapsed, derive } from "./clock";
 import { results } from "./stats";
 import { amt, csv, day, duration, money, ordinal, round2, signed, timeOfDay } from "./util";
 import { t, tp } from "$lib/i18n";
+import { cashGames, cashStakes, gameLine, rotationName, variant, variantName } from "./variants";
 
 const pad = (s: string, n: number) => s + " ".repeat(Math.max(1, n - s.length));
 
@@ -49,7 +50,12 @@ export function recap(game: Game) {
     const played = cashElapsed(game) / 60000;
     lines.push(
       t("players.report.cash.summary", {
-        stakes: `${money(game.cash.sb)}/${money(game.cash.bb)}`,
+        // another poker game says which, dealer's choice lists them
+        stakes: !game.cash.games?.length
+          ? `${money(game.cash.sb)}/${money(game.cash.bb)}`
+          : cashGames(game.cash).length > 1
+            ? `${t("gameSetup.variants.dealersChoice")} (${cashGames(game.cash).map((g) => variant(g).short).join(", ")}) · ${money(game.cash.sb)}/${money(game.cash.bb)}`
+            : gameLine(cashStakes(game.cash, cashGames(game.cash)[0]), true),
         played: played >= 1 ? ` · ${duration(played)}` : "",
         bank: money(s.bank),
       }),
@@ -87,13 +93,15 @@ export function recap(game: Game) {
   if (game.tourney) {
     const s = tourneyStats(game);
     const extras = [s.rebuys ? tp("players.report.tourney.rebuys", s.rebuys) : "", s.addOns ? tp("players.report.tourney.addOns", s.addOns) : ""].filter(Boolean);
-    const parts = [tp("players.report.tourney.entrants", s.entrants), t("players.report.tourney.buyIn", { amount: money(game.tourney.buyIn) }), ...extras].join(" · ");
+    const rotation = game.tourney.rotation ?? [];
+    const mix = rotation.length > 1 ? (rotationName(rotation) ?? rotation.map((g) => variant(g).short).join(", ")) : rotation.length ? variantName(rotation[0]) : "";
+    const parts = [mix, tp("players.report.tourney.entrants", s.entrants), t("players.report.tourney.buyIn", { amount: money(game.tourney.buyIn) }), ...extras].filter(Boolean).join(" · ");
     const pool = t("players.report.tourney.pool", { amount: money(s.pool) });
     const rakeNote = s.rake ? ` ${t("players.report.tourney.rakeKept", { amount: money(s.rake) })}` : "";
     lines.push(`${parts} · ${pool}${rakeNote}`);
     if (game.levels.length && game.clock.startedAt) {
       const d = derive(game, game.endedAt ?? Date.now());
-      lines.push(t("players.report.tourney.endedAt", { duration: duration(d.totalElapsedMs / 60000), stakes: `${amt(d.level.sb)}/${amt(d.level.bb)}` }));
+      lines.push(t("players.report.tourney.endedAt", { duration: duration(d.totalElapsedMs / 60000), stakes: d.level.game ? gameLine(d.level) : `${amt(d.level.sb)}/${amt(d.level.bb)}` }));
     }
     lines.push("");
     const done = results(game);

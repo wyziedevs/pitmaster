@@ -18,6 +18,7 @@
   import ArrowRightToLine from "@lucide/svelte/icons/arrow-right-to-line";
   import Copy from "@lucide/svelte/icons/copy";
   import Check from "@lucide/svelte/icons/check";
+  import Coins from "@lucide/svelte/icons/coins";
   import { calc, closeCalculator, CALC_KEY } from "$lib/calcbox.svelte";
   import { t } from "$lib/i18n";
   import {
@@ -280,6 +281,21 @@
     use(v);
   }
 
+  // ---------- pot limit ----------
+  // type the pot (everything in the middle and in front of the players) and
+  // take it, then the amount to call: the most a raise can be is to the call,
+  // plus the pot with that call in it
+  function takeForPot(which: "potSize" | "toCall") {
+    const v = current();
+    calc[which] = v === null ? 0 : Math.max(0, v);
+    clear();
+  }
+  const maxRaise = $derived(calc.potSize === null ? null : calc.potSize + 2 * (calc.toCall ?? 0));
+  function togglePot() {
+    calc.pot = !calc.pot;
+    play(calc.pot ? "open" : "close");
+  }
+
   // one number takes the place of what's being typed; a whole sum ("(20+5)*8") is typed in
   function onPaste(e: ClipboardEvent) {
     const text = e.clipboardData?.getData("text") ?? "";
@@ -515,6 +531,14 @@
       >
       <button
         class="icon-btn tool"
+        class:on={calc.pot}
+        data-sound="none"
+        aria-pressed={calc.pot}
+        title={calc.pot ? t("calculator.pot.offTitle") : t("calculator.pot.onTitle")}
+        onclick={togglePot}><Icon icon={Coins} label={t("calculator.pot.label")} /></button
+      >
+      <button
+        class="icon-btn tool"
         data-sound="none"
         aria-expanded={!calc.small}
         title={calc.small ? t("calculator.showKeysTitle") : t("calculator.hideKeysTitle")}
@@ -574,6 +598,16 @@
         <span class="pre num" dir="ltr">{pre === null ? "" : `= ${fmt(pre)}`}</span>
       </div>
     </div>
+
+    {#if calc.pot}
+      <!-- pot limit: the pot and the call are taken from the display, and the
+           most anyone can raise to comes out under them -->
+      <div class="potbox" in:slide={reveal()} out:slide={leave()}>
+        <button class="pk" data-sound="card" onclick={() => takeForPot("potSize")} title={t("calculator.pot.takeTitle")}><span>{t("calculator.pot.pot")}</span><b class="num" dir="ltr">{calc.potSize === null ? "–" : fmt(calc.potSize)}</b></button>
+        <button class="pk" data-sound="card" onclick={() => takeForPot("toCall")} title={t("calculator.pot.takeTitle")}><span>{t("calculator.pot.toCall")}</span><b class="num" dir="ltr">{calc.toCall === null ? "–" : fmt(calc.toCall)}</b></button>
+        <button class="pk out" data-sound="card" disabled={maxRaise === null} onclick={() => maxRaise !== null && useAnswer(maxRaise)} title={t("calculator.pot.useTitle")}><span>{t("calculator.pot.maxRaise")}</span><b class="num" dir="ltr">{maxRaise === null ? "–" : fmt(maxRaise)}</b></button>
+      </div>
+    {/if}
 
     {#if !calc.small}
       <!-- the number pad itself: always left-to-right, its layout fixed
@@ -683,6 +717,37 @@
   .tool.on {
     color: var(--fg);
     background: var(--block-2);
+  }
+  /* pot limit: three boxes across, the pot, the call and the most it can go to */
+  .potbox {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px;
+    padding: 4px 8px 6px;
+    border-top: var(--hair) solid var(--line);
+  }
+  .pk {
+    height: auto;
+    min-height: 40px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+    padding: 4px 6px;
+    font-size: var(--fs-sm);
+    line-height: 1.25;
+  }
+  .pk span {
+    color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+  .pk b {
+    font-size: var(--fs-md);
+  }
+  .pk.out b {
+    color: var(--fg);
   }
   /* one display, right-aligned: the tape, the sum, what it comes to */
   .screen {

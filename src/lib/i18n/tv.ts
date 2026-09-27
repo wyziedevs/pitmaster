@@ -99,6 +99,11 @@ export interface TvDict {
     nextLevel: string;
     finalLevel: string;
     nextBreak: string;
+    limits: string;
+    limitsAfterBreak: string;
+    bringIn: string;
+    nextGame: string;
+    mixedGames: string;
   };
   status: {
     paused: string;
@@ -143,6 +148,8 @@ export interface TvDict {
     ends: string;
     lastOrbit: string;
     straddlesWelcome: string;
+    dealersChoice: string;
+    nextGame: string;
     bombNextHand: string;
     nextBomb: string;
     highHand: string;
@@ -222,6 +229,10 @@ export interface TvDict {
     breakTime: Plural; // {n}
     levelBlinds: string; // {level}, {sb}, {bb}
     levelBlindsAnte: string; // {level}, {sb}, {bb}, {ante}
+    levelGame: string;
+    levelGameAnte: string;
+    levelLimit: string;
+    levelStud: string;
     minutesLeftAtBlinds: Plural; // {n}
   };
 }
@@ -314,6 +325,11 @@ export const tv: Record<Lang, TvDict> = {
       nextLevel: "Next Level",
       finalLevel: "Final Level",
       nextBreak: "Next Break",
+      limits: "Limits",
+      limitsAfterBreak: "Limits After the Break",
+      bringIn: "Bring-In",
+      nextGame: "Next Game",
+      mixedGames: "Mixed Games",
     },
     status: {
       paused: "Paused",
@@ -358,6 +374,8 @@ export const tv: Record<Lang, TvDict> = {
       ends: "Ends",
       lastOrbit: "Last Orbit",
       straddlesWelcome: "Straddles Welcome",
+      dealersChoice: "Dealer's Choice",
+      nextGame: "Next: {game}",
       bombNextHand: "Bomb Pot Next Hand",
       nextBomb: "Next Bomb Pot",
       highHand: "High Hand",
@@ -437,6 +455,10 @@ export const tv: Record<Lang, TvDict> = {
       breakTime: { one: "Break time. {n} minute.", other: "Break time. {n} minutes." },
       levelBlinds: "Level {level}. Blinds are {sb}, {bb}.",
       levelBlindsAnte: "Level {level}. Blinds are {sb}, {bb}, with a {ante} ante.",
+      levelGame: "Level {level}. {game}. Blinds are {sb}, {bb}.",
+      levelGameAnte: "Level {level}. {game}. Blinds are {sb}, {bb}, with a {ante} ante.",
+      levelLimit: "Level {level}. {game}. Limits are {small}, {big}.",
+      levelStud: "Level {level}. {game}. Ante {ante}, bring-in {bringIn}. Limits are {small}, {big}.",
       minutesLeftAtBlinds: { one: "One minute left at these blinds.", other: "{n} minutes left at these blinds." },
     },
   },
@@ -527,6 +549,11 @@ export const tv: Record<Lang, TvDict> = {
       nextLevel: "下一级",
       finalLevel: "最后一级",
       nextBreak: "下次休息",
+      limits: "限注",
+      limitsAfterBreak: "休息后的限注",
+      bringIn: "强制开注",
+      nextGame: "下一个玩法",
+      mixedGames: "混合玩法",
     },
     status: {
       paused: "已暂停",
@@ -571,6 +598,8 @@ export const tv: Record<Lang, TvDict> = {
       ends: "结束于",
       lastOrbit: "最后一圈",
       straddlesWelcome: "欢迎抢盲",
+      dealersChoice: "庄家选择",
+      nextGame: "下一个：{game}",
       bombNextHand: "下一手炸弹底池",
       nextBomb: "下次炸弹底池",
       highHand: "最大牌",
@@ -650,6 +679,10 @@ export const tv: Record<Lang, TvDict> = {
       breakTime: { other: "休息时间,{n} 分钟。" },
       levelBlinds: "第 {level} 级,盲注为 {sb},{bb}。",
       levelBlindsAnte: "第 {level} 级,盲注为 {sb},{bb},前注 {ante}。",
+      levelGame: "第 {level} 级,{game}。盲注为 {sb},{bb}。",
+      levelGameAnte: "第 {level} 级,{game}。盲注为 {sb},{bb},前注 {ante}。",
+      levelLimit: "第 {level} 级,{game}。限注为 {small},{big}。",
+      levelStud: "第 {level} 级,{game}。前注 {ante},强制开注 {bringIn}。限注为 {small},{big}。",
       minutesLeftAtBlinds: { other: "本级别还剩 {n} 分钟。" },
     },
   },
@@ -740,6 +773,11 @@ export const tv: Record<Lang, TvDict> = {
       nextLevel: "अगला लेवल",
       finalLevel: "आखिरी लेवल",
       nextBreak: "अगला ब्रेक",
+      limits: "लिमिट्स",
+      limitsAfterBreak: "ब्रेक के बाद लिमिट्स",
+      bringIn: "ब्रिंग-इन",
+      nextGame: "अगला गेम",
+      mixedGames: "मिक्स्ड गेम्स",
     },
     status: {
       paused: "रुका हुआ",
@@ -784,6 +822,8 @@ export const tv: Record<Lang, TvDict> = {
       ends: "खत्म होगा",
       lastOrbit: "आखिरी ऑर्बिट",
       straddlesWelcome: "स्ट्रैडल की अनुमति है",
+      dealersChoice: "डीलर्स चॉइस",
+      nextGame: "अगला: {game}",
       bombNextHand: "अगला हाथ बॉम्ब पॉट",
       nextBomb: "अगला बॉम्ब पॉट",
       highHand: "हाई हैंड",
@@ -863,6 +903,10 @@ export const tv: Record<Lang, TvDict> = {
       breakTime: { one: "ब्रेक टाइम। {n} मिनट।", other: "ब्रेक टाइम। {n} मिनट।" },
       levelBlinds: "लेवल {level}। ब्लाइंड्स हैं {sb}, {bb}।",
       levelBlindsAnte: "लेवल {level}। ब्लाइंड्स हैं {sb}, {bb}, साथ में {ante} की एंटी।",
+      levelGame: "लेवल {level}। {game}। ब्लाइंड्स हैं {sb}, {bb}।",
+      levelGameAnte: "लेवल {level}। {game}। ब्लाइंड्स हैं {sb}, {bb}, साथ में {ante} की एंटी।",
+      levelLimit: "लेवल {level}। {game}। लिमिट्स हैं {small}, {big}।",
+      levelStud: "लेवल {level}। {game}। एंटी {ante}, ब्रिंग-इन {bringIn}। लिमिट्स हैं {small}, {big}।",
       minutesLeftAtBlinds: { one: "इन ब्लाइंड्स पर एक मिनट बचा है।", other: "इन ब्लाइंड्स पर {n} मिनट बचे हैं।" },
     },
   },
@@ -953,6 +997,11 @@ export const tv: Record<Lang, TvDict> = {
       nextLevel: "Próximo Nivel",
       finalLevel: "Último Nivel",
       nextBreak: "Próximo Descanso",
+      limits: "Límites",
+      limitsAfterBreak: "Límites Después del Descanso",
+      bringIn: "Bring-In",
+      nextGame: "Próximo Juego",
+      mixedGames: "Juegos Mixtos",
     },
     status: {
       paused: "Pausado",
@@ -997,6 +1046,8 @@ export const tv: Record<Lang, TvDict> = {
       ends: "Termina",
       lastOrbit: "Última Vuelta",
       straddlesWelcome: "Straddles Permitidos",
+      dealersChoice: "Elección del Dealer",
+      nextGame: "Siguiente: {game}",
       bombNextHand: "Bomb Pot la Próxima Mano",
       nextBomb: "Próximo Bomb Pot",
       highHand: "Mano Más Alta",
@@ -1076,6 +1127,10 @@ export const tv: Record<Lang, TvDict> = {
       breakTime: { one: "Hora de descanso. {n} minuto.", other: "Hora de descanso. {n} minutos." },
       levelBlinds: "Nivel {level}. Las ciegas son {sb}, {bb}.",
       levelBlindsAnte: "Nivel {level}. Las ciegas son {sb}, {bb}, con un ante de {ante}.",
+      levelGame: "Nivel {level}. {game}. Las ciegas son {sb}, {bb}.",
+      levelGameAnte: "Nivel {level}. {game}. Las ciegas son {sb}, {bb}, con un ante de {ante}.",
+      levelLimit: "Nivel {level}. {game}. Los límites son {small}, {big}.",
+      levelStud: "Nivel {level}. {game}. Ante de {ante}, bring-in de {bringIn}. Los límites son {small}, {big}.",
       minutesLeftAtBlinds: { one: "Queda un minuto en estas ciegas.", other: "Quedan {n} minutos en estas ciegas." },
     },
   },
@@ -1166,6 +1221,11 @@ export const tv: Record<Lang, TvDict> = {
       nextLevel: "Niveau Suivant",
       finalLevel: "Dernier Niveau",
       nextBreak: "Prochaine Pause",
+      limits: "Limites",
+      limitsAfterBreak: "Limites Après la Pause",
+      bringIn: "Bring-In",
+      nextGame: "Jeu Suivant",
+      mixedGames: "Jeux Mixtes",
     },
     status: {
       paused: "En Pause",
@@ -1210,6 +1270,8 @@ export const tv: Record<Lang, TvDict> = {
       ends: "Se Termine",
       lastOrbit: "Dernier Tour",
       straddlesWelcome: "Straddles Autorisés",
+      dealersChoice: "Choix du Donneur",
+      nextGame: "Ensuite : {game}",
       bombNextHand: "Bomb Pot à la Prochaine Main",
       nextBomb: "Prochain Bomb Pot",
       highHand: "Meilleure Main",
@@ -1289,6 +1351,10 @@ export const tv: Record<Lang, TvDict> = {
       breakTime: { one: "C'est la pause. {n} minute.", other: "C'est la pause. {n} minutes." },
       levelBlinds: "Niveau {level}. Les blindes sont {sb}, {bb}.",
       levelBlindsAnte: "Niveau {level}. Les blindes sont {sb}, {bb}, avec un ante de {ante}.",
+      levelGame: "Niveau {level}. {game}. Les blindes sont {sb}, {bb}.",
+      levelGameAnte: "Niveau {level}. {game}. Les blindes sont {sb}, {bb}, avec un ante de {ante}.",
+      levelLimit: "Niveau {level}. {game}. Les limites sont {small}, {big}.",
+      levelStud: "Niveau {level}. {game}. Ante de {ante}, bring-in de {bringIn}. Les limites sont {small}, {big}.",
       minutesLeftAtBlinds: { one: "Il reste une minute à ces blindes.", other: "Il reste {n} minutes à ces blindes." },
     },
   },
@@ -1379,6 +1445,11 @@ export const tv: Record<Lang, TvDict> = {
       nextLevel: "المستوى التالي",
       finalLevel: "المستوى الأخير",
       nextBreak: "الاستراحة التالية",
+      limits: "الحدود",
+      limitsAfterBreak: "الحدود بعد الاستراحة",
+      bringIn: "البرينغ إن",
+      nextGame: "اللعبة التالية",
+      mixedGames: "ألعاب مختلطة",
     },
     status: {
       paused: "متوقف مؤقتًا",
@@ -1423,6 +1494,8 @@ export const tv: Record<Lang, TvDict> = {
       ends: "تنتهي في",
       lastOrbit: "الجولة الأخيرة",
       straddlesWelcome: "الستراديل مسموح",
+      dealersChoice: "اختيار الموزّع",
+      nextGame: "التالي: {game}",
       bombNextHand: "بومب بوت في اليد التالية",
       nextBomb: "البومب بوت التالي",
       highHand: "أعلى يد",
@@ -1502,6 +1575,10 @@ export const tv: Record<Lang, TvDict> = {
       breakTime: { zero: "وقت الاستراحة.", one: "وقت الاستراحة. دقيقة واحدة.", two: "وقت الاستراحة. دقيقتان.", few: "وقت الاستراحة. {n} دقائق.", many: "وقت الاستراحة. {n} دقيقة.", other: "وقت الاستراحة. {n} دقيقة." },
       levelBlinds: "المستوى {level}. الرهانات العمياء {sb}، {bb}.",
       levelBlindsAnte: "المستوى {level}. الرهانات العمياء {sb}، {bb}، مع أنتي {ante}.",
+      levelGame: "المستوى {level}. {game}. الرهانات العمياء {sb}، {bb}.",
+      levelGameAnte: "المستوى {level}. {game}. الرهانات العمياء {sb}، {bb}، مع أنتي {ante}.",
+      levelLimit: "المستوى {level}. {game}. الحدود {small}، {big}.",
+      levelStud: "المستوى {level}. {game}. أنتي {ante}، وبرينغ إن {bringIn}. الحدود {small}، {big}.",
       minutesLeftAtBlinds: { zero: "لم يتبق وقت عند هذه الرهانات.", one: "بقيت دقيقة واحدة عند هذه الرهانات.", two: "بقيت دقيقتان عند هذه الرهانات.", few: "بقيت {n} دقائق عند هذه الرهانات.", many: "بقيت {n} دقيقة عند هذه الرهانات.", other: "بقيت {n} دقيقة عند هذه الرهانات." },
     },
   },
@@ -1592,6 +1669,11 @@ export const tv: Record<Lang, TvDict> = {
       nextLevel: "পরবর্তী লেভেল",
       finalLevel: "শেষ লেভেল",
       nextBreak: "পরবর্তী বিরতি",
+      limits: "লিমিট",
+      limitsAfterBreak: "বিরতির পরের লিমিট",
+      bringIn: "ব্রিং-ইন",
+      nextGame: "পরবর্তী গেম",
+      mixedGames: "মিক্সড গেম",
     },
     status: {
       paused: "থামানো আছে",
@@ -1636,6 +1718,8 @@ export const tv: Record<Lang, TvDict> = {
       ends: "শেষ হবে",
       lastOrbit: "শেষ অরবিট",
       straddlesWelcome: "স্ট্র্যাডল স্বাগত",
+      dealersChoice: "ডিলার্স চয়েস",
+      nextGame: "পরবর্তী: {game}",
       bombNextHand: "পরের হাতে বম্ব পট",
       nextBomb: "পরের বম্ব পট",
       highHand: "হাই হ্যান্ড",
@@ -1715,6 +1799,10 @@ export const tv: Record<Lang, TvDict> = {
       breakTime: { one: "বিরতির সময়। {n} মিনিট।", other: "বিরতির সময়। {n} মিনিট।" },
       levelBlinds: "লেভেল {level}। ব্লাইন্ড হলো {sb}, {bb}।",
       levelBlindsAnte: "লেভেল {level}। ব্লাইন্ড হলো {sb}, {bb}, সাথে {ante} অ্যান্টি।",
+      levelGame: "লেভেল {level}। {game}। ব্লাইন্ড হলো {sb}, {bb}।",
+      levelGameAnte: "লেভেল {level}। {game}। ব্লাইন্ড হলো {sb}, {bb}, সাথে {ante} অ্যান্টি।",
+      levelLimit: "লেভেল {level}। {game}। লিমিট হলো {small}, {big}।",
+      levelStud: "লেভেল {level}। {game}। অ্যান্টি {ante}, ব্রিং-ইন {bringIn}। লিমিট হলো {small}, {big}।",
       minutesLeftAtBlinds: { one: "এই ব্লাইন্ডে এক মিনিট বাকি।", other: "এই ব্লাইন্ডে {n} মিনিট বাকি।" },
     },
   },
@@ -1805,6 +1893,11 @@ export const tv: Record<Lang, TvDict> = {
       nextLevel: "Próximo Nível",
       finalLevel: "Último Nível",
       nextBreak: "Próxima Pausa",
+      limits: "Limites",
+      limitsAfterBreak: "Limites Depois da Pausa",
+      bringIn: "Bring-In",
+      nextGame: "Próximo Jogo",
+      mixedGames: "Jogos Mistos",
     },
     status: {
       paused: "Pausado",
@@ -1849,6 +1942,8 @@ export const tv: Record<Lang, TvDict> = {
       ends: "Termina",
       lastOrbit: "Última Rodada",
       straddlesWelcome: "Straddles Permitidos",
+      dealersChoice: "Escolha do Dealer",
+      nextGame: "Próximo: {game}",
       bombNextHand: "Bomb Pot na Próxima Mão",
       nextBomb: "Próximo Bomb Pot",
       highHand: "Mão Mais Alta",
@@ -1928,6 +2023,10 @@ export const tv: Record<Lang, TvDict> = {
       breakTime: { one: "Hora da pausa. {n} minuto.", other: "Hora da pausa. {n} minutos." },
       levelBlinds: "Nível {level}. Os blinds são {sb}, {bb}.",
       levelBlindsAnte: "Nível {level}. Os blinds são {sb}, {bb}, com um ante de {ante}.",
+      levelGame: "Nível {level}. {game}. Os blinds são {sb}, {bb}.",
+      levelGameAnte: "Nível {level}. {game}. Os blinds são {sb}, {bb}, com um ante de {ante}.",
+      levelLimit: "Nível {level}. {game}. Os limites são {small}, {big}.",
+      levelStud: "Nível {level}. {game}. Ante de {ante}, bring-in de {bringIn}. Os limites são {small}, {big}.",
       minutesLeftAtBlinds: { one: "Falta um minuto nestes blinds.", other: "Faltam {n} minutos nestes blinds." },
     },
   },

@@ -9,6 +9,7 @@
   import { goto } from "$app/navigation";
   import { getChipSets, getDefaultChipSetId, saveGame, getTemplates, getTemplate, saveTemplate, getGame, getGames, getLeagues, knownPlayers } from "$lib/store";
   import { currentLeague } from "$lib/stats";
+  import { ROTATIONS, VARIANTS, isStud, rotationName, studAmounts, variant, variantName } from "$lib/variants";
   import { gameChips, distribute, maxStack } from "$lib/chips";
   import { generateStructure, defaultPayouts, payoutAmounts, plannedMinutes, structureMinutes } from "$lib/blinds";
   import { newGame, unusedSeats } from "$lib/game";
@@ -69,6 +70,38 @@
     leagueFor = type;
     leagueId = currentLeague(leagues, type)?.id ?? "";
   });
+
+  // ---- the game: hold'em, another poker game, or several (a mix, or dealer's choice) ----
+  // a variant's id, "mix:<rotation>", "mix:custom" (tournaments) or "choice" (cash)
+  let gamePick = $state("nlhe");
+  let customGames = $state<string[]>(["nlhe", "plo"]);
+  let rotateMinutes = $state(0);
+  let studAnte = $state(0);
+  let studBringIn = $state(0);
+  const games = $derived<string[]>(
+    gamePick === "choice" || gamePick === "mix:custom"
+      ? customGames
+      : gamePick.startsWith("mix:")
+        ? (ROTATIONS.find((r) => `mix:${r.id}` === gamePick)?.games ?? ["nlhe"])
+        : [gamePick]
+  );
+  // plain no limit hold'em is saved as nothing at all
+  const plainHoldem = $derived(games.length === 1 && games[0] === "nlhe");
+  // a pick that isn't for this kind of game (a mix on a cash game) goes back to hold'em
+  $effect(() => {
+    if ((isCash && gamePick.startsWith("mix:")) || (!isCash && gamePick === "choice")) gamePick = "nlhe";
+  });
+  function toggleGame(id: string, on: boolean) {
+    customGames = on ? [...customGames.filter((g) => g !== id), id] : customGames.filter((g) => g !== id);
+  }
+  /** the pick that makes these games: one of them, a known mix, or the host's own */
+  function pickFor(list: string[], cash: boolean) {
+    if (list.length === 1) return list[0];
+    const r = ROTATIONS.find((x) => x.games.length === list.length && x.games.every((g, i) => g === list[i]));
+    if (!cash && r) return `mix:${r.id}`;
+    customGames = [...list];
+    return cash ? "choice" : "mix:custom";
+  }
 
   // ---- cash ----
   let sb = $state(0.25);
@@ -159,6 +192,7 @@
       minBuyIn = +(bb * (settings.cashMinBB || 40)).toFixed(2);
       maxBuyIn = +(bb * (settings.cashMaxBB || 200)).toFixed(2);
       bombAnte = +(bb * settings.cashBombBB).toFixed(2);
+      ({ ante: studAnte, bringIn: studBringIn } = studAmounts(bb, smallest));
       sevenTwoAmount = +(bb * settings.cashSevenTwoBB).toFixed(2);
     }
   });
@@ -183,6 +217,7 @@
       anteFrom,
       breakEvery,
       breakMinutes,
+      rotation: variantsShown && !plainHoldem ? games : undefined,
     });
   });
 
@@ -203,7 +238,7 @@
   // what the host switched on (Settings > Your Game) decides what's on the form.
   // anything off can still be added for just this game, and a template or rerun
   // that used it brings it along. off means off: it isn't in the game at all.
-  let tonight = $state({ rake: false, cut: false, bounty: false, rebuys: false, bomb: false, sevenTwo: false, highHand: false, format: false });
+  let tonight = $state({ rake: false, cut: false, bounty: false, rebuys: false, bomb: false, sevenTwo: false, highHand: false, format: false, variants: false });
   const rakeOn = $derived(settings.useRake || tonight.rake);
   const cutOn = $derived(settings.useHouseCut || tonight.cut);
   const bountyOn = $derived(settings.useBounties || tonight.bounty);
@@ -211,6 +246,7 @@
   const bombShown = $derived(settings.useBombPots || tonight.bomb);
   const sevenTwoShown = $derived(settings.useSevenTwo || tonight.sevenTwo);
   const highHandShown = $derived(settings.useHighHand || tonight.highHand);
+  const variantsShown = $derived(settings.useVariants || tonight.variants);
   const satelliteShown = $derived(settings.useSatellites || tonight.format);
   const shootoutShown = $derived(settings.useShootouts || tonight.format);
   const bracketShown = $derived(settings.useBrackets || tonight.format);
@@ -220,12 +256,14 @@
   const addable = $derived(
     (isCash
       ? [
+          !variantsShown && { key: "variants", labelKey: "gameSetup.variants.addable" },
           !rakeOn && { key: "rake", labelKey: "gameSetup.addable.rakeOrSeatFee" },
           !bombShown && { key: "bomb", labelKey: "gameSetup.cash.sides.bombPots" },
           !sevenTwoShown && { key: "sevenTwo", labelKey: "gameSetup.cash.sides.sevenTwo" },
           !highHandShown && { key: "highHand", labelKey: "gameSetup.cash.sides.highHand" },
         ]
       : [
+          !variantsShown && { key: "variants", labelKey: "gameSetup.variants.addable" },
           !rebuysOn && { key: "rebuys", labelKey: "gameSetup.addable.rebuysAddOns" },
           !bountyOn && { key: "bounty", labelKey: "gameSetup.addable.bounty" },
           !cutOn && { key: "cut", labelKey: "gameSetup.tournament.houseCut.legend" },
@@ -285,6 +323,7 @@
     mysteryFrom: Math.max(0, Math.round(mysteryFrom || 0)),
     satellite: satellite ? { seatValue } : null,
     format: (format === "shootout" && shootoutShown) || isBracket ? format : "standard",
+    rotation: variantsShown && !plainHoldem ? [...games] : undefined,
   });
   const cashSettings = (): CashSettings => ({
     sb,
@@ -298,6 +337,15 @@
     bomb: { on: bombShown && bombOn, ante: Math.max(0, bombAnte), doubleBoard: bombDouble, everyMinutes: Math.max(0, Math.round(bombEvery || 0)) },
     sevenTwo: { on: sevenTwoShown && sevenTwoOn, amount: Math.max(0, sevenTwoAmount) },
     highHand: { on: highHandShown && highHandOn, prize: Math.max(0, highHandPrize), everyMinutes: Math.max(0, Math.round(highHandEvery || 0)) },
+    ...(variantsShown && !plainHoldem
+      ? {
+          games: [...games],
+          current: games[0],
+          since: 0,
+          rotateMinutes: games.length > 1 ? Math.max(0, Math.round(rotateMinutes || 0)) : 0,
+          ...(games.some(isStud) ? { ante: Math.max(0, studAnte), bringIn: Math.max(0, studBringIn) } : {}),
+        }
+      : {}),
   });
 
   // ---- templates, and "tweak and rerun" from an old game ----
@@ -332,6 +380,13 @@
       if (bombOn) tonight.bomb = true;
       if (sevenTwoOn) tonight.sevenTwo = true;
       if (highHandOn) tonight.highHand = true;
+      if (x.cash.games?.length) {
+        gamePick = pickFor(x.cash.games, true);
+        rotateMinutes = x.cash.rotateMinutes ?? 0;
+        if (x.cash.ante !== undefined) studAnte = x.cash.ante;
+        if (x.cash.bringIn !== undefined) studBringIn = x.cash.bringIn;
+        tonight.variants = true;
+      }
       cashPlayers = Math.max(cashPlayers, x.players.length || 0);
     }
     const ts = x.tourney;
@@ -348,6 +403,10 @@
       satelliteOn = !!ts.satellite;
       if (ts.satellite) seatValue = ts.satellite.seatValue;
       format = ts.format;
+      if (ts.rotation?.length) {
+        gamePick = pickFor(ts.rotation, false);
+        tonight.variants = true;
+      }
       if (satelliteOn || format !== "standard") tonight.format = true;
     }
     if (x.levels?.length) {
@@ -569,6 +628,44 @@
         <ChipLegend {chips} {isCash} size={44} />
       </div>
     </fieldset>
+
+    {#if variantsShown}
+      <fieldset class="border-0 mt-0 mx-0 mb-[22px] p-0 min-w-0" transition:slide={reveal()}>
+        <legend class="ruled w-full px-0">{t("gameSetup.variants.legend")}{#if !settings.useVariants}<button class="link small opt ml-2" data-sound="off" onclick={() => ((tonight.variants = false), (gamePick = "nlhe"))}>{t("gameSetup.variants.remove")}</button>{/if}</legend>
+        <label>
+          <span>{t("gameSetup.variants.game")}</span>
+          <select bind:value={gamePick}>
+            <optgroup label={t("gameSetup.variants.oneGame")}>
+              {#each VARIANTS as v (v.id)}<option value={v.id}>{variantName(v.id)} ({v.short})</option>{/each}
+            </optgroup>
+            {#if isCash}
+              <option value="choice">{t("gameSetup.variants.dealersChoice")}</option>
+            {:else}
+              <optgroup label={t("gameSetup.variants.mixed")}>
+                {#each ROTATIONS as r (r.id)}<option value="mix:{r.id}">{rotationName(r.games)} ({r.games.map((g) => variant(g).short).join(", ")})</option>{/each}
+                <option value="mix:custom">{t("gameSetup.variants.yourMix")}</option>
+              </optgroup>
+            {/if}
+          </select>
+        </label>
+        {#if gamePick === "choice" || gamePick === "mix:custom"}
+          <div class="row gap-y-1 mb-[6px]" transition:slide={reveal()}>
+            {#each VARIANTS as v (v.id)}<label class="across m-0"><input type="checkbox" checked={customGames.includes(v.id)} onchange={(e) => toggleGame(v.id, e.currentTarget.checked)} /><span title={variantName(v.id)}>{v.short}</span></label>{/each}
+          </div>
+          <p class="small muted -mt-1 mx-0 mb-[10px]">{customGames.length ? t(isCash ? "gameSetup.variants.choiceOrder" : "gameSetup.variants.mixOrder", { games: customGames.map((g) => variant(g).short).join(", ") }) : t("gameSetup.variants.pickSome")}</p>
+        {/if}
+        {#if isCash && gamePick === "choice"}
+          <label><span>{t("gameSetup.variants.rotateEvery")}</span><input type="number" min="0" step="1" bind:value={rotateMinutes} /></label>
+        {/if}
+        {#if isCash && games.some(isStud)}
+          <div class="row" transition:slide={reveal()}>
+            <label><span>{t("gameSetup.variants.studAnte", { sym })}</span><input type="number" min="0" step="any" bind:value={studAnte} /></label>
+            <label><span>{t("gameSetup.variants.bringIn", { sym })}</span><input type="number" min="0" step="any" bind:value={studBringIn} /></label>
+          </div>
+        {/if}
+        <p class="small muted -mt-1 mx-0 mb-0">{isCash ? t("gameSetup.variants.limitNoteCash") : t("gameSetup.variants.limitNoteTourney")}</p>
+      </fieldset>
+    {/if}
 
     {#if isCash}
       <fieldset class="border-0 mt-0 mx-0 mb-[22px] p-0 min-w-0">
@@ -817,6 +914,7 @@
       <h2>{t("gameSetup.previewCash.summary")}</h2>
       <table>
         <tbody>
+          {#if variantsShown && !plainHoldem}<tr><td>{t("gameSetup.variants.legend")}</td><td class="num">{games.length > 1 ? `${t("gameSetup.variants.dealersChoice")} (${games.map((g) => variant(g).short).join(", ")})` : variantName(games[0])}</td></tr>{/if}
           <tr><td>{t("gameSetup.previewCash.rowBlinds")}</td><td class="num">{money(sb)} / {money(bb)}{straddle ? t("gameSetup.previewCash.straddlesInline") : ""}</td></tr>
           <tr><td>{t("gameSetup.previewCash.rowBuyIn")}</td><td class="num">{money(minBuyIn)}–{money(maxBuyIn)}</td></tr>
           <tr><td>{t("gameSetup.previewCash.rowLength")}</td><td class="num">{duration(cashHours * 60)}</td></tr>

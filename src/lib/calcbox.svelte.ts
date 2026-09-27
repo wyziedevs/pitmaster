@@ -13,6 +13,10 @@ export const calc = $state({
   ghost: false,
   /** just the display, no keys */
   small: false,
+  /** pot limit: the pot and the call, and the most anyone can raise to */
+  pot: false,
+  potSize: null as number | null,
+  toCall: null as number | null,
 });
 
 export function closeCalculator() {

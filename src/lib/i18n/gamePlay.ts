@@ -222,6 +222,18 @@ export interface GamePlayDict {
     cmdBeats: string;
     each: string;
   };
+  variants: {
+    limits: string;
+    bringIn: string;
+    nextLine: string;
+    gameNowLog: string;
+    gameNowFlash: string;
+    nextGame: string;
+    nextGameTo: string;
+    playGame: string;
+    pickAria: string;
+    movesOnIn: string;
+  };
   cash: {
     sessionLabel: string;
     startSession: string;
@@ -420,6 +432,10 @@ export interface GamePlayDict {
     addBreakTitle: string;
     removeThisBreak: string;
     removeLevelN: string;
+    gameHeader: string;
+    bringInHeader: string;
+    gameAria: string;
+    bringInAria: string;
   };
   keys: {
     openCommands: string;
@@ -643,6 +659,18 @@ export const gamePlay: Record<Lang, GamePlayDict> = {
       cmdBeats: "{winner} Beats {loser}",
       each: "each",
     },
+    variants: {
+      limits: "Limits",
+      bringIn: "Bring-In",
+      nextLine: "Next: {line}",
+      gameNowLog: "Now playing {game}",
+      gameNowFlash: "Now playing {game}: {line}",
+      nextGame: "Next Game",
+      nextGameTo: "Next: {game}",
+      playGame: "Play {game}",
+      pickAria: "Game being played",
+      movesOnIn: "Moves on in {time}",
+    },
     cash: {
       sessionLabel: "Session",
       startSession: "Start Session",
@@ -841,6 +869,10 @@ export const gamePlay: Record<Lang, GamePlayDict> = {
       addBreakTitle: "Add a break after this one",
       removeThisBreak: "Remove This Break",
       removeLevelN: "Remove Level {n}",
+      gameHeader: "Game",
+      bringInHeader: "Bring-In",
+      gameAria: "Level {n} game",
+      bringInAria: "Level {n} bring-in",
     },
     keys: {
       openCommands: "Open Commands",
@@ -1062,6 +1094,18 @@ export const gamePlay: Record<Lang, GamePlayDict> = {
       cmdBeats: "{winner} 击败 {loser}",
       each: "每人",
     },
+    variants: {
+      limits: "限注",
+      bringIn: "强制开注",
+      nextLine: "下一个：{line}",
+      gameNowLog: "现在玩 {game}",
+      gameNowFlash: "现在玩 {game}：{line}",
+      nextGame: "下一个玩法",
+      nextGameTo: "下一个：{game}",
+      playGame: "玩 {game}",
+      pickAria: "当前玩法",
+      movesOnIn: "{time} 后换下一个",
+    },
     cash: {
       sessionLabel: "场次",
       startSession: "开始场次",
@@ -1260,6 +1304,10 @@ export const gamePlay: Record<Lang, GamePlayDict> = {
       addBreakTitle: "在此级别后添加休息",
       removeThisBreak: "移除此次休息",
       removeLevelN: "移除第 {n} 级",
+      gameHeader: "玩法",
+      bringInHeader: "强制开注",
+      gameAria: "第 {n} 级玩法",
+      bringInAria: "第 {n} 级强制开注",
     },
     keys: {
       openCommands: "打开命令面板",
@@ -1481,6 +1529,18 @@ export const gamePlay: Record<Lang, GamePlayDict> = {
       cmdBeats: "{winner} ने {loser} को हराया",
       each: "प्रत्येक",
     },
+    variants: {
+      limits: "लिमिट्स",
+      bringIn: "ब्रिंग-इन",
+      nextLine: "अगला: {line}",
+      gameNowLog: "अब {game} चल रहा है",
+      gameNowFlash: "अब {game} चल रहा है: {line}",
+      nextGame: "अगला गेम",
+      nextGameTo: "अगला: {game}",
+      playGame: "{game} खेलें",
+      pickAria: "चल रहा गेम",
+      movesOnIn: "{time} में बदलेगा",
+    },
     cash: {
       sessionLabel: "सेशन",
       startSession: "सेशन शुरू करें",
@@ -1679,6 +1739,10 @@ export const gamePlay: Record<Lang, GamePlayDict> = {
       addBreakTitle: "इसके बाद एक ब्रेक जोड़ें",
       removeThisBreak: "यह ब्रेक हटाएं",
       removeLevelN: "लेवल {n} हटाएं",
+      gameHeader: "गेम",
+      bringInHeader: "ब्रिंग-इन",
+      gameAria: "लेवल {n} गेम",
+      bringInAria: "लेवल {n} ब्रिंग-इन",
     },
     keys: {
       openCommands: "कमांड्स खोलें",
@@ -1900,6 +1964,18 @@ export const gamePlay: Record<Lang, GamePlayDict> = {
       cmdBeats: "{winner} Vence a {loser}",
       each: "cada uno",
     },
+    variants: {
+      limits: "Límites",
+      bringIn: "Bring-In",
+      nextLine: "Siguiente: {line}",
+      gameNowLog: "Ahora toca {game}",
+      gameNowFlash: "Ahora toca {game}: {line}",
+      nextGame: "Próximo Juego",
+      nextGameTo: "Siguiente: {game}",
+      playGame: "Jugar {game}",
+      pickAria: "Juego en curso",
+      movesOnIn: "Cambia en {time}",
+    },
     cash: {
       sessionLabel: "Sesión",
       startSession: "Empezar Sesión",
@@ -2098,6 +2174,10 @@ export const gamePlay: Record<Lang, GamePlayDict> = {
       addBreakTitle: "Añadir un descanso después de este",
       removeThisBreak: "Quitar Este Descanso",
       removeLevelN: "Quitar el Nivel {n}",
+      gameHeader: "Juego",
+      bringInHeader: "Bring-In",
+      gameAria: "Juego del Nivel {n}",
+      bringInAria: "Bring-In del Nivel {n}",
     },
     keys: {
       openCommands: "Abrir Comandos",
@@ -2319,6 +2399,18 @@ export const gamePlay: Record<Lang, GamePlayDict> = {
       cmdBeats: "{winner} Bat {loser}",
       each: "chacun",
     },
+    variants: {
+      limits: "Limites",
+      bringIn: "Bring-In",
+      nextLine: "Ensuite : {line}",
+      gameNowLog: "En jeu : {game}",
+      gameNowFlash: "En jeu : {game}, {line}",
+      nextGame: "Jeu Suivant",
+      nextGameTo: "Ensuite : {game}",
+      playGame: "Lancer {game}",
+      pickAria: "Jeu en cours",
+      movesOnIn: "Changement dans {time}",
+    },
     cash: {
       sessionLabel: "Session",
       startSession: "Démarrer la Session",
@@ -2517,6 +2609,10 @@ export const gamePlay: Record<Lang, GamePlayDict> = {
       addBreakTitle: "Ajouter une pause après celui-ci",
       removeThisBreak: "Retirer Cette Pause",
       removeLevelN: "Retirer le Niveau {n}",
+      gameHeader: "Jeu",
+      bringInHeader: "Bring-In",
+      gameAria: "Jeu du Niveau {n}",
+      bringInAria: "Bring-In du Niveau {n}",
     },
     keys: {
       openCommands: "Ouvrir les Commandes",
@@ -2738,6 +2834,18 @@ export const gamePlay: Record<Lang, GamePlayDict> = {
       cmdBeats: "{winner} يهزم {loser}",
       each: "لكل لاعب",
     },
+    variants: {
+      limits: "الحدود",
+      bringIn: "البرينغ إن",
+      nextLine: "التالي: {line}",
+      gameNowLog: "اللعبة الآن: {game}",
+      gameNowFlash: "اللعبة الآن: {game}، {line}",
+      nextGame: "اللعبة التالية",
+      nextGameTo: "التالي: {game}",
+      playGame: "لعب {game}",
+      pickAria: "اللعبة الجارية",
+      movesOnIn: "تتغير بعد {time}",
+    },
     cash: {
       sessionLabel: "الجلسة",
       startSession: "بدء الجلسة",
@@ -2936,6 +3044,10 @@ export const gamePlay: Record<Lang, GamePlayDict> = {
       addBreakTitle: "إضافة استراحة بعد هذا",
       removeThisBreak: "إزالة هذه الاستراحة",
       removeLevelN: "إزالة المستوى {n}",
+      gameHeader: "اللعبة",
+      bringInHeader: "البرينغ إن",
+      gameAria: "لعبة المستوى {n}",
+      bringInAria: "البرينغ إن للمستوى {n}",
     },
     keys: {
       openCommands: "فتح الأوامر",
@@ -3157,6 +3269,18 @@ export const gamePlay: Record<Lang, GamePlayDict> = {
       cmdBeats: "{winner} হারালেন {loser}-কে",
       each: "প্রত্যেকে",
     },
+    variants: {
+      limits: "লিমিট",
+      bringIn: "ব্রিং-ইন",
+      nextLine: "পরবর্তী: {line}",
+      gameNowLog: "এখন চলছে {game}",
+      gameNowFlash: "এখন চলছে {game}: {line}",
+      nextGame: "পরবর্তী গেম",
+      nextGameTo: "পরবর্তী: {game}",
+      playGame: "{game} খেলুন",
+      pickAria: "চলতি গেম",
+      movesOnIn: "{time} পরে বদলাবে",
+    },
     cash: {
       sessionLabel: "সেশন",
       startSession: "সেশন শুরু করুন",
@@ -3355,6 +3479,10 @@ export const gamePlay: Record<Lang, GamePlayDict> = {
       addBreakTitle: "এর পরে একটি বিরতি যোগ করুন",
       removeThisBreak: "এই বিরতি সরান",
       removeLevelN: "লেভেল {n} সরান",
+      gameHeader: "গেম",
+      bringInHeader: "ব্রিং-ইন",
+      gameAria: "লেভেল {n} গেম",
+      bringInAria: "লেভেল {n} ব্রিং-ইন",
     },
     keys: {
       openCommands: "কমান্ড খুলুন",
@@ -3576,6 +3704,18 @@ export const gamePlay: Record<Lang, GamePlayDict> = {
       cmdBeats: "{winner} Vence {loser}",
       each: "cada",
     },
+    variants: {
+      limits: "Limites",
+      bringIn: "Bring-In",
+      nextLine: "Próximo: {line}",
+      gameNowLog: "Agora é {game}",
+      gameNowFlash: "Agora é {game}: {line}",
+      nextGame: "Próximo Jogo",
+      nextGameTo: "Próximo: {game}",
+      playGame: "Jogar {game}",
+      pickAria: "Jogo em andamento",
+      movesOnIn: "Muda em {time}",
+    },
     cash: {
       sessionLabel: "Sessão",
       startSession: "Iniciar Sessão",
@@ -3774,6 +3914,10 @@ export const gamePlay: Record<Lang, GamePlayDict> = {
       addBreakTitle: "Adicionar um intervalo depois deste",
       removeThisBreak: "Remover Este Intervalo",
       removeLevelN: "Remover o Nível {n}",
+      gameHeader: "Jogo",
+      bringInHeader: "Bring-In",
+      gameAria: "Jogo do Nível {n}",
+      bringInAria: "Bring-In do Nível {n}",
     },
     keys: {
       openCommands: "Abrir Comandos",

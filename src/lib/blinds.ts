@@ -1,6 +1,7 @@
 import type { GameChip, Level } from "./types";
 import { isMultiple, near } from "./util";
 import { smallestNeeded } from "./chips";
+import { isStud, studAmounts, variant } from "./variants";
 
 // 25/50, 50/100, 75/150, 100/200, 150/300, 200/400, 300/600, 400/800, 500/1000...
 const MANTISSAS = [1, 1.5, 2, 3, 4, 5, 6, 8];
@@ -41,6 +42,8 @@ export interface StructureOpts {
   breakMinutes?: number;
   /** overtime levels past the target so the clock never runs dry */
   extra?: number;
+  /** the games, one a level in turn (variants.ts); none = no limit hold'em all night */
+  rotation?: string[];
 }
 
 /** a blind structure that should wrap up near targetMinutes */
@@ -75,7 +78,15 @@ export function generateStructure(o: StructureOpts): Level[] {
     levels.push({ sb: +(bb / 2).toFixed(4), bb, ante: 0, minutes: levelMinutes, overtime: i >= n });
   }
 
-  if (anteFrom > 0) levels.forEach((l, i) => i + 1 >= anteFrom && (l.ante = l.bb));
+  // each level plays the next game in the rotation. stud antes every hand and
+  // brings it in; a big blind ante only belongs in the big-bet games
+  const rotation = o.rotation?.length ? o.rotation : null;
+  levels.forEach((l, i) => {
+    const game = rotation?.[i % rotation.length];
+    if (rotation) l.game = game;
+    if (isStud(game)) Object.assign(l, { sb: 0 }, studAmounts(l.bb, unit));
+    else if (anteFrom > 0 && i + 1 >= anteFrom && variant(game).betting !== "fl") l.ante = l.bb;
+  });
 
   const out: Level[] = [];
   levels.forEach((l, i) => {
@@ -104,7 +115,7 @@ export function annotate(levels: Level[], chips: GameChip[]): Level[] {
     l.num = ++num;
     if (!sorted.length) continue;
     // chips smaller than what every remaining level needs can be raced off
-    const future = play.slice(num - 1).flatMap((x) => [x.sb, x.bb, x.ante]);
+    const future = play.slice(num - 1).flatMap((x) => [x.sb, x.bb, x.ante, x.bringIn ?? 0]);
     const need = smallestNeeded(future, sorted);
     const remove = inPlay.filter((v) => v < need.value - 1e-9);
     l.colorUp = remove.length && num > 1 ? sorted.filter((c) => remove.some((v) => near(v, c.value))).map((c) => c.id) : [];

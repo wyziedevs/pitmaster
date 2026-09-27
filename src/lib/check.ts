@@ -4,6 +4,7 @@
 // colors. anything else is turned away whole, never half saved.
 import type { ChipSet, EventKind, Game, League, PayHandles, Template } from "./types";
 import { FACE_DEFAULTS } from "./chips";
+import { isVariant } from "./variants";
 
 type Obj = Record<string, unknown>;
 type Is = (x: unknown) => boolean;
@@ -43,9 +44,11 @@ const player = (p: unknown) =>
   maybe(orNull((s) => obj(s) && num(s.table) && num(s.seat)))(p.seat) &&
   maybe(id)(p.ticket);
 
-const level = (l: unknown) => obj(l) && num(l.sb) && num(l.bb) && num(l.ante) && num(l.minutes) && maybe(list(str))(l.colorUp);
+const variant = (v: unknown) => isVariant(v);
+const level = (l: unknown) =>
+  obj(l) && num(l.sb) && num(l.bb) && num(l.ante) && num(l.minutes) && maybe(list(str))(l.colorUp) && maybe(variant)(l.game) && maybe(num)(l.bringIn);
 const said = orNull((n) => obj(n) && str(n.text) && num(n.at));
-const EVENT_KINDS: EventKind[] = ["win", "deal", "money", "bounty", "bust", "chips", "rack", "shuffle", "draw", "seat", "bomb", "sevenTwo", "highHand", "note"];
+const EVENT_KINDS: EventKind[] = ["win", "deal", "money", "bounty", "bust", "chips", "rack", "shuffle", "draw", "seat", "bomb", "sevenTwo", "highHand", "game", "note"];
 const flashed = orNull((n) => obj(n) && str(n.text) && num(n.at) && (EVENT_KINDS as string[]).includes(n.kind as string));
 const clock = (c: unknown) =>
   obj(c) && ["idle", "running", "paused"].includes(c.status as string) && num(c.levelIndex) && num(c.levelElapsedMs) && num(c.elapsedMs);
@@ -59,7 +62,8 @@ const tourney = (t: unknown) =>
   ["flat", "progressive", "mystery"].includes(t.bountyKind as string) &&
   num(t.mysteryFrom) &&
   orNull((x) => obj(x) && num(x.seatValue))(t.satellite) &&
-  ["standard", "shootout", "bracket"].includes(t.format as string);
+  ["standard", "shootout", "bracket"].includes(t.format as string) &&
+  maybe(list(variant))(t.rotation);
 /** one elimination, and (mystery bounties) the envelope it opened */
 const knockout = (k: unknown) => obj(k) && id(k.out) && orNull(id)(k.by) && num(k.at) && maybe(num)(k.prize);
 const mystery = (m: unknown) => obj(m) && num(m.at) && list(num)(m.prizes) && obj(m.own) && Object.values(m.own).every(num);
@@ -73,7 +77,13 @@ const cash = (c: unknown) =>
   obj(c.rake) &&
   bombs(c.bomb) &&
   sevenTwo(c.sevenTwo) &&
-  highHand(c.highHand);
+  highHand(c.highHand) &&
+  maybe(list(variant))(c.games) &&
+  maybe(variant)(c.current) &&
+  maybe(num)(c.since) &&
+  maybe(num)(c.rotateMinutes) &&
+  maybe(num)(c.ante) &&
+  maybe(num)(c.bringIn);
 /** one bomb pot, 7-2 win or high hand in a cash game */
 const side = (e: unknown) =>
   obj(e) &&

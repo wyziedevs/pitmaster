@@ -73,6 +73,10 @@ export interface SettingsDict {
         label: string;
         hint: string;
       };
+      variants: {
+        label: string;
+        hint: string;
+      };
       waitlist: { label: string; hint: string };
       leagues: {
         label: string;
@@ -378,6 +382,10 @@ export const settings: Record<Lang, SettingsDict> = {
         brackets: {
           label: "Heads-Up Brackets",
           hint: "Tournaments played one on one, each winner moving on to the next round.",
+        },
+        variants: {
+          label: "Other Poker Games",
+          hint: "Omaha, stud, draw and mixed games like HORSE, and dealer's choice for cash games.",
         },
         waitlist: { label: "Waitlist", hint: "Cash games: who's next for a seat, on the TV and on phones." },
         leagues: {
@@ -747,6 +755,10 @@ export const settings: Record<Lang, SettingsDict> = {
           label: "单挑对阵",
           hint: "一对一进行的锦标赛，每位赢家晋级下一轮。",
         },
+        variants: {
+          label: "其他扑克玩法",
+          hint: "奥马哈、梭哈、换牌和 HORSE 等混合玩法，现金局还可以玩庄家选择。",
+        },
         waitlist: { label: "候补名单", hint: "现金局：谁下一个入座，显示在电视和手机上。" },
         leagues: {
           label: "联赛",
@@ -1113,6 +1125,10 @@ export const settings: Record<Lang, SettingsDict> = {
         brackets: {
           label: "हेड्स-अप ब्रैकेट",
           hint: "आमने-सामने खेले जाने वाले टूर्नामेंट, जिनमें हर विजेता अगले राउंड में जाता है।",
+        },
+        variants: {
+          label: "दूसरे पोकर गेम्स",
+          hint: "ओमाहा, स्टड, ड्रॉ और HORSE जैसे मिक्स्ड गेम्स, और कैश गेम्स के लिए डीलर्स चॉइस।",
         },
         waitlist: { label: "वेटलिस्ट", hint: "कैश गेम: अगली सीट किसकी है, टीवी और फ़ोन पर।" },
         leagues: {
@@ -1481,6 +1497,10 @@ export const settings: Record<Lang, SettingsDict> = {
           label: "Cuadros Heads-Up",
           hint: "Torneos uno contra uno, en los que cada ganador pasa a la siguiente ronda.",
         },
+        variants: {
+          label: "Otros Juegos de Póker",
+          hint: "Omaha, stud, draw y juegos mixtos como HORSE, y elección del dealer en las partidas de cash.",
+        },
         waitlist: { label: "Lista de espera", hint: "Partidas de cash: quién sigue para sentarse, en la TV y en los teléfonos." },
         leagues: {
           label: "Ligas",
@@ -1848,6 +1868,10 @@ export const settings: Record<Lang, SettingsDict> = {
           label: "Tableaux Heads-Up",
           hint: "Des tournois en tête-à-tête, où chaque gagnant passe au tour suivant.",
         },
+        variants: {
+          label: "Autres Jeux de Poker",
+          hint: "Omaha, stud, draw et jeux mixtes comme le HORSE, plus le choix du donneur en cash game.",
+        },
         waitlist: { label: "Liste d'attente", hint: "Parties cash : qui est le prochain à s'asseoir, sur la TV et les téléphones." },
         leagues: {
           label: "Ligues",
@@ -2214,6 +2238,10 @@ export const settings: Record<Lang, SettingsDict> = {
         brackets: {
           label: "مواجهات فردية",
           hint: "بطولات تُلعب واحدًا لواحد، ويتأهل كل فائز إلى الدور التالي.",
+        },
+        variants: {
+          label: "ألعاب بوكر أخرى",
+          hint: "أوماها وستاد ودرو وألعاب مختلطة مثل HORSE، واختيار الموزّع في ألعاب الكاش.",
         },
         waitlist: { label: "قائمة الانتظار", hint: "ألعاب الكاش: من التالي للجلوس، على التلفاز والهواتف." },
         leagues: {
@@ -2589,6 +2617,10 @@ export const settings: Record<Lang, SettingsDict> = {
           label: "হেডস-আপ ব্র্যাকেট",
           hint: "একে অপরের মুখোমুখি খেলা টুর্নামেন্ট, যেখানে প্রতিটি বিজয়ী পরের রাউন্ডে যান।",
         },
+        variants: {
+          label: "অন্যান্য পোকার গেম",
+          hint: "ওমাহা, স্টাড, ড্র আর HORSE-এর মতো মিক্সড গেম, আর ক্যাশ গেমের জন্য ডিলার্স চয়েস।",
+        },
         waitlist: { label: "ওয়েটলিস্ট", hint: "ক্যাশ গেম: পরের সিট কার, টিভিতে আর ফোনে।" },
         leagues: {
           label: "লিগ",
@@ -2955,6 +2987,10 @@ export const settings: Record<Lang, SettingsDict> = {
         brackets: {
           label: "Chaves Heads-Up",
           hint: "Torneios um contra um, com cada vencedor avançando para a próxima rodada.",
+        },
+        variants: {
+          label: "Outros Jogos de Pôquer",
+          hint: "Omaha, stud, draw e jogos mistos como HORSE, e escolha do dealer nos jogos a dinheiro.",
         },
         waitlist: { label: "Lista de espera", hint: "Jogos a dinheiro: quem é o próximo a sentar, na TV e nos celulares." },
         leagues: {

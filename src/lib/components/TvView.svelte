@@ -16,7 +16,9 @@
   import Bomb from "@lucide/svelte/icons/bomb";
   import Spade from "@lucide/svelte/icons/spade";
   import Crown from "@lucide/svelte/icons/crown";
-  import type { EventKind, Game } from "$lib/types";
+  import Layers from "@lucide/svelte/icons/layers";
+  import type { EventKind, Game, Level } from "$lib/types";
+  import { cashGameNow, cashStakes, gameLine, isLimit, isStud, rotationName, stakesText, variant, variantName } from "$lib/variants";
   import { derive, cashElapsed } from "$lib/clock";
   import { tourneyStats, cashStats, cashRake, seatLabel, tableCounts, paidFor, bountyBook, envelopesLeft, mysteryStartsAt, sideStats, shootout, currentRound, roundName, payGroups, placeRange } from "$lib/game";
   import { amt, clock, clockFace, duration, money, ordinal, timeOfDay } from "$lib/util";
@@ -191,14 +193,34 @@
   const highHolder = $derived(side?.current ? game.players.find((p) => p.id === side.current!.playerId) : null);
   const planned = $derived(isCash && game.cash ? game.cash.plannedMinutes * 60000 : 0);
   const cashRemaining = $derived(planned - elapsed);
-  const stakes = $derived(isCash && game.cash ? `${money(game.cash.sb)}/${money(game.cash.bb)}` : "");
+  // another poker game, or dealer's choice: the game now (the timer moves it on by itself)
+  const cashNow = $derived(isCash && game.cash?.games?.length ? cashGameNow(game.cash, elapsed) : null);
+  const choice = $derived((game.cash?.games?.length ?? 0) > 1);
+  // a limit game's big number is its bets, not its blinds
+  const cashPair = $derived(isCash && game.cash ? (cashNow && isLimit(cashNow.id) ? [game.cash.bb, game.cash.bb * 2] : [game.cash.sb, game.cash.bb]) : [0, 0]);
+  const stakes = $derived(isCash && game.cash ? `${money(cashPair[0])}/${money(cashPair[1])}` : "");
   // with money off the board and no rake, a cash game has nothing for the right column
   const cashRight = $derived(showMoney || (!!rake && rake.mode !== "none"));
 
+  // a mixed game's name in the header (HORSE, 8-Game), or the one game it plays
+  const rotation = $derived(game.tourney?.rotation ?? []);
+  const mix = $derived(rotation.length > 1 ? (rotationName(rotation) ?? tr("tv.level.mixedGames")) : rotation.length ? variantName(rotation[0]) : "");
+
+  // the numbers a level is played for, as the board's cells: blinds and an
+  // ante, a limit game's bets (and its blinds), or stud's bets, ante and bring-in
+  function cells(l: Level, afterBreak = false): { k: string; v: string[] }[] {
+    const limits = { k: afterBreak ? tr("tv.level.limitsAfterBreak") : tr("tv.level.limits"), v: [amt(l.bb), amt(l.bb * 2)] };
+    if (isStud(l.game)) return [limits, { k: tr("tv.level.ante"), v: [amt(l.ante)] }, { k: tr("tv.level.bringIn"), v: [amt(l.bringIn ?? 0)] }];
+    if (isLimit(l.game)) return [limits, { k: tr("tv.level.blinds"), v: [amt(l.sb), amt(l.bb)] }];
+    return [{ k: afterBreak ? tr("tv.level.blindsAfterBreak") : tr("tv.level.blinds"), v: [amt(l.sb), amt(l.bb)] }, ...(l.ante ? [{ k: tr("tv.level.ante"), v: [amt(l.ante)] }] : [])];
+  }
+  // the game on the board: this level's, or on a break the one coming
+  const shownGame = $derived(d ? (d.level.isBreak ? d.next?.game : d.level.game) : undefined);
+
   const meta = $derived(
     isCash
-      ? [tr("tv.meta.cashGame"), stakes]
-      : [tr("tv.meta.tournament"), showMoney && game.tourney ? tr("tv.meta.buyIn", { amount: money(game.tourney.buyIn) }) : ""]
+      ? [tr("tv.meta.cashGame"), cashNow && game.cash ? gameLine(cashStakes(game.cash, cashNow.id), true) : stakes]
+      : [tr("tv.meta.tournament"), mix, showMoney && game.tourney ? tr("tv.meta.buyIn", { amount: money(game.tourney.buyIn) }) : ""]
   );
 
   // ---------- cues: every sound comes with something to see ----------
@@ -235,7 +257,9 @@
         speak(
           l.isBreak
             ? tp("tv.voice.breakTime", l.minutes)
-            : l.ante
+            : l.game
+              ? gameVoice(l)
+              : l.ante
               ? tr("tv.voice.levelBlindsAnte", { level: String(levelNum), sb: say(l.sb), bb: say(l.bb), ante: say(l.ante) })
               : tr("tv.voice.levelBlinds", { level: String(levelNum), sb: say(l.sb), bb: say(l.bb) }),
           1300
@@ -243,6 +267,17 @@
     }
     lastIndex = d.index;
   });
+
+  /** a level of another game, in words: its name and what it's played for */
+  function gameVoice(l: Level) {
+    const game = variantName(l.game);
+    const level = String(levelNum);
+    if (isStud(l.game)) return tr("tv.voice.levelStud", { level, game, ante: say(l.ante), bringIn: say(l.bringIn ?? 0), small: say(l.bb), big: say(l.bb * 2) });
+    if (isLimit(l.game)) return tr("tv.voice.levelLimit", { level, game, small: say(l.bb), big: say(l.bb * 2) });
+    return l.ante
+      ? tr("tv.voice.levelGameAnte", { level, game, sb: say(l.sb), bb: say(l.bb), ante: say(l.ante) })
+      : tr("tv.voice.levelGame", { level, game, sb: say(l.sb), bb: say(l.bb) });
+  }
 
   // the last five seconds of a level (or a break) tick out loud, one a second
   // (the clock gives a small pulse with each one)
@@ -284,6 +319,7 @@
     bomb: { icon: Bomb, sound: sounds.bust, color: HOT, n: 3 },
     sevenTwo: { icon: Spade, sound: sounds.chips, color: BANNER, n: 2 },
     highHand: { icon: Crown, sound: sounds.chime, color: BANNER, n: 3 },
+    game: { icon: Layers, sound: sounds.shuffle, color: BANNER, n: 3 },
     seat: { icon: Armchair, sound: sounds.ding, color: CHALK, n: 2 },
     note: { icon: Megaphone, sound: sounds.ding, color: BANNER, n: 2 },
   };
@@ -302,6 +338,23 @@
     cue(KINDS[kind].sound, KINDS[kind].color, KINDS[kind].n);
     if (voice) speak(f.text, kind === "win" ? 2200 : kind === "money" || kind === "deal" ? 1400 : 800);
     setTimeout(() => toast?.at === f.at && (toast = null), 7000);
+  });
+
+  // dealer's choice on a timer moves on by itself: the board says so (a game
+  // picked on the dealer screen comes with its own announcement)
+  let lastGame = "";
+  $effect(() => {
+    const id = cashNow?.id ?? "";
+    const picked = game.flash?.kind === "game" && Date.now() - game.flash.at < 5000;
+    if (lastGame && id && id !== lastGame && !picked && game.cash) {
+      const text = tr("gamePlay.variants.gameNowFlash", { game: variantName(id), line: stakesText(cashStakes(game.cash, id), true) });
+      const at = Date.now();
+      toast = { text, kind: "game", at };
+      cue(KINDS.game.sound, KINDS.game.color, KINDS.game.n);
+      if (voice) speak(text, 800);
+      setTimeout(() => toast?.at === at && (toast = null), 7000);
+    }
+    lastGame = id;
   });
 
   // the host's message lands with a chime (and gets read out, with the announcer on)
@@ -386,8 +439,7 @@
 
   // the blinds strip shrinks to fit long numbers (3,000/6,000 plus an ante):
   // its width in characters goes to css as --n
-  const stripLen = (l: { sb: number; bb: number; ante?: number } | null | undefined) =>
-    !l ? 1 : `${amt(l.sb)}/${amt(l.bb)}`.length + (l.ante ? amt(l.ante).length + 2.5 : 0);
+  const stripLen = (cs: { v: string[] }[]) => cs.reduce((n, c) => n + c.v.join("/").length, 0) + (cs.length - 1) * 2.5 || 1;
 
   // an iPhone has no fullscreen for pages at all, so there's no button to press there
   const canFullscreen = document.fullscreenEnabled;
@@ -567,6 +619,7 @@
         {#if game.clock.status === "idle"}<span class="pill">{tr("tv.status.notStarted")}</span>{/if}
         {#if warning}<span class="pill warn-pill" use:later={"stamp"}>{warnLabel}</span>{/if}
       </div>
+      {#if shownGame}<div class="gname" use:replay={[d.index, "roll"]}>{#if d.level.isBreak}<span class="k">{tr("tv.level.nextGame")}</span>{/if}{variantName(shownGame)}</div>{/if}
       <!-- three layers so each motion owns one: the final-minute blink, the
            last-five-seconds pulse, and the new level rolling in -->
       <div class="clock fig" class:long={timeLeft.length > 5}>
@@ -575,15 +628,7 @@
       <div class="bar"><ProgressBar value={d.progress} /></div>
 
       {#if d.level.isBreak}
-        {#if d.next}
-          <div class="strip" style:--n={stripLen(d.next)}>
-            <div class="cell">
-              <span class="k">{tr("tv.level.blindsAfterBreak")}</span>
-              <span class="v fig">{amt(d.next.sb)}<span class="sep">/</span>{amt(d.next.bb)}</span>
-            </div>
-            {#if d.next.ante}<div class="cell"><span class="k">{tr("tv.level.ante")}</span><span class="v fig">{amt(d.next.ante)}</span></div>{/if}
-          </div>
-        {/if}
+        {#if d.next}{@render strip(d.next, true)}{/if}
         {#if nextColorUp.length || (game.tourney?.addOn.on && levelNum === game.tourney.breakEvery)}
           <div class="callouts">
             {#if nextColorUp.length}
@@ -598,22 +643,11 @@
           </div>
         {/if}
       {:else}
-        <div class="strip" style:--n={stripLen(d.level)}>
-          <div class="cell">
-            <span class="k">{tr("tv.level.blinds")}</span>
-            <span class="v fig" use:replay={[d.index, "roll"]}>{amt(d.level.sb)}<span class="sep">/</span>{amt(d.level.bb)}</span>
-          </div>
-          {#if d.level.ante}
-            <div class="cell">
-              <span class="k">{tr("tv.level.ante")}</span>
-              <span class="v fig" use:replay={[d.index, "roll"]}>{amt(d.level.ante)}</span>
-            </div>
-          {/if}
-        </div>
+        {@render strip(d.level, false)}
         <div class="after">
           <span>
             <span class="k">{tr("tv.level.nextLevel")}</span>
-            {#if d.next}<span class="fig" use:replay={[d.index, "roll"]}>{amt(d.next.sb)}/{amt(d.next.bb)}{d.next.ante ? ` · ${tr("tv.level.anteSuffix", { n: amt(d.next.ante) })}` : ""}</span>{:else}{tr("tv.level.finalLevel")}{/if}
+            {#if d.next}<span class="fig" use:replay={[d.index, "roll"]}>{#if d.next.game}{d.next.game !== d.level.game ? gameLine(d.next) : stakesText(d.next)}{:else}{amt(d.next.sb)}/{amt(d.next.bb)}{d.next.ante ? ` · ${tr("tv.level.anteSuffix", { n: amt(d.next.ante) })}` : ""}{/if}</span>{:else}{tr("tv.level.finalLevel")}{/if}
           </span>
           {#if d.nextBreakInMs !== null}<span><span class="k">{tr("tv.level.nextBreak")}</span> <span class="fig">{clock(d.nextBreakInMs)}</span></span>{/if}
         </div>
@@ -716,12 +750,13 @@
 
     <section class="main">
       <div class="level">
-        <span>{tr("tv.level.blinds")}</span>
+        <span>{cashNow && isLimit(cashNow.id) ? tr("tv.level.limits") : tr("tv.level.blinds")}</span>
         {#if game.clock.status === "paused"}<span class="pill" use:later={"pop"}><span class="blink">{tr("tv.status.paused")}</span></span>{/if}
         {#if game.clock.status === "idle"}<span class="pill">{tr("tv.status.notStarted")}</span>{/if}
       </div>
+      {#if cashNow}<div class="gname" use:replay={[cashNow.id, "roll"]}>{variantName(cashNow.id)}</div>{/if}
       <div class="clock fig stakes" style:--n={stakes.length}>
-        <span class="face" use:replay={[stakes, "roll"]}>{money(game.cash.sb)}<span class="sep">/</span>{money(game.cash.bb)}</span>
+        <span class="face" use:replay={[stakes, "roll"]}>{money(cashPair[0])}<span class="sep">/</span>{money(cashPair[1])}</span>
       </div>
       {#if planned}<div class="bar"><ProgressBar value={elapsed} max={planned} /></div>{/if}
       <div class="after">
@@ -735,7 +770,15 @@
           {/if}
         {/if}
       </div>
-      {#if game.cash.straddle}<div class="callout plain"><span class="k">{tr("tv.cash.straddlesWelcome")}</span></div>{/if}
+      {#if cashNow && isStud(cashNow.id)}<div class="callout plain"><span class="fig">{stakesText(cashStakes(game.cash, cashNow.id), true).split(" · ")[0]}</span></div>{/if}
+      {#if cashNow && choice}
+        <div class="callout plain">
+          <span class="k">{tr("tv.cash.dealersChoice")}</span>
+          <span>{tr("tv.cash.nextGame", { game: variant(cashNow.next).short })}</span>
+          {#if cashNow.nextIn !== null && game.clock.status === "running"}<span class="fig">{clock(cashNow.nextIn)}</span>{/if}
+        </div>
+      {/if}
+      {#if game.cash.straddle && !(cashNow && isStud(cashNow.id))}<div class="callout plain"><span class="k">{tr("tv.cash.straddlesWelcome")}</span></div>{/if}
       {#if side && game.cash.bomb.on}
         {#if side.bombDue}<div class="callout hot-callout" use:later={"pop"}><span class="k">{tr("tv.cash.bombNextHand")}</span>{#if showMoney}<span class="fig">{money(game.cash.bomb.ante)}</span>{/if}</div>
         {:else if side.bombIn !== null && game.clock.status === "running"}<div class="callout plain"><span class="k">{tr("tv.cash.nextBomb")}</span> <span class="fig">{clock(side.bombIn)}</span></div>{/if}
@@ -834,6 +877,18 @@
       {/each}
     </ol>
     <span class="sub">{tp("tv.league.afterGames", b.games)}</span>
+  </div>
+{/snippet}
+
+{#snippet strip(l: Level, afterBreak: boolean)}
+  {@const cs = cells(l, afterBreak)}
+  <div class="strip" style:--n={stripLen(cs)}>
+    {#each cs as c, i (i)}
+      <div class="cell">
+        <span class="k">{c.k}</span>
+        <span class="v fig" use:replay={[d?.index ?? 0, "roll"]}>{c.v[0]}{#if c.v.length > 1}<span class="sep">/</span>{c.v[1]}{/if}</span>
+      </div>
+    {/each}
   </div>
 {/snippet}
 
@@ -1181,6 +1236,28 @@
   }
   .lname {
     font: 1.15em / 1.15 var(--font-serif);
+  }
+  /* the game being played (another poker game, a mix, dealer's choice): its name, big */
+  .gname {
+    font: max(22px, min(calc(var(--u) * 4.2), 8.5cqh)) / 1.05 var(--font-serif);
+    letter-spacing: -0.01em;
+  }
+  .gname .k {
+    font-family: var(--font);
+    font-size: max(14px, min(calc(var(--u) * 1.3), 3cqh));
+  }
+  /* the game's name takes a line, so the clock and the numbers under it give it the room */
+  .main:has(.gname) .clock {
+    font-size: min(var(--big), 30vh, 36cqh, var(--fit));
+  }
+  .main:has(.gname):has(.callout) .clock {
+    font-size: min(var(--big), 26vh, 27cqh, var(--fit));
+  }
+  .main:has(.gname) .cell .v {
+    font-size: min(calc(var(--u) * 7.8), 13.5vh, 12.5cqh, calc(92cqw / (var(--n, 5) * 0.58)));
+  }
+  .cell .k {
+    white-space: nowrap;
   }
   /* a bracket's matches: both names, big, with a quiet "vs" between */
   .matches {

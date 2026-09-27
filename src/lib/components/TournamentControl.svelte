@@ -46,6 +46,7 @@
     placeRange,
   } from "$lib/game";
   import { annotate } from "$lib/blinds";
+  import { isLimit, isStud, gameLine, variantName } from "$lib/variants";
   import { distribute } from "$lib/chips";
   import { amt, clock, clockFace, money, ordinal, timeOfDay } from "$lib/util";
   import { time } from "$lib/now.svelte";
@@ -324,7 +325,7 @@
   <div class="spread">
     <div>
       <div class="lvl">
-        <span use:bump={d.index}>{#if d.level.isBreak}<Icon icon={Coffee} /> {tt("gamePlay.shared.breakLabel")}{:else}{tt("gamePlay.tournament.level", { n: String(levelNum) })}{/if}</span>
+        <span use:bump={d.index}>{#if d.level.isBreak}<Icon icon={Coffee} /> {tt("gamePlay.shared.breakLabel")}{:else}{tt("gamePlay.tournament.level", { n: String(levelNum) })}{#if d.level.game}{` · ${variantName(d.level.game)}`}{/if}{/if}</span>
         <span class="pill" data-s={game.clock.status}>{statusLabel[game.clock.status]}</span>
       </div>
       <div class="clockface" dir="ltr"><Digits value={clockFace(d.remainingMs)} /></div>
@@ -332,11 +333,14 @@
     <div class="blinds text-right">
       {#if d.level.isBreak}
         <div class="muted small">{tt("gamePlay.tournament.next")}</div>
-        {#if d.next}<div class="num bb" dir="ltr">{amt(d.next.sb)}/{amt(d.next.bb)}</div>{/if}
+        {#if d.next}<div class="num bb" dir="ltr">{d.next.game ? gameLine(d.next) : `${amt(d.next.sb)}/${amt(d.next.bb)}`}</div>{/if}
       {:else}
-        <div class="num bb" dir="ltr"><span use:bump={d.index}>{amt(d.level.sb)}/{amt(d.level.bb)}</span></div>
-        {#if d.level.ante}<div class="num">{tt("gamePlay.shared.ante")} {amt(d.level.ante)}</div>{/if}
-        <div class="small muted">{d.next ? tt("gamePlay.tournament.nextColon", { sb: amt(d.next.sb), bb: amt(d.next.bb) }) : tt("gamePlay.tournament.finalLevel")}</div>
+        <!-- a limit game's number is its bets (small and big); stud also has its ante and bring-in -->
+        {#if isLimit(d.level.game)}<div class="small muted">{tt("gamePlay.variants.limits")}</div>{/if}
+        <div class="num bb" dir="ltr"><span use:bump={d.index}>{isLimit(d.level.game) ? `${amt(d.level.bb)}/${amt(d.level.bb * 2)}` : `${amt(d.level.sb)}/${amt(d.level.bb)}`}</span></div>
+        {#if isStud(d.level.game)}<div class="num">{tt("gamePlay.shared.ante")} {amt(d.level.ante)} · {tt("gamePlay.variants.bringIn")} {amt(d.level.bringIn ?? 0)}</div>
+        {:else if d.level.ante}<div class="num">{tt("gamePlay.shared.ante")} {amt(d.level.ante)}</div>{/if}
+        <div class="small muted">{d.next ? (d.next.game ? tt("gamePlay.variants.nextLine", { line: gameLine(d.next) }) : tt("gamePlay.tournament.nextColon", { sb: amt(d.next.sb), bb: amt(d.next.bb) })) : tt("gamePlay.tournament.finalLevel")}</div>
       {/if}
     </div>
   </div>

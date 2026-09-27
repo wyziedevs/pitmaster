@@ -28,6 +28,7 @@
   import Count from "./Count.svelte";
   import RemoveButton from "./RemoveButton.svelte";
   import { t, tp } from "$lib/i18n";
+  import { cashGameNow, cashGames, cashStakes, isLimit, isStud, stakesText, variant, variantName } from "$lib/variants";
 
   let { game = $bindable(), persist }: { game: Game; persist: () => void } = $props();
 
@@ -47,6 +48,22 @@
   // shared costs: the switch, unless this game already has some
   const costsOn = $derived(settings.useCosts || !!game.costs?.length);
   const anyHandles = $derived(moves.some((m) => handles[nameKey(m.to)]));
+  // the game being played: one, or dealer's choice (picked here, or moving on by itself on a timer)
+  const games = $derived(cashGames(c));
+  const variantsOn = $derived(!!c.games?.length);
+  const choice = $derived(games.length > 1);
+  const gameNow = $derived(cashGameNow(c, elapsed));
+  function pickGame(id: string) {
+    if (id === gameNow.id) return;
+    act(() => {
+      game.cash!.current = id;
+      game.cash!.since = elapsed;
+      const line = stakesText(cashStakes(game.cash!, id), true);
+      logEvent(game, t("gamePlay.variants.gameNowLog", { game: variantName(id) }));
+      flash(game, t("gamePlay.variants.gameNowFlash", { game: variantName(id), line }), "game");
+    });
+  }
+
   // the waitlist: the switch, unless someone's already on this game's list
   const waitOn = $derived(settings.useWaitlist || !!game.waitlist?.length);
 
@@ -273,6 +290,12 @@
     provide("cash", () => [
       { id: "c:clock", label: running ? t("gamePlay.cash.cmdPauseSession") : game.clock.status === "idle" ? t("gamePlay.cash.cmdStartSession") : t("gamePlay.cash.cmdResumeSession"), group: t("gamePlay.shared.groupThisGame"), run: () => (play(startSound), toggle()) },
       { id: "c:add", label: t("gamePlay.cash.cmdSeatPlayer"), group: t("gamePlay.shared.groupThisGame"), keywords: "add sit down", prompt: t("gamePlay.shared.theirNamePrompt"), run: (name: string) => (play("chips"), addNamed(name)) },
+      ...(choice && !game.finished
+        ? [
+            { id: "c:nextgame", label: t("gamePlay.variants.nextGame"), group: t("gamePlay.shared.groupThisGame"), keywords: "dealers choice rotate switch", hint: variant(gameNow.next).short, run: () => (play("riffle"), pickGame(gameNow.next)) },
+            ...games.filter((g) => g !== gameNow.id).map((g) => ({ id: `c:game:${g}`, label: t("gamePlay.variants.playGame", { game: variantName(g) }), group: t("gamePlay.shared.groupThisGame"), keywords: "dealers choice switch " + variant(g).short, run: () => (play("riffle"), pickGame(g)) })),
+          ]
+        : []),
       { id: "c:blinds", label: t("gamePlay.cash.changeBlindsButton"), group: t("gamePlay.shared.groupThisGame"), prompt: t("gamePlay.cash.cmdChangeBlindsPrompt"), run: blindsFrom },
       ...(seatsOn ? [{ id: "c:seats", label: drawn ? t("gamePlay.shared.redrawSeats") : t("gamePlay.shared.drawSeats"), group: t("gamePlay.shared.groupThisGame"), keywords: "tables shuffle", run: () => seatTools?.draw() }] : []),
       ...(!game.finished ? [{ id: "c:end", label: t("gamePlay.cash.endGame"), group: t("gamePlay.shared.groupThisGame"), keywords: "finish over", run: () => (play("square"), endGame()) }] : []),
@@ -295,13 +318,29 @@
       </div>
     </div>
     <div class="blinds text-right max-[600px]:text-left">
+      {#if variantsOn}
+        <div class="small" use:bump={gameNow.id}><b>{variantName(gameNow.id)}</b>{#if isLimit(gameNow.id)}<span class="muted">{` · ${t("gamePlay.variants.limits")}`}</span>{/if}</div>
+        <div class="num bb" dir="ltr"><span use:bump={c.sb * 1e6 + c.bb}>{isLimit(gameNow.id) ? `${money(c.bb)}/${money(c.bb * 2)}` : `${money(c.sb)}/${money(c.bb)}`}</span></div>
+        {#if isStud(gameNow.id)}<div class="small num">{stakesText(cashStakes(c, gameNow.id), true).split(" · ")[0]}</div>{/if}
+      {:else}
       <div class="num bb" dir="ltr"><span use:bump={c.sb * 1e6 + c.bb}>{money(c.sb)}/{money(c.bb)}</span></div>
+      {/if}
       <form autocomplete="off" class="row small justify-end mt-1 max-[600px]:justify-start" onsubmit={changeBlinds}>
         <input type="number" step="any" class="w-[70px]" bind:value={newSb} aria-label={t("gamePlay.cash.smallBlindAria")} />/<input type="number" step="any" class="w-[70px]" bind:value={newBb} aria-label={t("gamePlay.cash.bigBlindAria")} />
         <button data-sound="flap">{t("gamePlay.cash.changeBlindsButton")}</button>
       </form>
     </div>
   </div>
+  {#if choice}
+    <div class="row small mt-2">
+      <span class="muted">{t("gameSetup.variants.dealersChoice")}</span>
+      <select value={gameNow.id} onchange={(e) => pickGame(e.currentTarget.value)} aria-label={t("gamePlay.variants.pickAria")} disabled={game.finished}>
+        {#each games as g (g)}<option value={g}>{variantName(g)}</option>{/each}
+      </select>
+      {#if !game.finished}<button data-sound="riffle" onclick={() => pickGame(gameNow.next)}>{t("gamePlay.variants.nextGameTo", { game: variant(gameNow.next).short })}</button>{/if}
+      {#if gameNow.nextIn !== null && running}<span class="muted num">{t("gamePlay.variants.movesOnIn", { time: clock(gameNow.nextIn) })}</span>{/if}
+    </div>
+  {/if}
   <div class="row controls mt-2">
     <button class="big" data-sound={startSound} onclick={toggle}><Icon icon={running ? Pause : Play} />{running ? t("gamePlay.tournament.pause") : game.clock.status === "idle" ? t("gamePlay.cash.startSession") : t("gamePlay.tournament.resume")}</button>
     {#if !game.finished}<button data-sound="square" onclick={endGame}>{t("gamePlay.cash.endGame")}</button>{:else}<span class="pill pop">{t("gamePlay.cash.finishedPill")}</span>{/if}

@@ -31,6 +31,16 @@ export interface CalculatorDict {
   useValueTitle: string;
   /** title on the copy icon. {shortcut} is the key that copies */
   copyTitle: string;
+  pot: {
+    label: string;
+    onTitle: string;
+    offTitle: string;
+    pot: string;
+    toCall: string;
+    maxRaise: string;
+    takeTitle: string;
+    useTitle: string;
+  };
   /** the "Into X" action's label when a box on the page is known. {field} is its name */
   intoField: string;
   /** the same action's label when the box has no name of its own */
@@ -80,6 +90,16 @@ export const calculator: Record<Lang, CalculatorDict> = {
     changeSumTitle: "Change this sum",
     useValueTitle: "Use {value}",
     copyTitle: "Copy ({shortcut})",
+    pot: {
+      label: "Pot Limit",
+      onTitle: "Pot limit: the most a raise can be",
+      offTitle: "Hide pot limit",
+      pot: "Pot",
+      toCall: "To Call",
+      maxRaise: "Max Raise To",
+      takeTitle: "Take the number on the display",
+      useTitle: "Use this number",
+    },
     intoField: "Into {field}",
     intoBox: "Into the Box",
     putInTitle: "Put {value} in {field}",
@@ -117,6 +137,16 @@ export const calculator: Record<Lang, CalculatorDict> = {
     changeSumTitle: "修改这条算式",
     useValueTitle: "使用 {value}",
     copyTitle: "复制({shortcut})",
+    pot: {
+      label: "底池限注",
+      onTitle: "底池限注：加注的最大额度",
+      offTitle: "隐藏底池限注",
+      pot: "底池",
+      toCall: "跟注额",
+      maxRaise: "最多加注到",
+      takeTitle: "取显示屏上的数字",
+      useTitle: "使用这个数字",
+    },
     intoField: "填入{field}",
     intoBox: "填入输入框",
     putInTitle: "将{value}填入{field}",
@@ -154,6 +184,16 @@ export const calculator: Record<Lang, CalculatorDict> = {
     changeSumTitle: "यह जोड़ बदलें",
     useValueTitle: "{value} का उपयोग करें",
     copyTitle: "कॉपी करें ({shortcut})",
+    pot: {
+      label: "पॉट लिमिट",
+      onTitle: "पॉट लिमिट: रेज़ ज़्यादा से ज़्यादा कितनी हो सकती है",
+      offTitle: "पॉट लिमिट छिपाएं",
+      pot: "पॉट",
+      toCall: "कॉल के लिए",
+      maxRaise: "ज़्यादा से ज़्यादा रेज़",
+      takeTitle: "डिस्प्ले वाला नंबर लें",
+      useTitle: "यह नंबर इस्तेमाल करें",
+    },
     intoField: "{field} में डालें",
     intoBox: "बॉक्स में डालें",
     putInTitle: "{value} को {field} में डालें",
@@ -191,6 +231,16 @@ export const calculator: Record<Lang, CalculatorDict> = {
     changeSumTitle: "Cambiar esta operación",
     useValueTitle: "Usar {value}",
     copyTitle: "Copiar ({shortcut})",
+    pot: {
+      label: "Pot Limit",
+      onTitle: "Pot limit: lo máximo que puede ser una subida",
+      offTitle: "Ocultar pot limit",
+      pot: "Bote",
+      toCall: "Para Igualar",
+      maxRaise: "Subida Máxima Hasta",
+      takeTitle: "Tomar el número de la pantalla",
+      useTitle: "Usar este número",
+    },
     intoField: "En {field}",
     intoBox: "En el campo",
     putInTitle: "Poner {value} en {field}",
@@ -228,6 +278,16 @@ export const calculator: Record<Lang, CalculatorDict> = {
     changeSumTitle: "Modifier ce calcul",
     useValueTitle: "Utiliser {value}",
     copyTitle: "Copier ({shortcut})",
+    pot: {
+      label: "Pot Limit",
+      onTitle: "Pot limit : le maximum d'une relance",
+      offTitle: "Masquer le pot limit",
+      pot: "Pot",
+      toCall: "Pour Suivre",
+      maxRaise: "Relance Max À",
+      takeTitle: "Prendre le nombre affiché",
+      useTitle: "Utiliser ce nombre",
+    },
     intoField: "Dans {field}",
     intoBox: "Dans le champ",
     putInTitle: "Mettre {value} dans {field}",
@@ -265,6 +325,16 @@ export const calculator: Record<Lang, CalculatorDict> = {
     changeSumTitle: "تعديل هذه العملية",
     useValueTitle: "استخدام {value}",
     copyTitle: "نسخ ({shortcut})",
+    pot: {
+      label: "حد البوت",
+      onTitle: "حد البوت: أقصى ما يمكن أن تبلغه الزيادة",
+      offTitle: "إخفاء حد البوت",
+      pot: "البوت",
+      toCall: "مبلغ المجاراة",
+      maxRaise: "أقصى زيادة إلى",
+      takeTitle: "أخذ الرقم المعروض على الشاشة",
+      useTitle: "استخدام هذا الرقم",
+    },
     intoField: "إلى {field}",
     intoBox: "إلى الحقل",
     putInTitle: "وضع {value} في {field}",
@@ -302,6 +372,16 @@ export const calculator: Record<Lang, CalculatorDict> = {
     changeSumTitle: "এই হিসাবটি পাল্টান",
     useValueTitle: "{value} ব্যবহার করুন",
     copyTitle: "কপি করুন ({shortcut})",
+    pot: {
+      label: "পট লিমিট",
+      onTitle: "পট লিমিট: রেইজ সর্বোচ্চ কত হতে পারে",
+      offTitle: "পট লিমিট লুকান",
+      pot: "পট",
+      toCall: "কল করতে",
+      maxRaise: "সর্বোচ্চ রেইজ",
+      takeTitle: "ডিসপ্লের সংখ্যাটি নিন",
+      useTitle: "এই সংখ্যাটি ব্যবহার করুন",
+    },
     intoField: "{field} এ বসান",
     intoBox: "বাক্সে বসান",
     putInTitle: "{value}-কে {field}-এ বসান",
@@ -339,6 +419,16 @@ export const calculator: Record<Lang, CalculatorDict> = {
     changeSumTitle: "Alterar esta conta",
     useValueTitle: "Usar {value}",
     copyTitle: "Copiar ({shortcut})",
+    pot: {
+      label: "Pot Limit",
+      onTitle: "Pot limit: o máximo que um aumento pode ser",
+      offTitle: "Ocultar pot limit",
+      pot: "Pote",
+      toCall: "Para Pagar",
+      maxRaise: "Aumento Máximo Para",
+      takeTitle: "Pegar o número do visor",
+      useTitle: "Usar este número",
+    },
     intoField: "Em {field}",
     intoBox: "No campo",
     putInTitle: "Colocar {value} em {field}",

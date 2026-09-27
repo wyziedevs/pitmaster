@@ -44,6 +44,7 @@ export interface Settings {
   useSatellites: boolean; // tournaments whose prizes are seats in another game
   useShootouts: boolean; // tournaments where each table plays down to one winner
   useBrackets: boolean; // tournaments played as heads-up matches, winner moves on
+  useVariants: boolean; // other poker games: omaha, stud, draw, mixed games and dealer's choice
   useWaitlist: boolean; // cash games: a list of who's next for a seat
   useLeagues: boolean; // seasons that score the games linked to them, on Players and the tv
 
@@ -127,6 +128,7 @@ const defaults: Settings = {
   useSatellites: false,
   useShootouts: false,
   useBrackets: false,
+  useVariants: false,
   useWaitlist: false,
   useLeagues: false,
 

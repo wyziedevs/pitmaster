@@ -12,6 +12,7 @@
   import Chip from "./Chip.svelte";
   import RemoveButton from "./RemoveButton.svelte";
   import { t } from "$lib/i18n";
+  import { isStud, VARIANTS, variant, variantName } from "$lib/variants";
 
   let {
     levels = $bindable(),
@@ -39,6 +40,17 @@
   });
 
   const chipById = (id: string) => chips.find((c) => c.id === id);
+  // a column for the game when the levels play more than hold'em, and one for stud's bring-in
+  const hasGame = $derived(levels.some((l) => l.game));
+  const hasStud = $derived(levels.some((l) => !l.isBreak && isStud(l.game)));
+  // a new level between two plays the game after the one above it, if they rotate
+  function nextGame(i: number) {
+    const games = levels.filter((l) => !l.isBreak && l.game).map((l) => l.game!);
+    const cur = levels[i].game;
+    if (!cur) return undefined;
+    const order = [...new Set(games)];
+    return order[(order.indexOf(cur) + 1) % order.length];
+  }
 
   // levels are saved without ids, so each row gets one here and keeps it
   // through adds and removes: the rows below a change glide to their new place
@@ -65,7 +77,9 @@
     levels.splice(
       i + 1,
       0,
-      brk ? { sb: 0, bb: 0, ante: 0, minutes: 10, isBreak: true } : { sb: l.sb * 2 || 1, bb: l.bb * 2 || 2, ante: l.ante ? l.bb * 2 : 0, minutes: l.minutes || 20 }
+      brk
+        ? { sb: 0, bb: 0, ante: 0, minutes: 10, isBreak: true }
+        : { sb: l.sb * 2 || (l.game && isStud(l.game) ? 0 : 1), bb: l.bb * 2 || 2, ante: l.ante ? l.ante * 2 : 0, minutes: l.minutes || 20, ...(l.game ? { game: nextGame(i) } : {}), ...(l.bringIn ? { bringIn: l.bringIn * 2 } : {}) }
     );
     ids.splice(i + 1, 0, made++);
     changed();
@@ -91,9 +105,11 @@
     <thead>
       <tr>
         <th class="pl-[10px]">{t("gamePlay.structure.levelHeader")}</th>
+        {#if hasGame}<th>{t("gamePlay.structure.gameHeader")}</th>{/if}
         <th class="num">{t("gamePlay.structure.smallHeader")}</th>
         <th class="num">{t("gamePlay.structure.bigHeader")}</th>
         <th class="num">{t("gamePlay.shared.ante")}</th>
+        {#if hasStud}<th class="num">{t("gamePlay.structure.bringInHeader")}</th>{/if}
         <th class="num">{t("gamePlay.structure.minutesHeader")}</th>
         <th class="num starts">{t("gamePlay.structure.startsHeader")}</th>
         <th class="notes">{t("gamePlay.structure.notesHeader")}</th>
@@ -113,17 +129,28 @@
           animate:flip={reorder()}
         >
           {#if l.isBreak}
-            <td colspan="4" class="pl-[10px]"><b><Icon icon={Coffee} /> {t("gamePlay.shared.breakLabel")}</b></td>
+            <td colspan={4 + +hasGame + +hasStud} class="pl-[10px]"><b><Icon icon={Coffee} /> {t("gamePlay.shared.breakLabel")}</b></td>
           {:else}
             <td class="num pl-[10px]">{l.num}</td>
+            {#if hasGame}
+              <td class="nowrap">
+                {#if editable}
+                  <select class="w-full min-w-[5em]" value={l.game ?? "nlhe"} onchange={(e) => ((l.game = e.currentTarget.value), changed())} aria-label={t("gamePlay.structure.gameAria", { n: String(l.num) })}>
+                    {#each VARIANTS as v (v.id)}<option value={v.id}>{v.short}</option>{/each}
+                  </select>
+                {:else}<span title={variantName(l.game)}>{variant(l.game).short}</span>{/if}
+              </td>
+            {/if}
             {#if editable}
               <td class="num"><input type="number" class="w-full min-w-[3.6em]" min="0" step="any" bind:value={l.sb} onchange={changed} aria-label={t("gamePlay.structure.smallBlindAria", { n: String(l.num) })} /></td>
               <td class="num"><input type="number" class="w-full min-w-[3.6em]" min="0" step="any" bind:value={l.bb} onchange={changed} aria-label={t("gamePlay.structure.bigBlindAria", { n: String(l.num) })} /></td>
               <td class="num"><input type="number" class="w-full min-w-[3.6em]" min="0" step="any" bind:value={l.ante} onchange={changed} aria-label={t("gamePlay.structure.anteAria", { n: String(l.num) })} /></td>
+              {#if hasStud}<td class="num">{#if isStud(l.game)}<input type="number" class="w-full min-w-[3.6em]" min="0" step="any" bind:value={l.bringIn} onchange={changed} aria-label={t("gamePlay.structure.bringInAria", { n: String(l.num) })} />{/if}</td>{/if}
             {:else}
-              <td class="num">{amt(l.sb)}</td>
+              <td class="num">{l.sb ? amt(l.sb) : ""}</td>
               <td class="num">{amt(l.bb)}</td>
               <td class="num">{l.ante ? amt(l.ante) : ""}</td>
+              {#if hasStud}<td class="num">{isStud(l.game) && l.bringIn ? amt(l.bringIn) : ""}</td>{/if}
             {/if}
           {/if}
           <td class="num">

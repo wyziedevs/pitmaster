@@ -67,6 +67,8 @@ export interface LegalDict {
       into: string;
       li7: string;
       li8: string;
+      potKey: string;
+      li9: string;
     };
     keys: { note: string };
     data: {
@@ -173,7 +175,7 @@ export const legal: Record<Lang, LegalDict> = {
         paletteBody3: "undoes the last change on the dealer screen.",
         everyTitle: "Every Game Is Different",
         everyBody1: "Rake, house cut, bounties, rebuys, seating, deals and pay links each have their own switch in",
-        everyBody2: "so a quiet kitchen game and a forty-player tournament each take only what they need. Leagues score a season of games in points, with standings on Players and the TV.",
+        everyBody2: "so a quiet kitchen game and a forty-player tournament each take only what they need. Leagues score a season of games in points, with standings on Players and the TV. Other Poker Games adds Omaha, stud, razz, draw and mixed games like HORSE, one game a level, and dealer's choice for cash games, with each game's limits on the TV.",
       },
       tv: {
         body1a: "There are two ways to put the game on a big screen. On a laptop hooked up to the TV, hit",
@@ -216,6 +218,8 @@ export const legal: Record<Lang, LegalDict> = {
         into: "Into",
         li7: "puts the answer in the last number box you were in, like a buy-in or a chip count.",
         li8: "Nothing typed into it is ever saved.",
+        potKey: "Pot Limit",
+        li9: "works out the biggest raise in a pot limit game. Take the pot from the display, then the amount to call, and it shows the most anyone can raise to. Tap that to use it.",
       },
       keys: { note: "None of these fire while you're typing in a box. The Commands shortcut can be changed in" },
       data: {
@@ -423,7 +427,7 @@ export const legal: Record<Lang, LegalDict> = {
         paletteBody3: "可以撤销发牌员界面上的最后一次操作。",
         everyTitle: "每一局牌局都不一样",
         everyBody1: "抽水、场地抽成、奖金、补码、座位、分牌和收款链接,每一项都在",
-        everyBody2: "里有自己的开关,这样无论是小规模牌局还是四十人的锦标赛,都只需要用到自己需要的那部分。 联赛按积分为一整季的比赛计分，排名显示在玩家页和电视上。",
+        everyBody2: "里有自己的开关,这样无论是小规模牌局还是四十人的锦标赛,都只需要用到自己需要的那部分。 联赛按积分为一整季的比赛计分，排名显示在玩家页和电视上。 开启“其他扑克玩法”后可玩奥马哈、梭哈、Razz、换牌和 HORSE 等混合玩法（每个级别换一种），现金局还能庄家选玩法，电视会显示每种玩法的限注。",
       },
       tv: {
         body1a: "把牌局显示到大屏幕上有两种办法。如果笔记本电脑已经接上电视,就在发牌员界面点",
@@ -463,6 +467,8 @@ export const legal: Record<Lang, LegalDict> = {
         into: "「填入」",
         li7: "会把答案填进你上一次停留的数字框,比如买入金额或筹码数量。",
         li8: "在里面输入的任何内容都不会被保存。",
+        potKey: "底池限注",
+        li9: "算出底池限注玩法中的最大加注额。先取显示屏上的底池，再填跟注额，就会显示任何人最多能加注到多少。点一下即可使用。",
       },
       keys: { note: "只要你正在某个输入框里打字,这些快捷键就不会触发。命令面板的快捷键可以在" },
       data: {
@@ -669,7 +675,7 @@ export const legal: Record<Lang, LegalDict> = {
         paletteBody3: "डीलर स्क्रीन पर हुए आखिरी बदलाव को वापस कर देता है.",
         everyTitle: "हर गेम अलग होता है",
         everyBody1: "रेक, हाउस कट, बाउंटी, रीबाय, सीटिंग, डील और पे लिंक, इन सबके लिए अलग-अलग स्विच",
-        everyBody2: "में मिलते हैं, ताकि एक छोटी-सी गेम और चालीस खिलाड़ियों वाला टूर्नामेंट, दोनों को सिर्फ वही मिले जिसकी उन्हें ज़रूरत है. लीग पूरे सीज़न के खेलों को पॉइंट्स में गिनती है, और रैंकिंग खिलाड़ी पेज और टीवी पर दिखती है।",
+        everyBody2: "में मिलते हैं, ताकि एक छोटी-सी गेम और चालीस खिलाड़ियों वाला टूर्नामेंट, दोनों को सिर्फ वही मिले जिसकी उन्हें ज़रूरत है. लीग पूरे सीज़न के खेलों को पॉइंट्स में गिनती है, और रैंकिंग खिलाड़ी पेज और टीवी पर दिखती है। अन्य पोकर गेम से ओमाहा, स्टड, रैज़, ड्रॉ और HORSE जैसे मिक्स्ड गेम (हर लेवल पर एक गेम) और कैश गेम में डीलर्स चॉइस मिलते हैं, और हर गेम की लिमिट टीवी पर दिखती है।",
       },
       tv: {
         body1a: "गेम को बड़ी स्क्रीन पर दिखाने के दो तरीके हैं. अगर लैपटॉप टीवी से जुड़ा है, तो डीलर स्क्रीन पर",
@@ -709,6 +715,8 @@ export const legal: Record<Lang, LegalDict> = {
         into: "Into",
         li7: "जवाब को उस आखिरी नंबर बॉक्स में डाल देता है जिसमें आप थे, जैसे कोई बाय-इन या चिप गिनती.",
         li8: "इसमें टाइप की गई कोई भी चीज़ कभी सेव नहीं होती.",
+        potKey: "पॉट लिमिट",
+        li9: "पॉट लिमिट गेम में सबसे बड़ी रेज़ निकालता है. डिस्प्ले से पॉट लें, फिर कॉल की रकम, और यह दिखाता है कि कोई ज़्यादा से ज़्यादा कितने तक रेज़ कर सकता है. इस्तेमाल करने के लिए उस पर टैप करें.",
       },
       keys: { note: "जब तक आप किसी बॉक्स में टाइप कर रहे हों, तब तक इनमें से कोई भी शॉर्टकट काम नहीं करेगा. Commands का शॉर्टकट यहां बदला जा सकता है:" },
       data: {
@@ -915,7 +923,7 @@ export const legal: Record<Lang, LegalDict> = {
         paletteBody3: "deshace el último cambio en la pantalla del dealer.",
         everyTitle: "Cada Partida Es Distinta",
         everyBody1: "El rake, la comisión de la casa, los bounties, las recompras, los asientos, los repartos y los enlaces de pago tienen cada uno su propio interruptor en",
-        everyBody2: "así que una partida tranquila y un torneo de cuarenta jugadores solo usan lo que necesitan. Las ligas puntúan una temporada de partidas, con la clasificación en Jugadores y en la TV.",
+        everyBody2: "así que una partida tranquila y un torneo de cuarenta jugadores solo usan lo que necesitan. Las ligas puntúan una temporada de partidas, con la clasificación en Jugadores y en la TV. Otros Juegos de Póker añade Omaha, stud, razz, draw y juegos mixtos como HORSE, un juego por nivel, y dealer's choice en cash, con los límites de cada juego en la TV.",
       },
       tv: {
         body1a: "Hay dos formas de poner la partida en una pantalla grande. Si tienes un portátil conectado al televisor, pulsa",
@@ -955,6 +963,8 @@ export const legal: Record<Lang, LegalDict> = {
         into: "Insertar",
         li7: "pone el resultado en la última casilla numérica en la que estabas, como una entrada o una cantidad de fichas.",
         li8: "Nada de lo que escribas en ella se guarda jamás.",
+        potKey: "Pot Limit",
+        li9: "calcula la subida más grande en un juego pot limit. Toma el bote de la pantalla, luego lo que hay que igualar, y te muestra hasta cuánto puede subir cualquiera. Tócalo para usarlo.",
       },
       keys: { note: "Ninguno de estos atajos se activa mientras escribes en una casilla. El atajo de Comandos se puede cambiar en" },
       data: {
@@ -1161,7 +1171,7 @@ export const legal: Record<Lang, LegalDict> = {
         paletteBody3: "annule le dernier changement effectué sur l'écran du croupier.",
         everyTitle: "Chaque Partie Est Différente",
         everyBody1: "Le rake, la commission de la maison, les bounties, les recaves, les places, les deals et les liens de paiement ont chacun leur propre interrupteur dans",
-        everyBody2: "de sorte qu'une petite partie tranquille et un tournoi de quarante joueurs n'utilisent chacun que ce dont ils ont besoin. Les ligues comptent les points d'une saison de parties, avec le classement dans Joueurs et sur la TV.",
+        everyBody2: "de sorte qu'une petite partie tranquille et un tournoi de quarante joueurs n'utilisent chacun que ce dont ils ont besoin. Les ligues comptent les points d'une saison de parties, avec le classement dans Joueurs et sur la TV. Autres Jeux de Poker ajoute l'Omaha, le stud, le razz, le draw et les jeux mixtes comme le HORSE, un jeu par niveau, et le dealer's choice en cash, avec les limites de chaque jeu sur la TV.",
       },
       tv: {
         body1a: "Il y a deux façons d'afficher la partie sur un grand écran. Sur un portable branché à la télévision, appuyez sur",
@@ -1201,6 +1211,8 @@ export const legal: Record<Lang, LegalDict> = {
         into: "Insérer",
         li7: "place le résultat dans la dernière case numérique où vous étiez, comme un buy-in ou un nombre de jetons.",
         li8: "Rien de ce qui y est tapé n'est jamais enregistré.",
+        potKey: "Pot Limit",
+        li9: "calcule la plus grosse relance possible dans une partie pot limit. Prenez le pot affiché, puis le montant à suivre, et il indique jusqu'où on peut relancer au maximum. Touchez ce nombre pour l'utiliser.",
       },
       keys: { note: "Aucun de ces raccourcis ne se déclenche pendant que vous tapez dans une case. Le raccourci des Commandes peut être changé dans" },
       data: {
@@ -1407,7 +1419,7 @@ export const legal: Record<Lang, LegalDict> = {
         paletteBody3: "يتراجع عن آخر تغيير في شاشة الموزّع.",
         everyTitle: "كل لعبة مختلفة",
         everyBody1: "لكل من نسبة البيت والعمولة والمكافآت وإعادة الشراء والجلوس والتقسيم وروابط الدفع مفتاحه الخاص في",
-        everyBody2: "بحيث تأخذ اللعبة الهادئة الصغيرة وبطولة الأربعين لاعباً كل منهما ما تحتاجه فقط. تحسب الدوريات نقاط موسم كامل من الألعاب، مع الترتيب في صفحة اللاعبين وعلى التلفاز.",
+        everyBody2: "بحيث تأخذ اللعبة الهادئة الصغيرة وبطولة الأربعين لاعباً كل منهما ما تحتاجه فقط. تحسب الدوريات نقاط موسم كامل من الألعاب، مع الترتيب في صفحة اللاعبين وعلى التلفاز. يضيف خيار ألعاب البوكر الأخرى أوماها والستاد والراز والدرو والألعاب المختلطة مثل HORSE، لعبة لكل مستوى، واختيار الموزّع في ألعاب الكاش، مع حدود كل لعبة على التلفاز.",
       },
       tv: {
         body1a: "هناك طريقتان لعرض اللعبة على شاشة كبيرة. على حاسوب محمول متصل بالتلفاز، اضغط",
@@ -1447,6 +1459,8 @@ export const legal: Record<Lang, LegalDict> = {
         into: "إدراج",
         li7: "يضع الإجابة في آخر خانة رقمية كنت فيها، مثل مبلغ شراء أو عدد رقائق.",
         li8: "لا يُحفظ أبداً أي شيء تكتبه فيها.",
+        potKey: "حد البوت",
+        li9: "يحسب أكبر زيادة ممكنة في لعبة بحد البوت. خذ البوت من الشاشة، ثم مبلغ المجاراة، فيعرض أقصى مبلغ يمكن لأي لاعب أن يزيد إليه. اضغط عليه لاستخدامه.",
       },
       keys: { note: "لا يعمل أي من هذه الاختصارات أثناء الكتابة في خانة إدخال. يمكن تغيير اختصار الأوامر في" },
       data: {
@@ -1653,7 +1667,7 @@ export const legal: Record<Lang, LegalDict> = {
         paletteBody3: "ডিলার স্ক্রিনে করা শেষ পরিবর্তনটি ফিরিয়ে দেয়।",
         everyTitle: "প্রতিটি গেম আলাদা",
         everyBody1: "রেক, হাউস কাট, বাউন্টি, রিবাই, সিটিং, ডিল আর পে লিংক, প্রতিটিরই নিজস্ব সুইচ আছে",
-        everyBody2: "তে, যাতে একটি ছোট শান্ত গেম আর চল্লিশ খেলোয়াড়ের টুর্নামেন্ট, দুটোই শুধু নিজের প্রয়োজনীয়টুকুই ব্যবহার করে। লিগ পুরো মৌসুমের খেলাকে পয়েন্টে গোনে, আর র‍্যাংকিং খেলোয়াড় পেজে ও টিভিতে দেখা যায়।",
+        everyBody2: "তে, যাতে একটি ছোট শান্ত গেম আর চল্লিশ খেলোয়াড়ের টুর্নামেন্ট, দুটোই শুধু নিজের প্রয়োজনীয়টুকুই ব্যবহার করে। লিগ পুরো মৌসুমের খেলাকে পয়েন্টে গোনে, আর র‍্যাংকিং খেলোয়াড় পেজে ও টিভিতে দেখা যায়। অন্যান্য পোকার গেম চালু করলে ওমাহা, স্টাড, রেজ, ড্র আর HORSE-এর মতো মিক্সড গেম (প্রতি লেভেলে একটি গেম) এবং ক্যাশ গেমে ডিলার্স চয়েস পাওয়া যায়, আর প্রতিটি গেমের লিমিট টিভিতে দেখা যায়।",
       },
       tv: {
         body1a: "গেমকে বড় স্ক্রিনে দেখানোর দুটি উপায় আছে। টিভির সাথে সংযুক্ত ল্যাপটপে, ডিলার স্ক্রিনে চাপুন",
@@ -1693,6 +1707,8 @@ export const legal: Record<Lang, LegalDict> = {
         into: "Into",
         li7: "উত্তরটি আপনি যে শেষ সংখ্যার বাক্সে ছিলেন সেখানে বসিয়ে দেয়, যেমন কোনো বাই-ইন বা চিপ সংখ্যা।",
         li8: "এতে টাইপ করা কোনো কিছুই কখনো সংরক্ষিত হয় না।",
+        potKey: "পট লিমিট",
+        li9: "পট লিমিট গেমে সবচেয়ে বড় রেইজ কত হতে পারে তা বের করে। ডিসপ্লে থেকে পট নিন, তারপর কল করার পরিমাণ, আর এটি দেখায় কেউ সর্বোচ্চ কত পর্যন্ত রেইজ করতে পারে। ব্যবহার করতে সেটিতে ট্যাপ করুন।",
       },
       keys: { note: "আপনি যখন কোনো বাক্সে টাইপ করছেন তখন এসবের কোনোটিই কাজ করবে না। Commands-এর শর্টকাট এখানে পরিবর্তন করা যায়:" },
       data: {
@@ -1899,7 +1915,7 @@ export const legal: Record<Lang, LegalDict> = {
         paletteBody3: "desfaz a última alteração feita na tela do dealer.",
         everyTitle: "Cada Partida É Diferente",
         everyBody1: "Rake, taxa da casa, bounties, recompras, assentos, acordos e links de pagamento têm cada um seu próprio interruptor em",
-        everyBody2: "então uma partida pequena e tranquila e um torneio de quarenta jogadores usam apenas o que precisam. As ligas pontuam uma temporada de jogos, com a classificação em Jogadores e na TV.",
+        everyBody2: "então uma partida pequena e tranquila e um torneio de quarenta jogadores usam apenas o que precisam. As ligas pontuam uma temporada de jogos, com a classificação em Jogadores e na TV. Outros Jogos de Pôquer adiciona Omaha, stud, razz, draw e jogos mistos como HORSE, um jogo por nível, e dealer's choice no cash, com os limites de cada jogo na TV.",
       },
       tv: {
         body1a: "Há duas formas de colocar a partida em uma tela grande. Em um notebook ligado à TV, toque em",
@@ -1939,6 +1955,8 @@ export const legal: Record<Lang, LegalDict> = {
         into: "Inserir",
         li7: "coloca o resultado na última caixa numérica em que você estava, como um buy-in ou uma contagem de fichas.",
         li8: "Nada digitado nela é salvo, jamais.",
+        potKey: "Pot Limit",
+        li9: "calcula o maior aumento possível num jogo pot limit. Pegue o pote do visor, depois o valor para pagar, e ele mostra até quanto alguém pode aumentar. Toque nele para usar.",
       },
       keys: { note: "Nenhum desses atalhos dispara enquanto você digita em uma caixa. O atalho de Comandos pode ser alterado em" },
       data: {

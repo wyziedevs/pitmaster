@@ -14,6 +14,7 @@ export type EventKind =
   | "bomb"
   | "sevenTwo"
   | "highHand"
+  | "game"
   | "note";
 
 /** how a chip is drawn. matches the real chip families. */
@@ -65,6 +66,10 @@ export interface Level {
   num?: number | null;
   /** chip ids that can be colored up when this level starts */
   colorUp?: string[];
+  /** the game played this level (variants.ts), none = no limit hold'em. limit games read bb as the small bet */
+  game?: string;
+  /** stud games: what the low card brings it in for (the ante is `ante`) */
+  bringIn?: number;
 }
 
 export interface Player {
@@ -156,6 +161,8 @@ export interface TourneySettings {
    *  bracket:  heads-up matches, the winner of each moving on to the next round
    */
   format: "standard" | "shootout" | "bracket";
+  /** the games, a new one each level in this order (HORSE, 8-Game, or the host's own), or one game for all of it. none = no limit hold'em */
+  rotation?: string[];
 }
 
 export type BountyKind = "flat" | "progressive" | "mystery";
@@ -207,6 +214,16 @@ export interface CashSettings {
   bomb: BombPots;
   sevenTwo: SevenTwo;
   highHand: HighHand;
+  /** the games played (variants.ts): one, or several for dealer's choice. none = no limit hold'em */
+  games?: string[];
+  /** dealer's choice: the game picked last, and how much play had gone by when it was */
+  current?: string;
+  since?: number;
+  /** dealer's choice moves on to the next game every this many minutes of play, 0 = when the host says */
+  rotateMinutes?: number;
+  /** stud games: each player's ante and the bring-in */
+  ante?: number;
+  bringIn?: number;
 }
 
 /** everyone antes, the flop comes with no betting before it */

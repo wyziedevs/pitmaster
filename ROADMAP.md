@@ -132,6 +132,8 @@ The extras cash tables actually play. Each has its own switch, off to start. Eve
 
 ## Phase 8: Other poker games
 
+**Status: done.** One switch, off to start: Other Poker Games. Fifteen variants, and HORSE, HOSE, 8-Game and Hold'em and Omaha as mixes, plus the host's own. A stud level has no blinds (`sb` 0) and gets an ante of a fifth of the small bet and a bring-in of two fifths, in the smallest chip; a big blind ante only goes on no limit and pot limit levels. Dealer's choice stores the game picked and how much play had gone by (`current`, `since`), so a timed rotation is worked out on every screen with no writes, and the TV announces it when it moves on by itself. The calculator's Pot Limit mode takes the pot and the call from the display and gives the raise-to.
+
 The biggest poker change: blinds stop being the only kind of structure.
 
 **8a. Variants and betting.** A `variants.ts` list: No Limit Hold'em, Pot Limit Omaha (4 and 5 card, hi-lo), Limit Hold'em, Stud and Stud Hi-Lo, Razz, 2-7 Triple Draw, Badugi, and more. Each one says:

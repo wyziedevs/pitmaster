@@ -45,6 +45,24 @@ export interface GameSetupDict {
     printedTimes: string;
     chipPlaysAs: string;
   };
+  variants: {
+    addable: string;
+    legend: string;
+    remove: string;
+    game: string;
+    oneGame: string;
+    dealersChoice: string;
+    mixed: string;
+    yourMix: string;
+    choiceOrder: string;
+    mixOrder: string;
+    pickSome: string;
+    rotateEvery: string;
+    studAnte: string;
+    bringIn: string;
+    limitNoteCash: string;
+    limitNoteTourney: string;
+  };
   cash: {
     blinds: {
       legend: string;
@@ -255,6 +273,24 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       asPrinted: "As Printed",
       printedTimes: "Printed ×{n}",
       chipPlaysAs: "A {chip} chip plays as {value}",
+    },
+    variants: {
+      addable: "Other Poker Games",
+      legend: "Game",
+      remove: "Just Hold'em",
+      game: "Game",
+      oneGame: "One Game",
+      dealersChoice: "Dealer's Choice",
+      mixed: "Mixed Games",
+      yourMix: "Your Own Mix",
+      choiceOrder: "Dealt in this order: {games}.",
+      mixOrder: "A new game each level, in this order: {games}.",
+      pickSome: "Pick the games to play.",
+      rotateEvery: "Next Game Every (Minutes, 0 = You Switch)",
+      studAnte: "Stud Ante {sym}",
+      bringIn: "Bring-In {sym}",
+      limitNoteCash: "Limit games bet the big blind and twice it, so blinds of 1/2 play 2/4.",
+      limitNoteTourney: "Each level plays its game. Limit games bet the big blind and twice it, and stud levels get an ante and a bring-in.",
     },
     cash: {
       blinds: {
@@ -469,6 +505,24 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       printedTimes: "印制面值 ×{n}",
       chipPlaysAs: "一枚 {chip} 筹码在本局中价值 {value}",
     },
+    variants: {
+      addable: "其他扑克玩法",
+      legend: "玩法",
+      remove: "仅德州扑克",
+      game: "玩法",
+      oneGame: "单一玩法",
+      dealersChoice: "庄家选择",
+      mixed: "混合玩法",
+      yourMix: "自选组合",
+      choiceOrder: "按此顺序发牌：{games}。",
+      mixOrder: "每一级换一个新玩法，顺序为：{games}。",
+      pickSome: "选择要玩的玩法。",
+      rotateEvery: "每隔几分钟换下一个玩法（0 = 手动切换）",
+      studAnte: "梭哈前注 {sym}",
+      bringIn: "强制开注 {sym}",
+      limitNoteCash: "限注玩法按大盲和大盲的两倍下注，所以盲注 1/2 就按 2/4 来玩。",
+      limitNoteTourney: "每一级玩各自的玩法。限注玩法按大盲和大盲的两倍下注，梭哈级别有前注和强制开注。",
+    },
     cash: {
       blinds: {
         legend: "盲注",
@@ -681,6 +735,24 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       asPrinted: "छपे मूल्य पर",
       printedTimes: "छपा मूल्य ×{n}",
       chipPlaysAs: "एक {chip} चिप इस गेम में {value} की मानी जाएगी",
+    },
+    variants: {
+      addable: "दूसरे पोकर गेम्स",
+      legend: "गेम",
+      remove: "सिर्फ़ होल्डम",
+      game: "गेम",
+      oneGame: "एक गेम",
+      dealersChoice: "डीलर्स चॉइस",
+      mixed: "मिक्स्ड गेम्स",
+      yourMix: "अपना मिक्स",
+      choiceOrder: "इस क्रम में डील होंगे: {games}।",
+      mixOrder: "हर लेवल पर नया गेम, इस क्रम में: {games}।",
+      pickSome: "खेलने के लिए गेम चुनें।",
+      rotateEvery: "हर कितने मिनट में अगला गेम (0 = आप खुद बदलें)",
+      studAnte: "स्टड एंटी {sym}",
+      bringIn: "ब्रिंग-इन {sym}",
+      limitNoteCash: "लिमिट गेम्स में बेट बिग ब्लाइंड और उसका दोगुना होती है, तो 1/2 के ब्लाइंड्स पर 2/4 खेला जाता है।",
+      limitNoteTourney: "हर लेवल अपना गेम खेलता है। लिमिट गेम्स में बेट बिग ब्लाइंड और उसका दोगुना होती है, और स्टड लेवल्स में एंटी और ब्रिंग-इन होते हैं।",
     },
     cash: {
       blinds: {
@@ -895,6 +967,24 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       printedTimes: "Impreso ×{n}",
       chipPlaysAs: "Una ficha de {chip} vale {value} en esta partida",
     },
+    variants: {
+      addable: "Otros Juegos de Póker",
+      legend: "Juego",
+      remove: "Solo Hold'em",
+      game: "Juego",
+      oneGame: "Un Solo Juego",
+      dealersChoice: "Elección del Dealer",
+      mixed: "Juegos Mixtos",
+      yourMix: "Tu Propia Mezcla",
+      choiceOrder: "Se reparten en este orden: {games}.",
+      mixOrder: "Un juego nuevo en cada nivel, en este orden: {games}.",
+      pickSome: "Elige los juegos que se van a jugar.",
+      rotateEvery: "Minutos Hasta el Próximo Juego (0 = Cambias Tú)",
+      studAnte: "Ante de Stud {sym}",
+      bringIn: "Bring-In {sym}",
+      limitNoteCash: "En los juegos limit se apuesta la ciega grande y el doble, así que con ciegas de 1/2 se juega 2/4.",
+      limitNoteTourney: "Cada nivel juega su juego. En los juegos limit se apuesta la ciega grande y el doble, y los niveles de stud llevan ante y bring-in.",
+    },
     cash: {
       blinds: {
         legend: "Ciegas",
@@ -1108,6 +1198,24 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       printedTimes: "Valeur imprimée ×{n}",
       chipPlaysAs: "Un jeton de {chip} vaut {value} dans cette partie",
     },
+    variants: {
+      addable: "Autres Jeux de Poker",
+      legend: "Jeu",
+      remove: "Hold'em Seulement",
+      game: "Jeu",
+      oneGame: "Un Seul Jeu",
+      dealersChoice: "Choix du Donneur",
+      mixed: "Jeux Mixtes",
+      yourMix: "Votre Propre Mélange",
+      choiceOrder: "Distribués dans cet ordre : {games}.",
+      mixOrder: "Un nouveau jeu à chaque niveau, dans cet ordre : {games}.",
+      pickSome: "Choisissez les jeux à jouer.",
+      rotateEvery: "Minutes Avant le Jeu Suivant (0 = Vous Changez)",
+      studAnte: "Ante du Stud {sym}",
+      bringIn: "Bring-In {sym}",
+      limitNoteCash: "Les jeux limit misent la grosse blinde puis le double, donc des blindes de 1/2 se jouent en 2/4.",
+      limitNoteTourney: "Chaque niveau se joue avec son jeu. Les jeux limit misent la grosse blinde puis le double, et les niveaux de stud ont une ante et un bring-in.",
+    },
     cash: {
       blinds: {
         legend: "Blindes",
@@ -1320,6 +1428,24 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       asPrinted: "كما هي مطبوعة",
       printedTimes: "القيمة المطبوعة ×{n}",
       chipPlaysAs: "الرقاقة {chip} تُحتسب بقيمة {value} في هذه اللعبة",
+    },
+    variants: {
+      addable: "ألعاب بوكر أخرى",
+      legend: "اللعبة",
+      remove: "هولدم فقط",
+      game: "اللعبة",
+      oneGame: "لعبة واحدة",
+      dealersChoice: "اختيار الموزّع",
+      mixed: "ألعاب مختلطة",
+      yourMix: "مزيجك الخاص",
+      choiceOrder: "تُوزَّع بهذا الترتيب: {games}.",
+      mixOrder: "لعبة جديدة في كل مستوى، بهذا الترتيب: {games}.",
+      pickSome: "اختر الألعاب التي ستُلعب.",
+      rotateEvery: "كل كم دقيقة تأتي اللعبة التالية (0 = تبدّلها بنفسك)",
+      studAnte: "أنتي الستاد {sym}",
+      bringIn: "برينغ إن {sym}",
+      limitNoteCash: "في ألعاب الحد الثابت يكون الرهان بقدر البيغ بلايند ثم ضعفه، فالرهانات العمياء 1/2 تُلعب 2/4.",
+      limitNoteTourney: "كل مستوى يُلعب بلعبته. في ألعاب الحد الثابت يكون الرهان بقدر البيغ بلايند ثم ضعفه، ومستويات الستاد لها أنتي وبرينغ إن.",
     },
     cash: {
       blinds: {
@@ -1541,6 +1667,24 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       printedTimes: "মুদ্রিত মূল্য ×{n}",
       chipPlaysAs: "একটি {chip} চিপ এই খেলায় {value} হিসেবে গণ্য হবে",
     },
+    variants: {
+      addable: "অন্যান্য পোকার গেম",
+      legend: "গেম",
+      remove: "শুধু হোল্ডেম",
+      game: "গেম",
+      oneGame: "একটি গেম",
+      dealersChoice: "ডিলার্স চয়েস",
+      mixed: "মিক্সড গেম",
+      yourMix: "নিজের মিক্স",
+      choiceOrder: "এই ক্রমে ডিল হবে: {games}।",
+      mixOrder: "প্রতি লেভেলে নতুন গেম, এই ক্রমে: {games}।",
+      pickSome: "কোন গেমগুলো খেলবেন বেছে নিন।",
+      rotateEvery: "কত মিনিট পরপর পরবর্তী গেম (0 = আপনি বদলাবেন)",
+      studAnte: "স্টাড অ্যান্টি {sym}",
+      bringIn: "ব্রিং-ইন {sym}",
+      limitNoteCash: "লিমিট গেমে বেট হয় বিগ ব্লাইন্ড আর তার দ্বিগুণ, তাই 1/2 ব্লাইন্ডে খেলা হয় 2/4।",
+      limitNoteTourney: "প্রতিটি লেভেলে তার নিজের গেম খেলা হয়। লিমিট গেমে বেট হয় বিগ ব্লাইন্ড আর তার দ্বিগুণ, আর স্টাড লেভেলে থাকে অ্যান্টি ও ব্রিং-ইন।",
+    },
     cash: {
       blinds: {
         legend: "ব্লাইন্ড",
@@ -1753,6 +1897,24 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       asPrinted: "Conforme impresso",
       printedTimes: "Valor impresso ×{n}",
       chipPlaysAs: "Uma ficha de {chip} vale {value} nesta partida",
+    },
+    variants: {
+      addable: "Outros Jogos de Pôquer",
+      legend: "Jogo",
+      remove: "Só Hold'em",
+      game: "Jogo",
+      oneGame: "Um Só Jogo",
+      dealersChoice: "Escolha do Dealer",
+      mixed: "Jogos Mistos",
+      yourMix: "Sua Própria Mistura",
+      choiceOrder: "Distribuídos nesta ordem: {games}.",
+      mixOrder: "Um jogo novo a cada nível, nesta ordem: {games}.",
+      pickSome: "Escolha os jogos que vão rolar.",
+      rotateEvery: "Minutos Até o Próximo Jogo (0 = Você Troca)",
+      studAnte: "Ante do Stud {sym}",
+      bringIn: "Bring-In {sym}",
+      limitNoteCash: "Nos jogos limit a aposta é o big blind e o dobro dele, então blinds de 1/2 jogam 2/4.",
+      limitNoteTourney: "Cada nível tem o seu jogo. Nos jogos limit a aposta é o big blind e o dobro dele, e os níveis de stud têm ante e bring-in.",
     },
     cash: {
       blinds: {

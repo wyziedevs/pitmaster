@@ -23,6 +23,33 @@ export interface CommonDict {
   settings: string;
   help: string;
   clear: string;
+  variants: {
+    nlhe: string;
+    plhe: string;
+    lhe: string;
+    plo: string;
+    plo5: string;
+    plo8: string;
+    bigo: string;
+    o8: string;
+    stud: string;
+    stud8: string;
+    razz: string;
+    td27: string;
+    sd27: string;
+    badugi: string;
+    fcd: string;
+  };
+  rotations: {
+    horse: string;
+    hose: string;
+    eight: string;
+    ho: string;
+  };
+  stakes: {
+    studLine: string;
+    anteLine: string;
+  };
   ok: string;
   on: string;
   off: string;
@@ -51,6 +78,33 @@ export const common: Record<Lang, CommonDict> = {
     settings: "Settings",
     help: "Help",
     clear: "Clear",
+    variants: {
+      nlhe: "No Limit Hold'em",
+      plhe: "Pot Limit Hold'em",
+      lhe: "Limit Hold'em",
+      plo: "Pot Limit Omaha",
+      plo5: "5-Card Pot Limit Omaha",
+      plo8: "Pot Limit Omaha Hi-Lo",
+      bigo: "Big O",
+      o8: "Omaha Hi-Lo",
+      stud: "Seven Card Stud",
+      stud8: "Stud Hi-Lo",
+      razz: "Razz",
+      td27: "2-7 Triple Draw",
+      sd27: "No Limit 2-7 Single Draw",
+      badugi: "Badugi",
+      fcd: "Five Card Draw",
+    },
+    rotations: {
+      horse: "HORSE",
+      hose: "HOSE",
+      eight: "8-Game",
+      ho: "Hold'em and Omaha",
+    },
+    stakes: {
+      studLine: "Ante {ante}, Bring-In {bringIn}",
+      anteLine: "Ante {ante}",
+    },
     ok: "OK",
     on: "On",
     off: "Off",
@@ -77,6 +131,33 @@ export const common: Record<Lang, CommonDict> = {
     settings: "设置",
     help: "帮助",
     clear: "清除",
+    variants: {
+      nlhe: "无限注德州扑克",
+      plhe: "底池限注德州扑克",
+      lhe: "限注德州扑克",
+      plo: "底池限注奥马哈",
+      plo5: "五张底池限注奥马哈",
+      plo8: "底池限注奥马哈高低",
+      bigo: "Big O",
+      o8: "奥马哈高低",
+      stud: "七张梭哈",
+      stud8: "七张梭哈高低",
+      razz: "Razz",
+      td27: "2-7 三次换牌",
+      sd27: "无限注 2-7 单次换牌",
+      badugi: "Badugi",
+      fcd: "五张换牌",
+    },
+    rotations: {
+      horse: "HORSE",
+      hose: "HOSE",
+      eight: "8-Game",
+      ho: "德州扑克和奥马哈",
+    },
+    stakes: {
+      studLine: "前注 {ante}，强制开注 {bringIn}",
+      anteLine: "前注 {ante}",
+    },
     ok: "确定",
     on: "开",
     off: "关",
@@ -103,6 +184,33 @@ export const common: Record<Lang, CommonDict> = {
     settings: "सेटिंग्स",
     help: "सहायता",
     clear: "साफ़ करें",
+    variants: {
+      nlhe: "नो लिमिट होल्डम",
+      plhe: "पॉट लिमिट होल्डम",
+      lhe: "लिमिट होल्डम",
+      plo: "पॉट लिमिट ओमाहा",
+      plo5: "5-कार्ड पॉट लिमिट ओमाहा",
+      plo8: "पॉट लिमिट ओमाहा हाई-लो",
+      bigo: "बिग ओ",
+      o8: "ओमाहा हाई-लो",
+      stud: "सेवन कार्ड स्टड",
+      stud8: "स्टड हाई-लो",
+      razz: "रैज़",
+      td27: "2-7 ट्रिपल ड्रॉ",
+      sd27: "नो लिमिट 2-7 सिंगल ड्रॉ",
+      badugi: "बदुगी",
+      fcd: "फ़ाइव कार्ड ड्रॉ",
+    },
+    rotations: {
+      horse: "HORSE",
+      hose: "HOSE",
+      eight: "8-गेम",
+      ho: "होल्डम और ओमाहा",
+    },
+    stakes: {
+      studLine: "एंटी {ante}, ब्रिंग-इन {bringIn}",
+      anteLine: "एंटी {ante}",
+    },
     ok: "ठीक है",
     on: "चालू",
     off: "बंद",
@@ -129,6 +237,33 @@ export const common: Record<Lang, CommonDict> = {
     settings: "Ajustes",
     help: "Ayuda",
     clear: "Borrar",
+    variants: {
+      nlhe: "No Limit Hold'em",
+      plhe: "Pot Limit Hold'em",
+      lhe: "Limit Hold'em",
+      plo: "Pot Limit Omaha",
+      plo5: "Pot Limit Omaha de 5 Cartas",
+      plo8: "Pot Limit Omaha Hi-Lo",
+      bigo: "Big O",
+      o8: "Omaha Hi-Lo",
+      stud: "Stud de Siete Cartas",
+      stud8: "Stud Hi-Lo",
+      razz: "Razz",
+      td27: "2-7 Triple Draw",
+      sd27: "No Limit 2-7 Single Draw",
+      badugi: "Badugi",
+      fcd: "Draw de Cinco Cartas",
+    },
+    rotations: {
+      horse: "HORSE",
+      hose: "HOSE",
+      eight: "8-Game",
+      ho: "Hold'em y Omaha",
+    },
+    stakes: {
+      studLine: "Ante {ante}, Bring-In {bringIn}",
+      anteLine: "Ante {ante}",
+    },
     ok: "Aceptar",
     on: "Activado",
     off: "Desactivado",
@@ -155,6 +290,33 @@ export const common: Record<Lang, CommonDict> = {
     settings: "Paramètres",
     help: "Aide",
     clear: "Effacer",
+    variants: {
+      nlhe: "No Limit Hold'em",
+      plhe: "Pot Limit Hold'em",
+      lhe: "Limit Hold'em",
+      plo: "Pot Limit Omaha",
+      plo5: "Pot Limit Omaha à 5 Cartes",
+      plo8: "Pot Limit Omaha Hi-Lo",
+      bigo: "Big O",
+      o8: "Omaha Hi-Lo",
+      stud: "Stud à Sept Cartes",
+      stud8: "Stud Hi-Lo",
+      razz: "Razz",
+      td27: "2-7 Triple Draw",
+      sd27: "No Limit 2-7 Single Draw",
+      badugi: "Badugi",
+      fcd: "Draw à Cinq Cartes",
+    },
+    rotations: {
+      horse: "HORSE",
+      hose: "HOSE",
+      eight: "8-Game",
+      ho: "Hold'em et Omaha",
+    },
+    stakes: {
+      studLine: "Ante {ante}, Bring-In {bringIn}",
+      anteLine: "Ante {ante}",
+    },
     ok: "OK",
     on: "Activé",
     off: "Désactivé",
@@ -181,6 +343,33 @@ export const common: Record<Lang, CommonDict> = {
     settings: "الإعدادات",
     help: "المساعدة",
     clear: "مسح",
+    variants: {
+      nlhe: "هولدم بلا حد",
+      plhe: "هولدم بحد البوت",
+      lhe: "هولدم بحد ثابت",
+      plo: "أوماها بحد البوت",
+      plo5: "أوماها بحد البوت بخمس أوراق",
+      plo8: "أوماها هاي-لو بحد البوت",
+      bigo: "بيغ أو",
+      o8: "أوماها هاي-لو",
+      stud: "ستاد بسبع أوراق",
+      stud8: "ستاد هاي-لو",
+      razz: "راز",
+      td27: "2-7 تريبل درو",
+      sd27: "2-7 سينغل درو بلا حد",
+      badugi: "بادوغي",
+      fcd: "درو بخمس أوراق",
+    },
+    rotations: {
+      horse: "HORSE",
+      hose: "HOSE",
+      eight: "8-Game",
+      ho: "هولدم وأوماها",
+    },
+    stakes: {
+      studLine: "أنتي {ante}، برينغ إن {bringIn}",
+      anteLine: "أنتي {ante}",
+    },
     ok: "حسنًا",
     on: "تشغيل",
     off: "إيقاف",
@@ -207,6 +396,33 @@ export const common: Record<Lang, CommonDict> = {
     settings: "সেটিংস",
     help: "সহায়তা",
     clear: "মুছে ফেলুন",
+    variants: {
+      nlhe: "নো লিমিট হোল্ডেম",
+      plhe: "পট লিমিট হোল্ডেম",
+      lhe: "লিমিট হোল্ডেম",
+      plo: "পট লিমিট ওমাহা",
+      plo5: "5-কার্ড পট লিমিট ওমাহা",
+      plo8: "পট লিমিট ওমাহা হাই-লো",
+      bigo: "বিগ ও",
+      o8: "ওমাহা হাই-লো",
+      stud: "সেভেন কার্ড স্টাড",
+      stud8: "স্টাড হাই-লো",
+      razz: "র‍্যাজ",
+      td27: "2-7 ট্রিপল ড্র",
+      sd27: "নো লিমিট 2-7 সিঙ্গেল ড্র",
+      badugi: "বাদুগি",
+      fcd: "ফাইভ কার্ড ড্র",
+    },
+    rotations: {
+      horse: "HORSE",
+      hose: "HOSE",
+      eight: "8-গেম",
+      ho: "হোল্ডেম আর ওমাহা",
+    },
+    stakes: {
+      studLine: "অ্যান্টি {ante}, ব্রিং-ইন {bringIn}",
+      anteLine: "অ্যান্টি {ante}",
+    },
     ok: "ঠিক আছে",
     on: "চালু",
     off: "বন্ধ",
@@ -233,6 +449,33 @@ export const common: Record<Lang, CommonDict> = {
     settings: "Configurações",
     help: "Ajuda",
     clear: "Limpar",
+    variants: {
+      nlhe: "No Limit Hold'em",
+      plhe: "Pot Limit Hold'em",
+      lhe: "Limit Hold'em",
+      plo: "Pot Limit Omaha",
+      plo5: "Pot Limit Omaha de 5 Cartas",
+      plo8: "Pot Limit Omaha Hi-Lo",
+      bigo: "Big O",
+      o8: "Omaha Hi-Lo",
+      stud: "Stud de Sete Cartas",
+      stud8: "Stud Hi-Lo",
+      razz: "Razz",
+      td27: "2-7 Triple Draw",
+      sd27: "No Limit 2-7 Single Draw",
+      badugi: "Badugi",
+      fcd: "Draw de Cinco Cartas",
+    },
+    rotations: {
+      horse: "HORSE",
+      hose: "HOSE",
+      eight: "8-Game",
+      ho: "Hold'em e Omaha",
+    },
+    stakes: {
+      studLine: "Ante {ante}, Bring-In {bringIn}",
+      anteLine: "Ante {ante}",
+    },
     ok: "OK",
     on: "Ativado",
     off: "Desativado",

@@ -106,6 +106,7 @@
         {t("legal.help.calculator.li6c")} <b>{t("legal.help.calculator.addUp")}</b> {t("legal.help.calculator.li6d")} <b>{t("common.copy")}</b> {t("legal.help.calculator.li6e")}
       </li>
       <li><b>{t("legal.help.calculator.into")}</b> {t("legal.help.calculator.li7")}</li>
+      <li><b>{t("legal.help.calculator.potKey")}</b> {t("legal.help.calculator.li9")}</li>
       <li>{t("legal.help.calculator.li8")}</li>
     </ul>
   </section>
