@@ -63,6 +63,35 @@ export interface GameSetupDict {
     limitNoteCash: string;
     limitNoteTourney: string;
   };
+  dice: {
+    fewPlayersConfirm: string;
+    rulesLegend: string;
+    dicePerPlayer: string;
+    onesWild: string;
+    palifico: string;
+    palificoHint: string;
+    spotOn: string;
+    spotOnOthers: string;
+    spotOnGain: string;
+    spotOnOff: string;
+    stakesLegend: string;
+    stakesPot: string;
+    stakesPerDie: string;
+    potCaption: string;
+    perDie: string;
+    perDieTo: string;
+    toWinner: string;
+    toPot: string;
+    toWinnerHint: string;
+    toPotHint: string;
+    entryLegend: string;
+    entryFull: string;
+    entryQuick: string;
+    entryFullHint: string;
+    entryQuickHint: string;
+    eachPlayer: string;
+    howItPlays: string;
+  };
   cash: {
     blinds: {
       legend: string;
@@ -291,6 +320,35 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       bringIn: "Bring-In {sym}",
       limitNoteCash: "Limit games bet the big blind and twice it, so blinds of 1/2 play 2/4.",
       limitNoteTourney: "Each level plays its game. Limit games bet the big blind and twice it, and stud levels get an ante and a bring-in.",
+    },
+    dice: {
+      fewPlayersConfirm: "Liar's dice needs at least two players. Start it anyway and add them on the next page?",
+      rulesLegend: "Rules",
+      dicePerPlayer: "Dice per Player",
+      onesWild: "Ones Are Wild",
+      palifico: "Palifico",
+      palificoHint: "When a player is down to their last die, the round they start has no wild ones, and nobody can change the face that's bid.",
+      spotOn: "Spot On",
+      spotOnOthers: "Spot On: Everyone Else Loses a Die",
+      spotOnGain: "Spot On: The Caller Gets a Die Back",
+      spotOnOff: "No Spot On",
+      stakesLegend: "Stakes",
+      stakesPot: "A Buy-In, Paid by Place",
+      stakesPerDie: "Money per Die Lost",
+      potCaption: "{n} players make a {pool} pot, paid:",
+      perDie: "Per Die Lost {sym}",
+      perDieTo: "Goes To",
+      toWinner: "Whoever Won the Call",
+      toPot: "The Pot, for the Winner",
+      toWinnerHint: "Each die lost pays whoever won that call. The most anyone can lose is {most}.",
+      toPotHint: "Each die lost goes in the pot, and the last one with dice takes it. The most anyone can lose is {most}.",
+      entryLegend: "Entering Rounds",
+      entryFull: "Full",
+      entryQuick: "Quick",
+      entryFullHint: "Enter the bid, who called it and how many there were, and PitMaster works out who loses a die.",
+      entryQuickHint: "Just tap who lost a die. You can switch any time on the dealer screen.",
+      eachPlayer: "Each Player Starts With",
+      howItPlays: "Everyone rolls under a cup and bids on how many of a face there are on the whole table. Call a bid a liar and the cups come up: whoever was wrong loses a die. The last one with dice wins.",
     },
     cash: {
       blinds: {
@@ -523,6 +581,35 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       limitNoteCash: "限注玩法按大盲和大盲的两倍下注，所以盲注 1/2 就按 2/4 来玩。",
       limitNoteTourney: "每一级玩各自的玩法。限注玩法按大盲和大盲的两倍下注，梭哈级别有前注和强制开注。",
     },
+    dice: {
+      fewPlayersConfirm: "大话骰至少需要两名玩家。仍要开始，并在下一页添加玩家吗？",
+      rulesLegend: "规则",
+      dicePerPlayer: "每人骰子数",
+      onesWild: "1 点万能",
+      palifico: "Palifico",
+      palificoHint: "当某位玩家只剩最后一颗骰子时，由他开始的那一轮 1 点不算万能，而且谁都不能更改叫的点数。",
+      spotOn: "刚好",
+      spotOnOthers: "刚好：其他人各输一颗骰子",
+      spotOnGain: "刚好：喊的人拿回一颗骰子",
+      spotOnOff: "不玩刚好",
+      stakesLegend: "赌注",
+      stakesPot: "买入，按名次派彩",
+      stakesPerDie: "每输一颗骰子付钱",
+      potCaption: "{n} 名玩家凑成 {pool} 的奖池，派彩如下：",
+      perDie: "每输一颗骰子 {sym}",
+      perDieTo: "付给",
+      toWinner: "开骰时赢的人",
+      toPot: "奖池，归最后赢家",
+      toWinnerHint: "每输一颗骰子，就付给那次开骰赢的人。每人最多输 {most}。",
+      toPotHint: "每输一颗骰子就放进奖池，最后还有骰子的人拿走。每人最多输 {most}。",
+      entryLegend: "记录每轮",
+      entryFull: "完整",
+      entryQuick: "快速",
+      entryFullHint: "输入叫的数、谁开的、实际有几个，PitMaster 会算出谁输一颗骰子。",
+      entryQuickHint: "只需点一下谁输了骰子。随时可以在游戏面板上切换。",
+      eachPlayer: "每人起始骰子",
+      howItPlays: "每个人把骰子摇在骰盅里，然后叫全桌某个点数一共有几个。有人喊开，就揭开骰盅：错的一方输一颗骰子。最后还有骰子的人获胜。",
+    },
     cash: {
       blinds: {
         legend: "盲注",
@@ -753,6 +840,35 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       bringIn: "ब्रिंग-इन {sym}",
       limitNoteCash: "लिमिट गेम्स में बेट बिग ब्लाइंड और उसका दोगुना होती है, तो 1/2 के ब्लाइंड्स पर 2/4 खेला जाता है।",
       limitNoteTourney: "हर लेवल अपना गेम खेलता है। लिमिट गेम्स में बेट बिग ब्लाइंड और उसका दोगुना होती है, और स्टड लेवल्स में एंटी और ब्रिंग-इन होते हैं।",
+    },
+    dice: {
+      fewPlayersConfirm: "लायर्स डाइस के लिए कम से कम दो खिलाड़ी चाहिए। फिर भी शुरू करें और अगले पेज पर खिलाड़ी जोड़ें?",
+      rulesLegend: "नियम",
+      dicePerPlayer: "हर खिलाड़ी के पासे",
+      onesWild: "एक्के वाइल्ड हैं",
+      palifico: "पालिफ़िको",
+      palificoHint: "जब किसी खिलाड़ी के पास आखिरी पासा बचे, तो उसके शुरू किए राउंड में एक्के वाइल्ड नहीं होते, और कोई भी बोली का अंक नहीं बदल सकता।",
+      spotOn: "एकदम सही",
+      spotOnOthers: "एकदम सही: बाकी सब एक पासा हारते हैं",
+      spotOnGain: "एकदम सही: कहने वाले को एक पासा वापस मिलता है",
+      spotOnOff: "एकदम सही का नियम नहीं",
+      stakesLegend: "दांव",
+      stakesPot: "बाय-इन, स्थान के हिसाब से भुगतान",
+      stakesPerDie: "हर हारे पासे पर पैसे",
+      potCaption: "{n} खिलाड़ियों से {pool} का पॉट बनता है, भुगतान:",
+      perDie: "हर हारे पासे पर {sym}",
+      perDieTo: "किसे जाता है",
+      toWinner: "जिसने चुनौती जीती",
+      toPot: "पॉट में, विजेता के लिए",
+      toWinnerHint: "हर हारे पासे का पैसा उस चुनौती के विजेता को जाता है। कोई भी ज़्यादा से ज़्यादा {most} हार सकता है।",
+      toPotHint: "हर हारे पासे का पैसा पॉट में जाता है, और जिसके पास आखिर तक पासे बचें वह पूरा पॉट ले जाता है। कोई भी ज़्यादा से ज़्यादा {most} हार सकता है।",
+      entryLegend: "राउंड दर्ज करना",
+      entryFull: "पूरा",
+      entryQuick: "जल्दी",
+      entryFullHint: "बोली, चुनौती किसने दी और असल में कितने थे, दर्ज करें, और PitMaster बता देगा कि पासा कौन हारा।",
+      entryQuickHint: "बस उस पर टैप करें जिसने पासा हारा। गेम स्क्रीन पर कभी भी बदल सकते हैं।",
+      eachPlayer: "हर खिलाड़ी के शुरुआती पासे",
+      howItPlays: "सब अपने कप के नीचे पासे फेंकते हैं और बोली लगाते हैं कि पूरी टेबल पर किसी अंक के कितने पासे हैं। किसी बोली को झूठ कहें तो कप उठते हैं: जो गलत था वह एक पासा हारता है। जिसके पास आखिर तक पासे बचें, वह जीतता है।",
     },
     cash: {
       blinds: {
@@ -985,6 +1101,35 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       limitNoteCash: "En los juegos limit se apuesta la ciega grande y el doble, así que con ciegas de 1/2 se juega 2/4.",
       limitNoteTourney: "Cada nivel juega su juego. En los juegos limit se apuesta la ciega grande y el doble, y los niveles de stud llevan ante y bring-in.",
     },
+    dice: {
+      fewPlayersConfirm: "El Perudo necesita al menos dos jugadores. ¿Empezar de todas formas y añadirlos en la página siguiente?",
+      rulesLegend: "Reglas",
+      dicePerPlayer: "Dados por Jugador",
+      onesWild: "Los Unos Son Comodines",
+      palifico: "Palifico",
+      palificoHint: "Cuando a un jugador le queda un solo dado, en la ronda que empieza él los unos no son comodines y nadie puede cambiar el número apostado.",
+      spotOn: "Calzo",
+      spotOnOthers: "Calzo: Todos los Demás Pierden un Dado",
+      spotOnGain: "Calzo: Quien lo Canta Recupera un Dado",
+      spotOnOff: "Sin Calzo",
+      stakesLegend: "Apuestas",
+      stakesPot: "Un Buy-In, Pagado por Puesto",
+      stakesPerDie: "Dinero por Dado Perdido",
+      potCaption: "{n} jugadores forman un bote de {pool}, que se reparte así:",
+      perDie: "Por Dado Perdido {sym}",
+      perDieTo: "Va Para",
+      toWinner: "Quien Ganó la Jugada",
+      toPot: "El Bote, para el Ganador",
+      toWinnerHint: "Cada dado perdido se le paga a quien ganó esa jugada. Lo máximo que puede perder alguien es {most}.",
+      toPotHint: "Cada dado perdido va al bote, y se lo lleva el último que tenga dados. Lo máximo que puede perder alguien es {most}.",
+      entryLegend: "Registro de Rondas",
+      entryFull: "Completo",
+      entryQuick: "Rápido",
+      entryFullHint: "Anota la apuesta, quién la desafió y cuántos había, y PitMaster calcula quién pierde un dado.",
+      entryQuickHint: "Solo toca quién perdió un dado. Puedes cambiarlo cuando quieras en la pantalla de la partida.",
+      eachPlayer: "Cada Jugador Empieza Con",
+      howItPlays: "Todos tiran los dados bajo un cubilete y apuestan cuántos dados de un número hay en toda la mesa. Si alguien dice \"dudo\", se levantan los cubiletes: quien se equivocó pierde un dado. El último que tenga dados gana.",
+    },
     cash: {
       blinds: {
         legend: "Ciegas",
@@ -1216,6 +1361,35 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       limitNoteCash: "Les jeux limit misent la grosse blinde puis le double, donc des blindes de 1/2 se jouent en 2/4.",
       limitNoteTourney: "Chaque niveau se joue avec son jeu. Les jeux limit misent la grosse blinde puis le double, et les niveaux de stud ont une ante et un bring-in.",
     },
+    dice: {
+      fewPlayersConfirm: "Le Perudo se joue à deux joueurs minimum. Lancer quand même et les ajouter à la page suivante ?",
+      rulesLegend: "Règles",
+      dicePerPlayer: "Dés par Joueur",
+      onesWild: "Les As Sont Jokers",
+      palifico: "Palifico",
+      palificoHint: "Quand un joueur n'a plus qu'un dé, la manche qu'il lance se joue sans as jokers, et personne ne peut changer la valeur annoncée.",
+      spotOn: "Pile",
+      spotOnOthers: "Pile : Tous les Autres Perdent un Dé",
+      spotOnGain: "Pile : Celui Qui l'Annonce Récupère un Dé",
+      spotOnOff: "Pas de Pile",
+      stakesLegend: "Mises",
+      stakesPot: "Un Buy-In, Payé selon le Classement",
+      stakesPerDie: "De l'Argent par Dé Perdu",
+      potCaption: "{n} joueurs forment un pot de {pool}, payé :",
+      perDie: "Par Dé Perdu {sym}",
+      perDieTo: "Va à",
+      toWinner: "Celui Qui a Gagné le Défi",
+      toPot: "Le Pot, pour le Gagnant",
+      toWinnerHint: "Chaque dé perdu est payé à celui qui a gagné ce défi. On peut perdre au maximum {most}.",
+      toPotHint: "Chaque dé perdu va dans le pot, et le dernier à avoir des dés le remporte. On peut perdre au maximum {most}.",
+      entryLegend: "Saisie des Manches",
+      entryFull: "Complète",
+      entryQuick: "Rapide",
+      entryFullHint: "Saisissez l'annonce, qui l'a contestée et combien il y en avait, et PitMaster calcule qui perd un dé.",
+      entryQuickHint: "Touchez simplement qui a perdu un dé. Vous pouvez changer à tout moment sur l'écran de la partie.",
+      eachPlayer: "Chaque Joueur Commence avec",
+      howItPlays: "Chacun lance ses dés sous un gobelet et annonce combien de dés d'une valeur il y a sur toute la table. Si quelqu'un crie menteur, on lève les gobelets : celui qui s'est trompé perd un dé. Le dernier à avoir des dés gagne.",
+    },
     cash: {
       blinds: {
         legend: "Blindes",
@@ -1446,6 +1620,35 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       bringIn: "برينغ إن {sym}",
       limitNoteCash: "في ألعاب الحد الثابت يكون الرهان بقدر البيغ بلايند ثم ضعفه، فالرهانات العمياء 1/2 تُلعب 2/4.",
       limitNoteTourney: "كل مستوى يُلعب بلعبته. في ألعاب الحد الثابت يكون الرهان بقدر البيغ بلايند ثم ضعفه، ومستويات الستاد لها أنتي وبرينغ إن.",
+    },
+    dice: {
+      fewPlayersConfirm: "تحتاج لعبة نرد الكذاب إلى لاعبَين على الأقل. هل تبدأها على أي حال وتضيفهم في الصفحة التالية؟",
+      rulesLegend: "القواعد",
+      dicePerPlayer: "أحجار النرد لكل لاعب",
+      onesWild: "الواحد جوكر",
+      palifico: "باليفيكو",
+      palificoHint: "عندما يبقى مع لاعب آخر حجر نرد، تكون الجولة التي يبدؤها بلا جوكر للواحد، ولا يمكن لأحد تغيير الرقم المُزايَد عليه.",
+      spotOn: "بالضبط",
+      spotOnOthers: "بالضبط: يخسر كل الباقين حجرًا",
+      spotOnGain: "بالضبط: يستعيد صاحب التحدي حجرًا",
+      spotOnOff: "بلا قاعدة بالضبط",
+      stakesLegend: "الرهانات",
+      stakesPot: "قيمة دخول، تُوزَّع حسب المركز",
+      stakesPerDie: "مبلغ عن كل حجر يُخسَر",
+      potCaption: "عدد اللاعبين {n}، والبوت {pool}، ويُوزَّع كالتالي:",
+      perDie: "عن كل حجر يُخسَر {sym}",
+      perDieTo: "يذهب إلى",
+      toWinner: "الفائز بالتحدي",
+      toPot: "البوت، للفائز",
+      toWinnerHint: "كل حجر يُخسَر يُدفع ثمنه للفائز بذلك التحدي. أقصى ما يمكن أن يخسره أي لاعب هو {most}.",
+      toPotHint: "كل حجر يُخسَر يذهب ثمنه إلى البوت، ويأخذه آخر من يبقى معه نرد. أقصى ما يمكن أن يخسره أي لاعب هو {most}.",
+      entryLegend: "تسجيل الجولات",
+      entryFull: "كامل",
+      entryQuick: "سريع",
+      entryFullHint: "أدخل المزايدة ومن تحدّاها وكم كان العدد فعلًا، وسيحسب PitMaster من يخسر حجرًا.",
+      entryQuickHint: "فقط اضغط على من خسر حجرًا. يمكنك التبديل في أي وقت من شاشة اللعبة.",
+      eachPlayer: "يبدأ كل لاعب بـ",
+      howItPlays: "يرمي الجميع النرد تحت كوب ويزايدون على عدد الأحجار التي تُظهر رقمًا معينًا على الطاولة كلها. إذا كذّب أحد مزايدة تُرفع الأكواب: من كان مخطئًا يخسر حجرًا. آخر من يبقى معه نرد يفوز.",
     },
     cash: {
       blinds: {
@@ -1685,6 +1888,35 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       limitNoteCash: "লিমিট গেমে বেট হয় বিগ ব্লাইন্ড আর তার দ্বিগুণ, তাই 1/2 ব্লাইন্ডে খেলা হয় 2/4।",
       limitNoteTourney: "প্রতিটি লেভেলে তার নিজের গেম খেলা হয়। লিমিট গেমে বেট হয় বিগ ব্লাইন্ড আর তার দ্বিগুণ, আর স্টাড লেভেলে থাকে অ্যান্টি ও ব্রিং-ইন।",
     },
+    dice: {
+      fewPlayersConfirm: "লায়ার্স ডাইসে কমপক্ষে দুজন খেলোয়াড় লাগে। তবুও শুরু করে পরের পেজে তাদের যোগ করবেন?",
+      rulesLegend: "নিয়ম",
+      dicePerPlayer: "প্রতি খেলোয়াড়ের পাশা",
+      onesWild: "এক হলো ওয়াইল্ড",
+      palifico: "পালিফিকো",
+      palificoHint: "কোনো খেলোয়াড়ের শেষ একটি পাশা বাকি থাকলে, তার শুরু করা রাউন্ডে এক ওয়াইল্ড থাকে না, আর কেউ ডাকা সংখ্যাটি বদলাতে পারে না।",
+      spotOn: "একদম ঠিক",
+      spotOnOthers: "একদম ঠিক: বাকি সবাই একটি পাশা হারায়",
+      spotOnGain: "একদম ঠিক: যে বলেছে সে একটি পাশা ফেরত পায়",
+      spotOnOff: "একদম ঠিক নেই",
+      stakesLegend: "বাজি",
+      stakesPot: "বাই-ইন, স্থান অনুযায়ী পুরস্কার",
+      stakesPerDie: "প্রতি হারানো পাশায় টাকা",
+      potCaption: "{n} জন খেলোয়াড়ে {pool}-এর পট হয়, বণ্টন:",
+      perDie: "প্রতি হারানো পাশা {sym}",
+      perDieTo: "কার কাছে যাবে",
+      toWinner: "যে চ্যালেঞ্জ জিতেছে",
+      toPot: "পটে, বিজয়ীর জন্য",
+      toWinnerHint: "প্রতিটি হারানো পাশার টাকা পায় সেই চ্যালেঞ্জের বিজয়ী। কেউ সর্বোচ্চ {most} হারাতে পারে।",
+      toPotHint: "প্রতিটি হারানো পাশার টাকা পটে যায়, আর যার কাছে শেষ পর্যন্ত পাশা থাকে সে পুরোটা নেয়। কেউ সর্বোচ্চ {most} হারাতে পারে।",
+      entryLegend: "রাউন্ড লেখা",
+      entryFull: "পূর্ণ",
+      entryQuick: "দ্রুত",
+      entryFullHint: "ডাক, কে চ্যালেঞ্জ করেছে আর আসলে কয়টি ছিল লিখুন, PitMaster হিসাব করে দেবে কে একটি পাশা হারাল।",
+      entryQuickHint: "শুধু যে পাশা হারিয়েছে তাকে ট্যাপ করুন। গেম স্ক্রিনে যেকোনো সময় বদলাতে পারবেন।",
+      eachPlayer: "প্রত্যেক খেলোয়াড়ের শুরুর পাশা",
+      howItPlays: "সবাই একটি কাপের নিচে পাশা চালে আর ডাক দেয় পুরো টেবিলে কোনো একটি সংখ্যা কয়টি আছে। কেউ কোনো ডাককে মিথ্যা বললে কাপ তোলা হয়: যে ভুল, সে একটি পাশা হারায়। যার কাছে শেষ পর্যন্ত পাশা থাকে, সে জেতে।",
+    },
     cash: {
       blinds: {
         legend: "ব্লাইন্ড",
@@ -1915,6 +2147,35 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       bringIn: "Bring-In {sym}",
       limitNoteCash: "Nos jogos limit a aposta é o big blind e o dobro dele, então blinds de 1/2 jogam 2/4.",
       limitNoteTourney: "Cada nível tem o seu jogo. Nos jogos limit a aposta é o big blind e o dobro dele, e os níveis de stud têm ante e bring-in.",
+    },
+    dice: {
+      fewPlayersConfirm: "O Dado Mentiroso precisa de pelo menos dois jogadores. Começar mesmo assim e adicioná-los na próxima página?",
+      rulesLegend: "Regras",
+      dicePerPlayer: "Dados por Jogador",
+      onesWild: "Os Uns São Coringas",
+      palifico: "Palifico",
+      palificoHint: "Quando um jogador fica com o último dado, na rodada que ele começa os uns não são coringas, e ninguém pode mudar o número apostado.",
+      spotOn: "Na Mosca",
+      spotOnOthers: "Na Mosca: Todos os Outros Perdem um Dado",
+      spotOnGain: "Na Mosca: Quem Chamou Recupera um Dado",
+      spotOnOff: "Sem Na Mosca",
+      stakesLegend: "Apostas",
+      stakesPot: "Um Buy-In, Pago por Colocação",
+      stakesPerDie: "Dinheiro por Dado Perdido",
+      potCaption: "{n} jogadores formam um pote de {pool}, pago assim:",
+      perDie: "Por Dado Perdido {sym}",
+      perDieTo: "Vai Para",
+      toWinner: "Quem Ganhou o Desafio",
+      toPot: "O Pote, para o Vencedor",
+      toWinnerHint: "Cada dado perdido paga quem ganhou aquele desafio. O máximo que alguém pode perder é {most}.",
+      toPotHint: "Cada dado perdido vai para o pote, e o último com dados leva tudo. O máximo que alguém pode perder é {most}.",
+      entryLegend: "Registro das Rodadas",
+      entryFull: "Completo",
+      entryQuick: "Rápido",
+      entryFullHint: "Informe a aposta, quem desafiou e quantos havia, e o PitMaster calcula quem perde um dado.",
+      entryQuickHint: "Só toque em quem perdeu um dado. Dá para trocar a qualquer momento na tela do jogo.",
+      eachPlayer: "Cada Jogador Começa Com",
+      howItPlays: "Todos rolam os dados sob um copo e apostam quantos dados de um número há na mesa inteira. Se alguém chamar uma aposta de mentira, os copos são levantados: quem errou perde um dado. O último com dados vence.",
     },
     cash: {
       blinds: {

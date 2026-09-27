@@ -15,6 +15,7 @@ export type EventKind =
   | "sevenTwo"
   | "highHand"
   | "game"
+  | "liar"
   | "note";
 
 /** how a chip is drawn. matches the real chip families. */
@@ -293,7 +294,57 @@ export interface Payment {
   at: number;
 }
 
-export type GameType = "cash" | "tournament";
+export type GameType = "cash" | "tournament" | "dice";
+
+/**
+ * what a liar's dice game is played for.
+ *  pot:    everyone buys in, and the pot is paid out by place (the payout table, rounded)
+ *  perDie: every die lost costs a set amount, into a pot the last one standing
+ *          takes, or straight to whoever won that call
+ */
+export interface DiceStakes {
+  mode: "pot" | "perDie";
+  buyIn: number;
+  /** % of the pot for each place; empty = the usual table for the field */
+  payouts: number[];
+  payoutRound: number;
+  perDie: number;
+  perDieTo: "pot" | "winner";
+}
+
+/** how a liar's dice game is played */
+export interface DiceSettings {
+  /** dice each player starts with */
+  dice: number;
+  onesWild: boolean;
+  /** calling spot on: not allowed, everyone else loses a die, or the caller gets one back */
+  spotOn: "off" | "others" | "gain";
+  /** a player down to their last die starts a round with no wild ones and a face that can't change */
+  palifico: boolean;
+  stakes: DiceStakes;
+  /** the dealer screen: tap who lost a die, or enter the whole call */
+  entry: "quick" | "full";
+}
+
+/**
+ * one round of liar's dice: only the rounds are saved, and everything else
+ * (dice left, who's out, places, money) is worked out from them. a quick
+ * round has just its losers; a full one has the call that decided it.
+ */
+export interface DiceRound {
+  bid?: { count: number; face: number };
+  bidder?: string;
+  caller?: string;
+  call?: "liar" | "spot";
+  /** how many of the bid's face there really were */
+  actual?: number;
+  losers: string[];
+  /** spot on, where the caller gets one back */
+  gains?: string[];
+  /** who won the call (a die lost is paid to them, when the stakes say so) */
+  winner?: string;
+  at: number;
+}
 
 export interface Game {
   id: string;
@@ -336,6 +387,9 @@ export interface Game {
   finalAt?: number;
   /** a heads-up bracket's matches, every round, drawn at the start */
   matches?: Match[];
+  /** liar's dice: how it's played, and every round so far */
+  dice?: DiceSettings;
+  rounds?: DiceRound[];
   /** cash: the side games' bomb pots, 7-2 wins and high hands, in order */
   sides?: SideEvent[];
   /** shared costs: they go into settle-up, not into anyone's results */

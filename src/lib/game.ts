@@ -689,6 +689,18 @@ export function unmarkPaid(game: Game, a: string, b: string) {
 /** a game's settle-up counts toward what people owe once it's over (a winner, or everyone cashed out) */
 export const settled = (game: Game) => kind(game.type).settled(game);
 
+/**
+ * settle-up from each player's net for the night (any kind of game): the house
+ * takes up whatever doesn't balance (the prizes it pays out of the buy-ins it
+ * holds), and shared costs count too
+ */
+export function settleNets(game: Game, nets: { name: string; net: number }[]) {
+  const house = game.house?.trim() || HOUSE();
+  const list = nets.map((x) => ({ ...x }));
+  addTo(list, house, -list.reduce((a, x) => a + x.net, 0));
+  return settle(withCosts(game, list, house));
+}
+
 /** fewest payments to square everyone up */
 export function settle(people: { name: string; net: number }[]) {
   const nets = people.map((p) => ({ name: p.name, net: round2(p.net) })).filter((x) => Math.abs(x.net) > 0.001);

@@ -38,7 +38,7 @@ const player = (p: unknown) =>
   maybe(id)(p.ticket);
 
 const said = orNull((n) => obj(n) && str(n.text) && num(n.at));
-const EVENT_KINDS: EventKind[] = ["win", "deal", "money", "bounty", "bust", "chips", "rack", "shuffle", "draw", "seat", "bomb", "sevenTwo", "highHand", "game", "note"];
+const EVENT_KINDS: EventKind[] = ["win", "deal", "money", "bounty", "bust", "chips", "rack", "shuffle", "draw", "seat", "bomb", "sevenTwo", "highHand", "game", "liar", "note"];
 const flashed = orNull((n) => obj(n) && str(n.text) && num(n.at) && (EVENT_KINDS as string[]).includes(n.kind as string));
 const clock = (c: unknown) =>
   obj(c) && ["idle", "running", "paused"].includes(c.status as string) && num(c.levelIndex) && num(c.levelElapsedMs) && num(c.elapsedMs);

@@ -211,6 +211,22 @@ export interface TvDict {
   bracket: {
     vs: string;
   };
+  dice: {
+    palifico: string;
+    palificoLine: string;
+    starts: string;
+    outIn: string;
+    onTable: string;
+    round: string;
+    expectedWild: string;
+    expectedPlain: string;
+    stakes: string;
+    pot: string;
+    liar: string;
+    spotOn: string;
+    bidWas: string;
+    thereWere: Plural;
+  };
   league: {
     standings: string;
     points: string;
@@ -437,6 +453,22 @@ export const tv: Record<Lang, TvDict> = {
     bracket: {
       vs: "vs",
     },
+    dice: {
+      palifico: "Palifico",
+      palificoLine: "{name} is down to one die. Ones aren't wild, and the face can't change.",
+      starts: "Starts",
+      outIn: "Out in {place}",
+      onTable: "Dice on the Table",
+      round: "Round {n}",
+      expectedWild: "Expected Count, Ones Wild",
+      expectedPlain: "Expected Count",
+      stakes: "Stakes",
+      pot: "Pot {amount}",
+      liar: "Liar!",
+      spotOn: "Spot On!",
+      bidWas: "The bid: {bid}",
+      thereWere: { one: "There was {count}", other: "There were {count}" },
+    },
     league: {
       standings: "League Standings",
       points: "{n} pts",
@@ -660,6 +692,22 @@ export const tv: Record<Lang, TvDict> = {
     },
     bracket: {
       vs: "对阵",
+    },
+    dice: {
+      palifico: "Palifico",
+      palificoLine: "{name} 只剩一颗骰子。1 点不算万能，点数不能更改。",
+      starts: "先手",
+      outIn: "{place}名出局",
+      onTable: "桌上骰子",
+      round: "第 {n} 轮",
+      expectedWild: "期望数，1 点万能",
+      expectedPlain: "期望数",
+      stakes: "赌注",
+      pot: "奖池 {amount}",
+      liar: "开！",
+      spotOn: "刚好！",
+      bidWas: "叫的是：{bid}",
+      thereWere: { other: "实际有 {count} 个" },
     },
     league: {
       standings: "联赛排名",
@@ -885,6 +933,22 @@ export const tv: Record<Lang, TvDict> = {
     bracket: {
       vs: "बनाम",
     },
+    dice: {
+      palifico: "पालिफ़िको",
+      palificoLine: "{name} के पास एक ही पासा बचा है। एक्के वाइल्ड नहीं हैं, और अंक नहीं बदल सकता।",
+      starts: "पहली बारी",
+      outIn: "{place} स्थान पर बाहर",
+      onTable: "टेबल पर पासे",
+      round: "राउंड {n}",
+      expectedWild: "अनुमानित गिनती, एक्के वाइल्ड",
+      expectedPlain: "अनुमानित गिनती",
+      stakes: "दांव",
+      pot: "पॉट {amount}",
+      liar: "झूठ!",
+      spotOn: "एकदम सही!",
+      bidWas: "बोली: {bid}",
+      thereWere: { one: "असल में {count} था", other: "असल में {count} थे" },
+    },
     league: {
       standings: "लीग तालिका",
       points: "{n} अंक",
@@ -1108,6 +1172,22 @@ export const tv: Record<Lang, TvDict> = {
     },
     bracket: {
       vs: "vs",
+    },
+    dice: {
+      palifico: "Palifico",
+      palificoLine: "A {name} le queda un solo dado. Los unos no son comodines y el número no puede cambiar.",
+      starts: "Empieza",
+      outIn: "Eliminado en {place}",
+      onTable: "Dados en la Mesa",
+      round: "Ronda {n}",
+      expectedWild: "Cantidad Esperada, Unos Comodines",
+      expectedPlain: "Cantidad Esperada",
+      stakes: "Apuestas",
+      pot: "Bote {amount}",
+      liar: "¡Dudo!",
+      spotOn: "¡Calzo!",
+      bidWas: "La apuesta: {bid}",
+      thereWere: { one: "Había {count}", other: "Había {count}" },
     },
     league: {
       standings: "Clasificación de la Liga",
@@ -1333,6 +1413,22 @@ export const tv: Record<Lang, TvDict> = {
     bracket: {
       vs: "contre",
     },
+    dice: {
+      palifico: "Palifico",
+      palificoLine: "{name} n'a plus qu'un dé. Les as ne sont pas jokers, et la valeur ne peut pas changer.",
+      starts: "Commence",
+      outIn: "Éliminé en {place}",
+      onTable: "Dés sur la Table",
+      round: "Manche {n}",
+      expectedWild: "Nombre Attendu, As Jokers",
+      expectedPlain: "Nombre Attendu",
+      stakes: "Mises",
+      pot: "Pot {amount}",
+      liar: "Menteur !",
+      spotOn: "Pile !",
+      bidWas: "L'annonce : {bid}",
+      thereWere: { one: "Il y en avait {count}", other: "Il y en avait {count}" },
+    },
     league: {
       standings: "Classement de la Ligue",
       points: "{n} pts",
@@ -1556,6 +1652,22 @@ export const tv: Record<Lang, TvDict> = {
     },
     bracket: {
       vs: "ضد",
+    },
+    dice: {
+      palifico: "باليفيكو",
+      palificoLine: "بقي مع {name} حجر واحد. الواحد ليس جوكر، ولا يمكن تغيير الرقم.",
+      starts: "يبدأ",
+      outIn: "خرج في المركز {place}",
+      onTable: "النرد على الطاولة",
+      round: "الجولة {n}",
+      expectedWild: "العدد المتوقع، الواحد جوكر",
+      expectedPlain: "العدد المتوقع",
+      stakes: "الرهانات",
+      pot: "البوت {amount}",
+      liar: "كذاب!",
+      spotOn: "بالضبط!",
+      bidWas: "المزايدة: {bid}",
+      thereWere: { zero: "لم يكن هناك أي حجر", one: "كان هناك حجر واحد", two: "كان هناك حجران", few: "كان هناك {count} أحجار", many: "كان هناك {count} حجرًا", other: "كان هناك {count} حجر" },
     },
     league: {
       standings: "ترتيب الدوري",
@@ -1781,6 +1893,22 @@ export const tv: Record<Lang, TvDict> = {
     bracket: {
       vs: "বনাম",
     },
+    dice: {
+      palifico: "পালিফিকো",
+      palificoLine: "{name}-এর মাত্র একটি পাশা বাকি। এক ওয়াইল্ড নয়, আর সংখ্যা বদলানো যাবে না।",
+      starts: "শুরু করবে",
+      outIn: "{place} স্থানে বাদ",
+      onTable: "টেবিলে পাশা",
+      round: "রাউন্ড {n}",
+      expectedWild: "প্রত্যাশিত গণনা, এক ওয়াইল্ড",
+      expectedPlain: "প্রত্যাশিত গণনা",
+      stakes: "বাজি",
+      pot: "পট {amount}",
+      liar: "মিথ্যা!",
+      spotOn: "একদম ঠিক!",
+      bidWas: "ডাক: {bid}",
+      thereWere: { one: "ছিল {count}টি", other: "ছিল {count}টি" },
+    },
     league: {
       standings: "লিগ টেবিল",
       points: "{n} পয়েন্ট",
@@ -2004,6 +2132,22 @@ export const tv: Record<Lang, TvDict> = {
     },
     bracket: {
       vs: "contra",
+    },
+    dice: {
+      palifico: "Palifico",
+      palificoLine: "{name} está com um só dado. Os uns não são coringas, e o número não pode mudar.",
+      starts: "Começa",
+      outIn: "Eliminado em {place}",
+      onTable: "Dados na Mesa",
+      round: "Rodada {n}",
+      expectedWild: "Quantidade Esperada, Uns Coringas",
+      expectedPlain: "Quantidade Esperada",
+      stakes: "Apostas",
+      pot: "Pote {amount}",
+      liar: "Mentiroso!",
+      spotOn: "Na Mosca!",
+      bidWas: "A aposta: {bid}",
+      thereWere: { one: "Havia {count}", other: "Havia {count}" },
     },
     league: {
       standings: "Classificação da Liga",

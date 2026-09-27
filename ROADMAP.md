@@ -171,6 +171,8 @@ Move cash and tournament onto this first, with no change in behavior. Then `Game
 
 ## Phase 10: Liar's Dice
 
+**Status: done.** `kinds/dice` (engine, actions, form, dealer screen, tv board) on `kinds/lives.ts`. Players out in the same round (a spot on where everyone else loses a die) share the best of their places, and share those places' payouts. A buy-in pot is paid by the house once it's over; money per die is owed as the dice go, player to player. In quick mode with money going to the winner of each call, the host says who won it. The TV hides its usual toast for a call and shows the call itself instead.
+
 The first game that isn't poker. It's built on a **last one standing** engine, where players lose lives (here, dice) until one is left, so the other lives games in Phase 11 reuse it.
 
 - **Kind `dice`.** Settings: dice per player (5), ones wild, spot-on calls, palifico (the special round when a player is down to one die), and the stakes:

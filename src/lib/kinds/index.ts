@@ -6,8 +6,9 @@ import type { GameType } from "$lib/types";
 import type { Kind } from "./kind";
 import { cash } from "./cash";
 import { tournament } from "./tournament";
+import { dice } from "./dice";
 
-export const KINDS: Kind[] = [cash, tournament];
+export const KINDS: Kind[] = [cash, tournament, dice];
 
 /** one of ours */
 export const isKind = (x: unknown): x is GameType => KINDS.some((k) => k.id === x);

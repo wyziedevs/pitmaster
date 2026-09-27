@@ -50,6 +50,13 @@ export interface CommonDict {
     studLine: string;
     anteLine: string;
   };
+  kinds: {
+    dice: {
+      label: string;
+      plural: string;
+      newLabel: string;
+    };
+  };
   ok: string;
   on: string;
   off: string;
@@ -105,6 +112,13 @@ export const common: Record<Lang, CommonDict> = {
       studLine: "Ante {ante}, Bring-In {bringIn}",
       anteLine: "Ante {ante}",
     },
+    kinds: {
+      dice: {
+        label: "Liar's Dice",
+        plural: "Liar's Dice",
+        newLabel: "New Liar's Dice",
+      },
+    },
     ok: "OK",
     on: "On",
     off: "Off",
@@ -157,6 +171,13 @@ export const common: Record<Lang, CommonDict> = {
     stakes: {
       studLine: "前注 {ante}，强制开注 {bringIn}",
       anteLine: "前注 {ante}",
+    },
+    kinds: {
+      dice: {
+        label: "大话骰",
+        plural: "大话骰",
+        newLabel: "新建大话骰",
+      },
     },
     ok: "确定",
     on: "开",
@@ -211,6 +232,13 @@ export const common: Record<Lang, CommonDict> = {
       studLine: "एंटी {ante}, ब्रिंग-इन {bringIn}",
       anteLine: "एंटी {ante}",
     },
+    kinds: {
+      dice: {
+        label: "लायर्स डाइस",
+        plural: "लायर्स डाइस",
+        newLabel: "नया लायर्स डाइस",
+      },
+    },
     ok: "ठीक है",
     on: "चालू",
     off: "बंद",
@@ -263,6 +291,13 @@ export const common: Record<Lang, CommonDict> = {
     stakes: {
       studLine: "Ante {ante}, Bring-In {bringIn}",
       anteLine: "Ante {ante}",
+    },
+    kinds: {
+      dice: {
+        label: "Perudo",
+        plural: "Perudo",
+        newLabel: "Nuevo Perudo",
+      },
     },
     ok: "Aceptar",
     on: "Activado",
@@ -317,6 +352,13 @@ export const common: Record<Lang, CommonDict> = {
       studLine: "Ante {ante}, Bring-In {bringIn}",
       anteLine: "Ante {ante}",
     },
+    kinds: {
+      dice: {
+        label: "Perudo",
+        plural: "Perudo",
+        newLabel: "Nouveau Perudo",
+      },
+    },
     ok: "OK",
     on: "Activé",
     off: "Désactivé",
@@ -369,6 +411,13 @@ export const common: Record<Lang, CommonDict> = {
     stakes: {
       studLine: "أنتي {ante}، برينغ إن {bringIn}",
       anteLine: "أنتي {ante}",
+    },
+    kinds: {
+      dice: {
+        label: "نرد الكذاب",
+        plural: "نرد الكذاب",
+        newLabel: "لعبة نرد كذاب جديدة",
+      },
     },
     ok: "حسنًا",
     on: "تشغيل",
@@ -423,6 +472,13 @@ export const common: Record<Lang, CommonDict> = {
       studLine: "অ্যান্টি {ante}, ব্রিং-ইন {bringIn}",
       anteLine: "অ্যান্টি {ante}",
     },
+    kinds: {
+      dice: {
+        label: "লায়ার্স ডাইস",
+        plural: "লায়ার্স ডাইস",
+        newLabel: "নতুন লায়ার্স ডাইস",
+      },
+    },
     ok: "ঠিক আছে",
     on: "চালু",
     off: "বন্ধ",
@@ -475,6 +531,13 @@ export const common: Record<Lang, CommonDict> = {
     stakes: {
       studLine: "Ante {ante}, Bring-In {bringIn}",
       anteLine: "Ante {ante}",
+    },
+    kinds: {
+      dice: {
+        label: "Dado Mentiroso",
+        plural: "Dado Mentiroso",
+        newLabel: "Novo Dado Mentiroso",
+      },
     },
     ok: "OK",
     on: "Ativado",

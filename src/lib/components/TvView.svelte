@@ -17,6 +17,7 @@
   import Spade from "@lucide/svelte/icons/spade";
   import Crown from "@lucide/svelte/icons/crown";
   import Layers from "@lucide/svelte/icons/layers";
+  import Dices from "@lucide/svelte/icons/dices";
   import type { EventKind, Game, Level } from "$lib/types";
   import { cashGameNow, cashStakes, gameLine, isLimit, isStud, rotationName, stakesText, variant, variantName } from "$lib/variants";
   import { derive, cashElapsed } from "$lib/clock";
@@ -326,6 +327,7 @@
     sevenTwo: { icon: Spade, sound: sounds.chips, color: BANNER, n: 2 },
     highHand: { icon: Crown, sound: sounds.chime, color: BANNER, n: 3 },
     game: { icon: Layers, sound: sounds.shuffle, color: BANNER, n: 3 },
+    liar: { icon: Dices, sound: sounds.bust, color: HOT, n: 3 },
     seat: { icon: Armchair, sound: sounds.ding, color: CHALK, n: 2 },
     note: { icon: Megaphone, sound: sounds.ding, color: BANNER, n: 2 },
   };
@@ -339,8 +341,9 @@
     lastFlash = f.at;
     if (first && Date.now() - f.at > 8000) return; // don't replay old news on load
     const kind = f.kind;
-    // a win or a deal takes over the whole screen; a toast on top would only cover the name
-    if (kind !== "win" && kind !== "deal") toast = { text: f.text, kind, at: f.at };
+    // a win or a deal takes over the whole screen, and a dice call has its own big moment
+    // (kinds/dice/Board.svelte): a toast on top would only cover it
+    if (kind !== "win" && kind !== "deal" && kind !== "liar") toast = { text: f.text, kind, at: f.at };
     cue(KINDS[kind].sound, KINDS[kind].color, KINDS[kind].n);
     if (voice) speak(f.text, kind === "win" ? 2200 : kind === "money" || kind === "deal" ? 1400 : 800);
     setTimeout(() => toast?.at === f.at && (toast = null), 7000);
@@ -1924,6 +1927,13 @@
     header {
       flex-wrap: wrap;
       row-gap: 2px;
+    }
+    /* another kind's board sits where the clock would, with Find Me after it */
+    .kind-board {
+      grid-area: main;
+      grid-row: auto;
+      grid-column: auto;
+      overflow: visible;
     }
     /* the results take the clock's place, and Find Me still comes after them */
     .winner {
