@@ -69,12 +69,15 @@ export function bountyBook(game: Game) {
   if (!tr?.bounty) return { won, head, paid, unclaimed };
   const b = tr.bounty;
   const kos = game.kos ?? [];
+  // a deal ends it with no knockout: those players are out, but not busted
+  const dealt = game.deal?.amounts ?? {};
   for (const p of game.players) {
     won[p.id] = 0;
     // a rebuy after going out comes with a fresh bounty (below); one bought
     // while still in adds to the bounty they've got
     const busts = kos.filter((k) => k.out === p.id).length;
-    const topUps = Math.max(0, p.rebuys - (busts - (p.out ? 1 : 0)));
+    const busted = p.out && !(p.id in dealt) ? 1 : 0;
+    const topUps = Math.max(0, p.rebuys - (busts - busted));
     head[p.id] = round2(b * (1 + topUps));
   }
   if (tr.bountyKind === "mystery") {
