@@ -67,7 +67,19 @@ interface Pushing {
   next: Game | null; // waiting its turn
   last: number; // when the last write for this code finished
   run: Promise<void> | null; // the loop sending them, while there's anything to send
+  stopped: boolean; // sharing ended: nothing more goes out, not even a retry
+  wake: (() => void) | null; // cuts short the wait before the next write
 }
+const pushing = (last = 0): Pushing => ({ next: null, last, run: null, stopped: false, wake: null });
+/** wait `ms` before the next write, unless sharing stops first */
+const pause = (p: Pushing, ms: number) =>
+  new Promise<void>((done) => {
+    const timer = setTimeout(done, Math.max(0, ms));
+    p.wake = () => {
+      clearTimeout(timer);
+      done();
+    };
+  });
 const pushes = new Map<string, Pushing>();
 
 export function publish(game: Game) {
@@ -75,13 +87,13 @@ export function publish(game: Game) {
   if (!game.live) return;
   const live = game.live;
   void host(live.code);
-  const p = pushes.get(live.code) ?? { next: null, last: 0, run: null };
+  const p = pushes.get(live.code) ?? pushing();
   pushes.set(live.code, p);
   p.next = remoteSnapshot(game);
   p.run ??= (async () => {
     let wait = GAP;
     while (p.next) {
-      await sleep(p.last + wait - Date.now());
+      await pause(p, p.last + wait - Date.now());
       const snap = p.next;
       if (!snap) break; // stopped sharing meanwhile
       p.next = null;
@@ -89,7 +101,7 @@ export function publish(game: Game) {
       p.last = Date.now();
       const retry = status === 0 || status === 429 || status >= 500;
       wait = retry ? Math.min(wait * 2, 30_000) : GAP;
-      if (retry) p.next ??= snap;
+      if (retry && !p.stopped) p.next ??= snap;
     }
     p.run = null;
   })();
@@ -159,7 +171,7 @@ export async function startLive(): Promise<Live> {
     if (r.status === 409) continue; // that code's taken: draw another
     if (!r.ok) throw new Error(`the server said ${r.status}`);
     // that was this code's first write, so its first snapshot waits a second
-    pushes.set(code, { next: null, last: Date.now(), run: null });
+    pushes.set(code, pushing(Date.now()));
     return { code, key };
   }
   throw new Error("no free code");
@@ -180,7 +192,9 @@ export async function endLive({ code, key }: Live) {
   pushes.delete(code);
   unhost(code);
   if (p) {
+    p.stopped = true;
     p.next = null;
+    p.wake?.();
     await p.run;
   }
   const { id } = await codeKeys(code);
