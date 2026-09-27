@@ -122,7 +122,7 @@ const defaults: Settings = {
   useSeats: true,
   useDeals: true,
   usePayLinks: true,
-  useBombPots: false,
+  useBombPots: true,
   useSevenTwo: false,
   useHighHand: false,
   useCosts: false,
@@ -131,7 +131,7 @@ const defaults: Settings = {
   useShootouts: false,
   useBrackets: false,
   useVariants: false,
-  useOtherGames: false,
+  useOtherGames: true,
   useWaitlist: false,
   useLeagues: false,
 
