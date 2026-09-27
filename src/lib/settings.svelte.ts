@@ -39,6 +39,8 @@ export interface Settings {
   useBombPots: boolean; // cash games: bomb pots, called by hand or on a timer
   useSevenTwo: boolean; // cash games: winning with 7-2 collects from everyone
   useHighHand: boolean; // cash games: a prize for the best hand in each stretch of play
+  useCosts: boolean; // split what was bought for the game in settle-up
+  useLedger: boolean; // tick off settle-up payments, and see who still owes whom on Players
 
   // ---- the house ----
   houseRules: string; // one per line
@@ -115,6 +117,8 @@ const defaults: Settings = {
   useBombPots: false,
   useSevenTwo: false,
   useHighHand: false,
+  useCosts: false,
+  useLedger: false,
 
   houseRules: "",
   rulesOnNew: true,

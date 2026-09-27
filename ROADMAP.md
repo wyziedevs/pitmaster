@@ -64,6 +64,8 @@ The extras cash tables actually play. Each has its own switch, off to start. Eve
 
 ## Phase 3: Money across games
 
+**Status: done.** Two switches, both off to start: Shared Costs and Who Owes Who. Tournaments got a settle-up too (the house pays out the prizes and bounties once there's a winner), so both game types share one list of payments (`SettleMoves.svelte`, costs in `Costs.svelte`). A payment is stored as what was paid (`game.paid: { from, to, amount, at }[]`) rather than a flag, so a game changed after it was paid shows what's left, or what comes back.
+
 **3a. Shared costs.** Anything bought for the game, split among the players.
 - `game.costs: { id; label; amount; paidBy; split: string[] }[]`. `split` lists player ids, and empty means everyone. `paidBy` is a player id or the house.
 - These go into `settle()` so one set of transfers covers everything, but not into poker results. `net` and the leaderboard don't change.

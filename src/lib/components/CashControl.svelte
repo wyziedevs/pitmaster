@@ -12,7 +12,7 @@
   import { addPlayer, cashStats, cashSettle, cashRake, logEvent, flash, reseat, seatsDrawn, seatLabel, tableCounts, highHandPrizes } from "$lib/game";
   import { getHandles } from "$lib/store";
   import { distribute, faceText } from "$lib/chips";
-  import { clock, clockFace, currencySymbol, duration, money, nameKey, payLinks, round2, signed, timeOfDay } from "$lib/util";
+  import { clock, clockFace, currencySymbol, duration, money, nameKey, round2, signed, timeOfDay } from "$lib/util";
   import { time } from "$lib/now.svelte";
   import { provide } from "$lib/commands.svelte";
   import { play } from "$lib/sound";
@@ -21,6 +21,8 @@
   import Chip from "./Chip.svelte";
   import SeatTools from "./SeatTools.svelte";
   import SideGames from "./SideGames.svelte";
+  import SettleMoves from "./SettleMoves.svelte";
+  import Costs from "./Costs.svelte";
   import { settings } from "$lib/settings.svelte";
   import Count from "./Count.svelte";
   import RemoveButton from "./RemoveButton.svelte";
@@ -41,7 +43,8 @@
   const house = $derived(game.house?.trim() || t("gamePlay.shared.house"));
   // where people get paid (saved on the Players page), for links in settle-up
   const handles = getHandles();
-  const linksFor = (name: string, amount: number) => (settings.usePayLinks ? payLinks(handles[nameKey(name)] ?? null, amount, game.name) : []);
+  // shared costs: the switch, unless this game already has some
+  const costsOn = $derived(settings.useCosts || !!game.costs?.length);
   const anyHandles = $derived(moves.some((m) => handles[nameKey(m.to)]));
 
   let newName = $state("");
@@ -396,22 +399,15 @@
       <p class="good small with-icon pop"><Icon icon={Check} />{s.rakeBox ? t("gamePlay.cash.bankBalancesWithRakeBox", { amount: money(s.rakeBox) }) : t("gamePlay.cash.bankBalances")}</p>
     {/if}
     {#if moves.length}
-      <ul class="moves pl-[18px]" in:slide={reveal()}>
-        {#each moves as m, i (i)}
-          {@const links = linksFor(m.to, m.amount)}
-          <li class="mb-1" in:slide={reveal()} out:slide={leave()} style:--i={i}>
-            <b>{m.from}</b> {t("gamePlay.cash.pays")} <b>{m.to}</b> <span class="num">{money(m.amount)}</span>
-            {#if links.length}<span class="small pay links ml-3">{#each links as l (l.label)}<a href={l.href} target="_blank" rel="noopener noreferrer" title={t("gamePlay.shared.payLinkTitle", { handle: l.handle, label: l.label })}>{l.label}</a>{/each}</span>{/if}
-          </li>
-        {/each}
-      </ul>
+      <SettleMoves bind:game {persist} />
       {#if r.mode === "seat"}<p class="small muted">{t("gamePlay.cash.includesSeatFeeNote", { fee: money(r.fee), house })}</p>{/if}
       {#if Object.keys(highHandPrizes(game)).length}<p class="small muted">{t("gamePlay.cash.sides.settleNote", { house })}</p>{/if}
       {#if !s.allOut}<p class="small muted" in:slide={reveal()} out:slide={leave()}>{t("gamePlay.cash.countsOnlyCashedOut")}</p>{/if}
       {#if !anyHandles && settings.usePayLinks}<p class="small muted">{t("gamePlay.cash.savePlayersNoteBefore")} <a href="/players">{t("gamePlay.shared.groupPlayers")}</a> {t("gamePlay.cash.savePlayersNoteAfter")}</p>{/if}
     {:else}
-      <p class="muted small">{t("gamePlay.cash.cashOutToSeeWho")}</p>
+      <p class="muted small">{s.allOut ? t("gamePlay.shared.square") : t("gamePlay.cash.cashOutToSeeWho")}</p>
     {/if}
+    {#if costsOn}<div class="part mt-[22px]"><Costs bind:game {persist} /></div>{/if}
   </section>
 
   <section>

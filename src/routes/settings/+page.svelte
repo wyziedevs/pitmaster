@@ -210,13 +210,15 @@
   }
 
   // the extras a host can switch off; a game that already uses one keeps it
-  type Extra = "useBounties" | "useRebuys" | "useSeats" | "useDeals" | "usePayLinks" | "useBombPots" | "useSevenTwo" | "useHighHand";
+  type Extra = "useBounties" | "useRebuys" | "useSeats" | "useDeals" | "usePayLinks" | "useBombPots" | "useSevenTwo" | "useHighHand" | "useCosts" | "useLedger";
   const EXTRAS = $derived<{ key: Extra; label: string; hint: string }[]>([
     { key: "useBounties", label: t("settings.game.extras.bounties.label"), hint: t("settings.game.extras.bounties.hint") },
     { key: "useRebuys", label: t("settings.game.extras.rebuys.label"), hint: t("settings.game.extras.rebuys.hint") },
     { key: "useSeats", label: t("settings.game.extras.seats.label"), hint: t("settings.game.extras.seats.hint") },
     { key: "useDeals", label: t("settings.game.extras.deals.label"), hint: t("settings.game.extras.deals.hint") },
     { key: "usePayLinks", label: t("settings.game.extras.payLinks.label"), hint: t("settings.game.extras.payLinks.hint") },
+    { key: "useCosts", label: t("settings.game.extras.costs.label"), hint: t("settings.game.extras.costs.hint") },
+    { key: "useLedger", label: t("settings.game.extras.ledger.label"), hint: t("settings.game.extras.ledger.hint") },
     { key: "useBombPots", label: t("settings.game.extras.bombPots.label"), hint: t("settings.game.extras.bombPots.hint") },
     { key: "useSevenTwo", label: t("settings.game.extras.sevenTwo.label"), hint: t("settings.game.extras.sevenTwo.hint") },
     { key: "useHighHand", label: t("settings.game.extras.highHand.label"), hint: t("settings.game.extras.highHand.hint") },

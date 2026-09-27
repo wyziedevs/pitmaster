@@ -31,14 +31,17 @@
     mysteryStartsAt,
     fitEnvelopes,
     setEnvelopes,
+    settleUp,
+    HOUSE,
   } from "$lib/game";
   import { annotate } from "$lib/blinds";
   import { distribute } from "$lib/chips";
-  import { amt, clock, clockFace, money, nameKey, ordinal, payLinks, timeOfDay } from "$lib/util";
-  import { getHandles } from "$lib/store";
+  import { amt, clock, clockFace, money, ordinal, timeOfDay } from "$lib/util";
   import { time } from "$lib/now.svelte";
   import StructureTable from "./StructureTable.svelte";
   import DealCalc from "./DealCalc.svelte";
+  import SettleMoves from "./SettleMoves.svelte";
+  import Costs from "./Costs.svelte";
   import SeatTools from "./SeatTools.svelte";
   import { prefs, settings } from "$lib/settings.svelte";
   import { provide } from "$lib/commands.svelte";
@@ -92,6 +95,10 @@
   const payRows = $derived(
     Array.from({ length: game.deal ? Object.keys(game.deal.amounts).length : s.payouts.length }, (_, i) => i)
   );
+  // settle-up: the payouts once there's a winner, and shared costs (the switch, unless this game has some)
+  const costsOn = $derived(settings.useCosts || !!game.costs?.length);
+  const moves = $derived(settleUp(game));
+  const settleShown = $derived(game.finished || !!game.costs?.length);
   const canDeal = $derived(!game.finished && alive.length >= 2 && alive.length <= 9 && game.clock.status !== "idle");
 
   // bounties: who's taken what, and (progressive) what's on each head now
@@ -147,8 +154,6 @@
     if (f && wasFinished === false) setTimeout(() => play("ship"), 160);
     wasFinished = f;
   });
-  // the host pays the winners out of the pool: links for anyone with a saved handle
-  const handles = getHandles();
 
   // a few stacks of the game's own chips, biggest first
   const pot = $derived([...game.chips].sort((a, b) => b.value - a.value).slice(0, 4));
@@ -406,10 +411,6 @@
             <td>
               <!-- a name lands in its place like the busted player's stamp -->
               {#if who}<span class="paid inline-block" use:fresh={[who.bustedAt ?? game.endedAt, "stamp"]}>{who.name}</span>{/if}
-              {#if who && game.finished && owed > 0 && settings.usePayLinks}
-                {@const links = payLinks(handles[nameKey(who.name)] ?? null, owed, game.name)}
-                {#if links.length}<span class="small pay links ml-3">{#each links as l (l.label)}<a href={l.href} target="_blank" rel="noopener noreferrer" title={tt("gamePlay.shared.payLinkTitle", { handle: l.handle, label: l.label })}>{l.label}</a>{/each}</span>{/if}
-              {/if}
             </td>
           </tr>
         {/each}
@@ -457,6 +458,19 @@
         {/if}
       </div>
     {/if}
+
+    {#if settleShown}
+      <div class="part mt-[22px]" transition:slide={reveal()}>
+        <h2>{tt("gamePlay.shared.settleUp")}</h2>
+        {#if moves.length}
+          <SettleMoves bind:game {persist} />
+          {#if game.finished}<p class="small muted">{tt("gamePlay.shared.tourneySettleNote", { house: game.house?.trim() || HOUSE() })}</p>{/if}
+        {:else}
+          <p class="small muted">{tt("gamePlay.shared.square")}</p>
+        {/if}
+      </div>
+    {/if}
+    {#if costsOn}<div class="part mt-[22px]"><Costs bind:game {persist} /></div>{/if}
 
     {#if canDeal && dealsOn}
       <div class="part mt-[22px]" transition:slide={reveal()}>

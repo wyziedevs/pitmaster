@@ -1,7 +1,7 @@
 // the game written down: a plain-text recap to paste anywhere and a csv for
 // spreadsheets. both come from the same numbers the dealer screen shows.
 import type { Game } from "./types";
-import { cashRake, cashSettle, cashStats, HOUSE, highHandPrizes, koCount, tourneyStats } from "./game";
+import { anyPaid, cashRake, cashStats, costNets, HOUSE, highHandPrizes, koCount, settleUp, stillOwed, tourneyStats } from "./game";
 import { handlesFor } from "./store";
 import { settings } from "./settings.svelte";
 import { cashElapsed, derive } from "./clock";
@@ -10,6 +10,35 @@ import { amt, csv, day, duration, money, ordinal, round2, signed, timeOfDay } fr
 import { t, tp } from "$lib/i18n";
 
 const pad = (s: string, n: number) => s + " ".repeat(Math.max(1, n - s.length));
+
+/** the shared costs and who pays who, the same for cash and tournaments */
+function settleLines(game: Game) {
+  const lines: string[] = [];
+  const house = game.house?.trim() || HOUSE();
+  const name = (id: string | null) => (id ? (game.players.find((p) => p.id === id)?.name ?? house) : house);
+  if (game.costs?.length) lines.push("", t("players.report.cash.costs", { list: game.costs.map((c) => `${c.label} ${money(c.amount)} (${name(c.paidBy)})`).join(", ") }));
+  const moves = settleUp(game);
+  if (!moves.length) return lines;
+  const owed = stillOwed(game);
+  lines.push("", t("players.report.cash.settleUp"));
+  for (const m of moves) {
+    // where to send it, if the one getting paid has saved a handle
+    const h = settings.usePayLinks ? handlesFor(m.to) : null;
+    const where = [h?.venmo && `Venmo @${h.venmo}`, h?.cashapp && `Cash App $${h.cashapp}`, h?.paypal && `paypal.me/${h.paypal}`].filter(Boolean).join(", ");
+    // ticked off, or ticked off and then the game changed: what's left, either way
+    const rest = owed.find((o) => [o.from, o.to].includes(m.from) && [o.from, o.to].includes(m.to));
+    const paid = anyPaid(game, m.from, m.to);
+    const note = !paid
+      ? where
+      : !rest
+        ? t("players.report.cash.paidTag")
+        : rest.from === m.from
+          ? t("gamePlay.shared.leftToPay", { amount: money(rest.amount) })
+          : t("gamePlay.shared.paidBack", { from: rest.from, to: rest.to, amount: money(rest.amount) });
+    lines.push(t("players.report.cash.settleLine", { from: m.from, to: m.to, amount: money(m.amount), where: note ? ` (${note})` : "" }));
+  }
+  return lines;
+}
 
 /** the recap people paste into a chat, an email or a post */
 export function recap(game: Game) {
@@ -50,16 +79,7 @@ export function recap(game: Game) {
       ...sides.filter((e) => e.kind === "highHandPaid").map((e) => t("players.report.cash.highHand", { name: name(e.playerId), hand: e.hand ?? "", amount: money(e.amount ?? 0), house })),
     ].filter(Boolean);
     if (sideLines.length) lines.push("", ...sideLines);
-    const moves = cashSettle(game);
-    if (moves.length) {
-      lines.push("", t("players.report.cash.settleUp"));
-      for (const m of moves) {
-        // where to send it, if the one getting paid has saved a handle
-        const h = settings.usePayLinks ? handlesFor(m.to) : null;
-        const where = [h?.venmo && `Venmo @${h.venmo}`, h?.cashapp && `Cash App $${h.cashapp}`, h?.paypal && `paypal.me/${h.paypal}`].filter(Boolean).join(", ");
-        lines.push(t("players.report.cash.settleLine", { from: m.from, to: m.to, amount: money(m.amount), where: where ? ` (${where})` : "" }));
-      }
-    }
+    lines.push(...settleLines(game));
     if (s.allOut && Math.abs(s.diff) > 0.001) lines.push("", t("players.report.cash.bankOff", { amount: money(s.diff) }));
     return lines.join("\n");
   }
@@ -86,6 +106,7 @@ export function recap(game: Game) {
       const tail = [r && r.won ? money(r.won) : "", kos ? tp("players.report.tourney.kos", kos) : ""].filter(Boolean).join(" · ");
       lines.push(`${label}${pad(p.name, w)}${tail}`.trimEnd());
     }
+    lines.push(...settleLines(game));
     if (!game.finished) lines.push("", t("players.report.tourney.stillPlayingNote"));
     return lines.join("\n");
   }
@@ -101,6 +122,7 @@ export function gameCsv(game: Game) {
     const fee = r.mode === "seat" ? r.fee : 0;
     const prizes = highHandPrizes(game);
     const hh = Object.keys(prizes).length > 0;
+    const costs = costNets(game);
     return csv([
       [
         t("players.report.csv.date"),
@@ -111,6 +133,7 @@ export function gameCsv(game: Game) {
         ...(fee ? [t("players.report.csv.seatFee")] : []),
         ...(hh ? [t("players.report.csv.highHand")] : []),
         t("players.report.csv.net"),
+        ...(game.costs?.length ? [t("players.report.csv.costs")] : []),
         t("players.report.csv.satDown"),
         t("players.report.csv.left"),
       ],
@@ -123,6 +146,7 @@ export function gameCsv(game: Game) {
         ...(fee ? [fee] : []),
         ...(hh ? [prizes[p.id] ?? ""] : []),
         p.cashOut === null ? "" : round2(p.cashOut - p.cashIn - fee + (prizes[p.id] ?? 0)),
+        ...(game.costs?.length ? [costs[p.id] ?? 0] : []),
         p.joinedAt ? timeOfDay(Math.max(p.joinedAt, game.clock.startedAt ?? 0)) : "",
         p.leftAt ? timeOfDay(p.leftAt) : "",
       ]),
@@ -130,6 +154,7 @@ export function gameCsv(game: Game) {
   }
   const t2 = game.tourney!;
   const done = results(game);
+  const costs = costNets(game);
   return csv([
     [
       t("players.report.csv.date"),
@@ -143,13 +168,14 @@ export function gameCsv(game: Game) {
       t("players.report.csv.net"),
       t("players.report.csv.knockouts"),
       t("players.report.csv.busted"),
+      ...(game.costs?.length ? [t("players.report.csv.costs")] : []),
     ],
     ...[...game.players]
       .sort((a, b) => (a.place ?? 999) - (b.place ?? 999))
       .map((p) => {
         const r = done.find((x) => x.name === p.name.trim());
         const cost = t2.buyIn + p.rebuys * t2.rebuy.cost + p.addOns * t2.addOn.cost;
-        return [date, game.name, p.name, p.place ?? "", p.rebuys, p.addOns, cost, r?.won ?? "", r ? r.net : "", koCount(game, p.id), p.bustedAt ? timeOfDay(p.bustedAt) : ""];
+        return [date, game.name, p.name, p.place ?? "", p.rebuys, p.addOns, cost, r?.won ?? "", r ? r.net : "", koCount(game, p.id), p.bustedAt ? timeOfDay(p.bustedAt) : "", ...(game.costs?.length ? [costs[p.id] ?? 0] : [])];
       }),
   ]);
 }

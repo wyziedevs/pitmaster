@@ -61,10 +61,17 @@ export interface PlayersDict {
       label: string;
       ariaLabel: string;
     };
+    owed: {
+      heading: string;
+      note: string;
+      line: string;
+      markPaid: string;
+    };
     toast: {
       csvDownloaded: string;
       handleSaved: string;
       handleCleared: string;
+      markedPaid: string;
     };
     empty: {
       default: string;
@@ -100,6 +107,8 @@ export interface PlayersDict {
       highHand: string;
       settleLine: string;
       bankOff: string;
+      costs: string;
+      paidTag: string;
     };
     tourney: {
       entrants: PluralText;
@@ -131,6 +140,7 @@ export interface PlayersDict {
       won: string;
       knockouts: string;
       busted: string;
+      costs: string;
     };
   };
 }
@@ -185,10 +195,17 @@ export const players: Record<Lang, PlayersDict> = {
         label: "Gets Paid On",
         ariaLabel: "{name}'s {app}",
       },
+      owed: {
+        heading: "Owed",
+        note: "Unpaid settle-ups from finished games, netted between each pair.",
+        line: "{from} owes {to}",
+        markPaid: "Mark {from} paid {to}",
+      },
       toast: {
         csvDownloaded: "Spreadsheet downloaded",
         handleSaved: "Saved {name}'s {app}",
         handleCleared: "Cleared {name}'s {app}",
+        markedPaid: "{from} paid {to} {amount}",
       },
       empty: {
         default:
@@ -226,6 +243,8 @@ export const players: Record<Lang, PlayersDict> = {
         highHand: "High hand: {name}, {hand}, {amount} (paid by {house})",
         settleLine: "{from} pays {to} {amount}{where}",
         bankOff: "(The bank is off by {amount}.)",
+        costs: "Costs: {list}",
+        paidTag: "paid",
       },
       tourney: {
         entrants: { one: "{n} player", other: "{n} players" },
@@ -257,6 +276,7 @@ export const players: Record<Lang, PlayersDict> = {
         won: "Won",
         knockouts: "Knockouts",
         busted: "Busted",
+        costs: "Shared Costs",
       },
     },
   },
@@ -309,10 +329,17 @@ export const players: Record<Lang, PlayersDict> = {
         label: "收款方式",
         ariaLabel: "{name} 的 {app}",
       },
+      owed: {
+        heading: "欠款",
+        note: "已结束牌局中未付的结算，按每两人之间抵消后显示。",
+        line: "{from} 欠 {to}",
+        markPaid: "标记 {from} 已付给 {to}",
+      },
       toast: {
         csvDownloaded: "表格已下载",
         handleSaved: "已保存 {name} 的 {app}",
         handleCleared: "已清除 {name} 的 {app}",
+        markedPaid: "{from} 已付给 {to} {amount}",
       },
       empty: {
         default:
@@ -350,6 +377,8 @@ export const players: Record<Lang, PlayersDict> = {
         highHand: "最大牌：{name}，{hand}，{amount}（{house} 支付）",
         settleLine: "{from} 付给 {to} {amount}{where}",
         bankOff: "（账目有 {amount} 的误差。）",
+        costs: "费用：{list}",
+        paidTag: "已付",
       },
       tourney: {
         entrants: { one: "{n} 位选手", other: "{n} 位选手" },
@@ -381,6 +410,7 @@ export const players: Record<Lang, PlayersDict> = {
         won: "获得金额",
         knockouts: "淘汰数",
         busted: "出局",
+        costs: "共同费用",
       },
     },
   },
@@ -433,10 +463,17 @@ export const players: Record<Lang, PlayersDict> = {
         label: "भुगतान कहाँ मिलेगा",
         ariaLabel: "{name} का {app}",
       },
+      owed: {
+        heading: "बकाया",
+        note: "खत्म हुए गेम्स के बिना चुकाए हिसाब, हर जोड़ी के बीच जोड़-घटाकर।",
+        line: "{from} पर {to} का बाकी",
+        markPaid: "{from} ने {to} को चुका दिया",
+      },
       toast: {
         csvDownloaded: "स्प्रेडशीट डाउनलोड हो गई",
         handleSaved: "{name} का {app} सहेजा गया",
         handleCleared: "{name} का {app} हटाया गया",
+        markedPaid: "{from} ने {to} को {amount} दिए",
       },
       empty: {
         default:
@@ -474,6 +511,8 @@ export const players: Record<Lang, PlayersDict> = {
         highHand: "हाई हैंड: {name}, {hand}, {amount} ({house} ने दिया)",
         settleLine: "{from} ने {to} को {amount} दिए{where}",
         bankOff: "(हिसाब में {amount} का अंतर है।)",
+        costs: "खर्च: {list}",
+        paidTag: "चुकाया",
       },
       tourney: {
         entrants: { one: "{n} खिलाड़ी", other: "{n} खिलाड़ी" },
@@ -505,6 +544,7 @@ export const players: Record<Lang, PlayersDict> = {
         won: "जीत राशि",
         knockouts: "नॉकआउट",
         busted: "आउट होना",
+        costs: "साझा खर्च",
       },
     },
   },
@@ -557,10 +597,17 @@ export const players: Record<Lang, PlayersDict> = {
         label: "Recibe Pagos En",
         ariaLabel: "{app} de {name}",
       },
+      owed: {
+        heading: "Deudas",
+        note: "Saldos sin pagar de partidas terminadas, compensados entre cada par.",
+        line: "{from} le debe a {to}",
+        markPaid: "Marcar que {from} le pagó a {to}",
+      },
       toast: {
         csvDownloaded: "Hoja de cálculo descargada",
         handleSaved: "Se guardó el {app} de {name}",
         handleCleared: "Se borró el {app} de {name}",
+        markedPaid: "{from} le pagó a {to} {amount}",
       },
       empty: {
         default:
@@ -598,6 +645,8 @@ export const players: Record<Lang, PlayersDict> = {
         highHand: "Mano más alta: {name}, {hand}, {amount} (pagado por {house})",
         settleLine: "{from} le paga a {to} {amount}{where}",
         bankOff: "(La caja tiene una diferencia de {amount}.)",
+        costs: "Gastos: {list}",
+        paidTag: "pagado",
       },
       tourney: {
         entrants: { one: "{n} jugador", other: "{n} jugadores" },
@@ -629,6 +678,7 @@ export const players: Record<Lang, PlayersDict> = {
         won: "Ganado",
         knockouts: "Eliminaciones",
         busted: "Eliminado",
+        costs: "Gastos Compartidos",
       },
     },
   },
@@ -681,10 +731,17 @@ export const players: Record<Lang, PlayersDict> = {
         label: "Reçoit les Paiements Sur",
         ariaLabel: "{app} de {name}",
       },
+      owed: {
+        heading: "Dettes",
+        note: "Règlements impayés des parties terminées, compensés entre chaque paire.",
+        line: "{from} doit à {to}",
+        markPaid: "Marquer que {from} a payé {to}",
+      },
       toast: {
         csvDownloaded: "Feuille de calcul téléchargée",
         handleSaved: "{app} de {name} enregistré",
         handleCleared: "{app} de {name} effacé",
+        markedPaid: "{from} a payé {to} {amount}",
       },
       empty: {
         default:
@@ -722,6 +779,8 @@ export const players: Record<Lang, PlayersDict> = {
         highHand: "Meilleure main : {name}, {hand}, {amount} (payé par {house})",
         settleLine: "{from} paie {amount} à {to}{where}",
         bankOff: "(La caisse a un écart de {amount}.)",
+        costs: "Frais : {list}",
+        paidTag: "payé",
       },
       tourney: {
         entrants: { one: "{n} joueur", other: "{n} joueurs" },
@@ -753,6 +812,7 @@ export const players: Record<Lang, PlayersDict> = {
         won: "Gagné",
         knockouts: "Éliminations",
         busted: "Éliminé",
+        costs: "Frais Partagés",
       },
     },
   },
@@ -805,10 +865,17 @@ export const players: Record<Lang, PlayersDict> = {
         label: "يستلم الدفعات على",
         ariaLabel: "{app} الخاص بـ {name}",
       },
+      owed: {
+        heading: "المستحقات",
+        note: "تسويات غير مدفوعة من ألعاب منتهية، بعد المقاصة بين كل شخصين.",
+        line: "{from} مدين لـ {to}",
+        markPaid: "تعليم أن {from} دفع لـ {to}",
+      },
       toast: {
         csvDownloaded: "تم تنزيل جدول البيانات",
         handleSaved: "تم حفظ {app} الخاص بـ {name}",
         handleCleared: "تم مسح {app} الخاص بـ {name}",
+        markedPaid: "دفع {from} لـ {to} {amount}",
       },
       empty: {
         default:
@@ -846,6 +913,8 @@ export const players: Record<Lang, PlayersDict> = {
         highHand: "أعلى يد: {name}، {hand}، {amount} (دفعها {house})",
         settleLine: "{from} يدفع لـ {to} {amount}{where}",
         bankOff: "(هناك فرق قدره {amount} في الحساب.)",
+        costs: "التكاليف: {list}",
+        paidTag: "مدفوع",
       },
       tourney: {
         entrants: { one: "لاعب واحد", other: "{n} لاعب" },
@@ -877,6 +946,7 @@ export const players: Record<Lang, PlayersDict> = {
         won: "المبلغ المكسوب",
         knockouts: "الإقصاءات",
         busted: "خرج من اللعبة",
+        costs: "تكاليف مشتركة",
       },
     },
   },
@@ -929,10 +999,17 @@ export const players: Record<Lang, PlayersDict> = {
         label: "যেভাবে পেমেন্ট পাবেন",
         ariaLabel: "{name}-এর {app}",
       },
+      owed: {
+        heading: "বাকি",
+        note: "শেষ হওয়া গেমের না-মেটানো হিসাব, প্রতি জোড়ার মধ্যে কাটাকাটি করে।",
+        line: "{from}-এর কাছে {to} পাবেন",
+        markPaid: "{from} {to}-কে দিয়েছেন বলে চিহ্ন দিন",
+      },
       toast: {
         csvDownloaded: "স্প্রেডশিট ডাউনলোড হয়েছে",
         handleSaved: "{name}-এর {app} সংরক্ষণ করা হয়েছে",
         handleCleared: "{name}-এর {app} মুছে ফেলা হয়েছে",
+        markedPaid: "{from} {to}-কে {amount} দিয়েছেন",
       },
       empty: {
         default:
@@ -970,6 +1047,8 @@ export const players: Record<Lang, PlayersDict> = {
         highHand: "হাই হ্যান্ড: {name}, {hand}, {amount} ({house} দিয়েছে)",
         settleLine: "{from}, {to}-কে {amount} দেবেন{where}",
         bankOff: "(হিসাবে {amount} গরমিল আছে।)",
+        costs: "খরচ: {list}",
+        paidTag: "দেওয়া হয়েছে",
       },
       tourney: {
         entrants: { one: "{n} জন খেলোয়াড়", other: "{n} জন খেলোয়াড়" },
@@ -1001,6 +1080,7 @@ export const players: Record<Lang, PlayersDict> = {
         won: "জিতেছেন",
         knockouts: "নকআউট",
         busted: "আউট হয়েছেন",
+        costs: "ভাগের খরচ",
       },
     },
   },
@@ -1053,10 +1133,17 @@ export const players: Record<Lang, PlayersDict> = {
         label: "Recebe Pagamento Em",
         ariaLabel: "{app} de {name}",
       },
+      owed: {
+        heading: "Dívidas",
+        note: "Acertos não pagos de jogos terminados, compensados entre cada par.",
+        line: "{from} deve a {to}",
+        markPaid: "Marcar que {from} pagou {to}",
+      },
       toast: {
         csvDownloaded: "Planilha baixada",
         handleSaved: "{app} de {name} salvo",
         handleCleared: "{app} de {name} apagado",
+        markedPaid: "{from} pagou {to} {amount}",
       },
       empty: {
         default:
@@ -1094,6 +1181,8 @@ export const players: Record<Lang, PlayersDict> = {
         highHand: "Mão mais alta: {name}, {hand}, {amount} (pago por {house})",
         settleLine: "{from} paga {amount} para {to}{where}",
         bankOff: "(O caixa está com uma diferença de {amount}.)",
+        costs: "Custos: {list}",
+        paidTag: "pago",
       },
       tourney: {
         entrants: { one: "{n} jogador", other: "{n} jogadores" },
@@ -1125,6 +1214,7 @@ export const players: Record<Lang, PlayersDict> = {
         won: "Ganhou",
         knockouts: "Eliminações",
         busted: "Eliminado",
+        costs: "Custos Divididos",
       },
     },
   },

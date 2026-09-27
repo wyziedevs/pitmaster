@@ -228,6 +228,25 @@ export interface SideEvent {
   window?: number;
 }
 
+/** something bought for the game (food, drinks, a new deck), split among the players */
+export interface Cost {
+  id: string;
+  label: string;
+  amount: number;
+  /** a player id, or null for the house */
+  paidBy: string | null;
+  /** player ids who share it, empty = everyone in the game */
+  split: string[];
+}
+
+/** a settle-up payment the host ticked off: from paid to this much */
+export interface Payment {
+  from: string;
+  to: string;
+  amount: number;
+  at: number;
+}
+
 export type GameType = "cash" | "tournament";
 
 export interface Game {
@@ -269,6 +288,10 @@ export interface Game {
   mystery?: Mystery;
   /** cash: the side games' bomb pots, 7-2 wins and high hands, in order */
   sides?: SideEvent[];
+  /** shared costs: they go into settle-up, not into anyone's results */
+  costs?: Cost[];
+  /** settle-up payments marked paid; what's still owed is worked out from these */
+  paid?: Payment[];
   /** only on published snapshots: the host's display prefs, so a tv on another device matches */
   prefs?: HostPrefs;
   /** cash: what's been dropped in the rake box so far */

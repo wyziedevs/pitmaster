@@ -6,7 +6,8 @@
   import Seg from "$lib/components/Seg.svelte";
   import { flip as flipRows } from "svelte/animate";
   import { bump, reorder, reveal, slide } from "$lib/motion";
-  import { getGames, getHandles, saveHandles } from "$lib/store";
+  import { getGame, getGames, getHandles, saveGame, saveHandles } from "$lib/store";
+  import { logEvent, markPaid, netPairs, settled, stillOwed } from "$lib/game";
   import { settings } from "$lib/settings.svelte";
   import {
     leaderboard,
@@ -21,6 +22,7 @@
     money,
     nameKey,
     ordinal,
+    payLinks,
     round2,
     signed,
   } from "$lib/util";
@@ -28,7 +30,8 @@
   import type { GameType, PayHandles } from "$lib/types";
   import { t, tp } from "$lib/i18n";
 
-  const games = getGames();
+  // reloaded after the Owed list ticks a payment off in some games
+  let games = $state.raw(getGames());
 
   let period = $state<Period>("all");
   let type = $state<GameType | "all">("all");
@@ -129,6 +132,50 @@
     toast(t("players.page.toast.csvDownloaded"));
   }
 
+  // ---- owed: every finished game's unpaid settle-up, netted between each pair ----
+  const pair = (a: string, b: string) => [nameKey(a), nameKey(b)].sort().join(">");
+  const owedGames = $derived(
+    settings.useLedger
+      ? games.filter(settled).map((g) => ({ g, owed: stillOwed(g) })).filter((x) => x.owed.length)
+      : [],
+  );
+  const owed = $derived(
+    netPairs(owedGames.flatMap((x) => x.owed)).map((o) => ({
+      ...o,
+      games: owedGames.filter((x) => x.owed.some((y) => pair(y.from, y.to) === pair(o.from, o.to))).map((x) => x.g),
+    })),
+  );
+  // ticked off on this visit: they stay on the list (unticking takes them back)
+  let ticked = $state<{ from: string; to: string; amount: number; at: number; ids: string[] }[]>([]);
+  const owedRows = $derived([
+    ...owed.filter((o) => !ticked.some((x) => pair(x.from, x.to) === pair(o.from, o.to))).map((o) => ({ ...o, ids: o.games.map((g) => g.id), at: 0, done: false })),
+    ...ticked.map((o) => ({ ...o, games: o.ids.map((id) => games.find((g) => g.id === id)).filter((g) => !!g), done: true })),
+  ]);
+
+  function tickOwed(o: (typeof owedRows)[number], on: boolean) {
+    if (on) {
+      // each game settles its own side of the pair, whichever way it ran there
+      const at = Date.now();
+      for (const g of o.games) {
+        markPaid(g, o.from, o.to);
+        g.paid!.at(-1)!.at = at;
+        saveGame(g);
+      }
+      ticked = [...ticked, { from: o.from, to: o.to, amount: o.amount, at, ids: o.ids }];
+      toast(t("players.page.toast.markedPaid", { from: o.from, to: o.to, amount: money(o.amount) }));
+    } else {
+      for (const id of o.ids) {
+        const g = getGame(id);
+        if (!g) continue;
+        g.paid = (g.paid ?? []).filter((p) => p.at !== o.at || pair(p.from, p.to) !== pair(o.from, o.to));
+        logEvent(g, t("gameEvents.unpaidLog", { a: o.from, b: o.to }));
+        saveGame(g);
+      }
+      ticked = ticked.filter((x) => x.at !== o.at);
+    }
+    games = getGames();
+  }
+
   const cls = (n: number) => (n > 0.001 ? "good" : n < -0.001 ? "bad" : "");
 
   // where each person gets paid: settle-up and payouts turn these into links
@@ -183,6 +230,24 @@
   />
   <span id="type-l" class="sr-only">{t("players.page.filter.typeLabel")}</span>
 </div>
+
+{#if owedRows.length}
+  <section class="mb-[22px]" transition:slide={reveal()}>
+    <h2>{t("players.page.owed.heading")}</h2>
+    <p class="small muted">{t("players.page.owed.note")}</p>
+    <ul class="list-none p-0 m-0">
+      {#each owedRows as o (pair(o.from, o.to))}
+        {@const links = !o.done && settings.usePayLinks ? payLinks(handles[nameKey(o.to)] ?? null, o.amount, o.games.map((g) => g.name).join(", ")) : []}
+        <li class="mb-1" class:done={o.done} transition:slide={reveal()}>
+          <input type="checkbox" class="m-0 me-2 align-middle" checked={o.done} onchange={(e) => tickOwed(o, e.currentTarget.checked)} aria-label={t("players.page.owed.markPaid", { from: o.from, to: o.to })} />
+          {t("players.page.owed.line", { from: o.from, to: o.to })} <b class="num amount">{money(o.amount)}</b>
+          <span class="small muted ml-2">{#each o.games as g, i (g.id)}{i ? ", " : ""}<a href="/game/{g.id}">{g.name}</a>{/each}</span>
+          {#if links.length}<span class="small pay links ml-3">{#each links as l (l.label)}<a href={l.href} target="_blank" rel="noopener noreferrer">{l.label}</a>{/each}</span>{/if}
+        </li>
+      {/each}
+    </ul>
+  </section>
+{/if}
 
 {#if board.length}
   <p class="small muted">
@@ -382,6 +447,12 @@
 {/snippet}
 
 <style>
+  .done {
+    color: var(--muted);
+  }
+  .done .amount {
+    text-decoration: line-through;
+  }
   .sort {
     color: inherit;
     font-size: inherit;

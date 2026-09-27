@@ -53,6 +53,10 @@ export interface GameEventsDict {
   sevenTwoFlash: string;
   highHandFlash: string;
   highHandPaidFlash: string;
+  costLog: string;
+  costRemovedLog: string;
+  paidLog: string;
+  unpaidLog: string;
 }
 
 export const gameEvents: Record<Lang, GameEventsDict> = {
@@ -95,6 +99,10 @@ export const gameEvents: Record<Lang, GameEventsDict> = {
     sevenTwoFlash: "{name} won with 7-2. Everyone pays {amount}!",
     highHandFlash: "New high hand: {hand}, {name}",
     highHandPaidFlash: "{name} wins the high hand: {amount}",
+    costLog: "{name} paid {amount} for {label}",
+    costRemovedLog: "Removed a cost: {label}",
+    paidLog: "{from} paid {to} {amount}",
+    unpaidLog: "Took back the payments between {a} and {b}",
   },
   zh: {
     defaultHouseName: "主办方",
@@ -135,6 +143,10 @@ export const gameEvents: Record<Lang, GameEventsDict> = {
     sevenTwoFlash: "{name} 用 7-2 赢了！每人付 {amount}！",
     highHandFlash: "新的最大牌：{hand}，{name}",
     highHandPaidFlash: "{name} 赢得最大牌奖：{amount}",
+    costLog: "{name} 为{label}支付了 {amount}",
+    costRemovedLog: "删除了费用：{label}",
+    paidLog: "{from} 已付给 {to} {amount}",
+    unpaidLog: "撤回了 {a} 和 {b} 之间的付款",
   },
   hi: {
     defaultHouseName: "हाउस",
@@ -175,6 +187,10 @@ export const gameEvents: Record<Lang, GameEventsDict> = {
     sevenTwoFlash: "{name} 7-2 से जीते। सब {amount} दें!",
     highHandFlash: "नया हाई हैंड: {hand}, {name}",
     highHandPaidFlash: "{name} ने हाई हैंड जीता: {amount}",
+    costLog: "{name} ने {label} के लिए {amount} दिए",
+    costRemovedLog: "खर्च हटाया: {label}",
+    paidLog: "{from} ने {to} को {amount} दिए",
+    unpaidLog: "{a} और {b} के बीच के भुगतान वापस लिए",
   },
   es: {
     defaultHouseName: "La Casa",
@@ -215,6 +231,10 @@ export const gameEvents: Record<Lang, GameEventsDict> = {
     sevenTwoFlash: "{name} ganó con 7-2. ¡Todos pagan {amount}!",
     highHandFlash: "Nueva mano más alta: {hand}, {name}",
     highHandPaidFlash: "{name} gana la mano más alta: {amount}",
+    costLog: "{name} pagó {amount} por {label}",
+    costRemovedLog: "Gasto eliminado: {label}",
+    paidLog: "{from} le pagó a {to} {amount}",
+    unpaidLog: "Se anularon los pagos entre {a} y {b}",
   },
   fr: {
     defaultHouseName: "La Maison",
@@ -255,6 +275,10 @@ export const gameEvents: Record<Lang, GameEventsDict> = {
     sevenTwoFlash: "{name} a gagné avec 7-2. Tout le monde paie {amount} !",
     highHandFlash: "Nouvelle meilleure main : {hand}, {name}",
     highHandPaidFlash: "{name} remporte la meilleure main : {amount}",
+    costLog: "{name} a payé {amount} pour {label}",
+    costRemovedLog: "Frais supprimé : {label}",
+    paidLog: "{from} a payé {to} {amount}",
+    unpaidLog: "Paiements annulés entre {a} et {b}",
   },
   ar: {
     defaultHouseName: "الجهة المنظمة",
@@ -302,6 +326,10 @@ export const gameEvents: Record<Lang, GameEventsDict> = {
     sevenTwoFlash: "{name} فاز بـ 7-2. الجميع يدفع {amount}!",
     highHandFlash: "أعلى يد جديدة: {hand}، {name}",
     highHandPaidFlash: "{name} يفوز بجائزة أعلى يد: {amount}",
+    costLog: "دفع {name} {amount} مقابل {label}",
+    costRemovedLog: "حُذفت تكلفة: {label}",
+    paidLog: "دفع {from} لـ {to} {amount}",
+    unpaidLog: "أُلغيت الدفعات بين {a} و{b}",
   },
   bn: {
     defaultHouseName: "আয়োজক",
@@ -342,6 +370,10 @@ export const gameEvents: Record<Lang, GameEventsDict> = {
     sevenTwoFlash: "{name} 7-2 দিয়ে জিতেছেন। সবাই {amount} দিন!",
     highHandFlash: "নতুন হাই হ্যান্ড: {hand}, {name}",
     highHandPaidFlash: "{name} হাই হ্যান্ড জিতলেন: {amount}",
+    costLog: "{name} {label}-এর জন্য {amount} দিয়েছেন",
+    costRemovedLog: "খরচ সরানো হয়েছে: {label}",
+    paidLog: "{from} {to}-কে {amount} দিয়েছেন",
+    unpaidLog: "{a} আর {b}-এর মধ্যে পেমেন্ট ফেরানো হয়েছে",
   },
   pt: {
     defaultHouseName: "A Casa",
@@ -382,5 +414,9 @@ export const gameEvents: Record<Lang, GameEventsDict> = {
     sevenTwoFlash: "{name} ganhou com 7-2. Todos pagam {amount}!",
     highHandFlash: "Nova mão mais alta: {hand}, {name}",
     highHandPaidFlash: "{name} ganha a mão mais alta: {amount}",
+    costLog: "{name} pagou {amount} por {label}",
+    costRemovedLog: "Custo removido: {label}",
+    paidLog: "{from} pagou {to} {amount}",
+    unpaidLog: "Pagamentos entre {a} e {b} desfeitos",
   },
 };
