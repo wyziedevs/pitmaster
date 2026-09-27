@@ -7,6 +7,7 @@
   import Plus from "@lucide/svelte/icons/plus";
   import type { GameChip, Level } from "$lib/types";
   import { annotate } from "$lib/blinds";
+  import { unitOf } from "$lib/chips";
   import { amt, duration } from "$lib/util";
   import { leave, reorder, reveal } from "$lib/motion";
   import Chip from "./Chip.svelte";
@@ -53,7 +54,7 @@
   }
   // a level's numbers follow its game: stud has no blinds and gets an ante and
   // a bring-in, and a big blind ante only goes on the big-bet games
-  const unit = $derived(chips.length ? Math.min(...chips.map((c) => c.value)) : 1);
+  const unit = $derived(unitOf(chips));
   function fit(l: Level, was: string | undefined) {
     if (isStud(l.game)) return void Object.assign(l, { sb: 0 }, studAmounts(l.bb, unit));
     delete l.bringIn;
@@ -71,14 +72,20 @@
   // through adds and removes: the rows below a change glide to their new place
   // instead of every one redrawing, and focus stays with its own level. (a
   // table row can't be clipped, so rows fade in and out rather than slide.)
+  // swapped from outside (an undo, a new structure), the rows keep theirs by
+  // place, and any past the end get their place's, below every one in use.
   let made = 0;
-  const ids: number[] = [];
+  let ids = $state.raw<number[]>([]);
   const keys = $derived.by(() => {
-    // swapped from outside (an undo, a new structure): top up or trim to fit
-    while (ids.length < levels.length) ids.push(made++);
-    ids.length = levels.length;
-    return [...ids];
+    const low = Math.min(0, ...ids);
+    return levels.map((_, i) => ids[i] ?? low - 1 - (i - ids.length));
   });
+  /** a row added or removed here, before the levels change: the keys below it move with it */
+  function rekey(fn: (k: number[]) => void) {
+    const k = [...keys];
+    fn(k);
+    ids = k;
+  }
 
   let table = $state<HTMLTableElement>();
 
@@ -98,22 +105,22 @@
       add.game = nextGame(from);
       fit(add, l.game);
     }
+    rekey((k) => k.splice(i + 1, 0, made++));
     levels.splice(i + 1, 0, add);
-    ids.splice(i + 1, 0, made++);
     changed();
   }
 
   async function remove(i: number) {
     const row = table?.querySelector(`[data-row="${keys[i]}"]`);
     const focused = !!row?.contains(document.activeElement);
+    rekey((k) => k.splice(i, 1));
     levels.splice(i, 1);
-    ids.splice(i, 1);
     changed();
     // the x that had focus went with its row: hand it to the one that moved up
     // (or the new last row), so a keyboard can keep clearing levels
     if (!focused || !levels.length) return;
     await tick();
-    table?.querySelector<HTMLElement>(`[data-row="${ids[Math.min(i, ids.length - 1)]}"] .remove`)?.focus();
+    table?.querySelector<HTMLElement>(`[data-row="${keys[Math.min(i, keys.length - 1)]}"] .remove`)?.focus();
   }
 </script>
 

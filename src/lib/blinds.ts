@@ -1,6 +1,6 @@
 import type { GameChip, Level } from "./types";
 import { isMultiple, near, round2 } from "./util";
-import { smallestNeeded } from "./chips";
+import { smallestNeeded, unitOf } from "./chips";
 import { isStud, studAmounts, variant } from "./variants";
 
 // 25/50, 50/100, 75/150, 100/200, 150/300, 200/400, 300/600, 400/800, 500/1000...
@@ -57,7 +57,7 @@ export function generateStructure(o: StructureOpts): Level[] {
   const extra = o.extra ?? 4;
 
   if (!chips.length || stack <= 0 || levelMinutes <= 0) return [];
-  const unit = Math.min(...chips.map((c) => c.value));
+  const unit = unitOf(chips);
   const totalChips = stack * Math.max(2, players);
   const cands = candidates(unit, totalChips);
   if (!cands.length) return [];
@@ -148,7 +148,7 @@ export function defaultPayouts(entrants: number) {
 export function payoutAmounts(pool: number, pcts: number[], round = 1) {
   const amts = pcts.map((p) => Math.floor((pool * p) / 100 / round) * round);
   const diff = pool - amts.reduce((s, a) => s + a, 0);
-  if (amts.length) amts[0] = +(amts[0] + diff).toFixed(2);
+  if (amts.length) amts[0] = round2(amts[0] + diff);
   return amts;
 }
 

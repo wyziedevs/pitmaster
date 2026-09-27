@@ -20,7 +20,8 @@
   import { seatsDrawn, seatLabel, tableCounts, shootout, drawFinalTable } from "$lib/seats";
   import { drawBracket, decideMatch, lostMatch, undoMatch, matchesPlayed, currentRound, roundName, bracketSize, payGroups, placeRange } from "$lib/bracket";
   import { annotate } from "$lib/blinds";
-  import { isLimit, isStud, gameLine, variantName } from "$lib/variants";
+  import { isLimit, isStud, gameLine, stakePair, variantName } from "$lib/variants";
+  import { Dealer, onRise } from "../poker/control.svelte";
   import { distribute } from "$lib/chips";
   import { amt, clock, clockFace, money, ordinal, timeOfDay } from "$lib/util";
   import { time } from "$lib/now.svelte";
@@ -52,7 +53,9 @@
   // only a running clock needs the time: paused or not started, nothing here ticks
   const d = $derived(clk.derive(game, game.clock.status === "running" ? time.now : 0));
   const s = $derived(tourneyStats(game));
-  const running = $derived(game.clock.status === "running");
+  const dealer = new Dealer(() => game, () => persist());
+  const { act } = dealer;
+  const running = $derived(dealer.running);
   const levelNum = $derived(d.level.isBreak ? game.levels.slice(0, d.index).filter((l) => !l.isBreak).length : (d.level.num ?? 0));
   const lateRegOpen = $derived(levelNum <= t.lateRegLevel);
   const rebuyOpen = $derived(t.rebuy.on && levelNum <= t.rebuy.untilLevel);
@@ -74,12 +77,12 @@
   // a heads-up bracket seats people by its matches, so the seat draw sits it out
   const bracket = $derived(t.format === "bracket");
   const seatsOn = $derived(!bracket && (settings.useSeats || drawn));
-  const kosOn = $derived(settings.useBounties || !!t.bounty || !!game.kos?.some((k) => k.by));
+  // knockouts get a column once there's a bounty or anyone's been credited; with the switch on, busts can be credited either way
+  const showKos = $derived(!!t.bounty || !!game.kos?.some((k) => k.by));
+  const kosOn = $derived(settings.useBounties || showKos);
   const dealsOn = $derived(settings.useDeals || !!game.deal);
   const tables = $derived(tableCounts(game).length);
   let seatTools = $state<SeatTools>();
-  // knockouts get a column once there's a bounty or anyone's been credited
-  const showKos = $derived(!!t.bounty || !!game.kos?.some((k) => k.by));
   const lastKo = (id: string) => game.kos?.findLast((k) => k.out === id)?.by ?? "";
   // payout rows: the table's places, or (after a deal) everyone who took a share
   const payRows = $derived(
@@ -149,46 +152,18 @@
   // where the money is: one bust off it, or in it
   const moneyState = $derived(s.bubble ? "bubble" : s.itm ? "itm" : "");
 
-  // the first press of the night shuffles the deck; after that the clock winds
-  // down and back up like a tape machine
-  const startSound = $derived(running ? "pause" : game.clock.status === "idle" ? "riffle" : "resume");
-
-  // seats just drawn (here or from the palette): deal the labels out row by row
-  const opened = Date.now();
-  let dealtAt = $state(0);
-  $effect(() => {
-    const f = game.flash;
-    if (f?.kind === "draw" && f.at > opened) dealtAt = f.at;
-  });
-  const dealing = $derived(time.now - dealtAt < 1500);
-
   // the game just ended in front of us: rake the pot over to the winner
-  let wasFinished: boolean | null = null;
-  $effect(() => {
-    const f = game.finished;
-    if (f && wasFinished === false) setTimeout(() => play("ship"), 160);
-    wasFinished = f;
-  });
+  onRise(() => game.finished, () => setTimeout(() => play("ship"), 160));
 
   // a few stacks of the game's own chips, biggest first
   const pot = $derived([...game.chips].sort((a, b) => b.value - a.value).slice(0, 4));
 
-  function act(fn: () => void) {
-    fn();
-    persist();
-  }
-
-  // clk.STATUS_LABEL (clock.ts) is English only; this game screen shows its
-  // own translated labels for the same three statuses instead.
-  const statusLabel = $derived({ idle: tt("gamePlay.shared.statusIdle"), running: tt("gamePlay.shared.statusRunning"), paused: tt("gamePlay.shared.statusPaused") });
-
   const toggle = () =>
-    act(() => {
-      const wasIdle = game.clock.status === "idle";
-      const wasRunning = running;
-      clk.toggle(game);
-      logEvent(game, wasRunning ? tt("gamePlay.tournament.clockPausedLog") : wasIdle ? tt("gamePlay.tournament.shuffleUpLog") : tt("gamePlay.tournament.clockResumedLog"));
-      if (wasIdle) flash(game, tt("gamePlay.tournament.shuffleUpLog"), "shuffle");
+    dealer.toggle(clk.toggle, {
+      paused: tt("gamePlay.tournament.clockPausedLog"),
+      started: tt("gamePlay.tournament.shuffleUpLog"),
+      resumed: tt("gamePlay.tournament.clockResumedLog"),
+      flash: tt("gamePlay.tournament.shuffleUpLog"),
     });
 
   function addNamed(name: string) {
@@ -247,7 +222,7 @@
   // makes the same sound as the button it stands in for.
   $effect(() =>
     provide("tourney", () => [
-      { id: "t:clock", label: running ? tt("gamePlay.tournament.cmdPauseClock") : game.clock.status === "idle" ? tt("gamePlay.tournament.cmdStartClock") : tt("gamePlay.tournament.cmdResumeClock"), group: tt("gamePlay.shared.groupThisGame"), hint: "Space", run: () => (play(startSound), toggle()) },
+      { id: "t:clock", label: running ? tt("gamePlay.tournament.cmdPauseClock") : game.clock.status === "idle" ? tt("gamePlay.tournament.cmdStartClock") : tt("gamePlay.tournament.cmdResumeClock"), group: tt("gamePlay.shared.groupThisGame"), hint: "Space", run: () => (play(dealer.startSound), toggle()) },
       { id: "t:next", label: tt("gamePlay.tournament.cmdNextLevel"), group: tt("gamePlay.shared.groupThisGame"), hint: "→", run: () => (play("flap"), act(() => clk.step(game, 1))) },
       { id: "t:back", label: tt("gamePlay.tournament.cmdPreviousLevel"), group: tt("gamePlay.shared.groupThisGame"), hint: "←", run: () => (play("flapBack"), act(() => clk.step(game, -1))) },
       { id: "t:plus", label: tt("gamePlay.tournament.cmdAddMinute"), group: tt("gamePlay.shared.groupThisGame"), keywords: "+1 time", run: () => (play("wind"), act(() => clk.addTime(game, 60000))) },
@@ -281,7 +256,7 @@
     if (e.repeat) return;
     held = e.key;
     if (e.key === " ") {
-      play(startSound);
+      play(dealer.startSound);
       toggle();
     }
     if (e.key === "ArrowRight") {
@@ -303,7 +278,7 @@
     <div>
       <div class="lvl">
         <span use:bump={d.index}>{#if d.level.isBreak}<Icon icon={Coffee} /> {tt("gamePlay.shared.breakLabel")}{:else}{tt("gamePlay.tournament.level", { n: String(levelNum) })}{#if d.level.game}{` · ${variantName(d.level.game)}`}{/if}{/if}</span>
-        <span class="pill" data-s={game.clock.status}>{statusLabel[game.clock.status]}</span>
+        <span class="pill" data-s={game.clock.status}>{dealer.status}</span>
       </div>
       <div class="clockface" dir="ltr"><Digits value={clockFace(d.remainingMs)} /></div>
     </div>
@@ -314,7 +289,7 @@
       {:else}
         <!-- a limit game's number is its bets (small and big); stud also has its ante and bring-in -->
         {#if isLimit(d.level.game)}<div class="small muted">{tt("gamePlay.variants.limits")}</div>{/if}
-        <div class="num bb" dir="ltr"><span use:bump={d.index}>{isLimit(d.level.game) ? `${amt(d.level.bb)}/${amt(d.level.bb * 2)}` : `${amt(d.level.sb)}/${amt(d.level.bb)}`}</span></div>
+        <div class="num bb" dir="ltr"><span use:bump={d.index}>{stakePair(d.level).map((n) => amt(n)).join("/")}</span></div>
         {#if isStud(d.level.game)}<div class="num">{tt("gamePlay.shared.ante")} {amt(d.level.ante)} · {tt("gamePlay.variants.bringIn")} {amt(d.level.bringIn ?? 0)}</div>
         {:else if d.level.ante}<div class="num">{tt("gamePlay.shared.ante")} {amt(d.level.ante)}</div>{/if}
         <div class="small muted">{d.next ? (d.next.game ? tt("gamePlay.variants.nextLine", { line: gameLine(d.next) }) : tt("gamePlay.tournament.nextColon", { sb: amt(d.next.sb), bb: amt(d.next.bb) })) : tt("gamePlay.tournament.finalLevel")}</div>
@@ -323,7 +298,7 @@
   </div>
   <ProgressBar value={d.progress} />
   <div class="row controls mt-2 max-[600px]:grid max-[600px]:grid-cols-[repeat(2,minmax(0,1fr))]">
-    <button class="big max-[600px]:col-span-full" class:down={held === " "} data-sound={startSound} onclick={toggle}><Icon icon={running ? Pause : Play} />{running ? tt("gamePlay.tournament.pause") : game.clock.status === "idle" ? tt("gamePlay.tournament.start") : tt("gamePlay.tournament.resume")}</button>
+    <button class="big max-[600px]:col-span-full" class:down={held === " "} data-sound={dealer.startSound} onclick={toggle}><Icon icon={running ? Pause : Play} />{running ? tt("gamePlay.tournament.pause") : game.clock.status === "idle" ? tt("gamePlay.tournament.start") : tt("gamePlay.tournament.resume")}</button>
     <button class:down={held === "ArrowLeft"} data-sound="flapBack" onclick={() => act(() => clk.step(game, -1))}><span class="flip-rtl inline-flex"><Icon icon={ChevronLeft} /></span>{tt("common.back")}</button>
     <button class:down={held === "ArrowRight"} data-sound="flap" onclick={() => act(() => clk.step(game, 1))}>{tt("common.next")}<span class="flip-rtl inline-flex"><Icon icon={ChevronRight} /></span></button>
     <button data-sound="unwind" onclick={() => act(() => clk.addTime(game, -60000))}>{tt("gamePlay.tournament.minusMinute")}</button>
@@ -388,7 +363,7 @@
       <tbody>
         {#each ranked as p, i (p.id)}
           <tr class:dim={p.out} in:fade={reveal()} animate:flip={reorder()}>
-            {#if drawn}<td class="num seat"><span class:dealt={dealing} style:--i={i}>{p.out ? "" : seatLabel(p.seat, tables)}</span></td>{/if}
+            {#if drawn}<td class="num seat"><span class:dealt={dealer.dealing} style:--i={i}>{p.out ? "" : seatLabel(p.seat, tables)}</span></td>{/if}
             <td class="nowrap who">
               {#if p.out}<span class="num place inline-block min-w-[2.2em] text-muted" use:fresh={[p.bustedAt, "stamp"]}>{ordinal(p.place ?? 0)}</span>{:else if p.place && p.place <= seats}<Icon icon={Ticket} label={tt("gamePlay.tournament.seatWonLabel")} />{:else if p.place === 1}<Icon icon={Trophy} label={tt("gamePlay.tournament.winnerLabel")} />{/if}
               <input type="text" bind:value={p.name} onchange={persist} class="edit-name" aria-label={tt("gamePlay.shared.nameHeader")} />
@@ -416,7 +391,7 @@
                 <!-- out by losing a match: the bracket below does it, and one just lost can be taken back -->
                 {#if p.out && !game.deal && lostMatch(game, p.id)}<button class="link small nowrap" data-sound="rewind" onclick={() => act(() => undoMatch(game, p.id))}>{tt("gamePlay.tournament.undoBust")}</button>{/if}
               {:else if p.out && !game.deal}
-                {#if kosOn}<select class="ko max-w-[150px]" value={lastKo(p.id)} onchange={(e) => credit(p.id, (e.target as HTMLSelectElement).value || null)} aria-label={tt("gamePlay.tournament.whoKnockedOutAria", { name: p.name })}>
+                {#if kosOn}<select class="ko max-w-[150px]" value={lastKo(p.id)} onchange={(e) => credit(p.id, e.currentTarget.value || null)} aria-label={tt("gamePlay.tournament.whoKnockedOutAria", { name: p.name })}>
                   <option value="">{tt("gamePlay.tournament.koByPlaceholder")}</option>
                   {#each game.players.filter((x) => x.id !== p.id) as x (x.id)}<option value={x.id}>{x.name}</option>{/each}
                 </select>{/if}

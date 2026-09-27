@@ -3,10 +3,8 @@
 import { bool, id, list, maybe, num, obj, oneOf, orNull, str } from "$lib/shape";
 import { isVariant } from "$lib/variants";
 
-const variant = (v: unknown) => isVariant(v);
-
 export const isLevel = (l: unknown) =>
-  obj(l) && num(l.sb) && num(l.bb) && num(l.ante) && num(l.minutes) && maybe(list(str))(l.colorUp) && maybe(variant)(l.game) && maybe(num)(l.bringIn);
+  obj(l) && num(l.sb) && num(l.bb) && num(l.ante) && num(l.minutes) && maybe(list(str))(l.colorUp) && maybe(isVariant)(l.game) && maybe(num)(l.bringIn);
 
 export const isTourneySettings = (t: unknown) =>
   obj(t) &&
@@ -19,7 +17,7 @@ export const isTourneySettings = (t: unknown) =>
   num(t.mysteryFrom) &&
   orNull((x) => obj(x) && num(x.seatValue))(t.satellite) &&
   oneOf("standard", "shootout", "bracket")(t.format) &&
-  maybe(list(variant))(t.rotation);
+  maybe(list(isVariant))(t.rotation);
 
 const bombs = (b: unknown) => obj(b) && bool(b.on) && num(b.ante) && bool(b.doubleBoard) && num(b.everyMinutes);
 const sevenTwo = (s: unknown) => obj(s) && bool(s.on) && num(s.amount);
@@ -33,8 +31,8 @@ export const isCashSettings = (c: unknown) =>
   bombs(c.bomb) &&
   sevenTwo(c.sevenTwo) &&
   highHand(c.highHand) &&
-  maybe(list(variant))(c.games) &&
-  maybe(variant)(c.current) &&
+  maybe(list(isVariant))(c.games) &&
+  maybe(isVariant)(c.current) &&
   maybe(num)(c.since) &&
   maybe(num)(c.rotateMinutes) &&
   maybe(num)(c.ante) &&

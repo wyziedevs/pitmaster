@@ -49,10 +49,19 @@ export const variant = (id: string | undefined) => VARIANTS.find((v) => v.id ===
 export const isVariant = (id: unknown) => typeof id === "string" && VARIANTS.some((v) => v.id === id);
 /** the game's full name, in the reader's language */
 export const variantName = (id: string | undefined) => t(`common.variants.${variant(id).id}`);
+/** the known mix these games are, in its order (HORSE, 8-Game), if they're one */
+export const rotationOf = (games: string[]) => ROTATIONS.find((x) => x.games.length === games.length && x.games.every((g, i) => g === games[i]));
 /** the name of a known mix (HORSE, 8-Game), or null for one of the host's own */
 export function rotationName(games: string[]) {
-  const r = ROTATIONS.find((x) => x.games.length === games.length && x.games.every((g, i) => g === games[i]));
+  const r = rotationOf(games);
   return r ? t(`common.rotations.${r.id}`) : null;
+}
+/** "LHE, O8, Razz": the games by the names the table calls them */
+export const shortList = (games: string[]) => games.map((g) => variant(g).short).join(", ");
+/** the games in words: one's full name, or several as dealer's choice (cash) or the mix (a tournament: HORSE, or the list) */
+export function gamesLabel(games: string[], cash: boolean) {
+  if (games.length === 1) return variantName(games[0]);
+  return cash ? `${t("gameSetup.variants.dealersChoice")} (${shortList(games)})` : (rotationName(games) ?? shortList(games));
 }
 /** a stud game: an ante and a bring-in instead of blinds */
 export const isStud = (id: string | undefined) => variant(id).structure === "stud";
@@ -65,13 +74,16 @@ export function studAmounts(smallBet: number, unit: number) {
 }
 
 /** a level or cash game's numbers, for one line of text */
-interface Stakes {
+export interface Stakes {
   game?: string;
   sb: number;
   bb: number;
   ante?: number;
   bringIn?: number;
 }
+
+/** a number the way the stakes write it: money in a cash game, chips in a tournament */
+const figure = (cash: boolean) => (n: number) => (cash ? money(n) : amt(n));
 
 /**
  * what the table is playing for, written the way that kind of game says it:
@@ -81,12 +93,20 @@ interface Stakes {
  * `cash` writes them as money.
  */
 export function stakesText(s: Stakes, cash = false) {
-  const f = (n: number) => (cash ? money(n) : amt(n));
-  const v = variant(s.game);
-  if (v.structure === "stud")
-    return `${t("common.stakes.studLine", { ante: f(s.ante ?? 0), bringIn: f(s.bringIn ?? 0) })} · ${f(s.bb)}/${f(s.bb * 2)}`;
-  if (v.betting === "fl") return `${f(s.bb)}/${f(s.bb * 2)}`;
-  return `${f(s.sb)}/${f(s.bb)}${s.ante ? ` · ${t("common.stakes.anteLine", { ante: f(s.ante) })}` : ""}`;
+  const f = figure(cash);
+  const pair = stakePair(s).map(f).join("/");
+  if (isStud(s.game)) return `${studLine(s, cash)} · ${pair}`;
+  if (isLimit(s.game) || !s.ante) return pair;
+  return `${pair} · ${t("common.stakes.anteLine", { ante: f(s.ante) })}`;
+}
+
+/** the two numbers it's played for: the blinds, or (limit and stud) the small and big bet */
+export const stakePair = (s: Stakes): [number, number] => (variant(s.game).betting === "fl" ? [s.bb, s.bb * 2] : [s.sb, s.bb]);
+
+/** stud's ante and bring-in, "Ante 1, Bring-In 2" */
+export function studLine(s: Pick<Stakes, "ante" | "bringIn">, cash = false) {
+  const f = figure(cash);
+  return t("common.stakes.studLine", { ante: f(s.ante ?? 0), bringIn: f(s.bringIn ?? 0) });
 }
 
 /** "PLO · 1/2", "Stud · Ante 1, Bring-In 2 · 5/10" */
@@ -94,8 +114,10 @@ export const gameLine = (s: Stakes, cash = false) => `${variant(s.game).short} �
 
 // ---------- dealer's choice ----------
 
+/** the games, or hold'em when there are none */
+export const orHoldem = (games: string[] | undefined) => (games?.length ? games : ["nlhe"]);
 /** a cash game's games: dealer's choice when there's more than one */
-export const cashGames = (c: CashSettings) => (c.games?.length ? c.games : ["nlhe"]);
+export const cashGames = (c: CashSettings) => orHoldem(c.games);
 
 /**
  * what a cash game is playing after `played` ms: the one picked, moved on one

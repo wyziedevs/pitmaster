@@ -4,13 +4,13 @@
 import type { Game, Player } from "$lib/types";
 import type { Kind, Line } from "../kind";
 import { resultRow, type Result } from "$lib/stats";
-import { cashRake, cashStats, gameDate, highHandPrizes } from "$lib/game";
+import { cashRake, cashStats, gameDate, highHandPrizes, seatFee } from "$lib/game";
 import { houseName, playerName } from "$lib/events";
 import { addTo, costNets, squareUp } from "$lib/settle";
 import { cashElapsed } from "$lib/clock";
 import { settleLines, pad } from "$lib/report";
 import { clock, csv, duration, money, round2, signed, timeOfDay } from "$lib/util";
-import { cashGames, cashStakes, gameLine, variant } from "$lib/variants";
+import { cashGames, cashStakes, gameLine, gamesLabel } from "$lib/variants";
 import { isCashSettings, isSide, isWaiting } from "../poker/check";
 import { list, maybe } from "$lib/shape";
 import { seatText } from "../poker/seat";
@@ -23,14 +23,13 @@ function stakes(game: Game) {
   const c = game.cash!;
   if (!c.games?.length) return `${money(c.sb)}/${money(c.bb)}`;
   const games = cashGames(c);
-  if (games.length > 1) return `${t("gameSetup.variants.dealersChoice")} (${games.map((g) => variant(g).short).join(", ")}) · ${money(c.sb)}/${money(c.bb)}`;
+  if (games.length > 1) return `${gamesLabel(games, true)} · ${money(c.sb)}/${money(c.bb)}`;
   return gameLine(cashStakes(c, games[0]), true);
 }
 
 /** a player counts once they've cashed out; a seat fee is part of what the night cost them */
 function results(game: Game): Result[] {
-  const r = cashRake(game);
-  const fee = r.mode === "seat" ? r.fee : 0;
+  const fee = seatFee(game);
   const prizes = highHandPrizes(game);
   return game.players
     .filter((p) => p.cashOut !== null)
@@ -60,10 +59,9 @@ function recap(game: Game) {
     const net = p.cashOut === null ? null : round2(p.cashOut - p.cashIn);
     lines.push(`${pad(p.name, w)}${net === null ? t("players.report.cash.stillPlaying", { in: money(p.cashIn) }) : signed(net)}`);
   }
-  const r = cashRake(game);
   const house = houseName(game);
   if (s.rakeBox) lines.push("", t("players.report.cash.rakeBox", { amount: money(s.rakeBox), house }));
-  if (s.seatFees) lines.push("", t("players.report.cash.seatFee", { amount: money(r.fee), house }));
+  if (s.seatFees) lines.push("", t("players.report.cash.seatFee", { amount: money(seatFee(game)), house }));
   // the side games: bomb pots, 7-2 wins and every high hand the house paid
   const sides = game.sides ?? [];
   const bombs = sides.filter((e) => e.kind === "bomb").length;
@@ -83,8 +81,7 @@ function recap(game: Game) {
 function gameCsv(game: Game) {
   const date = gameDate(game);
   // a seat fee is part of the night's net, same as on the Players page
-  const r = cashRake(game);
-  const fee = r.mode === "seat" ? r.fee : 0;
+  const fee = seatFee(game);
   const prizes = highHandPrizes(game);
   const hh = Object.keys(prizes).length > 0;
   const costs = costNets(game);
@@ -137,7 +134,7 @@ function cashSettle(game: Game) {
   const r = cashRake(game);
   const done = game.players.filter((p) => p.cashOut !== null);
   const house = houseName(game);
-  const fee = r.mode === "seat" ? r.fee : 0;
+  const fee = seatFee(game);
   // a high hand prize is the house paying a player, outside the chips
   const prizes = highHandPrizes(game);
   const nets = done.map((p) => ({ name: p.name, net: round2((p.cashOut ?? 0) - p.cashIn - fee + (prizes[p.id] ?? 0)) }));

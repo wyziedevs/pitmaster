@@ -117,22 +117,23 @@ export function seatWaiting(game: Game, id = game.waitlist?.[0]?.id) {
 
 // ---------- tournament ----------
 
-export function tourneyStats(game: Game) {
-  const t = game.tourney!;
-  const entrants = game.players.length;
-  const rebuys = game.players.reduce((s, p) => s + p.rebuys, 0);
-  const addOns = game.players.reduce((s, p) => s + p.addOns, 0);
-  const gross = entrants * t.buyIn + rebuys * t.rebuy.cost + addOns * t.addOn.cost;
+/** what `entries` buy-ins, `rebuys` rebuys and `addOns` add-ons come to (one player's night, or everyone's) */
+export const paidIn = (t: TourneySettings, entries: number, rebuys: number, addOns: number) => entries * t.buyIn + rebuys * t.rebuy.cost + addOns * t.addOn.cost;
+
+/**
+ * where a tournament's money goes with this many entries: the bounties, the
+ * house's cut, the pool, and what each place pays (a satellite's seats, a
+ * bracket's rounds sharing theirs). the new-game form's estimate and the game
+ * itself both work it out here.
+ */
+export function prizeTable(t: TourneySettings, entrants: number, rebuys = 0, addOns = 0) {
+  const gross = paidIn(t, entrants, rebuys, addOns);
   // each entry (buy-in or rebuy) puts one bounty on that player's head
-  const bounty = t.bounty;
-  const bounties = round2((entrants + rebuys) * bounty);
+  const bounties = round2((entrants + rebuys) * t.bounty);
   // the house: a flat fee out of every entry, then its % of what's left
   const fees = round2((entrants + rebuys) * t.fee);
   const rake = round2(fees + ((gross - bounties - fees) * (t.rakePct || 0)) / 100);
   const pool = round2(Math.max(0, gross - bounties - rake));
-  const chipsInPlay = entrants * t.stack + rebuys * t.rebuy.chips + addOns * t.addOn.chips;
-  const left = game.players.filter((p) => !p.out).length;
-  const avgStack = left ? chipsInPlay / left : 0;
   // a satellite pays in seats: as many as the pool covers, and what's left over to the next place
   const seatValue = t.satellite?.seatValue ?? 0;
   const seats = seatValue > 0 ? Math.floor(round2(pool / seatValue)) : 0;
@@ -140,7 +141,20 @@ export function tourneyStats(game: Game) {
   const table = seatValue > 0 ? [...Array<number>(seats).fill(seatValue), ...(rest > 0.004 ? [rest] : [])] : payoutAmounts(pool, t.payouts.length ? t.payouts : defaultPayouts(entrants), t.payoutRound || 1);
   // a bracket pays by the round reached: everyone out in the same round shares those places
   const payouts = t.format === "bracket" ? roundShares(table, entrants, t.payoutRound || 1) : table;
-  const pcts = seatValue > 0 ? payouts.map((p) => (pool ? Math.round((p / pool) * 100) : 0)) : t.payouts.length ? t.payouts : defaultPayouts(entrants);
+  return { gross, bounties, fees, rake, pool, seats, rest, payouts };
+}
+
+export function tourneyStats(game: Game) {
+  const t = game.tourney!;
+  const entrants = game.players.length;
+  const rebuys = game.players.reduce((s, p) => s + p.rebuys, 0);
+  const addOns = game.players.reduce((s, p) => s + p.addOns, 0);
+  const { gross, bounties, fees, rake, pool, seats, payouts } = prizeTable(t, entrants, rebuys, addOns);
+  const bounty = t.bounty;
+  const chipsInPlay = entrants * t.stack + rebuys * t.rebuy.chips + addOns * t.addOn.chips;
+  const left = game.players.filter((p) => !p.out).length;
+  const avgStack = left ? chipsInPlay / left : 0;
+  const pcts = (t.satellite?.seatValue ?? 0) > 0 ? payouts.map((p) => (pool ? Math.round((p / pool) * 100) : 0)) : t.payouts.length ? t.payouts : defaultPayouts(entrants);
   // one out from the money, and in it
   const paid = payouts.filter((p) => p > 0).length;
   const bubble = !game.finished && left === paid + 1 && entrants > paid;
@@ -456,6 +470,11 @@ export function setEnvelopes(game: Game, amounts: number[]) {
 
 /** the cash game's rake setup (a tournament has none) */
 export const cashRake = (game: Game) => game.cash?.rake ?? { mode: "none" as const, pct: 0, cap: 0, fee: 0 };
+/** what each player pays the house to sit, 0 when it rakes the pots instead (or nothing) */
+export function seatFee(game: Game) {
+  const r = cashRake(game);
+  return r.mode === "seat" ? r.fee : 0;
+}
 
 export function cashStats(game: Game) {
   const bank = round2(game.players.reduce((s, p) => s + p.cashIn, 0));
@@ -467,7 +486,7 @@ export function cashStats(game: Game) {
   // chips in the rake box left the table, so they count as cashed out for the bank check
   const rakeBox = r.mode === "pot" ? round2(game.rakeBox ?? 0) : 0;
   // a seat fee is paid in cash, outside the chips: it never touches the bank
-  const seatFees = r.mode === "seat" ? round2(r.fee * game.players.length) : 0;
+  const seatFees = round2(seatFee(game) * game.players.length);
   return { bank, out, seated, onTable, allOut, rakeBox, seatFees, diff: round2(out + rakeBox - bank) };
 }
 

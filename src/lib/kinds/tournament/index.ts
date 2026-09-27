@@ -5,7 +5,7 @@
 import type { Game, Player } from "$lib/types";
 import type { Kind, Line } from "../kind";
 import { resultRow, type Result } from "$lib/stats";
-import { bountyBook, gameDate, koCount, paidFor, tourneyStats } from "$lib/game";
+import { bountyBook, gameDate, koCount, paidFor, paidIn, tourneyStats } from "$lib/game";
 import { houseName, playerName } from "$lib/events";
 import { addTo, costNets, squareUp } from "$lib/settle";
 import { tableCounts } from "$lib/seats";
@@ -13,7 +13,7 @@ import { roundName } from "$lib/bracket";
 import { derive } from "$lib/clock";
 import { pad, settleLines } from "$lib/report";
 import { amt, clock, csv, duration, money, ordinal, round2, timeOfDay } from "$lib/util";
-import { gameLine, rotationName, variant, variantName } from "$lib/variants";
+import { gameLine, gamesLabel } from "$lib/variants";
 import { isKnockout, isMatch, isMystery, isTourneySettings } from "../poker/check";
 import { list, maybe, num } from "$lib/shape";
 import { seatText } from "../poker/seat";
@@ -25,7 +25,7 @@ import { t, tp } from "$lib/i18n";
 function night(game: Game, p: Player, s = tourneyStats(game), book = bountyBook(game)) {
   const tr = game.tourney!;
   const payout = p.place ? paidFor(game, p.id, p.place, s.payouts) : 0;
-  return { cost: tr.buyIn + p.rebuys * tr.rebuy.cost + p.addOns * tr.addOn.cost, payout, won: round2(payout + (book.won[p.id] ?? 0)) };
+  return { cost: paidIn(tr, 1, p.rebuys, p.addOns), payout, won: round2(payout + (book.won[p.id] ?? 0)) };
 }
 
 /** a tournament counts once it has a winner (until then the pool can still grow) */
@@ -45,7 +45,7 @@ function recap(game: Game) {
   const s = tourneyStats(game);
   const extras = [s.rebuys ? tp("players.report.tourney.rebuys", s.rebuys) : "", s.addOns ? tp("players.report.tourney.addOns", s.addOns) : ""].filter(Boolean);
   const rotation = game.tourney.rotation ?? [];
-  const mix = rotation.length > 1 ? (rotationName(rotation) ?? rotation.map((g) => variant(g).short).join(", ")) : rotation.length ? variantName(rotation[0]) : "";
+  const mix = rotation.length ? gamesLabel(rotation, false) : "";
   const parts = [mix, tp("players.report.tourney.entrants", s.entrants), t("players.report.tourney.buyIn", { amount: money(game.tourney.buyIn) }), ...extras].filter(Boolean).join(" · ");
   const pool = t("players.report.tourney.pool", { amount: money(s.pool) });
   const rakeNote = s.rake ? ` ${t("players.report.tourney.rakeKept", { amount: money(s.rake) })}` : "";

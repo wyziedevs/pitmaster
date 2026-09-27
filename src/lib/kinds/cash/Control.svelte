@@ -14,7 +14,7 @@
   import { settleUp } from "$lib/settle";
   import { reseat, seatsDrawn, seatLabel, tableCounts } from "$lib/seats";
   import { getHandles } from "$lib/store";
-  import { distribute, faceText } from "$lib/chips";
+  import { distribute, faceText, unitOf } from "$lib/chips";
   import { clock, clockFace, currencySymbol, duration, money, nameKey, round2, signed, timeOfDay } from "$lib/util";
   import { time } from "$lib/now.svelte";
   import { provide } from "$lib/commands.svelte";
@@ -31,7 +31,8 @@
   import Count from "$lib/components/Count.svelte";
   import RemoveButton from "$lib/components/RemoveButton.svelte";
   import { t, tp } from "$lib/i18n";
-  import { cashGameNow, cashGames, cashStakes, isLimit, isStud, stakesText, studAmounts, variant, variantName } from "$lib/variants";
+  import { cashGameNow, cashGames, cashStakes, isLimit, isStud, stakePair, stakesText, studAmounts, studLine, variant, variantName } from "$lib/variants";
+  import { Dealer, onRise } from "../poker/control.svelte";
 
   let { game = $bindable(), persist }: { game: Game; persist: () => void } = $props();
 
@@ -39,10 +40,9 @@
   const s = $derived(cashStats(game));
   const elapsed = $derived(cashElapsed(game, time.now));
   const remaining = $derived(c.plannedMinutes * 60000 - elapsed);
-  const running = $derived(game.clock.status === "running");
-  // STATUS_LABEL (clock.ts) is English only; this game screen shows its own
-  // translated labels for the same three statuses instead.
-  const statusLabel = $derived({ idle: t("gamePlay.shared.statusIdle"), running: t("gamePlay.shared.statusRunning"), paused: t("gamePlay.shared.statusPaused") });
+  const dealer = new Dealer(() => game, () => persist());
+  const { act } = dealer;
+  const running = $derived(dealer.running);
   const moves = $derived(settleUp(game));
   const r = $derived(cashRake(game));
   const house = $derived(game.house?.trim() || t("gamePlay.shared.house"));
@@ -76,18 +76,12 @@
   let custom = $state<Record<string, number>>({});
   let buyInFor = $state(game.cash!.defaultBuyIn);
 
-  function act(fn: () => void) {
-    fn();
-    persist();
-  }
-
   const toggle = () =>
-    act(() => {
-      const wasIdle = game.clock.status === "idle";
-      const wasRunning = running;
-      cashToggle(game);
-      logEvent(game, wasRunning ? t("gamePlay.cash.sessionPausedLog") : wasIdle ? t("gamePlay.cash.cardsInTheAirLog") : t("gamePlay.cash.sessionResumedLog"));
-      if (wasIdle) flash(game, t("gamePlay.cash.cardsInTheAirFlash"), "shuffle");
+    dealer.toggle(cashToggle, {
+      paused: t("gamePlay.cash.sessionPausedLog"),
+      started: t("gamePlay.cash.cardsInTheAirLog"),
+      resumed: t("gamePlay.cash.sessionResumedLog"),
+      flash: t("gamePlay.cash.cardsInTheAirFlash"),
     });
 
   const drawn = $derived(seatsDrawn(game));
@@ -97,27 +91,9 @@
   let seatTools = $state<SeatTools>();
   const cols = $derived(drawn ? 7 : 6);
 
-  // the first press of the night shuffles the deck; after that the clock winds
-  // down and back up like a tape machine
-  const startSound = $derived(running ? "pause" : game.clock.status === "idle" ? "riffle" : "resume");
-
-  // seats just drawn: deal the labels out row by row
-  const opened = Date.now();
-  let dealtAt = $state(0);
-  $effect(() => {
-    const f = game.flash;
-    if (f?.kind === "draw" && f.at > opened) dealtAt = f.at;
-  });
-  const dealing = $derived(time.now - dealtAt < 1500);
-
   // the last cash-out makes the books balance: that deserves the till's bell
   const balanced = $derived(s.allOut && game.players.length > 0 && Math.abs(s.diff) <= 0.001);
-  let wasBalanced: boolean | null = null;
-  $effect(() => {
-    const b = balanced;
-    if (b && wasBalanced === false) setTimeout(() => play("register"), 520);
-    wasBalanced = b;
-  });
+  onRise(() => balanced, () => setTimeout(() => play("register"), 520));
 
   /** how long someone's been at the table (or was, once they've left) */
   function played(p: (typeof game.players)[number]) {
@@ -226,7 +202,7 @@
       game.cash!.sb = newSb;
       game.cash!.bb = newBb;
       // stud's ante and bring-in follow the small bet, like the blinds do
-      if (cashGames(game.cash!).some(isStud)) Object.assign(game.cash!, studAmounts(newBb, Math.min(...game.chips.map((ch) => ch.value), newBb)));
+      if (cashGames(game.cash!).some(isStud)) Object.assign(game.cash!, studAmounts(newBb, Math.min(unitOf(game.chips, newBb), newBb)));
       logEvent(game, t("gamePlay.cash.blindsNowLog", { sb: money(newSb), bb: money(newBb) }));
       flash(game, t("gamePlay.cash.blindsAreNowFlash", { sb: money(newSb), bb: money(newBb) }));
     });
@@ -292,7 +268,7 @@
   // makes the same sound as the button it stands in for.
   $effect(() =>
     provide("cash", () => [
-      { id: "c:clock", label: running ? t("gamePlay.cash.cmdPauseSession") : game.clock.status === "idle" ? t("gamePlay.cash.cmdStartSession") : t("gamePlay.cash.cmdResumeSession"), group: t("gamePlay.shared.groupThisGame"), run: () => (play(startSound), toggle()) },
+      { id: "c:clock", label: running ? t("gamePlay.cash.cmdPauseSession") : game.clock.status === "idle" ? t("gamePlay.cash.cmdStartSession") : t("gamePlay.cash.cmdResumeSession"), group: t("gamePlay.shared.groupThisGame"), run: () => (play(dealer.startSound), toggle()) },
       { id: "c:add", label: t("gamePlay.cash.cmdSeatPlayer"), group: t("gamePlay.shared.groupThisGame"), keywords: "add sit down", prompt: t("gamePlay.shared.theirNamePrompt"), run: (name: string) => (play("chips"), addNamed(name)) },
       ...(choice && !game.finished
         ? [
@@ -313,7 +289,7 @@
 <section class="clockbox" class:paused={game.clock.status === "paused"}>
   <div class="spread">
     <div>
-      <div class="lvl">{t("gamePlay.cash.sessionLabel")} <span class="pill" data-s={game.clock.status}>{statusLabel[game.clock.status]}</span></div>
+      <div class="lvl">{t("gamePlay.cash.sessionLabel")} <span class="pill" data-s={game.clock.status}>{dealer.status}</span></div>
       <div class="clockface" dir="ltr"><Digits value={clockFace(elapsed)} /></div>
       <div class="small muted">
         {#if game.clock.status !== "idle"}
@@ -324,8 +300,8 @@
     <div class="blinds text-right max-[600px]:text-left">
       {#if variantsOn}
         <div class="small" use:bump={gameNow.id}><b>{variantName(gameNow.id)}</b>{#if isLimit(gameNow.id)}<span class="muted">{` · ${t("gamePlay.variants.limits")}`}</span>{/if}</div>
-        <div class="num bb" dir="ltr"><span use:bump={c.sb * 1e6 + c.bb}>{isLimit(gameNow.id) ? `${money(c.bb)}/${money(c.bb * 2)}` : `${money(c.sb)}/${money(c.bb)}`}</span></div>
-        {#if isStud(gameNow.id)}<div class="small num">{t("common.stakes.studLine", { ante: money(c.ante ?? 0), bringIn: money(c.bringIn ?? 0) })}</div>{/if}
+        <div class="num bb" dir="ltr"><span use:bump={c.sb * 1e6 + c.bb}>{stakePair(cashStakes(c, gameNow.id)).map(money).join("/")}</span></div>
+        {#if isStud(gameNow.id)}<div class="small num">{studLine(c, true)}</div>{/if}
       {:else}
       <div class="num bb" dir="ltr"><span use:bump={c.sb * 1e6 + c.bb}>{money(c.sb)}/{money(c.bb)}</span></div>
       {/if}
@@ -346,7 +322,7 @@
     </div>
   {/if}
   <div class="row controls mt-2">
-    <button class="big" data-sound={startSound} onclick={toggle}><Icon icon={running ? Pause : Play} />{running ? t("gamePlay.tournament.pause") : game.clock.status === "idle" ? t("gamePlay.cash.startSession") : t("gamePlay.tournament.resume")}</button>
+    <button class="big" data-sound={dealer.startSound} onclick={toggle}><Icon icon={running ? Pause : Play} />{running ? t("gamePlay.tournament.pause") : game.clock.status === "idle" ? t("gamePlay.cash.startSession") : t("gamePlay.tournament.resume")}</button>
     {#if !game.finished}<button data-sound="square" onclick={endGame}>{t("gamePlay.cash.endGame")}</button>{:else}<span class="pill pop">{t("gamePlay.cash.finishedPill")}</span>{/if}
   </div>
 </section>
@@ -399,7 +375,7 @@
         {#each game.players as p, i (p.id)}
           {@const net = p.cashOut !== null ? round2(p.cashOut - p.cashIn) : null}
           <tr class:dim={p.cashOut !== null} in:fade={reveal()}>
-            {#if drawn}<td class="num seat"><span class:dealt={dealing} style:--i={i}>{p.cashOut === null ? seatLabel(p.seat, tables) : ""}</span></td>{/if}
+            {#if drawn}<td class="num seat"><span class:dealt={dealer.dealing} style:--i={i}>{p.cashOut === null ? seatLabel(p.seat, tables) : ""}</span></td>{/if}
             <td class="who"><input type="text" bind:value={p.name} onchange={persist} class="edit-name" aria-label={t("gamePlay.shared.nameHeader")} /></td>
             <td class="num muted small hide-sm">{played(p)}</td>
             <td class="num nowrap" data-l={t("gamePlay.cash.inHeader")}><span use:bump={p.cashIn}>{money(p.cashIn)}</span> <button class="link small muted" data-sound="rewind" title={t("gamePlay.cash.fixTitle")} onclick={() => undoBuyIn(p.id)}>{t("gamePlay.cash.fixLink")}</button></td>

@@ -127,6 +127,9 @@ export function gameChips(set: ChipSet, multiplier = 1): GameChip[] {
     .sort((a, b) => a.value - b.value);
 }
 
+/** the smallest chip's value: what every amount in the game is a multiple of (`none` with no chips) */
+export const unitOf = (chips: { value: number }[], none = 1) => (chips.length ? Math.min(...chips.map((c) => c.value)) : none);
+
 export const totalValue = (chips: ChipDef[]) => chips.reduce((s, c) => s + c.value * c.count, 0);
 export const totalCount = (chips: ChipDef[]) => chips.reduce((s, c) => s + Number(c.count || 0), 0);
 
