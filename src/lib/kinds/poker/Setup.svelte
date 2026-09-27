@@ -7,15 +7,18 @@
   import Plus from "@lucide/svelte/icons/plus";
   import { page } from "$app/state";
   import { goto } from "$app/navigation";
-  import { getChipSets, getDefaultChipSetId, saveGame, getTemplates, getTemplate, saveTemplate, getGame, getGames, getLeagues, knownPlayers } from "$lib/store";
-  import { currentLeague, inSeason } from "$lib/stats";
+  import { getChipSets, getDefaultChipSetId, saveGame, getTemplates, getTemplate, saveTemplate, getGames, getLeagues, knownPlayers } from "$lib/store";
+  import { currentLeague } from "$lib/stats";
+  import { copyFrom, leagueOf, namesOf } from "$lib/rerun";
   import { ROTATIONS, VARIANTS, isStud, rotationName, studAmounts, variant, variantName } from "$lib/variants";
   import { gameChips, distribute, maxStack } from "$lib/chips";
   import { generateStructure, defaultPayouts, payoutAmounts, plannedMinutes, structureMinutes } from "$lib/blinds";
-  import { newGame, payGroups, roundShares, unusedSeats } from "$lib/game";
+  import { newGame, unusedSeats } from "$lib/game";
+  import { payGroups } from "$lib/bracket";
+  import { roundShares } from "$lib/blinds";
   import type { BountyKind, CashRake, CashSettings, GameType, Level, Template, TourneySettings } from "$lib/types";
   import { PRESETS, getPreset, type Preset } from "$lib/presets";
-  import { amt, currencySymbol, duration, money, nameKey, round2, timeOfDay, uid } from "$lib/util";
+  import { amt, currencySymbol, duration, money, nameKey, positives, round2, timeOfDay, uid } from "$lib/util";
   import { toast } from "$lib/toast.svelte";
   import { time } from "$lib/now.svelte";
   import ChipLegend from "$lib/components/ChipLegend.svelte";
@@ -230,14 +233,7 @@
     customized = false;
   }
 
-  const payouts = $derived(
-    payoutText.trim()
-      ? payoutText
-          .split(/[\s,]+/)
-          .map(Number)
-          .filter((n) => n > 0)
-      : defaultPayouts(expected)
-  );
+  const payouts = $derived(payoutText.trim() ? positives(payoutText) : defaultPayouts(expected));
   const payoutSum = $derived(payouts.reduce((s, p) => s + p, 0));
 
   // what the host switched on (Settings > Your Game) decides what's on the form.
@@ -469,13 +465,13 @@
       fill(tpl);
       toast(t("gameSetup.alerts.loadedTemplate", { name: tpl.name }), "info");
     } else if (gid) {
-      const g = getGame(gid);
-      if (!g) return void toast(t("gameSetup.alerts.gameGone"), "bad");
+      const g = copyFrom(gid, type);
+      if (!g) return;
       fill({
         chipSetId: sets.find((s) => s.name === g.chipSetName)?.id,
         multiplier: g.multiplier,
         notes: g.notes,
-        players: [...new Map(g.players.map((p) => [nameKey(p.name), p.name])).values()],
+        players: namesOf(g),
         levels: g.levels,
         tourney: g.tourney,
         cash: g.cash,
@@ -483,8 +479,7 @@
       });
       if (g.house) houseName = g.house;
       // its league, if that season's still on (otherwise the one that's on now stays picked)
-      if (g.leagueId && leagues.some((l) => l.id === g.leagueId && l.types.includes(type) && inSeason(l, Date.now()))) leagueId = g.leagueId;
-      toast(t("gameSetup.alerts.copiedSetup", { name: g.name }), "info");
+      leagueId = leagueOf(g, leagues) ?? leagueId;
     }
   });
 
@@ -608,8 +603,8 @@
 <div class="cols">
   <!-- LEFT: settings -->
   <div>
-    <fieldset class="border-0 mt-0 mx-0 mb-[22px] p-0 min-w-0">
-      <legend class="ruled w-full px-0">{t("gameSetup.basics.legend")}</legend>
+    <fieldset>
+      <legend>{t("gameSetup.basics.legend")}</legend>
       <label><span>{t("gameSetup.basics.name")}</span><input type="text" bind:value={name} style="width:100%" /></label>
       {#if leagueChoices.length}
         <label>
@@ -643,8 +638,8 @@
     </fieldset>
 
     {#if variantsShown}
-      <fieldset class="border-0 mt-0 mx-0 mb-[22px] p-0 min-w-0" transition:slide={reveal()}>
-        <legend class="ruled w-full px-0">{t("gameSetup.variants.legend")}{#if !settings.useVariants}<button class="link small opt ml-2" data-sound="off" onclick={() => ((tonight.variants = false), (gamePick = "nlhe"))}>{t("gameSetup.variants.remove")}</button>{/if}</legend>
+      <fieldset transition:slide={reveal()}>
+        <legend>{t("gameSetup.variants.legend")}{#if !settings.useVariants}<button class="link small opt ml-2" data-sound="off" onclick={() => ((tonight.variants = false), (gamePick = "nlhe"))}>{t("gameSetup.variants.remove")}</button>{/if}</legend>
         <label>
           <span>{t("gameSetup.variants.game")}</span>
           <select bind:value={gamePick}>
@@ -681,16 +676,16 @@
     {/if}
 
     {#if isCash}
-      <fieldset class="border-0 mt-0 mx-0 mb-[22px] p-0 min-w-0">
-        <legend class="ruled w-full px-0">{t("gameSetup.cash.blinds.legend")}</legend>
+      <fieldset>
+        <legend>{t("gameSetup.cash.blinds.legend")}</legend>
         <div class="row">
           <label><span>{t("gameSetup.cash.blinds.smallBlind", { sym })}</span><input type="number" step="any" min="0" bind:value={sb} /></label>
           <label><span>{t("gameSetup.cash.blinds.bigBlind", { sym })}</span><input type="number" step="any" min="0" bind:value={bb} /></label>
           <label class="across"><input type="checkbox" bind:checked={straddle} /><span>{t("gameSetup.cash.blinds.straddlesAllowed")}</span></label>
         </div>
       </fieldset>
-      <fieldset class="border-0 mt-0 mx-0 mb-[22px] p-0 min-w-0">
-        <legend class="ruled w-full px-0">{t("gameSetup.cash.buyIns.legend")}</legend>
+      <fieldset>
+        <legend>{t("gameSetup.cash.buyIns.legend")}</legend>
         <div class="row">
           <label><span>{t("gameSetup.cash.buyIns.min", { sym })}</span><input type="number" step="any" min="0" bind:value={minBuyIn} /></label>
           <label><span>{t("gameSetup.cash.buyIns.standard", { sym })}</span><input type="number" step="any" min="0" bind:value={defaultBuyIn} /></label>
@@ -698,8 +693,8 @@
         </div>
         <p class="small muted">{t("gameSetup.cash.buyIns.standardBefore")}<span class="num" use:bump={deepBB}>{deepBB}</span>{t("gameSetup.cash.buyIns.standardAfter")}</p>
       </fieldset>
-      <fieldset class="border-0 mt-0 mx-0 mb-[22px] p-0 min-w-0">
-        <legend class="ruled w-full px-0">{t("gameSetup.cash.length.legend")}</legend>
+      <fieldset>
+        <legend>{t("gameSetup.cash.length.legend")}</legend>
         <label>
           <span>{t("gameSetup.cash.length.playForAbout", { duration: duration(cashHours * 60) })}</span>
           <input type="range" min="0.5" max="10" step="0.5" bind:value={cashHours} style="width:100%" />
@@ -707,14 +702,14 @@
         <p class="small muted -mt-[6px] mx-0 mb-0">{t("gameSetup.cash.length.endsAround", { time: timeOfDay(time.now + cashHours * 3600000) })}</p>
       </fieldset>
       {#if rakeOn}
-      <fieldset class="border-0 mt-0 mx-0 mb-[22px] p-0 min-w-0" transition:slide={reveal()}>
-        <legend class="ruled w-full px-0">{t("gameSetup.cash.rake.legend")}{#if !settings.useRake}<button class="link small opt ml-2" data-sound="off" onclick={() => ((tonight.rake = false), (rakeMode = "none"))}>{t("gameSetup.cash.rake.remove")}</button>{/if}</legend>
+      <fieldset transition:slide={reveal()}>
+        <legend>{t("gameSetup.cash.rake.legend")}{#if !settings.useRake}<button class="link small opt ml-2" data-sound="off" onclick={() => ((tonight.rake = false), (rakeMode = "none"))}>{t("gameSetup.cash.rake.remove")}</button>{/if}</legend>
         <RakeFields bind:mode={rakeMode} bind:pct={rakeCashPct} bind:cap={rakeCap} bind:fee={seatFee} bind:house={houseName} />
       </fieldset>
       {/if}
       {#if bombShown || sevenTwoShown || highHandShown}
-      <fieldset class="border-0 mt-0 mx-0 mb-[22px] p-0 min-w-0" transition:slide={reveal()}>
-        <legend class="ruled w-full px-0">{t("gameSetup.cash.sides.legend")}</legend>
+      <fieldset transition:slide={reveal()}>
+        <legend>{t("gameSetup.cash.sides.legend")}</legend>
         {#if bombShown}
           <label class="across"><input type="checkbox" bind:checked={bombOn} /><span>{t("gameSetup.cash.sides.bombPots")}</span></label>
           {#if bombOn}
@@ -746,8 +741,8 @@
       </fieldset>
       {/if}
     {:else}
-      <fieldset class="border-0 mt-0 mx-0 mb-[22px] p-0 min-w-0">
-        <legend class="ruled w-full px-0">{t("gameSetup.tournament.buyInStacks.legend")}</legend>
+      <fieldset>
+        <legend>{t("gameSetup.tournament.buyInStacks.legend")}</legend>
         <div class="row">
           <label><span>{t("gameSetup.tournament.buyInStacks.buyIn", { sym })}</span><input type="number" min="0" step="any" bind:value={buyIn} /></label>
           <label><span>{t("gameSetup.tournament.buyInStacks.startingStack")}</span><input type="number" min="1" step="any" bind:value={stack} /></label>
@@ -759,8 +754,8 @@
         </label>
       </fieldset>
 
-      <fieldset class="border-0 mt-0 mx-0 mb-[22px] p-0 min-w-0">
-        <legend class="ruled w-full px-0">{t("gameSetup.tournament.length.legend")}</legend>
+      <fieldset>
+        <legend>{t("gameSetup.tournament.length.legend")}</legend>
         <label>
           <span>{t("gameSetup.tournament.length.wrapUpAbout", { duration: duration(hours * 60) })}</span>
           <input type="range" min="1" max="8" step="0.25" bind:value={hours} style="width:100%" />
@@ -776,8 +771,8 @@
         </div>
       </fieldset>
 
-      <fieldset class="border-0 mt-0 mx-0 mb-[22px] p-0 min-w-0">
-        <legend class="ruled w-full px-0">{[rebuysOn && !isBracket ? t("gameSetup.tournament.rebuys.rebuysAddOn") : "", t("gameSetup.tournament.rebuys.lateRegistration"), bountyOn ? t("gameSetup.tournament.rebuys.bounty") : ""].filter(Boolean).join(" / ")}</legend>
+      <fieldset>
+        <legend>{[rebuysOn && !isBracket ? t("gameSetup.tournament.rebuys.rebuysAddOn") : "", t("gameSetup.tournament.rebuys.lateRegistration"), bountyOn ? t("gameSetup.tournament.rebuys.bounty") : ""].filter(Boolean).join(" / ")}</legend>
         {#if rebuysOn && !isBracket}
         <label class="across"><input type="checkbox" bind:checked={rebuyOn} /><span>{t("gameSetup.tournament.rebuys.rebuysLabel")}</span></label>
         {#if rebuyOn}
@@ -816,8 +811,8 @@
       </fieldset>
 
       {#if satelliteShown || shootoutShown || bracketShown}
-      <fieldset class="border-0 mt-0 mx-0 mb-[22px] p-0 min-w-0" transition:slide={reveal()}>
-        <legend class="ruled w-full px-0">{t("gameSetup.tournament.format.legend")}{#if tonight.format}<button class="link small opt ml-2" data-sound="off" onclick={() => ((tonight.format = false), (satelliteOn = false), (format = "standard"))}>{t("gameSetup.tournament.format.remove")}</button>{/if}</legend>
+      <fieldset transition:slide={reveal()}>
+        <legend>{t("gameSetup.tournament.format.legend")}{#if tonight.format}<button class="link small opt ml-2" data-sound="off" onclick={() => ((tonight.format = false), (satelliteOn = false), (format = "standard"))}>{t("gameSetup.tournament.format.remove")}</button>{/if}</legend>
         {#if shootoutShown || bracketShown}
           <div class="row" role="radiogroup" aria-label={t("gameSetup.tournament.format.legend")}>
             <label class="across"><input type="radio" name="format" value="standard" bind:group={format} /><span>{t("gameSetup.tournament.format.standard")}</span></label>
@@ -838,8 +833,8 @@
       </fieldset>
       {/if}
 
-      <fieldset class="border-0 mt-0 mx-0 mb-[22px] p-0 min-w-0">
-        <legend class="ruled w-full px-0">{t("gameSetup.tournament.payouts.legend")}</legend>
+      <fieldset>
+        <legend>{t("gameSetup.tournament.payouts.legend")}</legend>
         {#if satellite}
         <p class="small">
           {t("gameSetup.tournament.format.seatsCaption", { n: expected, pool: money(estPool), seats: tp("gameSetup.tournament.format.seats", estSeats), value: money(seatValue) })}{#if estRest > 0.004}{" "}{t("gameSetup.tournament.format.restCaption", { amount: money(estRest) })}{/if}
@@ -862,8 +857,8 @@
       </fieldset>
 
       {#if cutOn}
-      <fieldset class="border-0 mt-0 mx-0 mb-[22px] p-0 min-w-0" transition:slide={reveal()}>
-        <legend class="ruled w-full px-0">{t("gameSetup.tournament.houseCut.legend")} <span class="small opt text-muted ml-[6px]">{t("gameSetup.tournament.houseCut.optional")}</span>{#if !settings.useHouseCut}<button class="link small opt ml-2" data-sound="off" onclick={() => (tonight.cut = false)}>{t("gameSetup.tournament.houseCut.remove")}</button>{/if}</legend>
+      <fieldset transition:slide={reveal()}>
+        <legend>{t("gameSetup.tournament.houseCut.legend")} <span class="small opt text-muted ml-[6px]">{t("gameSetup.tournament.houseCut.optional")}</span>{#if !settings.useHouseCut}<button class="link small opt ml-2" data-sound="off" onclick={() => (tonight.cut = false)}>{t("gameSetup.tournament.houseCut.remove")}</button>{/if}</legend>
         <HouseCutFields bind:fee bind:pct={rakePct} {buyIn} />
       </fieldset>
       {/if}
@@ -877,8 +872,8 @@
       </p>
     {/if}
 
-    <fieldset class="border-0 mt-0 mx-0 mb-[22px] p-0 min-w-0">
-      <legend class="ruled w-full px-0">{t("gameSetup.players.legend")} <span class="small opt text-muted ml-[6px]">{t("gameSetup.players.optional")}</span></legend>
+    <fieldset>
+      <legend>{t("gameSetup.players.legend")} <span class="small opt text-muted ml-[6px]">{t("gameSetup.players.optional")}</span></legend>
       <label>
         <span>{t("gameSetup.players.namesLabel")}</span>
         <textarea bind:value={playerNames} rows="4" placeholder={t("gameSetup.players.namesPlaceholder")}></textarea>

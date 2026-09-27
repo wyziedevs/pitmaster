@@ -2,7 +2,7 @@
   // settle-up's payments, cash or tournament: who pays who, with pay links,
   // and a Paid box on each once the host ticks them off (Settings > Your Game)
   import type { Game } from "$lib/types";
-  import { settleUp, stillOwed, anyPaid, markPaid, unmarkPaid } from "$lib/game";
+  import { settleUp, stillOwed, anyPaid, markPaid, unmarkPaid } from "$lib/settle";
   import { getHandles } from "$lib/store";
   import { settings } from "$lib/settings.svelte";
   import { money, nameKey, payLinks } from "$lib/util";

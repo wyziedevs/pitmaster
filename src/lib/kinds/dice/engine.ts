@@ -4,10 +4,10 @@
 // the "last one standing" part (lives lost until one is left) is shared by
 // every lives game (kinds/standing.ts); the dice part is here.
 import type { DiceRound, DiceSettings, Game } from "$lib/types";
-import { standing, stakeMoney } from "../standing";
+import { lastStanding } from "../standing";
 
 /** what a round did to each player's dice: -1 lost one, +1 got one back */
-export function roundEffect(r: DiceRound): Record<string, number> {
+function roundEffect(r: DiceRound): Record<string, number> {
   const out: Record<string, number> = {};
   for (const id of r.losers) out[id] = (out[id] ?? 0) - 1;
   for (const id of r.gains ?? []) out[id] = (out[id] ?? 0) + 1;
@@ -42,13 +42,14 @@ export function diceState(game: Game) {
   const s = game.dice!;
   const rounds = game.rounds ?? [];
   const ids = game.players.map((p) => p.id);
-  const st = standing(ids, s.dice, rounds.map((r) => ({ effect: roundEffect(r), at: r.at })), s.dice);
-  const alive = ids.filter((id) => st.lives[id] > 0);
-  const total = alive.reduce((n, id) => n + st.lives[id], 0);
+  // money per die goes to whoever won the round, for every die the others lost in it
+  const byRound = rounds.map((r) => ({ winner: r.winner, lost: Object.fromEntries(r.losers.map((id) => [id, 1])) }));
+  const st = lastStanding(ids, s.dice, rounds.map((r) => ({ effect: roundEffect(r), at: r.at })), s.stakes, byRound);
+  const total = st.alive.reduce((n, id) => n + st.lives[id], 0);
   // palifico: someone just went down to their last die (for the first time)
   // with three or more still in, so the round they start plays it
   let palifico: string | null = null;
-  if (s.palifico && rounds.length && alive.length > 2) {
+  if (s.palifico && rounds.length && st.alive.length > 2) {
     const last = st.history.at(-1)!;
     const hit = Object.keys(last.effect).find((id) => last.before[id] === 2 && st.lives[id] === 1 && !st.history.slice(0, -1).some((h) => h.after[id] === 1));
     if (hit) palifico = hit;
@@ -62,16 +63,5 @@ export function diceState(game: Game) {
   const from = lastLoser ? ids.indexOf(lastLoser) : 0;
   const starter = palifico ?? [...ids.slice(from), ...ids.slice(0, from)].find((id) => st.lives[id] > 0) ?? null;
   const wild = s.onesWild && !palifico;
-  const money = diceMoney(game, st.lost, st.places);
-  return { ...st, alive, total, palifico, starter, wild, money, over: alive.length <= 1 && ids.length > 1 };
+  return { ...st, total, palifico, starter, wild };
 }
-
-/** what each player paid in and took home (see stakeMoney): a die is a life */
-export const diceMoney = (game: Game, lost: Record<string, number>, places: Record<string, number | null>) =>
-  stakeMoney(
-    game.dice!.stakes,
-    game.players.map((p) => p.id),
-    lost,
-    places,
-    (game.rounds ?? []).map((r) => ({ winner: r.winner, lost: Object.fromEntries(r.losers.map((id) => [id, 1])) }))
-  );

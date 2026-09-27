@@ -2,7 +2,9 @@
 // spreadsheets. both come from the same numbers the dealer screen shows; each
 // kind of game writes its own (kinds/), and the settle-up lines are shared.
 import type { Game } from "./types";
-import { anyPaid, HOUSE, settleUp, stillOwed } from "./game";
+import { houseName, playerName } from "./events";
+import { playedAt } from "./game";
+import { anyPaid, settleUp, stillOwed } from "./settle";
 import { handlesFor } from "./store";
 import { settings } from "./settings.svelte";
 import { day, money } from "./util";
@@ -15,9 +17,8 @@ export const pad = (s: string, n: number) => s + " ".repeat(Math.max(1, n - s.le
 /** the shared costs and who pays who, the same for every kind of game */
 export function settleLines(game: Game) {
   const lines: string[] = [];
-  const house = game.house?.trim() || HOUSE();
-  const name = (id: string | null) => (id ? (game.players.find((p) => p.id === id)?.name ?? house) : house);
-  if (game.costs?.length) lines.push("", t("players.report.cash.costs", { list: game.costs.map((c) => `${c.label} ${money(c.amount)} (${name(c.paidBy)})`).join(", ") }));
+  const house = houseName(game);
+  if (game.costs?.length) lines.push("", t("players.report.cash.costs", { list: game.costs.map((c) => `${c.label} ${money(c.amount)} (${playerName(game, c.paidBy, house)})`).join(", ") }));
   const moves = settleUp(game);
   if (!moves.length) return lines;
   const owed = stillOwed(game);
@@ -43,7 +44,7 @@ export function settleLines(game: Game) {
 
 /** the recap people paste into a chat, an email or a post: the title, then what its kind has to say */
 export function recap(game: Game) {
-  return [`${game.name} · ${day(game.clock.startedAt ?? game.createdAt)}`, ...kind(game.type).recap(game)].join("\n");
+  return [`${game.name} · ${day(playedAt(game))}`, ...kind(game.type).recap(game)].join("\n");
 }
 
 /** one row per player, the numbers a spreadsheet wants */

@@ -6,12 +6,13 @@
   import Icon from "./Icon.svelte";
   import Trophy from "@lucide/svelte/icons/trophy";
   import type { Game } from "$lib/types";
-  import { currentRound, roundName } from "$lib/game";
+  import { currentRound, roundName } from "$lib/bracket";
   import { t } from "$lib/i18n";
+  import { playerName } from "$lib/events";
 
   let { game, onpick, tv = false, from = 1 }: { game: Game; onpick?: (match: number, winner: string) => void; tv?: boolean; from?: number } = $props();
 
-  const name = (id: string | null) => (id ? (game.players.find((p) => p.id === id)?.name ?? "?") : "");
+  const name = (id: string | null) => playerName(game, id, id ? "?" : "");
   const rounds = $derived.by(() => {
     const ms = (game.matches ?? []).map((m, i) => ({ ...m, i }));
     const n = Math.max(0, ...ms.map((m) => m.round));

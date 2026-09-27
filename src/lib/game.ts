@@ -1,22 +1,21 @@
 import type { CashSettings, Cost, EventKind, Game, GameChip, GameType, Level, Match, Player, Seat, SideEvent, TourneySettings } from "./types";
 import { newClock } from "./clock";
-import { defaultPayouts, payoutAmounts } from "./blinds";
+import { defaultPayouts, payoutAmounts, roundShares } from "./blinds";
 import { money, nameKey, ordinal, round2, uid } from "./util";
 import { t, tp } from "./i18n";
-import { kind } from "./kinds";
+import { flash, logEvent, playerName } from "./events";
+import { reseat, seatNewcomer, shootout } from "./seats";
 
-export function newGame(p: {
-  name: string;
-  type: GameType;
-  chipSetName: string;
-  multiplier: number;
-  chips: GameChip[];
-  notes: string;
-  players: string[];
-  levels?: Level[];
-  tourney?: TourneySettings;
-  cash?: CashSettings;
-}): Game {
+/** when a game was played: when its clock started, or when it was made */
+export const playedAt = (game: Game) => game.clock.startedAt ?? game.createdAt;
+/** its day, for a spreadsheet: 2026-09-27 */
+export const gameDate = (game: Game) => new Date(playedAt(game)).toISOString().slice(0, 10);
+
+/** the rules only its kind reads: a tournament's structure, a cash game's stakes, the other kinds' own */
+type Rules = Partial<Pick<Game, "tourney" | "cash" | "dice" | "lives" | "pot">>;
+
+/** a new game. the chips and the clock's levels are poker's; the other kinds leave them out */
+export function newGame(p: { name: string; type: GameType; notes: string; players: string[]; chipSetName?: string; multiplier?: number; chips?: GameChip[]; levels?: Level[] } & Rules): Game {
   const now = Date.now();
   const game: Game = {
     id: uid(),
@@ -24,15 +23,18 @@ export function newGame(p: {
     type: p.type,
     createdAt: now,
     updatedAt: now,
-    chipSetName: p.chipSetName,
-    multiplier: p.multiplier,
-    chips: p.chips,
+    chipSetName: p.chipSetName ?? "",
+    multiplier: p.multiplier ?? 1,
+    chips: p.chips ?? [],
     notes: p.notes,
     players: [],
     clock: newClock(),
     levels: p.levels ?? [],
     tourney: p.tourney,
     cash: p.cash,
+    dice: p.dice,
+    lives: p.lives,
+    pot: p.pot,
     message: null,
     flash: null,
     log: [],
@@ -46,15 +48,6 @@ export function newGame(p: {
 
 export function newPlayer(name: string): Player {
   return { id: uid(), name, cashIn: 0, cashOut: null, rebuys: 0, addOns: 0, out: false, place: null, bustedAt: null };
-}
-
-export function logEvent(game: Game, text: string) {
-  game.log.unshift({ t: Date.now(), text });
-  game.log = game.log.slice(0, 300);
-}
-
-export function flash(game: Game, text: string, kind: EventKind = "note") {
-  game.flash = { text, at: Date.now(), kind };
 }
 
 export function addPlayer(game: Game, name: string, quiet = false) {
@@ -453,9 +446,6 @@ export function setEnvelopes(game: Game, amounts: number[]) {
 
 // ---------- cash ----------
 
-/** who rake and fees are owed to when the host hasn't named a house */
-export const HOUSE = () => t("gameEvents.defaultHouseName");
-
 /** the cash game's rake setup (a tournament has none) */
 export const cashRake = (game: Game) => game.cash?.rake ?? { mode: "none" as const, pct: 0, cap: 0, fee: 0 };
 
@@ -471,24 +461,6 @@ export function cashStats(game: Game) {
   // a seat fee is paid in cash, outside the chips: it never touches the bank
   const seatFees = r.mode === "seat" ? round2(r.fee * game.players.length) : 0;
   return { bank, out, seated, onTable, allOut, rakeBox, seatFees, diff: round2(out + rakeBox - bank) };
-}
-
-/**
- * who pays who at the end of a cash game: everyone who's cashed out, plus the
- * house for the rake box and seat fees. if the house is one of the players
- * (the host), it's folded into their numbers.
- */
-export function cashSettle(game: Game) {
-  const r = cashRake(game);
-  const done = game.players.filter((p) => p.cashOut !== null);
-  const house = game.house?.trim() || HOUSE();
-  const fee = r.mode === "seat" ? r.fee : 0;
-  // a high hand prize is the house paying a player, outside the chips
-  const prizes = highHandPrizes(game);
-  const nets = done.map((p) => ({ name: p.name, net: round2((p.cashOut ?? 0) - p.cashIn - fee + (prizes[p.id] ?? 0)) }));
-  const paid = round2(done.reduce((s, p) => s + (prizes[p.id] ?? 0), 0));
-  const owed = round2((r.mode === "pot" ? (game.rakeBox ?? 0) : 0) + fee * done.length - paid);
-  return settle(withCosts(game, addTo(nets, house, owed), house));
 }
 
 // ---------- cash side games ----------
@@ -525,8 +497,6 @@ export function sideStats(game: Game, played: number) {
   const sevenTwos = list.filter((e) => e.kind === "sevenTwo").length;
   return { bombs, bombDue, bombIn, window, windowLeft, current, hhDue, sevenTwos };
 }
-
-const playerName = (game: Game, id: string | undefined) => game.players.find((p) => p.id === id)?.name ?? "?";
 
 export function callBombPot(game: Game) {
   const b = game.cash!.bomb;
@@ -569,315 +539,7 @@ export function highHandPrizes(game: Game) {
   return won;
 }
 
-// ---------- shared costs and who's paid ----------
-
-/** adds to someone's side of settle-up, by name: the house folds into the host's own numbers when they're one of the players */
-function addTo(nets: { name: string; net: number }[], name: string, amount: number) {
-  if (Math.abs(amount) <= 0.001) return nets;
-  const row = nets.find((x) => nameKey(x.name) === nameKey(name));
-  if (row) row.net = round2(row.net + amount);
-  else nets.push({ name, net: round2(amount) });
-  return nets;
-}
-
-/**
- * each person's side of the shared costs, by player id ("" is the house): what
- * they fronted less their share. shares are split in cents, and the odd cents
- * fall to the first people in the split.
- */
-export function costNets(game: Game) {
-  const nets: Record<string, number> = {};
-  const add = (id: string, v: number) => (nets[id] = round2((nets[id] ?? 0) + v));
-  const ids = game.players.map((p) => p.id);
-  for (const c of game.costs ?? []) {
-    const who = costSplit(game, c);
-    if (!who.length) continue;
-    const cents = Math.round(c.amount * 100);
-    const each = Math.floor(cents / who.length);
-    who.forEach((id, i) => add(id, -(each + (i < cents - each * who.length ? 1 : 0)) / 100));
-    add(c.paidBy && ids.includes(c.paidBy) ? c.paidBy : "", c.amount);
-  }
-  return nets;
-}
-
-/** who shares a cost: the people it names that are still in the game, or everyone */
-export function costSplit(game: Game, c: Cost) {
-  const named = c.split.filter((id) => game.players.some((p) => p.id === id));
-  return named.length ? named : game.players.map((p) => p.id);
-}
-
-function withCosts(game: Game, nets: { name: string; net: number }[], house: string) {
-  for (const [id, v] of Object.entries(costNets(game))) addTo(nets, id ? playerName(game, id) : house, v);
-  return nets;
-}
-
-export function addCost(game: Game, c: Omit<Cost, "id">) {
-  // assign first, then push through game.costs (see bust)
-  if (!game.costs) game.costs = [];
-  game.costs.push({ ...c, id: uid(), amount: round2(c.amount) });
-  logEvent(game, t("gameEvents.costLog", { label: c.label, amount: money(c.amount), name: c.paidBy ? playerName(game, c.paidBy) : game.house?.trim() || HOUSE() }));
-}
-
-export function removeCost(game: Game, id: string) {
-  const c = game.costs?.find((x) => x.id === id);
-  if (!c) return;
-  game.costs = game.costs!.filter((x) => x.id !== id);
-  logEvent(game, t("gameEvents.costRemovedLog", { label: c.label }));
-}
-
-/**
- * who pays who at the end of a tournament. the buy-ins went in at the door,
- * so whoever holds the money (the house) pays out the prizes and bounties.
- * shared costs count from the start.
- */
-export function tourneySettle(game: Game) {
-  const house = game.house?.trim() || HOUSE();
-  const nets: { name: string; net: number }[] = [];
-  if (game.finished && game.tourney) {
-    const s = tourneyStats(game);
-    const book = bountyBook(game);
-    // a satellite seat is paid in the next game, not in cash
-    const cash = (place: number | null, id: string) => (!place || place <= s.seats ? 0 : paidFor(game, id, place, s.payouts));
-    for (const p of game.players) addTo(nets, p.name, cash(p.place, p.id) + (book.won[p.id] ?? 0));
-    addTo(nets, house, -nets.reduce((a, x) => a + x.net, 0));
-  }
-  return settle(withCosts(game, nets, house));
-}
-
-/** who pays who at the end, the way the game's kind works it out */
-export const settleUp = (game: Game) => kind(game.type).settle(game);
-
-type Owe = { from: string; to: string; amount: number };
-const samePair = (x: Owe, a: string, b: string) =>
-  (nameKey(x.from) === nameKey(a) && nameKey(x.to) === nameKey(b)) || (nameKey(x.from) === nameKey(b) && nameKey(x.to) === nameKey(a));
-
-/** nets a list of debts down to one per pair of people, whichever way it runs */
-export function netPairs(list: Owe[]): Owe[] {
-  const pairs = new Map<string, Owe>();
-  for (const x of list) {
-    const k = [nameKey(x.from), nameKey(x.to)].sort().join(">");
-    const e = pairs.get(k);
-    if (!e) pairs.set(k, { ...x });
-    else e.amount = round2(e.amount + (nameKey(e.from) === nameKey(x.from) ? x.amount : -x.amount));
-  }
-  return [...pairs.values()]
-    .filter((e) => Math.abs(e.amount) > 0.004)
-    .map((e) => (e.amount > 0 ? e : { from: e.to, to: e.from, amount: -e.amount }));
-}
-
-/** settle-up less what's been marked paid: a payment counts as a debt the other way */
-export const stillOwed = (game: Game) => netPairs([...settleUp(game), ...(game.paid ?? []).map((p) => ({ from: p.to, to: p.from, amount: p.amount }))]);
-
-/** whether any payment between these two was ticked off */
-export const anyPaid = (game: Game, a: string, b: string) => !!game.paid?.some((p) => samePair(p, a, b));
-
-/** ticks off everything still owed between two people in this game */
-export function markPaid(game: Game, a: string, b: string) {
-  const o = stillOwed(game).find((x) => samePair(x, a, b));
-  if (!o) return;
-  if (!game.paid) game.paid = [];
-  game.paid.push({ ...o, at: Date.now() });
-  logEvent(game, t("gameEvents.paidLog", { from: o.from, to: o.to, amount: money(o.amount) }));
-}
-
-/** takes back every payment ticked off between two people */
-export function unmarkPaid(game: Game, a: string, b: string) {
-  game.paid = (game.paid ?? []).filter((p) => !samePair(p, a, b));
-  logEvent(game, t("gameEvents.unpaidLog", { a, b }));
-}
-
-/** a game's settle-up counts toward what people owe once it's over (a winner, or everyone cashed out) */
-export const settled = (game: Game) => kind(game.type).settled(game);
-
-/**
- * settle-up from each player's net for the night (any kind of game): the house
- * takes up whatever doesn't balance (the prizes it pays out of the buy-ins it
- * holds), and shared costs count too
- */
-export function settleNets(game: Game, nets: { name: string; net: number }[]) {
-  const house = game.house?.trim() || HOUSE();
-  const list = nets.map((x) => ({ ...x }));
-  addTo(list, house, -list.reduce((a, x) => a + x.net, 0));
-  return settle(withCosts(game, list, house));
-}
-
-/** fewest payments to square everyone up */
-export function settle(people: { name: string; net: number }[]) {
-  const nets = people.map((p) => ({ name: p.name, net: round2(p.net) })).filter((x) => Math.abs(x.net) > 0.001);
-  const debtors = nets.filter((x) => x.net < 0).map((x) => ({ ...x, net: -x.net })).sort((a, b) => b.net - a.net);
-  const creditors = nets.filter((x) => x.net > 0).sort((a, b) => b.net - a.net);
-  const moves: { from: string; to: string; amount: number }[] = [];
-  let i = 0;
-  let j = 0;
-  while (i < debtors.length && j < creditors.length) {
-    const pay = round2(Math.min(debtors[i].net, creditors[j].net));
-    if (pay > 0) moves.push({ from: debtors[i].name, to: creditors[j].name, amount: pay });
-    debtors[i].net = round2(debtors[i].net - pay);
-    creditors[j].net = round2(creditors[j].net - pay);
-    if (debtors[i].net <= 0.001) i++;
-    if (creditors[j].net <= 0.001) j++;
-  }
-  return moves;
-}
-
-// ---------- seats ----------
-
-export const seatsPer = (game: Game) => game.seatsPerTable ?? 9;
-/** people who still need a chair: not busted, not cashed out */
-const playing = (game: Game) => game.players.filter((p) => kind(game.type).playing(game, p));
-export const seatsDrawn = (game: Game) => game.players.some((p) => p.seat);
-
-function shuffle<T>(xs: T[]) {
-  const a = [...xs];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
-const range = (n: number) => Array.from({ length: n }, (_, i) => i + 1);
-
-/** random seats, dealt round-robin so the tables come out even */
-export function drawSeats(game: Game, perTable = seatsPer(game)) {
-  game.seatsPerTable = perTable;
-  const ps = shuffle(playing(game));
-  const tables = Math.max(1, Math.ceil(ps.length / perTable));
-  const chairs = Array.from({ length: tables }, () => shuffle(range(perTable)));
-  ps.forEach((p, i) => (p.seat = { table: (i % tables) + 1, seat: chairs[i % tables].pop()! }));
-  const ids = new Set(ps.map((p) => p.id));
-  for (const p of game.players) if (!ids.has(p.id)) p.seat = null;
-  logEvent(game, tp("gameEvents.seatsDrawnLog", tables, { n: ps.length }));
-  flash(game, t("gameEvents.seatsDrawnFlash"), "draw");
-}
-
-export function clearSeats(game: Game) {
-  for (const p of game.players) p.seat = null;
-}
-
-/** how many are sitting at each table, smallest first */
-export function tableCounts(game: Game) {
-  const counts = new Map<number, number>();
-  for (const p of playing(game)) if (p.seat) counts.set(p.seat.table, (counts.get(p.seat.table) ?? 0) + 1);
-  return [...counts].map(([table, n]) => ({ table, n })).sort((a, b) => a.n - b.n || a.table - b.table);
-}
-
-function freeSeats(game: Game, table: number) {
-  const taken = new Set(playing(game).filter((p) => p.seat?.table === table).map((p) => p.seat!.seat));
-  return range(seatsPer(game)).filter((s) => !taken.has(s));
-}
-
-/** a late arrival (or a rebuy) takes a free chair at the shortest table */
-export function seatNewcomer(game: Game, p: Player) {
-  if (!seatsDrawn(game) || p.seat) return;
-  const tables = tableCounts(game);
-  const open = tables.find((t) => t.n < seatsPer(game));
-  const table = open ? open.table : Math.max(0, ...tables.map((t) => t.table)) + 1;
-  const free = shuffle(freeSeats(game, table));
-  p.seat = { table, seat: free[0] ?? 1 };
-}
-
-/** back in the game: keep their old chair unless someone's in it now */
-export function reseat(game: Game, p: Player) {
-  if (!seatsDrawn(game)) return;
-  const s = p.seat;
-  const taken = s && playing(game).some((x) => x.id !== p.id && x.seat?.table === s.table && x.seat.seat === s.seat);
-  if (!s || taken) {
-    p.seat = null;
-    seatNewcomer(game, p);
-  }
-}
-
-export type TableAdvice =
-  | { kind: "break"; table: number; moves: { id: string; to: Seat }[] }
-  | { kind: "move"; id: string; from: Seat; to: Seat };
-
-/**
- * what the floor would say: break a table once everyone fits at one fewer, or
- * move one player when tables are two or more apart. deterministic, so the
- * advice doesn't flicker between renders.
- */
-export function tableAdvice(game: Game): TableAdvice | null {
-  // shootout tables play on short-handed until each has its winner
-  if (shootout(game)?.final === false) return null;
-  const tables = tableCounts(game);
-  if (tables.length < 2) return null;
-  const per = seatsPer(game);
-  const total = tables.reduce((s, t) => s + t.n, 0);
-  if (Math.ceil(total / per) < tables.length) {
-    const gone = tables[0].table;
-    const movers = playing(game).filter((p) => p.seat?.table === gone);
-    const room = tables
-      .slice(1)
-      .flatMap((t) => freeSeats(game, t.table).map((seat) => ({ table: t.table, seat, n: t.n })))
-      .sort((a, b) => a.n - b.n || a.table - b.table || a.seat - b.seat);
-    // fill the shortest tables first, one chair at a time
-    const moves: { id: string; to: Seat }[] = [];
-    const fill = new Map(tables.map((t) => [t.table, t.n]));
-    for (const p of movers) {
-      room.sort((a, b) => fill.get(a.table)! - fill.get(b.table)! || a.table - b.table || a.seat - b.seat);
-      const spot = room.shift();
-      if (!spot) break;
-      fill.set(spot.table, fill.get(spot.table)! + 1);
-      moves.push({ id: p.id, to: { table: spot.table, seat: spot.seat } });
-    }
-    return { kind: "break", table: gone, moves };
-  }
-  const small = tables[0];
-  const big = tables[tables.length - 1];
-  if (big.n - small.n < 2) return null;
-  const mover = playing(game)
-    .filter((p) => p.seat?.table === big.table)
-    .sort((a, b) => b.seat!.seat - a.seat!.seat)[0];
-  const seat = freeSeats(game, small.table)[0];
-  if (!mover || !seat) return null;
-  return { kind: "move", id: mover.id, from: mover.seat!, to: { table: small.table, seat } };
-}
-
-export function applyAdvice(game: Game, a: TableAdvice) {
-  const name = (id: string) => game.players.find((p) => p.id === id)?.name ?? "?";
-  if (a.kind === "move") {
-    const p = game.players.find((x) => x.id === a.id);
-    if (!p) return;
-    p.seat = a.to;
-    logEvent(game, t("gameEvents.movedLog", { name: p.name, table: a.to.table, seat: a.to.seat }));
-    flash(game, t("gameEvents.movedFlash", { name: p.name, table: a.to.table, seat: a.to.seat }), "seat");
-  } else {
-    for (const m of a.moves) {
-      const p = game.players.find((x) => x.id === m.id);
-      if (p) p.seat = m.to;
-    }
-    const details = a.moves.map((m) => `${name(m.id)} to T${m.to.table} S${m.to.seat}`).join(", ");
-    logEvent(game, t("gameEvents.tableBrokeLog", { table: a.table, details }));
-    flash(game, t("gameEvents.tableBreakingFlash", { table: a.table }), "seat");
-  }
-}
-
 // ---------- shootouts and satellites ----------
-
-/**
- * a shootout's tables: who's still in at each, and whether every table is down
- * to its winner (then the final table can be drawn). null when it's not a shootout.
- */
-export function shootout(game: Game) {
-  if (game.tourney?.format !== "shootout") return null;
-  const alive = game.players.filter((p) => !p.out);
-  const nums = [...new Set(alive.map((p) => p.seat?.table ?? 0).filter(Boolean))].sort((a, b) => a - b);
-  const tables = nums.map((table) => ({ table, left: alive.filter((p) => p.seat?.table === table) }));
-  const final = !!game.finalAt;
-  const ready = !final && !game.finished && tables.length > 1 && tables.every((x) => x.left.length === 1) && alive.every((p) => p.seat);
-  return { final, tables, ready };
-}
-
-/** the table winners take their seats at the final table */
-export function drawFinalTable(game: Game) {
-  const alive = shuffle(game.players.filter((p) => !p.out));
-  const chairs = shuffle(range(Math.max(seatsPer(game), alive.length)));
-  alive.forEach((p) => (p.seat = { table: 1, seat: chairs.pop()! }));
-  game.finalAt = Date.now();
-  const names = alive.map((p) => p.name).join(", ");
-  logEvent(game, t("gameEvents.finalTableFlash", { names }));
-  flash(game, t("gameEvents.finalTableFlash", { names }), "draw");
-}
 
 /** seats won in finished satellites that haven't been used in another game yet */
 export function unusedSeats(games: Game[]) {
@@ -889,191 +551,4 @@ export function unusedSeats(games: Game[]) {
       return { game: g, winners: g.players.filter((p) => p.place && p.place <= seats && !used.has(`${g.id}>${nameKey(p.name)}`)) };
     })
     .filter((x) => x.winners.length);
-}
-
-// ---------- heads-up brackets ----------
-
-/** the field rounded up to a whole bracket: 11 players play in a bracket of 16 */
-export const bracketSize = (n: number) => 2 ** Math.ceil(Math.log2(Math.max(2, n)));
-
-/** seeds in bracket order, so the top seeds meet last: 1 v 8, 4 v 5, 2 v 7, 3 v 6 */
-function seedOrder(size: number): number[] {
-  if (size <= 2) return [1, 2];
-  return seedOrder(size / 2).flatMap((s) => [s, size + 1 - s]);
-}
-
-/** how many rounds a bracket of this field plays */
-export const bracketRounds = (n: number) => Math.log2(bracketSize(n));
-
-/** where a player out in `round` finishes: everyone out that round shares the best of those places */
-export const roundPlace = (entrants: number, round: number) => bracketSize(entrants) / 2 ** round + 1;
-
-/**
- * a place table spread over the rounds: 3rd and 4th share their two payouts,
- * 5th to 8th their four, and so on. shares are in the payout rounding, and
- * what that leaves over (and any places no one can finish in) goes to 1st,
- * like payoutAmounts, so it still adds up to the pool
- */
-export function roundShares(table: number[], entrants: number, unit = 1) {
-  const out = table.slice(0, 2);
-  let rest = 0;
-  for (let lo = 3; lo <= entrants; lo = lo * 2 - 1) {
-    const hi = Math.min(lo * 2 - 2, entrants);
-    const sum = table.slice(lo - 1, hi).reduce((a, v) => a + v, 0);
-    const each = round2(Math.floor(sum / (hi - lo + 1) / unit + 1e-9) * unit);
-    if (each <= 0) break;
-    for (let i = lo - 1; i < hi; i++) out[i] = each;
-    rest += sum - each * (hi - lo + 1);
-  }
-  rest += table.slice(out.length).reduce((a, v) => a + v, 0);
-  if (out.length) out[0] = round2(out[0] + rest);
-  return out;
-}
-
-/** a bracket's paid places in groups by round: 1st, 2nd, 3rd to 4th, 5th to 8th ... */
-export function payGroups(entrants: number, paid: number) {
-  const groups: { from: number; to: number }[] = [];
-  for (let from = 1; from <= paid; ) {
-    const to = from <= 2 ? from : Math.min(from * 2 - 2, entrants);
-    groups.push({ from, to });
-    from = to + 1;
-  }
-  return groups;
-}
-
-/** a place, or a shared range of them: "3rd–4th" */
-export const placeRange = (g: { from: number; to: number }) => (g.to > g.from ? `${ordinal(g.from)}–${ordinal(g.to)}` : ordinal(g.from));
-
-/** the round still being played (the lowest with a match to decide), or null once it's over */
-export const currentRound = (game: Game) => {
-  const open = (game.matches ?? []).filter((m) => !m.winner);
-  return open.length ? Math.min(...open.map((m) => m.round)) : null;
-};
-
-/** matches decided by playing, not by a bye */
-export const matchesPlayed = (game: Game) => (game.matches ?? []).filter((m) => m.winner && m.a && m.b).length;
-
-/** the match a match's winner plays next (none after the final) */
-const nextMatch = (game: Game, m: Match) => game.matches?.find((x) => x.round === m.round + 1 && x.slot === Math.floor(m.slot / 2));
-
-function advance(game: Game, m: Match) {
-  const next = nextMatch(game, m);
-  if (!next) return;
-  if (m.slot % 2 === 0) next.a = m.winner;
-  else next.b = m.winner;
-}
-
-/**
- * random seeds for everyone still in, with the byes (for a field that isn't
- * a power of two) going to the top seeds, so no one gets two and no match is
- * a bye against a bye. a bye moves its player straight on.
- */
-export function drawBracket(game: Game) {
-  const ps = shuffle(game.players.filter((p) => !p.out));
-  const size = bracketSize(ps.length);
-  const order = seedOrder(size);
-  const now = Date.now();
-  const matches: Match[] = [];
-  for (let round = 1; size / 2 ** round >= 1; round++)
-    for (let slot = 0; slot < size / 2 ** round; slot++)
-      matches.push({
-        round,
-        slot,
-        a: round === 1 ? (ps[order[slot * 2] - 1]?.id ?? null) : null,
-        b: round === 1 ? (ps[order[slot * 2 + 1] - 1]?.id ?? null) : null,
-        winner: null,
-        at: null,
-      });
-  game.matches = matches;
-  for (const m of matches.filter((x) => x.round === 1 && (!x.a || !x.b))) {
-    m.winner = m.a ?? m.b;
-    m.at = now;
-    advance(game, m);
-  }
-  for (const p of game.players) p.seat = null;
-  logEvent(game, tp("gameEvents.bracketDrawnLog", ps.length, { byes: size - ps.length }));
-  flash(game, t("gameEvents.bracketDrawnFlash"), "draw");
-}
-
-/** the name of a round, by how many are left after it: the final, the semifinals, ... */
-export function roundName(game: Game, round: number) {
-  const left = bracketRounds(game.players.length) - round + 1;
-  if (left === 1) return t("gameEvents.roundFinal");
-  if (left === 2) return t("gameEvents.roundSemis");
-  if (left === 3) return t("gameEvents.roundQuarters");
-  return t("gameEvents.roundOf", { n: 2 ** left });
-}
-
-/** a match is won: the loser is out in that round, the winner moves on (and, heads-up, takes the knockout) */
-export function decideMatch(game: Game, i: number, winnerId: string) {
-  const m = game.matches?.[i];
-  if (!m || m.winner || !m.a || !m.b || (winnerId !== m.a && winnerId !== m.b)) return;
-  const loserId = winnerId === m.a ? m.b : m.a;
-  m.winner = winnerId;
-  m.at = Date.now();
-  bust(game, loserId, roundPlace(game.players.length, m.round));
-  // a plain bust says who's out; a match says who beat who and where they go
-  const plain = game.flash?.kind === "bust";
-  creditKo(game, loserId, winnerId);
-  if (!game.finished) {
-    advance(game, m);
-    const text = t("gameEvents.matchWonFlash", { winner: playerName(game, winnerId), loser: playerName(game, loserId), round: roundName(game, m.round + 1) });
-    logEvent(game, text);
-    if (plain && game.flash?.kind === "bust") flash(game, text, "bust");
-  }
-}
-
-/** the match a player lost, while it can still be taken back: the winner hasn't played on since */
-export function lostMatch(game: Game, playerId: string) {
-  const m = game.matches?.find((x) => x.winner && x.a && x.b && x.winner !== playerId && (x.a === playerId || x.b === playerId));
-  return m && !nextMatch(game, m)?.winner ? m : undefined;
-}
-
-/** take a match back: the loser is in again, and the winner back out of the next round */
-export function undoMatch(game: Game, playerId: string) {
-  const m = lostMatch(game, playerId);
-  if (!m) return;
-  const next = nextMatch(game, m);
-  if (next && m.slot % 2 === 0) next.a = null;
-  else if (next) next.b = null;
-  m.winner = null;
-  m.at = null;
-  unbust(game, playerId);
-}
-
-export const seatLabel = (s: Seat | null | undefined, tables: number) => (!s ? "" : tables > 1 ? `T${s.table} · ${s.seat}` : `${s.seat}`);
-
-// ---------- run it back ----------
-
-const clone = <T>(x: T): T => (x === undefined ? x : JSON.parse(JSON.stringify(x)));
-
-/** a fresh game with the same setup: chips, structure, buy-ins and (optionally) the same people */
-export function rerun(game: Game, keepPlayers = true): Game {
-  const seen = new Set<string>();
-  const names = keepPlayers
-    ? game.players.map((p) => p.name).filter((n) => !seen.has(nameKey(n)) && seen.add(nameKey(n)))
-    : [];
-  const g = newGame({
-    name: game.name,
-    type: game.type,
-    chipSetName: game.chipSetName,
-    multiplier: game.multiplier,
-    chips: clone(game.chips),
-    notes: game.notes,
-    players: names,
-    levels: clone(game.levels),
-    tourney: clone(game.tourney),
-    cash: clone(game.cash),
-  });
-  g.from = game.id;
-  g.seatsPerTable = game.seatsPerTable;
-  g.house = game.house;
-  g.leagueId = game.leagueId;
-  // the other kinds' own rules (their rounds and pot start over)
-  if (game.dice) g.dice = clone(game.dice);
-  if (game.lives) g.lives = clone(game.lives);
-  if (game.pot) g.pot = clone(game.pot);
-  // cash regulars named up front shouldn't be on the clock before the game starts
-  for (const p of g.players) p.joinedAt = undefined;
-  return g;
 }

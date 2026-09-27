@@ -357,7 +357,7 @@ export interface PotEvent {
   amount: number;
   at: number;
   /** in-between: how a bet went (a post pays double) */
-  note?: "win" | "lose" | "post";
+  note?: "win" | "lose" | "post" | "pot";
 }
 
 /** how a liar's dice game is played */

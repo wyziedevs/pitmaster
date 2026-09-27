@@ -8,7 +8,9 @@
   import Undo2 from "@lucide/svelte/icons/undo-2";
   import Trophy from "@lucide/svelte/icons/trophy";
   import type { Game } from "$lib/types";
-  import { addPlayer, logEvent, settleUp, HOUSE } from "$lib/game";
+  import { addPlayer } from "$lib/game";
+  import { logEvent, houseName, playerName } from "$lib/events";
+  import { settleUp } from "$lib/settle";
   import { money, ordinal, round2, signed } from "$lib/util";
   import { provide } from "$lib/commands.svelte";
   import { settings } from "$lib/settings.svelte";
@@ -30,7 +32,6 @@
   const preset = $derived(livesPreset(l.preset));
   const st = $derived(livesState(game));
   const started = $derived(!!game.lifeRounds?.length);
-  const pname = (id: string | undefined) => game.players.find((p) => p.id === id)?.name ?? "?";
   const alivePlayers = $derived(game.players.filter((p) => st.lives[p.id] > 0));
   const ranked = $derived([...game.players].sort((a, b) => (st.places[a.id] ?? 0) - (st.places[b.id] ?? 0) || st.lives[b.id] - st.lives[a.id]));
   const costsOn = $derived(settings.useCosts || !!game.costs?.length);
@@ -120,7 +121,7 @@
 </section>
 
 {#if game.finished}
-  <div class="warn pop won my-[14px]"><p class="m-0"><Icon icon={Trophy} /> <b>{pname(game.players.find((p) => st.places[p.id] === 1)?.id)}</b> {t("gamePlay.tournament.winnerSuffix")}</p></div>
+  <div class="warn pop won my-[14px]"><p class="m-0"><Icon icon={Trophy} /> <b>{playerName(game, game.players.find((p) => st.places[p.id] === 1)?.id)}</b> {t("gamePlay.tournament.winnerSuffix")}</p></div>
 {/if}
 
 <div class="cols">
@@ -207,7 +208,7 @@
           <button class="link small" data-sound="none" onclick={takeBack}><Icon icon={Undo2} size="1em" />{t("gamePlay.dice.takeBack")}</button>
         </div>
         <ol class="small rounds" reversed>
-          {#each [...(game.lifeRounds ?? [])].reverse() as r, i (r.at + ":" + i)}<li>{roundText(game, r)}{#if r.winner}{` · ${t("gamePlay.lives.wonBy", { name: pname(r.winner) })}`}{/if}</li>{/each}
+          {#each [...(game.lifeRounds ?? [])].reverse() as r, i (r.at + ":" + i)}<li>{roundText(game, r)}{#if r.winner}{` · ${t("gamePlay.lives.wonBy", { name: playerName(game, r.winner) })}`}{/if}</li>{/each}
         </ol>
       </div>
     {/if}
@@ -233,7 +234,7 @@
         <h2>{t("gamePlay.shared.settleUp")}</h2>
         {#if moves.length}
           <SettleMoves bind:game {persist} />
-          {#if l.stakes.mode === "pot"}<p class="small muted">{t("gamePlay.shared.tourneySettleNote", { house: game.house?.trim() || HOUSE() })}</p>{/if}
+          {#if l.stakes.mode === "pot"}<p class="small muted">{t("gamePlay.shared.tourneySettleNote", { house: houseName(game) })}</p>{/if}
         {:else}
           <p class="small muted">{t("gamePlay.shared.square")}</p>
         {/if}

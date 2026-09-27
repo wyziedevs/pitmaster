@@ -8,7 +8,9 @@
   import Undo2 from "@lucide/svelte/icons/undo-2";
   import Coins from "@lucide/svelte/icons/coins";
   import type { Game } from "$lib/types";
-  import { addPlayer, logEvent, settleUp } from "$lib/game";
+  import { addPlayer } from "$lib/game";
+  import { logEvent, playerName } from "$lib/events";
+  import { settleUp } from "$lib/settle";
   import { money, signed } from "$lib/util";
   import { provide } from "$lib/commands.svelte";
   import { settings } from "$lib/settings.svelte";
@@ -18,7 +20,7 @@
   import SettleMoves from "$lib/components/SettleMoves.svelte";
   import Costs from "$lib/components/Costs.svelte";
   import RemoveButton from "$lib/components/RemoveButton.svelte";
-  import { matchCost, maxBet, potState } from "./engine";
+  import { potCap, potState } from "./engine";
   import { anteUp, bet, endPot, matchPot, pay, reopenPot, take, takePot, undoPot } from "./actions";
   import { potPreset } from "./presets";
   import { presetName, setupLine } from "./index";
@@ -29,7 +31,6 @@
   const s = $derived(game.pot!);
   const preset = $derived(potPreset(s.preset));
   const st = $derived(potState(game));
-  const pname = (id: string | null | undefined) => game.players.find((p) => p.id === id)?.name ?? "";
   const started = $derived(!!game.potEvents?.length);
   const costsOn = $derived(settings.useCosts || !!game.costs?.length);
   const moves = $derived(settleUp(game));
@@ -62,7 +63,7 @@
   $effect(() => {
     if (!bettor || !game.players.some((p) => p.id === bettor)) bettor = st.turn ?? "";
   });
-  const cap = $derived(maxBet(s, st.pot));
+  const cap = $derived(potCap(s, st.pot));
   function settleBet(result: "win" | "lose" | "post") {
     if (!bettor || !amount) return;
     play(result === "win" ? "chips" : "bust");
@@ -133,7 +134,7 @@
       <div class="small muted">{presetName(game)} · {setupLine(game)}</div>
     </div>
     <div class="blinds text-right max-[600px]:text-left">
-      {#if !game.finished && st.turn}<div class="small muted">{t("gamePlay.pot.turn")}</div><div class="bb">{pname(st.turn)}</div>{/if}
+      {#if !game.finished && st.turn}<div class="small muted">{t("gamePlay.pot.turn")}</div><div class="bb">{playerName(game, st.turn, "")}</div>{/if}
       {#if !game.finished && s.limit > 0}<div class="small muted">{t("gamePlay.pot.maxBet", { amount: money(cap) })}</div>{/if}
     </div>
   </div>
@@ -173,7 +174,7 @@
 
       {#if preset.match}
         <div class="part mt-[22px]">
-          <h2>{t("gamePlay.pot.matchHeading", { amount: money(matchCost(s, st.pot)) })}</h2>
+          <h2>{t("gamePlay.pot.matchHeading", { amount: money(potCap(s, st.pot)) })}</h2>
           <label><span>{t("gamePlay.pot.handWonBy")}</span>
             <select bind:value={handWinner}><option value="">…</option>{#each game.players as p (p.id)}<option value={p.id}>{p.name}</option>{/each}</select>
           </label>

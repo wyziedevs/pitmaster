@@ -3,11 +3,13 @@
 // the poker ones it shares with tournaments.
 import type { Game, Player } from "$lib/types";
 import type { Kind, Line } from "../kind";
-import type { Result } from "$lib/stats";
-import { cashRake, cashSettle, cashStats, costNets, HOUSE, highHandPrizes } from "$lib/game";
+import { resultRow, type Result } from "$lib/stats";
+import { cashRake, cashStats, gameDate, highHandPrizes } from "$lib/game";
+import { houseName, playerName } from "$lib/events";
+import { addTo, costNets, squareUp } from "$lib/settle";
 import { cashElapsed } from "$lib/clock";
 import { settleLines, pad } from "$lib/report";
-import { clock, csv, duration, money, nameKey, round2, signed, timeOfDay } from "$lib/util";
+import { clock, csv, duration, money, round2, signed, timeOfDay } from "$lib/util";
 import { cashGames, cashStakes, gameLine, variant } from "$lib/variants";
 import { isCashSettings, isSide, isWaiting } from "../poker/check";
 import { list, maybe } from "$lib/shape";
@@ -27,7 +29,6 @@ function stakes(game: Game) {
 
 /** a player counts once they've cashed out; a seat fee is part of what the night cost them */
 function results(game: Game): Result[] {
-  const base = { gameId: game.id, gameName: game.name, type: game.type, at: game.clock.startedAt ?? game.createdAt };
   const r = cashRake(game);
   const fee = r.mode === "seat" ? r.fee : 0;
   const prizes = highHandPrizes(game);
@@ -37,21 +38,11 @@ function results(game: Game): Result[] {
       const start = Math.max(p.joinedAt ?? 0, game.clock.startedAt ?? 0) || null;
       const hours = start && p.leftAt && p.leftAt > start ? (p.leftAt - start) / 3600000 : null;
       const highHand = prizes[p.id] ?? 0;
-      return {
-        ...base,
-        key: nameKey(p.name),
-        name: p.name.trim(),
-        cost: round2(p.cashIn + fee),
-        won: round2((p.cashOut ?? 0) + highHand),
-        net: round2((p.cashOut ?? 0) + highHand - p.cashIn - fee),
-        place: null,
-        entrants: game.players.length,
-        itm: false,
-        kos: 0,
+      return resultRow(game, p, round2(p.cashIn + fee), round2((p.cashOut ?? 0) + highHand), {
         hours,
         highHand,
         sevenTwo: (game.sides ?? []).filter((e) => e.kind === "sevenTwo" && e.playerId === p.id).length,
-      };
+      });
     });
 }
 
@@ -70,19 +61,18 @@ function recap(game: Game) {
     lines.push(`${pad(p.name, w)}${net === null ? t("players.report.cash.stillPlaying", { in: money(p.cashIn) }) : signed(net)}`);
   }
   const r = cashRake(game);
-  const house = game.house?.trim() || HOUSE();
+  const house = houseName(game);
   if (s.rakeBox) lines.push("", t("players.report.cash.rakeBox", { amount: money(s.rakeBox), house }));
   if (s.seatFees) lines.push("", t("players.report.cash.seatFee", { amount: money(r.fee), house }));
   // the side games: bomb pots, 7-2 wins and every high hand the house paid
   const sides = game.sides ?? [];
-  const name = (id?: string) => game.players.find((p) => p.id === id)?.name ?? "?";
   const bombs = sides.filter((e) => e.kind === "bomb").length;
   const sevenTwos = new Map<string, number>();
-  for (const e of sides) if (e.kind === "sevenTwo") sevenTwos.set(name(e.playerId), (sevenTwos.get(name(e.playerId)) ?? 0) + 1);
+  for (const e of sides) if (e.kind === "sevenTwo") sevenTwos.set(playerName(game, e.playerId), (sevenTwos.get(playerName(game, e.playerId)) ?? 0) + 1);
   const sideLines = [
     bombs ? tp("players.report.cash.bombPots", bombs) : "",
     sevenTwos.size ? t("players.report.cash.sevenTwo", { list: [...sevenTwos].map(([n, k]) => (k > 1 ? `${n} ×${k}` : n)).join(", ") }) : "",
-    ...sides.filter((e) => e.kind === "highHandPaid").map((e) => t("players.report.cash.highHand", { name: name(e.playerId), hand: e.hand ?? "", amount: money(e.amount ?? 0), house })),
+    ...sides.filter((e) => e.kind === "highHandPaid").map((e) => t("players.report.cash.highHand", { name: playerName(game, e.playerId), hand: e.hand ?? "", amount: money(e.amount ?? 0), house })),
   ].filter(Boolean);
   if (sideLines.length) lines.push("", ...sideLines);
   lines.push(...settleLines(game));
@@ -91,7 +81,7 @@ function recap(game: Game) {
 }
 
 function gameCsv(game: Game) {
-  const date = new Date(game.clock.startedAt ?? game.createdAt).toISOString().slice(0, 10);
+  const date = gameDate(game);
   // a seat fee is part of the night's net, same as on the Players page
   const r = cashRake(game);
   const fee = r.mode === "seat" ? r.fee : 0;
@@ -138,6 +128,24 @@ function find(game: Game, p: Player): Line[] {
   return out;
 }
 
+/**
+ * who pays who at the end of a cash game: everyone who's cashed out, plus the
+ * house for the rake box and seat fees. if the house is one of the players
+ * (the host), it's folded into their numbers.
+ */
+function cashSettle(game: Game) {
+  const r = cashRake(game);
+  const done = game.players.filter((p) => p.cashOut !== null);
+  const house = houseName(game);
+  const fee = r.mode === "seat" ? r.fee : 0;
+  // a high hand prize is the house paying a player, outside the chips
+  const prizes = highHandPrizes(game);
+  const nets = done.map((p) => ({ name: p.name, net: round2((p.cashOut ?? 0) - p.cashIn - fee + (prizes[p.id] ?? 0)) }));
+  const paid = round2(done.reduce((s, p) => s + (prizes[p.id] ?? 0), 0));
+  const owed = round2((r.mode === "pot" ? (game.rakeBox ?? 0) : 0) + fee * done.length - paid);
+  return squareUp(game, addTo(nets, house, owed));
+}
+
 export const cash: Kind = {
   id: "cash",
   label: () => t("toys.gameType.cash"),
@@ -151,7 +159,7 @@ export const cash: Kind = {
   Control: () => import("./Control.svelte"),
   check: (g) => isCashSettings(g.cash) && maybe(list(isSide))(g.sides) && maybe(list(isWaiting))(g.waitlist),
   results,
-  settle: (game) => cashSettle(game),
+  settle: cashSettle,
   // over once everyone's cashed out, or the host ended it
   settled: (game) => game.finished || (game.players.length > 0 && game.players.every((p) => p.cashOut !== null)),
   playing: (_game, p) => p.cashOut === null,

@@ -9,7 +9,10 @@
   import { bump, reveal, leave, slide } from "$lib/motion";
   import type { Game } from "$lib/types";
   import { cashElapsed, cashToggle } from "$lib/clock";
-  import { addPlayer, cashStats, cashSettle, cashRake, logEvent, flash, reseat, seatsDrawn, seatLabel, tableCounts, highHandPrizes, seatWaiting, waitingReturn } from "$lib/game";
+  import { addPlayer, cashStats, cashRake, highHandPrizes, seatWaiting, waitingReturn } from "$lib/game";
+  import { logEvent, flash } from "$lib/events";
+  import { settleUp } from "$lib/settle";
+  import { reseat, seatsDrawn, seatLabel, tableCounts } from "$lib/seats";
   import { getHandles } from "$lib/store";
   import { distribute, faceText } from "$lib/chips";
   import { clock, clockFace, currencySymbol, duration, money, nameKey, round2, signed, timeOfDay } from "$lib/util";
@@ -40,7 +43,7 @@
   // STATUS_LABEL (clock.ts) is English only; this game screen shows its own
   // translated labels for the same three statuses instead.
   const statusLabel = $derived({ idle: t("gamePlay.shared.statusIdle"), running: t("gamePlay.shared.statusRunning"), paused: t("gamePlay.shared.statusPaused") });
-  const moves = $derived(cashSettle(game));
+  const moves = $derived(settleUp(game));
   const r = $derived(cashRake(game));
   const house = $derived(game.house?.trim() || t("gamePlay.shared.house"));
   // where people get paid (saved on the Players page), for links in settle-up

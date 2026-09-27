@@ -5,7 +5,8 @@
   import Plus from "@lucide/svelte/icons/plus";
   import RemoveButton from "./RemoveButton.svelte";
   import type { Game } from "$lib/types";
-  import { addCost, removeCost, costSplit, HOUSE } from "$lib/game";
+  import { houseName, playerName } from "$lib/events";
+  import { addCost, removeCost, costSplit } from "$lib/settle";
   import { money } from "$lib/util";
   import { provide } from "$lib/commands.svelte";
   import { reveal, leave, slide } from "$lib/motion";
@@ -13,8 +14,7 @@
 
   let { game = $bindable(), persist }: { game: Game; persist: () => void } = $props();
 
-  const house = $derived(game.house?.trim() || HOUSE());
-  const nameOf = (id: string | null) => (id ? (game.players.find((p) => p.id === id)?.name ?? house) : house);
+  const house = $derived(houseName(game));
 
   let label = $state("");
   let amount = $state<number | null>(null);
@@ -55,7 +55,7 @@
       {@const who = costSplit(game, c)}
       <li class="mb-1" in:slide={reveal()} out:slide={leave()}>
         <b>{c.label}</b> <span class="num">{money(c.amount)}</span>
-        <span class="small muted">· {t("gamePlay.shared.costs.fronted", { name: nameOf(c.paidBy) })} · <span title={who.map((id) => nameOf(id)).join(", ")}>{c.split.length ? tp("gamePlay.shared.costs.ways", who.length) : t("gamePlay.shared.costs.everyone")}</span></span>
+        <span class="small muted">· {t("gamePlay.shared.costs.fronted", { name: playerName(game, c.paidBy, house) })} · <span title={who.map((id) => playerName(game, id, house)).join(", ")}>{c.split.length ? tp("gamePlay.shared.costs.ways", who.length) : t("gamePlay.shared.costs.everyone")}</span></span>
         <RemoveButton label={t("gamePlay.shared.costs.remove", { label: c.label })} onclick={() => remove(c.id)} />
       </li>
     {/each}

@@ -3,13 +3,12 @@
 // collect the numbers, check them and count. the host's device only ever
 // holds what a phone has already revealed.
 import type { Game } from "$lib/types";
-import { flash, logEvent } from "$lib/game";
+import { flash, logEvent, playerName } from "$lib/events";
 import { t, tp } from "$lib/i18n";
 import { diceState, judge } from "./engine";
 import { addRound, faceCount } from "./actions";
 import { combine, commitOf, newSeat, numbers, readMail, seatOwner, sha256, waitingOn } from "./cups";
 
-const pname = (game: Game, id: string) => game.players.find((p) => p.id === id)?.name ?? "?";
 
 /** a seat (and its key, kept here, never in a snapshot) for every player who hasn't one yet */
 export function seatAll(game: Game) {
@@ -105,7 +104,7 @@ export async function takeMail(game: Game, seat: string, text: string) {
 export function toRealDice(game: Game, pid: string) {
   const c = game.cups!;
   game.cups = { ...c, real: [...new Set([...(c.real ?? []), pid])], commits: Object.fromEntries(Object.entries(c.commits ?? {}).filter(([k]) => k !== pid)) };
-  logEvent(game, t("gamePlay.dice.cups.realLog", { name: pname(game, pid) }));
+  logEvent(game, t("gamePlay.dice.cups.realLog", { name: playerName(game, pid) }));
   dealIfReady(game);
 }
 
@@ -113,7 +112,7 @@ export function toRealDice(game: Game, pid: string) {
 export function callForReveal(game: Game, call: { bid: { count: number; face: number }; bidder: string; caller: string; call: "liar" | "spot" }) {
   const c = game.cups!;
   game.cups = { ...c, phase: "reveal", call };
-  flash(game, call.call === "liar" ? t("gamePlay.dice.cups.liarFlash", { caller: pname(game, call.caller), bid: faceCount(call.bid.count, call.bid.face) }) : t("gamePlay.dice.cups.spotFlash", { caller: pname(game, call.caller), bid: faceCount(call.bid.count, call.bid.face) }), "liar");
+  flash(game, call.call === "liar" ? t("gamePlay.dice.cups.liarFlash", { caller: playerName(game, call.caller), bid: faceCount(call.bid.count, call.bid.face) }) : t("gamePlay.dice.cups.spotFlash", { caller: playerName(game, call.caller), bid: faceCount(call.bid.count, call.bid.face) }), "liar");
 }
 
 /**
@@ -138,7 +137,7 @@ export function countCall(game: Game, realCounts: Record<string, number> = {}) {
     // the dice a cheat loses go to whoever won the call (or the next one who played fair)
     const winner = [judged.winner, call.bidder, call.caller, ...st.alive].find((id) => !cheats.includes(id));
     addRound(game, { ...call, actual, losers: cheats, winner, reveal, cheats, at: Date.now() });
-    if (!game.finished) flash(game, tp("gamePlay.dice.cups.caughtFlash", cheats.length, { names: cheats.map((id) => pname(game, id)).join(", ") }), "bust");
+    if (!game.finished) flash(game, tp("gamePlay.dice.cups.caughtFlash", cheats.length, { names: cheats.map((id) => playerName(game, id)).join(", ") }), "bust");
   } else addRound(game, { ...call, actual, ...judged, reveal, at: Date.now() });
   nextRound(game);
 }

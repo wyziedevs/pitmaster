@@ -15,7 +15,7 @@
   import type { Game } from "$lib/types";
   import { endLive, startLive } from "$lib/sync";
   import { showCode } from "$lib/crypto";
-  import { logEvent } from "$lib/game";
+  import { logEvent } from "$lib/events";
   import { t } from "$lib/i18n";
 
   let { game = $bindable(), persist }: { game: Game; persist: () => void } = $props();

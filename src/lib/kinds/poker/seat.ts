@@ -1,6 +1,6 @@
 // where someone sits, in words, for Find Me on a phone
 import type { Game, Player } from "$lib/types";
-import { tableCounts } from "$lib/game";
+import { tableCounts } from "$lib/seats";
 import { t } from "$lib/i18n";
 
 export function seatText(game: Game, p: Player) {

@@ -4,15 +4,15 @@
   import Shuffle from "@lucide/svelte/icons/shuffle";
   import { reveal, slide } from "$lib/motion";
   import type { Game } from "$lib/types";
-  import { drawSeats, clearSeats, seatsDrawn, seatsPer, tableAdvice, applyAdvice } from "$lib/game";
+  import { drawSeats, clearSeats, seatsDrawn, seatsPer, tableAdvice, applyAdvice } from "$lib/seats";
   import { play } from "$lib/sound";
   import { t } from "$lib/i18n";
+  import { playerName } from "$lib/events";
 
   let { game = $bindable(), persist }: { game: Game; persist: () => void } = $props();
 
   const drawn = $derived(seatsDrawn(game));
   const advice = $derived(drawn ? tableAdvice(game) : null);
-  const nameOf = (id: string) => game.players.find((p) => p.id === id)?.name ?? "?";
 
   function act(fn: () => void) {
     fn();
@@ -34,10 +34,10 @@
 
   function adviceText(a: NonNullable<typeof advice>) {
     if (a.kind === "move")
-      return t("gamePlay.seats.adviceMove", { name: nameOf(a.id), from: String(a.from.table), to: String(a.to.table), seat: String(a.to.seat) });
+      return t("gamePlay.seats.adviceMove", { name: playerName(game, a.id), from: String(a.from.table), to: String(a.to.table), seat: String(a.to.seat) });
     return t("gamePlay.seats.adviceBreak", {
       table: String(a.table),
-      moves: a.moves.map((m) => t("gamePlay.seats.moveItem", { name: nameOf(m.id), table: String(m.to.table), seat: String(m.to.seat) })).join(", "),
+      moves: a.moves.map((m) => t("gamePlay.seats.moveItem", { name: playerName(game, m.id), table: String(m.to.table), seat: String(m.to.seat) })).join(", "),
     });
   }
 </script>

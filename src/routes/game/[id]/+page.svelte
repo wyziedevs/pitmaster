@@ -10,11 +10,12 @@
   import { getGame, saveGame, deleteGame, exportGame, onOtherTab, getLeagues } from "$lib/store";
   import type { Game } from "$lib/types";
   import { day, download, fileSlug, MOD, timeOfDay } from "$lib/util";
-  import { logEvent, rerun } from "$lib/game";
+  import { logEvent } from "$lib/events";
+  import { rerun } from "$lib/rerun";
   import { recap, gameCsv } from "$lib/report";
   import { keyLabel } from "$lib/keys";
   import { settings } from "$lib/settings.svelte";
-  import { headline, inSeason } from "$lib/stats";
+  import { headline } from "$lib/stats";
   import { provide } from "$lib/commands.svelte";
   import { toast } from "$lib/toast.svelte";
   import { play } from "$lib/sound";
@@ -157,8 +158,6 @@
   function runItBack() {
     if (!game) return;
     const g = rerun($state.snapshot(game) as Game);
-    // a rerun only stays in its league while the season is still on
-    if (g.leagueId && !getLeagues().some((l) => l.id === g.leagueId && inSeason(l, Date.now()))) g.leagueId = undefined;
     saveGame(g);
     toast(g.players.length ? tp("gamePlay.game.rerunToastWithPlayers", g.players.length) : t("gamePlay.game.rerunToastNoPlayers"));
     goto(`/game/${g.id}`);

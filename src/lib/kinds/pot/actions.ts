@@ -1,32 +1,33 @@
 // what the dealer screen does to a pot game. each action is one event, told
 // to the room; the pot and everyone's money come from the events (engine.ts).
 import type { Game, PotEvent } from "$lib/types";
-import { flash, logEvent } from "$lib/game";
+import { flash, logEvent, playerName } from "$lib/events";
 import { money, round2 } from "$lib/util";
 import { t } from "$lib/i18n";
-import { matchCost, maxBet, potState } from "./engine";
+import { potCap, potState } from "./engine";
 
-const name = (game: Game, id: string) => game.players.find((p) => p.id === id)?.name ?? "?";
-const names = (game: Game, ids: string[]) => ids.map((id) => name(game, id)).join(", ");
 
 /** what an event was, in words (the tv writes its recent ones from these: it never gets the log) */
 export function eventText(game: Game, e: PotEvent, round = 0) {
   const who = e.players[0] ?? "";
   const amount = money(e.amount);
   if (e.kind === "ante") return t("gamePlay.pot.anteLog", { amount, n: String(round) });
-  if (e.kind === "match") return t("gamePlay.pot.matchLog", { names: names(game, e.players), amount });
-  if (e.kind === "take") return t(e.note === "win" ? "gamePlay.pot.winLog" : "gamePlay.pot.takeLog", { name: name(game, who), amount });
-  if (e.note === "post") return t("gamePlay.pot.postLog", { name: name(game, who), amount });
-  return t(e.note === "lose" ? "gamePlay.pot.loseLog" : "gamePlay.pot.payLog", { name: name(game, who), amount });
+  if (e.kind === "match") return t("gamePlay.pot.matchLog", { names: e.players.map((id) => playerName(game, id)).join(", "), amount });
+  if (e.kind === "take") return t(e.note === "win" ? "gamePlay.pot.winLog" : e.note === "pot" ? "gamePlay.pot.takePotLog" : "gamePlay.pot.takeLog", { name: playerName(game, who), amount });
+  if (e.note === "post") return t("gamePlay.pot.postLog", { name: playerName(game, who), amount });
+  return t(e.note === "lose" ? "gamePlay.pot.loseLog" : "gamePlay.pot.payLog", { name: playerName(game, who), amount });
 }
 
 /** one move: one or more events that share its time (so undo takes them back together), a log line for each, and the tv hears about it */
-function add(game: Game, events: Omit<PotEvent, "at">[], texts: string[], kind: Parameters<typeof flash>[2]) {
+function add(game: Game, events: Omit<PotEvent, "at">[], kind: Parameters<typeof flash>[2]) {
   if (game.finished) return;
-  if (!game.potEvents) game.potEvents = [];
+  // (only an ante needs the round: it starts the next one)
+  const round = potState(game).rounds + 1;
   const at = Date.now();
+  if (!game.potEvents) game.potEvents = [];
   for (const e of events) game.potEvents.push({ ...e, at });
   if (!game.clock.startedAt) game.clock.startedAt = at;
+  const texts = events.map((e) => eventText(game, { ...e, at }, round));
   for (const text of texts) logEvent(game, text);
   flash(game, texts.join(" · "), kind);
 }
@@ -35,39 +36,33 @@ function add(game: Game, events: Omit<PotEvent, "at">[], texts: string[], kind: 
 export function anteUp(game: Game) {
   const s = game.pot!;
   if (!(s.ante > 0) || !game.players.length) return;
-  const round = potState(game).rounds + 1;
-  add(game, [{ kind: "ante", players: game.players.map((p) => p.id), amount: s.ante }], [t("gamePlay.pot.anteLog", { amount: money(s.ante), n: String(round) })], "chips");
+  add(game, [{ kind: "ante", players: game.players.map((p) => p.id), amount: s.ante }], "chips");
 }
 
 /** in-between: a bet, won (taken from the pot), lost (paid in) or posted (paid in twice) */
 export function bet(game: Game, id: string, amount: number, result: "win" | "lose" | "post") {
-  const st = potState(game);
-  const a = round2(Math.min(Math.max(0, amount), maxBet(game.pot!, st.pot)));
+  const a = round2(Math.min(Math.max(0, amount), potCap(game.pot!, potState(game).pot)));
   if (!(a > 0)) return;
-  if (result === "win") return add(game, [{ kind: "take", players: [id], amount: a, note: "win" }], [t("gamePlay.pot.winLog", { name: name(game, id), amount: money(a) })], "money");
-  const paid = result === "post" ? round2(a * 2) : a;
-  add(game, [{ kind: "pay", players: [id], amount: paid, note: result }], [t(result === "post" ? "gamePlay.pot.postLog" : "gamePlay.pot.loseLog", { name: name(game, id), amount: money(paid) })], "bust");
+  if (result === "win") add(game, [{ kind: "take", players: [id], amount: a, note: "win" }], "money");
+  else add(game, [{ kind: "pay", players: [id], amount: result === "post" ? round2(a * 2) : a, note: result }], "bust");
 }
 
 /** someone puts money in (a lost hand, a fine, a pig out) */
 export function pay(game: Game, id: string, amount: number) {
   const a = round2(Math.max(0, amount));
-  if (!(a > 0)) return;
-  add(game, [{ kind: "pay", players: [id], amount: a }], [t("gamePlay.pot.payLog", { name: name(game, id), amount: money(a) })], "chips");
+  if (a > 0) add(game, [{ kind: "pay", players: [id], amount: a }], "chips");
 }
 
 /** someone takes money out (a won hand), never more than the pot */
 export function take(game: Game, id: string, amount: number) {
   const a = round2(Math.min(Math.max(0, amount), potState(game).pot));
-  if (!(a > 0)) return;
-  add(game, [{ kind: "take", players: [id], amount: a }], [t("gamePlay.pot.takeLog", { name: name(game, id), amount: money(a) })], "money");
+  if (a > 0) add(game, [{ kind: "take", players: [id], amount: a }], "money");
 }
 
 /** the winner takes the whole pot */
 export function takePot(game: Game, id: string) {
   const pot = potState(game).pot;
-  if (!(pot > 0)) return;
-  add(game, [{ kind: "take", players: [id], amount: pot }], [t("gamePlay.pot.takePotLog", { name: name(game, id), amount: money(pot) })], "win");
+  if (pot > 0) add(game, [{ kind: "take", players: [id], amount: pot, note: "pot" }], "win");
 }
 
 /**
@@ -77,13 +72,12 @@ export function takePot(game: Game, id: string) {
  */
 export function matchPot(game: Game, ids: string[], winner?: string) {
   const pot = potState(game).pot;
-  const cost = matchCost(game.pot!, pot);
+  const cost = potCap(game.pot!, pot);
   const losers = ids.filter((id) => id !== winner);
   if (!losers.length || !(cost > 0)) return;
   const match = { kind: "match" as const, players: losers, amount: cost };
-  const text = t("gamePlay.pot.matchLog", { names: names(game, losers), amount: money(cost) });
-  if (!winner) return add(game, [match], [text], "bust");
-  add(game, [{ kind: "take", players: [winner], amount: pot }, match], [t("gamePlay.pot.takePotLog", { name: name(game, winner), amount: money(pot) }), text], "win");
+  if (!winner) add(game, [match], "bust");
+  else add(game, [{ kind: "take", players: [winner], amount: pot, note: "pot" }, match], "win");
 }
 
 /** takes back the last move (every event it made), unless the game's over */

@@ -1,8 +1,9 @@
 // results and all-time numbers, worked out from the saved games every time.
 // nothing here is stored, so fixing a game fixes the leaderboard too.
-import type { Game, GameType, League, LeagueBoard, LeaguePoints } from "./types";
-import { settled } from "./game";
-import { round2 } from "./util";
+import type { Game, GameType, League, LeagueBoard, LeaguePoints, Player } from "./types";
+import { settled } from "./settle";
+import { nameKey, round2 } from "./util";
+import { playedAt } from "./game";
 import { kind } from "./kinds";
 
 /** one player's night in one game */
@@ -29,6 +30,27 @@ export interface Result {
   highHand: number;
   sevenTwo: number;
 }
+
+/** a player's result in a game from what they paid in and took home; each kind adds its own numbers (a place, knockouts, hours...) */
+export const resultRow = (game: Game, p: Player, cost: number, won: number, more: Partial<Result> = {}): Result => ({
+  gameId: game.id,
+  gameName: game.name,
+  type: game.type,
+  at: playedAt(game),
+  key: nameKey(p.name),
+  name: p.name.trim(),
+  cost,
+  won,
+  net: round2(won - cost),
+  place: null,
+  entrants: game.players.length,
+  itm: false,
+  kos: 0,
+  hours: null,
+  highHand: 0,
+  sevenTwo: 0,
+  ...more,
+});
 
 /**
  * final results only, from the game's kind: a cash player counts once
@@ -152,7 +174,7 @@ export interface LeagueLine {
 export const leagueGames = (league: League, games: Game[]) =>
   games
     .filter((g) => g.leagueId === league.id && league.types.includes(g.type) && settled(g))
-    .sort((a, b) => (a.clock.startedAt ?? a.createdAt) - (b.clock.startedAt ?? b.createdAt));
+    .sort((a, b) => playedAt(a) - playedAt(b));
 
 /**
  * each game's places: its own (a tournament's), or, for a game without them

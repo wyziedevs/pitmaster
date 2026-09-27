@@ -11,12 +11,12 @@
   import { eventText } from "./actions";
   import { presetName, setupLine } from "./index";
   import { t, tp } from "$lib/i18n";
+  import { playerName } from "$lib/events";
 
   let { game, narrow = false }: { game: Game; narrow?: boolean } = $props();
 
   const st = $derived(potState(game));
   const showMoney = $derived(prefs().tvMoney !== false);
-  const pname = (id: string | null | undefined) => game.players.find((p) => p.id === id)?.name ?? "";
   // the last few things that happened, newest first, each with its round
   // (keyed by where they are in the game, so an old one keeps its place as new ones come in)
   const recent = $derived.by(() => {
@@ -36,7 +36,7 @@
     <span class="k">{game.finished ? t("gamePlay.cash.finishedPill") : `${presetName(game)} · ${tp("gamePlay.pot.rounds", st.rounds)}`}</span>
     {#if showMoney}<span class="pot fig" use:replay={[st.pot, "glint"]}><Count value={st.pot} format={money} /></span>{/if}
     {#if showMoney}<span class="sub">{setupLine(game)}</span>{/if}
-    {#if !game.finished && st.turn}<span class="turn">{t("tv.pot.turn", { name: pname(st.turn) })}</span>{/if}
+    {#if !game.finished && st.turn}<span class="turn">{t("tv.pot.turn", { name: playerName(game, st.turn, "") })}</span>{/if}
     <!-- (every event is money, so they stay off a board with the money off) -->
     {#if showMoney}
       <ol class="recent">

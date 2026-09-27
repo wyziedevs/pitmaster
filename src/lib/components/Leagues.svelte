@@ -6,7 +6,8 @@
   import Trophy from "@lucide/svelte/icons/trophy";
   import { deleteLeague, getLeagues, saveGame, saveLeague } from "$lib/store";
   import { inSeason, leagueStandings, placePoints, POINT_TABLE, round1 } from "$lib/stats";
-  import { settled } from "$lib/game";
+  import { settled } from "$lib/settle";
+  import { playedAt } from "$lib/game";
   import { csv, day, download, fileSlug, ordinal, signed, uid } from "$lib/util";
   import { toast } from "$lib/toast.svelte";
   import { reveal, slide } from "$lib/motion";
@@ -132,7 +133,7 @@
   // finished games from the season's dates that aren't in any league yet
   const strays = $derived(
     league
-      ? games.filter((g) => !g.leagueId && league.types.includes(g.type) && settled(g) && inSeason(league, g.clock.startedAt ?? g.createdAt))
+      ? games.filter((g) => !g.leagueId && league.types.includes(g.type) && settled(g) && inSeason(league, playedAt(g)))
       : []
   );
   function linkStrays() {
@@ -159,7 +160,7 @@
           t("players.leagues.csv.wins"),
           t("players.leagues.csv.knockouts"),
           t("players.leagues.csv.net"),
-          ...gs.map((g) => `${new Date(g.clock.startedAt ?? g.createdAt).toISOString().slice(0, 10)} ${g.name}`),
+          ...gs.map((g) => `${new Date(playedAt(g)).toISOString().slice(0, 10)} ${g.name}`),
         ],
         ...standings.rows.map((l, i) => [
           i + 1,
@@ -296,7 +297,7 @@
         <thead>
           <tr>
             <th>{t("players.page.table.player")}</th>
-            {#each standings.games as g, n (g.id)}<th class="num"><a href="/game/{g.id}" title={g.name}>{t("players.leagues.gameCol", { n: String(n + 1) })}</a><span class="block muted font-normal">{day(g.clock.startedAt ?? g.createdAt)}</span></th>{/each}
+            {#each standings.games as g, n (g.id)}<th class="num"><a href="/game/{g.id}" title={g.name}>{t("players.leagues.gameCol", { n: String(n + 1) })}</a><span class="block muted font-normal">{day(playedAt(g))}</span></th>{/each}
             <th class="num">{t("players.leagues.table.points")}</th>
           </tr>
         </thead>

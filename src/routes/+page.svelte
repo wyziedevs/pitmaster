@@ -10,10 +10,11 @@
   import RotateCw from "@lucide/svelte/icons/rotate-cw";
   import Bookmark from "@lucide/svelte/icons/bookmark";
   import { goto } from "$app/navigation";
-  import { getGames, deleteGame, getChipSet, getDefaultChipSetId, saveGame, getTemplates, onOtherTab, lastExport, getLeagues } from "$lib/store";
+  import { getGames, deleteGame, getChipSet, getDefaultChipSetId, saveGame, getTemplates, onOtherTab, lastExport } from "$lib/store";
   import { vault } from "$lib/lock.svelte";
-  import { rerun } from "$lib/game";
-  import { headline, inSeason, leaderboard } from "$lib/stats";
+  import { rerun } from "$lib/rerun";
+  import { playedAt } from "$lib/game";
+  import { headline, leaderboard } from "$lib/stats";
   import { listedKinds, offeredKinds, kind as kindOf } from "$lib/kinds";
   import { ago, amt, day, money, signed } from "$lib/util";
   import { totalCount } from "$lib/chips";
@@ -103,8 +104,6 @@
 
   function runItBack(g: Game) {
     const n = rerun(g);
-    // a rerun only stays in its league while the season is still on
-    if (n.leagueId && !getLeagues().some((l) => l.id === n.leagueId && inSeason(l, Date.now()))) n.leagueId = undefined;
     saveGame(n);
     toast(t("toys.toastRunningBack", { name: g.name }));
     goto(`/game/${n.id}`);
@@ -194,7 +193,7 @@
         {#each shown as g (g.id)}
           <!-- rows can't slide (a table row won't shrink below its text), so they fade -->
           <tr class="max-[600px]:grid max-[600px]:grid-cols-[auto_minmax(0,1fr)] max-[600px]:gap-x-[10px] max-[600px]:gap-y-[2px] max-[600px]:py-2 max-[600px]:border-b-[length:var(--hair)] max-[600px]:border-solid max-[600px]:border-line" in:fade={reveal()} out:fade={leave()}>
-            <td class="mono nowrap max-[600px]:p-0 max-[600px]:border-0">{day(g.clock.startedAt ?? g.createdAt)}</td>
+            <td class="mono nowrap max-[600px]:p-0 max-[600px]:border-0">{day(playedAt(g))}</td>
             <td class="max-[600px]:p-0 max-[600px]:border-0"><span class="pill">{kindOf(g.type).label()}</span> <a href="/game/{g.id}">{g.name}</a></td>
             <td class="res max-[600px]:p-0 max-[600px]:border-0 max-[600px]:col-start-2">{headline(g)}</td>
             <td class="small muted hide-sm">{summary(g)}</td>
@@ -232,7 +231,7 @@
           <li class="grid grid-cols-[20px_minmax(0,1fr)_auto] items-center gap-2 min-h-[30px] py-[2px] border-b-[length:var(--hair)] border-solid border-line">
             <span class="muted inline-flex justify-self-center" aria-hidden="true"><Icon icon={RotateCw} size="1em" /></span>
             <button class="link justify-self-start max-w-full truncate text-left" data-sound="riffle" title={t("toys.quickStart.runBackTitle", { name: g.name })} onclick={() => runItBack(g)}>{g.name}</button>
-            <span class="small muted nowrap">{day(g.clock.startedAt ?? g.createdAt)}</span>
+            <span class="small muted nowrap">{day(playedAt(g))}</span>
           </li>
         {/each}
       </ul>

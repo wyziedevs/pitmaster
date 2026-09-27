@@ -10,7 +10,8 @@
   import { flip as flipRows } from "svelte/animate";
   import { bump, reorder, reveal, slide } from "$lib/motion";
   import { getGame, getGames, getHandles, getLeagues, saveGame, saveHandles } from "$lib/store";
-  import { logEvent, markPaid, netPairs, settled, stillOwed } from "$lib/game";
+  import { logEvent } from "$lib/events";
+  import { markPaid, netPairs, settled, stillOwed } from "$lib/settle";
   import { settings } from "$lib/settings.svelte";
   import {
     leaderboard,

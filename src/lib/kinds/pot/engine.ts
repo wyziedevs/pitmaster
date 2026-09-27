@@ -4,31 +4,10 @@
 // come from them. each player's in and out adds up like a cash game, so
 // settle-up works the same way.
 import type { Game, PotEvent, PotSettings } from "$lib/types";
-import { round2 } from "$lib/util";
+import { round2, splitCents } from "$lib/util";
 
-/** the most a bet can be right now: the pot, or the limit if it's lower */
-export const maxBet = (s: PotSettings, pot: number) => round2(Math.max(0, s.limit > 0 ? Math.min(pot, s.limit) : pot));
-
-/** what matching the pot costs: the pot, up to the limit */
-export const matchCost = (s: PotSettings, pot: number) => round2(s.limit > 0 ? Math.min(pot, s.limit) : pot);
-
-/** split `total` (in cents) over `ids` by `weight`, the odd cents to the first */
-function share(total: number, ids: string[], weight: (id: string) => number) {
-  const cents = Math.round(total * 100);
-  const w = ids.map(weight);
-  const sum = w.reduce((a, x) => a + x, 0);
-  const out: Record<string, number> = {};
-  if (!ids.length || cents <= 0 || sum <= 0) return out;
-  let given = 0;
-  ids.forEach((id, i) => {
-    const c = Math.floor((cents * w[i]) / sum);
-    out[id] = c;
-    given += c;
-  });
-  for (let i = 0; given < cents; i = (i + 1) % ids.length, given++) out[ids[i]]++;
-  for (const id of ids) out[id] = out[id] / 100;
-  return out;
-}
+/** the most a bet (or matching the pot) can be right now: the pot, or the limit if it's lower */
+export const potCap = (s: PotSettings, pot: number) => round2(Math.max(0, s.limit > 0 ? Math.min(pot, s.limit) : pot));
 
 export function potState(game: Game) {
   const s = game.pot!;
@@ -60,11 +39,13 @@ export function potState(game: Game) {
     }
   }
   // once it's over, what's left in the pot goes back out
-  const leftover = game.finished ? share(pot, s.leftover === "back" ? ids.filter((id) => paid[id] > 0) : ids, (id) => (s.leftover === "back" ? paid[id] : 1)) : {};
-  for (const [id, v] of Object.entries(leftover)) taken[id] = round2(taken[id] + v);
+  if (game.finished && pot > 0) {
+    const back = s.leftover === "back" ? ids.filter((id) => paid[id] > 0) : ids;
+    splitCents(pot, back.map((id) => (s.leftover === "back" ? paid[id] : 1))).forEach((v, i) => (taken[back[i]] = round2(taken[back[i]] + v)));
+  }
   // the turn goes round the table from whoever acted last
   const from = last ? ids.indexOf(last) + 1 : 0;
   const turn = ids.length ? ids[from % ids.length] : null;
   const net = Object.fromEntries(ids.map((id) => [id, round2(taken[id] - paid[id])]));
-  return { pot: game.finished ? 0 : pot, left: pot, paid, taken, net, rounds, turn, leftover };
+  return { pot: game.finished ? 0 : pot, left: pot, paid, taken, net, rounds, turn };
 }

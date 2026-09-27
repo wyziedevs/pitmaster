@@ -248,6 +248,17 @@ legend {
   line-height: 1.2;
   text-wrap: balance;
 }
+/* a form's groups: no box, just room under each */
+fieldset {
+  border: 0;
+  margin: 0 0 22px;
+  padding: 0;
+  min-width: 0;
+}
+legend {
+  width: 100%;
+  padding-inline: 0;
+}
 /* a note, a pill or a button riding in a heading is text, not the name */
 :is(h1, h2, h3, legend) :is(.small, .pill, button, kbd) {
   font-family: var(--font);
@@ -256,6 +267,7 @@ legend {
    the text scales with the heading. page titles (h1) stand on their own. */
 h2,
 h3,
+legend,
 .ruled {
   border-bottom: var(--hair) solid var(--line);
 }

@@ -15,7 +15,9 @@
   import { callForReveal, countCall, nextRound, seatAll, seatHashes, startCups, stopCups, takeMail, toRealDice } from "./host";
   import { waitingOn } from "./cups";
   import type { DiceRound, Game } from "$lib/types";
-  import { addPlayer, logEvent, settleUp, HOUSE } from "$lib/game";
+  import { addPlayer } from "$lib/game";
+  import { logEvent, houseName, playerName } from "$lib/events";
+  import { settleUp } from "$lib/settle";
   import { money, ordinal, round2, signed } from "$lib/util";
   import { provide } from "$lib/commands.svelte";
   import { settings } from "$lib/settings.svelte";
@@ -36,7 +38,6 @@
   const d = $derived(game.dice!);
   const st = $derived(diceState(game));
   const started = $derived(!!game.rounds?.length);
-  const pname = (id: string | null | undefined) => game.players.find((p) => p.id === id)?.name ?? "?";
   const alivePlayers = $derived(game.players.filter((p) => st.lives[p.id] > 0));
   const ranked = $derived(
     [...game.players].sort((a, b) => (st.places[a.id] ?? 0) - (st.places[b.id] ?? 0) || st.lives[b.id] - st.lives[a.id])
@@ -242,11 +243,11 @@
 </section>
 
 {#if st.palifico && !game.finished}
-  <div class="warn pop my-[14px]" transition:slide={reveal()}><Icon icon={Megaphone} /> {t("gamePlay.dice.palificoBanner", { name: pname(st.palifico) })}</div>
+  <div class="warn pop my-[14px]" transition:slide={reveal()}><Icon icon={Megaphone} /> {t("gamePlay.dice.palificoBanner", { name: playerName(game, st.palifico) })}</div>
 {/if}
 
 {#if game.finished}
-  <div class="warn pop won my-[14px]"><p class="m-0"><Icon icon={Trophy} /> <b>{pname(game.players.find((p) => st.places[p.id] === 1)?.id)}</b> {t("gamePlay.tournament.winnerSuffix")}</p></div>
+  <div class="warn pop won my-[14px]"><p class="m-0"><Icon icon={Trophy} /> <b>{playerName(game, game.players.find((p) => st.places[p.id] === 1)?.id)}</b> {t("gamePlay.tournament.winnerSuffix")}</p></div>
 {/if}
 
 <div class="cols">
@@ -298,7 +299,7 @@
 
         {#if cups}
           {#if cups.phase === "commit"}
-            <p class="small mt-0"><Icon icon={Smartphone} size="1em" /> {waiting.length ? t("gamePlay.dice.cups.rolling", { names: waiting.map((id) => pname(id)).join(", ") }) : t("gamePlay.dice.cups.dealing")}</p>
+            <p class="small mt-0"><Icon icon={Smartphone} size="1em" /> {waiting.length ? t("gamePlay.dice.cups.rolling", { names: waiting.map((id) => playerName(game, id)).join(", ") }) : t("gamePlay.dice.cups.dealing")}</p>
           {:else if cups.phase === "play"}
             <p class="small mt-0"><Icon icon={Smartphone} size="1em" /> {t("gamePlay.dice.cups.bidAway")}</p>
           {/if}
@@ -329,11 +330,11 @@
               <button data-sound="none" disabled={!count || !bidder || !caller || cups.phase !== "play"}>{call === "liar" ? t("gamePlay.dice.callLiarButton") : t("gamePlay.dice.callSpotButton")}</button>
             </form>
           {:else}
-            <p class="small mt-0"><Icon icon={Smartphone} size="1em" /> {waiting.length ? t("gamePlay.dice.cups.showing", { names: waiting.map((id) => pname(id)).join(", ") }) : t("gamePlay.dice.cups.allShown")}</p>
+            <p class="small mt-0"><Icon icon={Smartphone} size="1em" /> {waiting.length ? t("gamePlay.dice.cups.showing", { names: waiting.map((id) => playerName(game, id)).join(", ") }) : t("gamePlay.dice.cups.allShown")}</p>
             {#if cups.real?.length}
               <div class="row">
                 {#each cups.real as id (id)}
-                  <label><span>{t("gamePlay.dice.cups.realCount", { name: pname(id), faces: t(`gamePlay.dice.faceNames.f${cups.call?.bid.face ?? 2}`) })}</span><input type="number" min="0" step="1" class="w-[80px]" bind:value={realCounts[id]} /></label>
+                  <label><span>{t("gamePlay.dice.cups.realCount", { name: playerName(game, id), faces: t(`gamePlay.dice.faceNames.f${cups.call?.bid.face ?? 2}`) })}</span><input type="number" min="0" step="1" class="w-[80px]" bind:value={realCounts[id]} /></label>
                 {/each}
               </div>
             {/if}
@@ -342,7 +343,7 @@
           {#if waiting.length}
             <p class="small links mt-2">
               <span class="muted">{t("gamePlay.dice.cups.dropped")}</span>
-              {#each waiting as id (id)}<button class="link" data-sound="tap" onclick={() => act(() => toRealDice(game, id))}>{t("gamePlay.dice.cups.toReal", { name: pname(id) })}</button>{/each}
+              {#each waiting as id (id)}<button class="link" data-sound="tap" onclick={() => act(() => toRealDice(game, id))}>{t("gamePlay.dice.cups.toReal", { name: playerName(game, id) })}</button>{/each}
             </p>
           {/if}
         {:else if d.entry === "quick"}
@@ -358,7 +359,7 @@
                   {#each alivePlayers.filter((p) => p.id !== quickLoser) as p (p.id)}<option value={p.id}>{p.name}</option>{/each}
                 </select>
               </label>
-              <button data-sound="none" disabled={!quickWinner} onclick={quickCommit}>{tp("gamePlay.dice.losesDie", 1, { names: pname(quickLoser) })}</button>
+              <button data-sound="none" disabled={!quickWinner} onclick={quickCommit}>{tp("gamePlay.dice.losesDie", 1, { names: playerName(game, quickLoser) })}</button>
             </div>
           {/if}
           {#if d.spotOn !== "off"}
@@ -463,7 +464,7 @@
         <h2>{t("gamePlay.shared.settleUp")}</h2>
         {#if moves.length}
           <SettleMoves bind:game {persist} />
-          {#if d.stakes.mode === "pot"}<p class="small muted">{t("gamePlay.shared.tourneySettleNote", { house: game.house?.trim() || HOUSE() })}</p>{/if}
+          {#if d.stakes.mode === "pot"}<p class="small muted">{t("gamePlay.shared.tourneySettleNote", { house: houseName(game) })}</p>{/if}
         {:else}
           <p class="small muted">{t("gamePlay.shared.square")}</p>
         {/if}

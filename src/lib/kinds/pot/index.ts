@@ -4,10 +4,11 @@
 // a cash game, so settle-up and pay links work the same.
 import type { Game, Player, PotSettings } from "$lib/types";
 import type { Kind, Line } from "../kind";
-import type { Result } from "$lib/stats";
-import { settleNets } from "$lib/game";
+import { resultRow, type Result } from "$lib/stats";
+import { gameDate } from "$lib/game";
+import { settleNets } from "$lib/settle";
 import { pad, settleLines } from "$lib/report";
-import { csv, money, nameKey, signed } from "$lib/util";
+import { csv, money, signed } from "$lib/util";
 import { id, list, maybe, num, obj, oneOf } from "$lib/shape";
 import { prefs } from "$lib/settings.svelte";
 import { potState } from "./engine";
@@ -23,7 +24,7 @@ export const POT_DEFAULTS = (preset: PotSettings["preset"] = "inbetween"): PotSe
 
 const settings = (s: unknown) => obj(s) && oneOf("inbetween", "guts", "bourre", "pigs", "custom")(s.preset) && num(s.ante) && s.ante >= 0 && num(s.limit) && s.limit >= 0 && oneOf("split", "back")(s.leftover);
 const event = (e: unknown) =>
-  obj(e) && oneOf("ante", "pay", "match", "take")(e.kind) && list(id)(e.players) && num(e.amount) && e.amount >= 0 && num(e.at) && maybe(oneOf("win", "lose", "post"))(e.note);
+  obj(e) && oneOf("ante", "pay", "match", "take")(e.kind) && list(id)(e.players) && num(e.amount) && e.amount >= 0 && num(e.at) && maybe(oneOf("win", "lose", "post", "pot"))(e.note);
 
 export const presetName = (g: Game) => t(`common.kinds.pot.presets.${g.pot!.preset}`);
 
@@ -37,23 +38,8 @@ export function setupLine(game: Game) {
 function results(game: Game): Result[] {
   if (!game.finished || !game.pot) return [];
   const st = potState(game);
-  const base = { gameId: game.id, gameName: game.name, type: game.type, at: game.clock.startedAt ?? game.createdAt };
-  // no places in a pot game: biggest winner first
-  return game.players.map((p) => ({
-    ...base,
-    key: nameKey(p.name),
-    name: p.name.trim(),
-    cost: st.paid[p.id],
-    won: st.taken[p.id],
-    net: st.net[p.id],
-    place: null,
-    entrants: game.players.length,
-    itm: st.net[p.id] > 0,
-    kos: 0,
-    hours: null,
-    highHand: 0,
-    sevenTwo: 0,
-  }));
+  // no places in a pot game
+  return game.players.map((p) => resultRow(game, p, st.paid[p.id], st.taken[p.id], { itm: st.net[p.id] > 0 }));
 }
 
 /** like a cash game: what each took out less what each put in, player to player */
@@ -76,7 +62,7 @@ function recap(game: Game) {
 
 function gameCsv(game: Game) {
   const st = potState(game);
-  const date = new Date(game.clock.startedAt ?? game.createdAt).toISOString().slice(0, 10);
+  const date = gameDate(game);
   return csv([
     [t("players.report.csv.date"), t("players.report.csv.game"), t("players.report.csv.player"), t("players.report.csv.paidIn"), t("gamePlay.pot.csvTaken"), t("players.report.csv.net")],
     ...game.players.map((p) => [date, game.name, p.name, st.paid[p.id], st.taken[p.id], st.net[p.id]]),

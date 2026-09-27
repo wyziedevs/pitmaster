@@ -14,39 +14,11 @@
   import Ticket from "@lucide/svelte/icons/ticket";
   import type { Game } from "$lib/types";
   import * as clk from "$lib/clock";
-  import {
-    addPlayer,
-    bust,
-    unbust,
-    tourneyStats,
-    logEvent,
-    flash,
-    creditKo,
-    koCount,
-    paidFor,
-    seatsDrawn,
-    seatLabel,
-    tableCounts,
-    bountyBook,
-    envelopesLeft,
-    mysteryStartsAt,
-    fitEnvelopes,
-    setEnvelopes,
-    settleUp,
-    HOUSE,
-    shootout,
-    drawFinalTable,
-    drawBracket,
-    decideMatch,
-    lostMatch,
-    undoMatch,
-    matchesPlayed,
-    currentRound,
-    roundName,
-    bracketSize,
-    payGroups,
-    placeRange,
-  } from "$lib/game";
+  import { addPlayer, bust, unbust, tourneyStats, creditKo, koCount, paidFor, bountyBook, envelopesLeft, mysteryStartsAt, fitEnvelopes, setEnvelopes } from "$lib/game";
+  import { logEvent, flash, houseName, playerName } from "$lib/events";
+  import { settleUp } from "$lib/settle";
+  import { seatsDrawn, seatLabel, tableCounts, shootout, drawFinalTable } from "$lib/seats";
+  import { drawBracket, decideMatch, lostMatch, undoMatch, matchesPlayed, currentRound, roundName, bracketSize, payGroups, placeRange } from "$lib/bracket";
   import { annotate } from "$lib/blinds";
   import { isLimit, isStud, gameLine, variantName } from "$lib/variants";
   import { distribute } from "$lib/chips";
@@ -131,10 +103,9 @@
   const mystery = $derived(!!t.bounty && t.bountyKind === "mystery");
   const left = $derived(envelopesLeft(game));
   const openedList = $derived.by(() => {
-    const name = (id: string | null) => game.players.find((p) => p.id === id)?.name ?? "?";
     return [
-      ...(game.kos ?? []).filter((k) => k.by && k.prize !== undefined).map((k) => ({ at: k.at, name: name(k.by), prize: k.prize! })),
-      ...Object.entries(game.mystery?.own ?? {}).map(([id, prize]) => ({ at: game.endedAt ?? 0, name: name(id), prize })),
+      ...(game.kos ?? []).filter((k) => k.by && k.prize !== undefined).map((k) => ({ at: k.at, name: playerName(game, k.by), prize: k.prize! })),
+      ...Object.entries(game.mystery?.own ?? {}).map(([id, prize]) => ({ at: game.endedAt ?? 0, name: playerName(game, id), prize })),
     ].sort((a, b) => b.at - a.at);
   });
   let editingEnvelopes = $state(false);
@@ -289,7 +260,7 @@
       ...(canDraw ? [{ id: "t:bracket", label: game.matches ? tt("gamePlay.bracket.redraw") : tt("gamePlay.bracket.draw"), group: tt("gamePlay.shared.groupThisGame"), keywords: "heads up matches seeds", run: drawTheBracket }] : []),
       ...(game.matches ?? []).flatMap((m, i) =>
         !m.winner && m.a && m.b
-          ? [m.a, m.b].map((w) => ({ id: `t:match:${i}:${w}`, label: tt("gamePlay.bracket.cmdBeats", { winner: game.players.find((p) => p.id === w)?.name ?? "?", loser: game.players.find((p) => p.id === (w === m.a ? m.b : m.a))?.name ?? "?" }), group: tt("gamePlay.shared.groupPlayers"), keywords: "match won heads up", run: () => (play("bust"), pickWinner(i, w)) }))
+          ? [m.a, m.b].map((w) => ({ id: `t:match:${i}:${w}`, label: tt("gamePlay.bracket.cmdBeats", { winner: playerName(game, w), loser: playerName(game, w === m.a ? m.b : m.a) }), group: tt("gamePlay.shared.groupPlayers"), keywords: "match won heads up", run: () => (play("bust"), pickWinner(i, w)) }))
           : []
       ),
       ...(bracket ? [] : alive).map((p) => ({ id: `t:bust:${p.id}`, label: tt("gamePlay.tournament.bustCommandLabel", { name: p.name }), group: tt("gamePlay.shared.groupPlayers"), keywords: "out eliminate", run: () => (play("bust"), act(() => bust(game, p.id))) })),
@@ -583,7 +554,7 @@
         <h2>{tt("gamePlay.shared.settleUp")}</h2>
         {#if moves.length}
           <SettleMoves bind:game {persist} />
-          {#if game.finished}<p class="small muted">{tt("gamePlay.shared.tourneySettleNote", { house: game.house?.trim() || HOUSE() })}</p>{/if}
+          {#if game.finished}<p class="small muted">{tt("gamePlay.shared.tourneySettleNote", { house: houseName(game) })}</p>{/if}
         {:else}
           <p class="small muted">{tt("gamePlay.shared.square")}</p>
         {/if}

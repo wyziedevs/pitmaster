@@ -21,7 +21,9 @@
   import type { EventKind, Game, Level } from "$lib/types";
   import { cashGameNow, cashStakes, gameLine, isLimit, isStud, rotationName, stakesText, variant, variantName } from "$lib/variants";
   import { derive, cashElapsed } from "$lib/clock";
-  import { tourneyStats, cashStats, cashRake, seatLabel, tableCounts, paidFor, bountyBook, envelopesLeft, mysteryStartsAt, sideStats, shootout, currentRound, roundName, payGroups, placeRange } from "$lib/game";
+  import { tourneyStats, cashStats, cashRake, paidFor, bountyBook, envelopesLeft, mysteryStartsAt, sideStats } from "$lib/game";
+  import { seatLabel, tableCounts, shootout } from "$lib/seats";
+  import { currentRound, roundName, payGroups, placeRange } from "$lib/bracket";
   import { amt, clock, clockFace, duration, money, ordinal, timeOfDay } from "$lib/util";
   import { play, sounds, resumeAudio, audioReady, speak } from "$lib/sound";
   import { hostPrefs, prefs } from "$lib/settings.svelte";

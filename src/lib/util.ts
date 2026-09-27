@@ -111,6 +111,35 @@ export const near = (a: number, b: number) => Math.abs(a - b) < 1e-6;
 export const isMultiple = (x: number, unit: number) => unit > 0 && near(Math.round(x / unit) * unit, x);
 export const round2 = (n: number) => Math.round(n * 100) / 100;
 
+/** the positive numbers in a list typed by hand: "50, 30 20" */
+export const positives = (text: string) =>
+  text
+    .split(/[\s,]+/)
+    .map(Number)
+    .filter((n) => n > 0);
+
+/** `total` split by weight (evenly unless weighted), to the cent: the odd cents go to the first */
+export function splitCents(total: number, weights: number[]) {
+  const cents = Math.round(Math.abs(total) * 100);
+  const sum = weights.reduce((a, w) => a + w, 0);
+  if (!cents || sum <= 0) return weights.map(() => 0);
+  const out = weights.map((w) => Math.floor((cents * w) / sum));
+  for (let i = 0, left = cents - out.reduce((a, c) => a + c, 0); left > 0; i = (i + 1) % out.length, left--) out[i]++;
+  return out.map((c) => (Math.sign(total) * c) / 100);
+}
+
+/** a copy in random order */
+export function shuffle<T>(xs: T[]) {
+  const a = [...xs];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+/** 1 to n */
+export const range = (n: number) => Array.from({ length: n }, (_, i) => i + 1);
+
 /** "3rd", "第3", "3º"... a finishing place, in whichever language is set */
 export function ordinal(n: number) {
   switch (settings.language) {

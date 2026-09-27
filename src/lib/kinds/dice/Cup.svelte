@@ -14,6 +14,7 @@
   import { token } from "$lib/crypto";
   import { money, ordinal, round2, signed } from "$lib/util";
   import { t, tp } from "$lib/i18n";
+  import { playerName } from "$lib/events";
 
   let { game, code, seat, seatKey, status = "" }: { game: Game; code: string; seat: string; seatKey: string; status?: string } = $props();
 
@@ -170,7 +171,7 @@
           {#if !motionAsked && typeof DeviceMotionEvent !== "undefined" && "requestPermission" in DeviceMotionEvent}<button class="link small" onclick={allowShake}>{t("tv.cup.allowShake")}</button>{/if}
         {:else}
           <p class="big">{t("tv.cup.rolled")}</p>
-          {#if waiting.length}<p class="small">{t("tv.cup.waitingFor", { names: waiting.map((id) => game.players.find((p) => p.id === id)?.name ?? "?").join(", ") })}</p>{/if}
+          {#if waiting.length}<p class="small">{t("tv.cup.waitingFor", { names: waiting.map((id) => playerName(game, id)).join(", ") })}</p>{/if}
         {/if}
       </div>
     {:else}

@@ -1,5 +1,5 @@
 import type { GameChip, Level } from "./types";
-import { isMultiple, near } from "./util";
+import { isMultiple, near, round2 } from "./util";
 import { smallestNeeded } from "./chips";
 import { isStud, studAmounts, variant } from "./variants";
 
@@ -150,4 +150,26 @@ export function payoutAmounts(pool: number, pcts: number[], round = 1) {
   const diff = pool - amts.reduce((s, a) => s + a, 0);
   if (amts.length) amts[0] = +(amts[0] + diff).toFixed(2);
   return amts;
+}
+
+/**
+ * a place table spread over the rounds: 3rd and 4th share their two payouts,
+ * 5th to 8th their four, and so on. shares are in the payout rounding, and
+ * what that leaves over (and any places no one can finish in) goes to 1st,
+ * like payoutAmounts, so it still adds up to the pool
+ */
+export function roundShares(table: number[], entrants: number, unit = 1) {
+  const out = table.slice(0, 2);
+  let rest = 0;
+  for (let lo = 3; lo <= entrants; lo = lo * 2 - 1) {
+    const hi = Math.min(lo * 2 - 2, entrants);
+    const sum = table.slice(lo - 1, hi).reduce((a, v) => a + v, 0);
+    const each = round2(Math.floor(sum / (hi - lo + 1) / unit + 1e-9) * unit);
+    if (each <= 0) break;
+    for (let i = lo - 1; i < hi; i++) out[i] = each;
+    rest += sum - each * (hi - lo + 1);
+  }
+  rest += table.slice(out.length).reduce((a, v) => a + v, 0);
+  if (out.length) out[0] = round2(out[0] + rest);
+  return out;
 }

@@ -1,18 +1,17 @@
 // what the dealer screen does to a lives game: a round goes in (and the room
 // hears about it), or the last one comes back out.
 import type { Game, LivesRound } from "$lib/types";
-import { flash, logEvent } from "$lib/game";
+import { flash, logEvent, playerName } from "$lib/events";
 import { ordinal } from "$lib/util";
 import { t, tp } from "$lib/i18n";
 import { livesState } from "./engine";
 
-const name = (game: Game, id: string) => game.players.find((p) => p.id === id)?.name ?? "?";
 
 /** what a round did, in a sentence: "Bo loses a life. Cy loses two." */
 export function roundText(game: Game, r: LivesRound) {
   return Object.entries(r.lost)
     .filter(([, n]) => n > 0)
-    .map(([id, n]) => tp("gamePlay.lives.losesLives", n, { name: name(game, id) }))
+    .map(([id, n]) => tp("gamePlay.lives.losesLives", n, { name: playerName(game, id) }))
     .join(" ");
 }
 
@@ -56,7 +55,7 @@ export function addLifeRound(game: Game, round: LivesRound) {
     logEvent(game, w);
     flash(game, w, "win");
   } else if (out.length) {
-    flash(game, `${text} ${tp("gamePlay.lives.outOfLives", out.length, { names: out.map((id) => name(game, id)).join(", "), place: ordinal(after.places[out[0]] ?? 0) })}`, "bust");
+    flash(game, `${text} ${tp("gamePlay.lives.outOfLives", out.length, { names: out.map((id) => playerName(game, id)).join(", "), place: ordinal(after.places[out[0]] ?? 0) })}`, "bust");
   } else flash(game, text, "chips");
 }
 

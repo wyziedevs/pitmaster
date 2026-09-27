@@ -6,7 +6,7 @@
 // every time.
 import type { DiceStakes } from "$lib/types";
 import { defaultPayouts, payoutAmounts } from "$lib/blinds";
-import { round2 } from "$lib/util";
+import { round2, splitCents } from "$lib/util";
 
 export interface LivesEvent {
   /** lives each player gained (+) or lost (-) */
@@ -22,11 +22,10 @@ export interface LivesEvent {
  *           players out in the same event share the best of their places
  *  history: each event with everyone's lives before and after it
  */
-export function standing(ids: string[], start: number, events: LivesEvent[], max = start) {
+function standing(ids: string[], start: number, events: LivesEvent[]) {
   const lives: Record<string, number> = {};
   const lost: Record<string, number> = {};
   const places: Record<string, number | null> = {};
-  const outAt: Record<string, number> = {};
   for (const id of ids) {
     lives[id] = start;
     lost[id] = 0;
@@ -39,20 +38,32 @@ export function standing(ids: string[], start: number, events: LivesEvent[], max
     for (const [id, d] of Object.entries(e.effect)) {
       if (!(id in lives) || lives[id] <= 0) continue;
       if (d < 0) lost[id] += -d;
-      lives[id] = Math.max(0, Math.min(max, lives[id] + d));
+      lives[id] = Math.max(0, Math.min(start, lives[id] + d));
     }
     const gone = alive.filter((id) => lives[id] === 0);
     // out together: they share the best place among them
-    for (const id of gone) {
-      places[id] = alive.length - gone.length + 1;
-      outAt[id] = e.at;
-    }
+    for (const id of gone) places[id] = alive.length - gone.length + 1;
     history.push({ effect: e.effect, before, after: { ...lives }, at: e.at });
   }
   const left = ids.filter((id) => lives[id] > 0);
   if (left.length === 1 && ids.length > 1) places[left[0]] = 1;
-  return { lives, lost, places, outAt, history };
+  return { lives, lost, places, history };
 }
+
+/**
+ * a last-one-standing game from its events: where everyone stands (above),
+ * who's still in, whether it's over, and the money (below). `rounds` say who
+ * won each round and what everyone lost in it, for money paid round by round.
+ */
+export function lastStanding(ids: string[], start: number, events: LivesEvent[], stakes: DiceStakes, rounds: { winner?: string; lost: Record<string, number> }[]) {
+  const st = standing(ids, start, events);
+  const alive = ids.filter((id) => st.lives[id] > 0);
+  return { ...st, alive, money: stakeMoney(stakes, ids, st.lost, st.places, rounds), over: alive.length <= 1 && ids.length > 1 };
+}
+export type Standing = ReturnType<typeof lastStanding>;
+
+/** what a player is up (or down) so far */
+export const netOf = (st: Standing, id: string) => round2((st.money.won[id] ?? 0) - (st.money.paid[id] ?? 0));
 
 /**
  * what each player paid in and took home in a lives game.
@@ -62,7 +73,7 @@ export function standing(ids: string[], start: number, events: LivesEvent[], max
  *          pot the last one standing takes, or straight to whoever won that
  *          round (every life the others lost in it)
  */
-export function stakeMoney(
+function stakeMoney(
   s: DiceStakes,
   ids: string[],
   lost: Record<string, number>,
@@ -83,7 +94,7 @@ export function stakeMoney(
     for (const [place, who] of Object.entries(at)) {
       const from = Number(place);
       const share = payouts.slice(from - 1, from - 1 + who.length).reduce((a, v) => a + v, 0);
-      evenly(share, who).forEach((v, i) => (won[who[i]] = v));
+      splitCents(share, who.map(() => 1)).forEach((v, i) => (won[who[i]] = v));
     }
   } else {
     for (const id of ids) paid[id] = round2((lost[id] ?? 0) * s.perDie);
@@ -91,7 +102,7 @@ export function stakeMoney(
       pool = round2(Object.values(paid).reduce((a, v) => a + v, 0));
       // players out together at the very end share it
       const champs = ids.filter((id) => places[id] === 1);
-      evenly(pool, champs).forEach((v, i) => (won[champs[i]] = v));
+      splitCents(pool, champs.map(() => 1)).forEach((v, i) => (won[champs[i]] = v));
     } else
       for (const r of rounds) {
         if (!r.winner || !(r.winner in won)) continue;
@@ -100,12 +111,4 @@ export function stakeMoney(
       }
   }
   return { paid, won, pool, payouts };
-}
-
-/** `total` split evenly over `who`, to the cent: the odd cents go to the first */
-function evenly(total: number, who: string[]) {
-  if (!who.length) return [];
-  const cents = Math.round(total * 100);
-  const each = Math.floor(cents / who.length);
-  return who.map((_, i) => (each + (i < cents - each * who.length ? 1 : 0)) / 100);
 }

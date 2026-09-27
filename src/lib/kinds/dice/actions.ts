@@ -2,13 +2,12 @@
 // told to the room), or the last one comes back out. everything else is
 // worked out from the rounds (engine.ts).
 import type { DiceRound, Game } from "$lib/types";
-import { flash, logEvent } from "$lib/game";
+import { flash, logEvent, playerName } from "$lib/events";
 import { ordinal } from "$lib/util";
 import { t, tp } from "$lib/i18n";
 import { diceState } from "./engine";
 
-const name = (game: Game, id: string | undefined) => game.players.find((p) => p.id === id)?.name ?? "?";
-const names = (game: Game, ids: string[]) => ids.map((id) => name(game, id)).join(", ");
+const names = (game: Game, ids: string[]) => ids.map((id) => playerName(game, id)).join(", ");
 
 /** "7 fours" */
 export const faceCount = (count: number, face: number) => tp(`gamePlay.dice.faceCount.f${face}`, count);
@@ -20,8 +19,8 @@ export function roundText(game: Game, r: DiceRound) {
   const result = [lost, gained].filter(Boolean).join(" ");
   if (!r.call || !r.bid || r.actual === undefined) return result;
   const bid = faceCount(r.bid.count, r.bid.face);
-  if (r.call === "liar") return t("gamePlay.dice.liarText", { caller: name(game, r.caller), bid, actual: String(r.actual), result });
-  return t(r.actual === r.bid.count ? "gamePlay.dice.spotRightText" : "gamePlay.dice.spotWrongText", { caller: name(game, r.caller), bid, actual: String(r.actual), result });
+  if (r.call === "liar") return t("gamePlay.dice.liarText", { caller: playerName(game, r.caller), bid, actual: String(r.actual), result });
+  return t(r.actual === r.bid.count ? "gamePlay.dice.spotRightText" : "gamePlay.dice.spotWrongText", { caller: playerName(game, r.caller), bid, actual: String(r.actual), result });
 }
 
 /**
@@ -52,7 +51,7 @@ export function addRound(game: Game, r: DiceRound) {
     const place = after.places[out[0]] ?? 0;
     flash(game, `${r.call ? `${text} · ` : ""}${tp("gamePlay.dice.outOfDice", out.length, { names: names(game, out), place: ordinal(place) })}`, "bust");
   } else if (r.call) flash(game, text, "liar");
-  else if (after.palifico) flash(game, t("gamePlay.dice.palificoFlash", { name: name(game, after.palifico) }), "note");
+  else if (after.palifico) flash(game, t("gamePlay.dice.palificoFlash", { name: playerName(game, after.palifico) }), "note");
   else flash(game, text, "liar");
 }
 

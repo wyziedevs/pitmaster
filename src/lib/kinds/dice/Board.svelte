@@ -16,13 +16,13 @@
   import { stakesLine } from "./index";
   import { waitingOn } from "./cups";
   import { t, tp } from "$lib/i18n";
+  import { playerName } from "$lib/events";
 
   let { game, narrow = false }: { game: Game; narrow?: boolean } = $props();
 
   const d = $derived(game.dice!);
   const st = $derived(diceState(game));
   const showMoney = $derived(prefs().tvMoney !== false);
-  const pname = (id: string | null | undefined) => game.players.find((p) => p.id === id)?.name ?? "";
   const champ = $derived(game.finished ? game.players.find((p) => st.places[p.id] === 1) : null);
   const byPlace = $derived([...game.players].sort((a, b) => (st.places[a.id] ?? 99) - (st.places[b.id] ?? 99)));
   // the final standings: ten at most, down two columns past five
@@ -49,7 +49,7 @@
 
 <div class="dice-board" class:narrow>
   {#if st.palifico && !champ}
-    <div class="pal" in:fade={reveal()}><span class="k">{t("tv.dice.palifico")}</span> {t("tv.dice.palificoLine", { name: pname(st.palifico) })}</div>
+    <div class="pal" in:fade={reveal()}><span class="k">{t("tv.dice.palifico")}</span> {t("tv.dice.palificoLine", { name: playerName(game, st.palifico, "") })}</div>
   {/if}
 
   {#if champ}
@@ -90,7 +90,7 @@
           <span class="v fig">{st.total}</span>
           <span class="sub">{t("tv.dice.round", { n: String((game.rounds?.length ?? 0) + 1) })}</span>
           {#if cups}
-            <span class="sub">{cups.phase === "commit" ? (waiting.length ? t("tv.cup.rollingFor", { names: waiting.map((id) => pname(id)).join(", ") }) : t("tv.cup.allIn")) : cups.phase === "play" ? t("tv.cup.bidding") : t("tv.cup.showing")}</span>
+            <span class="sub">{cups.phase === "commit" ? (waiting.length ? t("tv.cup.rollingFor", { names: waiting.map((id) => playerName(game, id, "")).join(", ") }) : t("tv.cup.allIn")) : cups.phase === "play" ? t("tv.cup.bidding") : t("tv.cup.showing")}</span>
           {/if}
         </div>
         <div class="stat">
