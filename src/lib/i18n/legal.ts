@@ -136,7 +136,7 @@ export interface LegalDict {
     intro: { pre: string; post: string };
     what: { title: string; p1: string };
     yourChoice: { title: string; p1: string };
-    legalGame: { title: string; p1: string; p2: string };
+    legalGame: { title: string; p1: string; p2: string; p3: string };
     data: { title: string; p1: string; p2: string; p3: string };
     math: { title: string; p1: string };
     fair: { title: string; p1: string };
@@ -153,7 +153,7 @@ export interface LegalDict {
 
 export const legal: Record<Lang, LegalDict> = {
   en: {
-    lastUpdated: "Last updated September 26, 2026",
+    lastUpdated: "Last updated September 27, 2026",
     changesTitle: "Changes",
     contactTitle: "Contact",
     nav: { privacyPolicy: "Privacy Policy", termsOfUse: "Terms of Use" },
@@ -365,6 +365,7 @@ export const legal: Record<Lang, LegalDict> = {
         title: "Running a Legal Game",
         p1: "Poker laws vary a lot from place to place. Some places don't allow real-money poker outside licensed rooms, and many forbid anyone but a licensed operator from taking a rake, a seat fee or any other cut. You're responsible for making sure any game you run with PitMaster, and every setting you use in it, is legal where you play, that you hold any license it needs, that any taxes it involves are reported and paid, and that everyone at the table is old enough to be there.",
         p2: "PitMaster isn't certified or approved by any gaming regulator. If you run a licensed or commercial room, it's up to you whether your rules allow it, and it doesn't replace any records you're required to keep.",
+        p3: "Casino games like blackjack, roulette and craps played for money or prizes, and raffles, are regulated in many places, even at a fundraiser, and often need a permit. PitMaster only keeps the count: the chips sold, what came back and who won the raffle.",
       },
       data: {
         title: "Your Data",
@@ -414,7 +415,7 @@ export const legal: Record<Lang, LegalDict> = {
     },
   },
   zh: {
-    lastUpdated: "最近更新于 2026 年 9 月 26 日",
+    lastUpdated: "最近更新于 2026 年 9 月 27 日",
     changesTitle: "变更",
     contactTitle: "联系我们",
     nav: { privacyPolicy: "隐私政策", termsOfUse: "使用条款" },
@@ -623,6 +624,7 @@ export const legal: Record<Lang, LegalDict> = {
         title: "合法地开局",
         p1: "各地的扑克法律差异很大。有些地方不允许在持牌场所之外进行真钱扑克,许多地方也禁止除持牌运营商以外的任何人抽取抽水、座位费或其他任何形式的抽成。你需要自行确保,你用 PitMaster 开的每一局牌局,以及你在其中使用的每一项设置,在你所在地都是合法的,你持有所需的任何许可,相关税款已如实申报并缴纳,并且桌上每个人都达到了法定年龄。",
         p2: "PitMaster 没有获得任何博彩监管机构的认证或批准。如果你运营的是持牌或商业场所,是否允许使用它取决于你自己的规则,它也不能替代你依法必须保留的任何记录。",
+        p3: "二十一点、轮盘、花旗骰这类以金钱或奖品为输赢的赌场游戏,以及抽奖,在许多地方都受到监管,即使是募款活动也一样,而且往往需要许可。PitMaster 只负责记数:卖出的筹码、换回的筹码,以及谁中了奖。",
       },
       data: {
         title: "你的数据",
@@ -671,7 +673,7 @@ export const legal: Record<Lang, LegalDict> = {
     },
   },
   hi: {
-    lastUpdated: "आखिरी बार 26 सितंबर 2026 को अपडेट किया गया",
+    lastUpdated: "आखिरी बार 27 सितंबर 2026 को अपडेट किया गया",
     changesTitle: "बदलाव",
     contactTitle: "संपर्क करें",
     nav: { privacyPolicy: "गोपनीयता नीति", termsOfUse: "उपयोग की शर्तें" },
@@ -880,6 +882,7 @@ export const legal: Record<Lang, LegalDict> = {
         title: "एक कानूनी गेम चलाना",
         p1: "पोकर से जुड़े कानून जगह-जगह काफी अलग होते हैं. कुछ जगहों पर लाइसेंस वाले स्थानों के बाहर रियल-मनी पोकर की इजाज़त नहीं है, और कई जगहों पर लाइसेंस वाले ऑपरेटर के अलावा किसी और को रेक, सीट फीस या किसी भी तरह का कट लेने की मनाही है. यह सुनिश्चित करना आपकी ज़िम्मेदारी है कि PitMaster से चलाई गई कोई भी गेम, और उसमें इस्तेमाल की गई हर सेटिंग, आपके यहां कानूनी हो, आपके पास इसके लिए ज़रूरी कोई भी लाइसेंस हो, इससे जुड़ा कोई भी टैक्स सही तरीके से दिखाया और चुकाया गया हो, और मेज़ पर मौजूद हर कोई इसके लिए उम्र में पूरा हो.",
         p2: "PitMaster किसी भी गेमिंग रेगुलेटर से प्रमाणित या मंज़ूर नहीं है. अगर आप कोई लाइसेंस वाला या कमर्शियल स्थान चलाते हैं, तो यह आप पर निर्भर है कि आपके नियम इसे इजाज़त देते हैं या नहीं, और यह आपके लिए ज़रूरी किसी भी रिकॉर्ड की जगह नहीं ले सकता.",
+        p3: "पैसे या इनाम के लिए खेले जाने वाले ब्लैकजैक, रूलेट और क्रैप्स जैसे कैसीनो गेम, और रैफ़ल, कई जगहों पर नियमों के दायरे में आते हैं, फ़ंडरेज़र में भी, और अक्सर इनके लिए परमिट चाहिए होता है. PitMaster सिर्फ़ गिनती रखता है: बेचे गए चिप्स, जो वापस आए और रैफ़ल किसने जीता.",
       },
       data: {
         title: "आपका डेटा",
@@ -928,7 +931,7 @@ export const legal: Record<Lang, LegalDict> = {
     },
   },
   es: {
-    lastUpdated: "Última actualización: 26 de septiembre de 2026",
+    lastUpdated: "Última actualización: 27 de septiembre de 2026",
     changesTitle: "Cambios",
     contactTitle: "Contacto",
     nav: { privacyPolicy: "Política de Privacidad", termsOfUse: "Términos de Uso" },
@@ -1137,6 +1140,7 @@ export const legal: Record<Lang, LegalDict> = {
         title: "Llevar una Partida Legal",
         p1: "Las leyes sobre el póquer varían mucho de un lugar a otro. Algunos lugares no permiten el póquer con dinero real fuera de salas con licencia, y muchos prohíben que nadie que no sea un operador con licencia cobre un rake, una tarifa por asiento o cualquier otro corte. Eres responsable de asegurarte de que cualquier partida que lleves con PitMaster, y cada ajuste que uses en ella, sea legal donde juegas, de que tengas cualquier licencia que se requiera, de que se declaren y paguen los impuestos que correspondan, y de que todos en la mesa tengan la edad suficiente para estar ahí.",
         p2: "PitMaster no está certificado ni aprobado por ningún regulador de juegos. Si diriges una sala con licencia o comercial, depende de ti si tus reglas lo permiten, y no reemplaza ningún registro que estés obligado a llevar.",
+        p3: "Los juegos de casino como el blackjack, la ruleta y los dados jugados por dinero o premios, y las rifas, están regulados en muchos lugares, incluso en un evento benéfico, y a menudo necesitan un permiso. PitMaster solo lleva la cuenta: las fichas vendidas, lo que volvió y quién ganó la rifa.",
       },
       data: {
         title: "Tus Datos",
@@ -1185,7 +1189,7 @@ export const legal: Record<Lang, LegalDict> = {
     },
   },
   fr: {
-    lastUpdated: "Dernière mise à jour le 26 septembre 2026",
+    lastUpdated: "Dernière mise à jour le 27 septembre 2026",
     changesTitle: "Modifications",
     contactTitle: "Contact",
     nav: { privacyPolicy: "Politique de Confidentialité", termsOfUse: "Conditions d'Utilisation" },
@@ -1394,6 +1398,7 @@ export const legal: Record<Lang, LegalDict> = {
         title: "Mener une Partie Légale",
         p1: "Les lois sur le poker varient beaucoup d'un endroit à l'autre. Certains endroits n'autorisent pas le poker en argent réel en dehors de salles agréées, et beaucoup interdisent à quiconque n'est pas un opérateur agréé de prélever un rake, un droit de table ou toute autre commission. Vous êtes responsable de vous assurer que toute partie que vous menez avec PitMaster, et chaque réglage que vous y utilisez, est légal là où vous jouez, que vous détenez toute licence requise, que les impôts éventuels sont déclarés et payés, et que tout le monde à la table a l'âge requis pour y être.",
         p2: "PitMaster n'est certifié ni approuvé par aucun régulateur de jeux. Si vous gérez une salle agréée ou commerciale, c'est à vous de voir si vos règles l'autorisent, et il ne remplace aucun registre que vous êtes tenu de conserver.",
+        p3: "Les jeux de casino comme le blackjack, la roulette et le craps joués pour de l'argent ou des lots, et les tombolas, sont réglementés dans beaucoup d'endroits, même lors d'une collecte de fonds, et demandent souvent une autorisation. PitMaster ne fait que tenir le compte : les jetons vendus, ce qui est revenu et qui a gagné la tombola.",
       },
       data: {
         title: "Vos Données",
@@ -1442,7 +1447,7 @@ export const legal: Record<Lang, LegalDict> = {
     },
   },
   ar: {
-    lastUpdated: "آخر تحديث في 26 سبتمبر 2026",
+    lastUpdated: "آخر تحديث في 27 سبتمبر 2026",
     changesTitle: "التغييرات",
     contactTitle: "التواصل",
     nav: { privacyPolicy: "سياسة الخصوصية", termsOfUse: "شروط الاستخدام" },
@@ -1651,6 +1656,7 @@ export const legal: Record<Lang, LegalDict> = {
         title: "إدارة لعبة قانونية",
         p1: "تتفاوت قوانين البوكر كثيراً من مكان إلى آخر. بعض الأماكن لا تسمح بالبوكر بأموال حقيقية خارج القاعات المرخّصة، ويحظر كثير منها على أي شخص غير المشغّل المرخّص أخذ عمولة أو رسم مقعد أو أي اقتطاع آخر. أنت المسؤول عن التأكد من أن أي لعبة تديرها باستخدام PitMaster، وكل إعداد تستخدمه فيها، قانونية في المكان الذي تلعب فيه، وأنك تحمل أي ترخيص تتطلبه، وأن أي ضرائب تخصها مُصرَّح عنها ومدفوعة، وأن كل من على الطاولة بلغ السن القانونية.",
         p2: "لم يحصل PitMaster على شهادة أو موافقة من أي جهة تنظيمية للمقامرة. إذا كنت تدير قاعة مرخّصة أو تجارية، فيعود إليك تحديد ما إذا كانت قواعدك تسمح باستخدامه، وهو لا يحل محل أي سجلات مُلزَم بالاحتفاظ بها.",
+        p3: "ألعاب الكازينو مثل البلاك جاك والروليت والكرابس حين تُلعب مقابل مال أو جوائز، وكذلك السحوبات، منظَّمة في أماكن كثيرة، حتى في فعاليات جمع التبرعات، وكثيراً ما تحتاج إلى تصريح. PitMaster يكتفي بالعدّ: الرقائق المبيعة، وما عاد منها، ومن ربح السحب.",
       },
       data: {
         title: "بياناتك",
@@ -1699,7 +1705,7 @@ export const legal: Record<Lang, LegalDict> = {
     },
   },
   bn: {
-    lastUpdated: "সর্বশেষ আপডেট ২৬ সেপ্টেম্বর ২০২৬",
+    lastUpdated: "সর্বশেষ আপডেট ২৭ সেপ্টেম্বর ২০২৬",
     changesTitle: "পরিবর্তন",
     contactTitle: "যোগাযোগ",
     nav: { privacyPolicy: "গোপনীয়তা নীতি", termsOfUse: "ব্যবহারের শর্তাবলী" },
@@ -1908,6 +1914,7 @@ export const legal: Record<Lang, LegalDict> = {
         title: "একটি বৈধ গেম চালানো",
         p1: "পোকার সংক্রান্ত আইন জায়গাভেদে অনেক আলাদা। কিছু জায়গায় লাইসেন্সপ্রাপ্ত জায়গার বাইরে সত্যিকারের টাকার পোকার খেলার অনুমতি নেই, আর অনেক জায়গায় লাইসেন্সপ্রাপ্ত পরিচালক ছাড়া অন্য কারও রেক, সিট ফি বা অন্য কোনো কাট নেওয়া নিষিদ্ধ। এটা নিশ্চিত করা আপনার দায়িত্ব যে PitMaster দিয়ে আপনি যে গেমই চালান না কেন, আর তাতে আপনি যে সেটিংসই ব্যবহার করুন না কেন, তা আপনি যেখানে খেলছেন সেখানে বৈধ, আপনার কাছে প্রয়োজনীয় লাইসেন্স আছে, এতে জড়িত যেকোনো কর ঘোষণা করা আর পরিশোধ করা হয়েছে, আর টেবিলে থাকা সবাই বয়সে যথেষ্ট বড়।",
         p2: "কোনো গেমিং নিয়ন্ত্রক সংস্থা থেকে PitMaster প্রত্যয়িত বা অনুমোদিত নয়। আপনি যদি একটি লাইসেন্সপ্রাপ্ত বা বাণিজ্যিক জায়গা চালান, তাহলে আপনার নিয়ম এটির অনুমতি দেয় কিনা তা আপনার ওপর নির্ভর করে, আর এটি আপনার রাখতে বাধ্য এমন কোনো রেকর্ডের বিকল্প নয়।",
+        p3: "টাকা বা পুরস্কারের জন্য খেলা ব্ল্যাকজ্যাক, রুলেট আর ক্র্যাপসের মতো ক্যাসিনো গেম, আর র‍্যাফেল, অনেক জায়গায় নিয়ন্ত্রিত, তহবিল সংগ্রহের অনুষ্ঠানেও, আর প্রায়ই এর জন্য অনুমতি লাগে। PitMaster শুধু হিসাব রাখে: বিক্রি হওয়া চিপস, কী ফেরত এল আর র‍্যাফেল কে জিতল।",
       },
       data: {
         title: "আপনার ডেটা",
@@ -1956,7 +1963,7 @@ export const legal: Record<Lang, LegalDict> = {
     },
   },
   pt: {
-    lastUpdated: "Última atualização em 26 de setembro de 2026",
+    lastUpdated: "Última atualização em 27 de setembro de 2026",
     changesTitle: "Alterações",
     contactTitle: "Contato",
     nav: { privacyPolicy: "Política de Privacidade", termsOfUse: "Termos de Uso" },
@@ -2165,6 +2172,7 @@ export const legal: Record<Lang, LegalDict> = {
         title: "Conduzindo uma Partida Legal",
         p1: "As leis sobre pôquer variam muito de um lugar para outro. Alguns lugares não permitem pôquer com dinheiro real fora de salas licenciadas, e muitos proíbem qualquer pessoa que não seja um operador licenciado de cobrar rake, taxa de assento ou qualquer outro corte. Você é responsável por garantir que qualquer partida que conduza com o PitMaster, e cada configuração que use nela, seja legal onde você joga, que você tenha qualquer licença necessária, que quaisquer impostos envolvidos sejam declarados e pagos, e que todos na mesa tenham idade suficiente para estar ali.",
         p2: "O PitMaster não é certificado nem aprovado por nenhum órgão regulador de jogos. Se você administra uma sala licenciada ou comercial, cabe a você decidir se suas regras permitem o uso dele, e ele não substitui nenhum registro que você seja obrigado a manter.",
+        p3: "Jogos de cassino como blackjack, roleta e craps jogados por dinheiro ou prêmios, e rifas, são regulamentados em muitos lugares, mesmo num evento beneficente, e muitas vezes precisam de autorização. O PitMaster só mantém a conta: as fichas vendidas, o que voltou e quem ganhou a rifa.",
       },
       data: {
         title: "Seus Dados",

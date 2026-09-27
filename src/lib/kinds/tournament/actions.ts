@@ -6,7 +6,7 @@ import type { Game, Match } from "$lib/types";
 import { addPlayer, finish, reopen } from "$lib/game";
 import { flash, logEvent, playerName } from "$lib/events";
 import { reseat, shootout } from "$lib/seats";
-import { money, ordinal, round2, shuffle } from "$lib/util";
+import { fairIndex, money, ordinal, round2, shuffle } from "$lib/util";
 import { t, tp } from "$lib/i18n";
 import { bountyBook, envelopesLeft, survivors, tourneyBook } from "./engine";
 import { bracketSize, lostMatch, nextMatch, roundName, roundPlace, seedOrder } from "./bracket";
@@ -205,15 +205,6 @@ export function creditKo(game: Game, outId: string, byId: string | null) {
 }
 
 // ---------- mystery envelopes ----------
-
-/** a fair random whole number below n (an envelope draw has to be one nobody can call) */
-function fairIndex(n: number) {
-  const limit = Math.floor(0x100000000 / n) * n;
-  const x = new Uint32Array(1);
-  do crypto.getRandomValues(x);
-  while (x[0] >= limit);
-  return x[0] % n;
-}
 
 /**
  * the bounty money split into n envelopes: one big one, a few good ones and

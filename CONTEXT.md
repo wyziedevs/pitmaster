@@ -4,7 +4,7 @@ The words the code uses for the game night, so modules can be named after them.
 
 **Game**: one night of one kind, saved as one record. Everything shown about it is worked out from what's saved.
 
-**Kind**: what sort of game it is: cash, tournament, liar's dice, lives or pot. Each kind is a folder in `src/lib/kinds/` and gives the app one `Kind` (`kinds/kind.ts`): its form, dealer screen, results, settle-up, recap, csv and check. The rest of the app asks the kind instead of branching on `game.type`.
+**Kind**: what sort of game it is: cash, tournament, liar's dice, lives, pot or casino night. Each kind is a folder in `src/lib/kinds/` and gives the app one `Kind` (`kinds/kind.ts`): its form, dealer screen, results, settle-up, recap, csv and check. The rest of the app asks the kind instead of branching on `game.type`.
 
 **Engine**: a kind's `engine.ts`. Works out what the game comes to from what's saved, and never changes it.
 
@@ -19,6 +19,8 @@ The words the code uses for the game night, so modules can be named after them.
 **Standing**: who's still in, their lives or dice, their places and the money, for the last-one-standing kinds (liar's dice, lives). Worked out from the rounds by `kinds/standing.ts`.
 
 **Settled**: when a game's results count (in stats and leagues). A tournament once it has a winner; a cash player once they cash out; the other kinds once they're over. A cash game stays in progress until the host ends it, even after everyone has cashed out.
+
+**Bank**: a casino night's money (`casinoState`): the chips each player bought and turned back in, the chips still out, and what the house kept (a raffle keeps it all, and the chips come back as tickets). The bank pays and takes money on the spot, so nobody owes anybody.
 
 **Deal**: the final table agreeing to split what's left (ICM or chip chop). It ends the tournament; its survivors are out, but not busted.
 

@@ -26,8 +26,8 @@
     /** the name until the host types their own (it follows a preset they pick) */
     defaultName: string;
     fewPlayers?: string;
-    /** the kind's own rules for newGame: { dice } / { lives } / { pot } */
-    rules: () => Pick<Game, "dice" | "lives" | "pot">;
+    /** the kind's own rules for newGame: { dice } / { lives } / { pot } / { casino } */
+    rules: () => Pick<Game, "dice" | "lives" | "pot" | "casino">;
     /** above the name: which game of the kind */
     pick?: Snippet;
     /** under the league */

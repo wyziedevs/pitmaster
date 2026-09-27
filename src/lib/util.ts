@@ -137,6 +137,14 @@ export function shuffle<T>(xs: T[]) {
   }
   return a;
 }
+/** a fair random whole number below n, from crypto (a draw nobody can call: an envelope, a spin, a raffle) */
+export function fairIndex(n: number) {
+  const limit = Math.floor(0x100000000 / n) * n;
+  const x = new Uint32Array(1);
+  do crypto.getRandomValues(x);
+  while (x[0] >= limit);
+  return x[0] % n;
+}
 /** 1 to n */
 export const range = (n: number) => Array.from({ length: n }, (_, i) => i + 1);
 

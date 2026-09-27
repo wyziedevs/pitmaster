@@ -23,7 +23,7 @@ export function reopen(game: Game) {
 }
 
 /** the rules only its kind reads: a tournament's structure, a cash game's stakes, the other kinds' own */
-type Rules = Partial<Pick<Game, "tourney" | "cash" | "dice" | "lives" | "pot">>;
+type Rules = Partial<Pick<Game, "tourney" | "cash" | "dice" | "lives" | "pot" | "casino">>;
 
 /** a new game. the chips and the clock's levels are poker's; the other kinds leave them out */
 export function newGame(p: { name: string; type: GameType; notes: string; players: string[]; chipSetName?: string; multiplier?: number; chips?: GameChip[]; levels?: Level[] } & Rules): Game {
@@ -46,6 +46,7 @@ export function newGame(p: { name: string; type: GameType; notes: string; player
     dice: p.dice,
     lives: p.lives,
     pot: p.pot,
+    casino: p.casino,
     message: null,
     flash: null,
     log: [],

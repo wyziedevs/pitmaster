@@ -43,6 +43,11 @@ const NEW_GAME: Record<string, Meta> = {
     description: "Run in-between, guts, bourré or pass the pigs: antes, a pot limit, every win and match, and a settle-up at the end.",
     path: "/new?type=pot",
   },
+  casino: {
+    title: "New Casino Night · PitMaster",
+    description: "Run a casino night or fundraiser: blackjack, roulette, craps and more, chips sold at the bank, spins and rolls on screen, and a raffle at the end.",
+    path: "/new?type=casino",
+  },
 };
 
 export function metaFor(route: string | null, url: URL): Meta {

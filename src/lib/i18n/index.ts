@@ -18,8 +18,9 @@ import { tv } from "./tv";
 import { legal } from "./legal";
 import { settings } from "./settings";
 import { util } from "./util";
+import { casino } from "./casino";
 
-const ALL = { common, gameEvents, nav, toys, calculator, money, chips, gameSetup, gamePlay, players, tv, legal, settings, util } as const;
+const ALL = { common, gameEvents, nav, toys, calculator, money, chips, gameSetup, gamePlay, players, tv, legal, settings, util, casino } as const;
 
 /** the language in force right now, guarded against a stale or hand-edited save */
 export const lang = (): Lang => ((LANG_CODES as string[]).includes(appSettings.language) ? (appSettings.language as Lang) : "en");

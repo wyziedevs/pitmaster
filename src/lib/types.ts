@@ -294,7 +294,7 @@ export interface Payment {
 }
 
 /** the kind of game: each has a folder in kinds/ and a line in kinds/index.ts */
-export type GameType = "cash" | "tournament" | "dice" | "lives" | "pot";
+export type GameType = "cash" | "tournament" | "dice" | "lives" | "pot" | "casino";
 
 /**
  * what a liar's dice game is played for.
@@ -358,6 +358,42 @@ export interface PotEvent {
   /** in-between: how a bet went (a post pays double) */
   note?: "win" | "lose" | "post" | "pot";
 }
+
+/** a casino night's table: what's played there, who deals it and its limits */
+export interface CasinoTable {
+  id: string;
+  game: "blackjack" | "roulette" | "craps" | "baccarat" | "wheel";
+  dealer: string;
+  min: number;
+  max: number;
+}
+
+/**
+ * a casino night: players buy chips at the bank and play the house at its
+ * tables. at the end the chips cash out to money, or turn into raffle tickets
+ * at a set rate for a raffle of prizes.
+ */
+export interface CasinoSettings {
+  tables: CasinoTable[];
+  finish: "money" | "raffle";
+  /** raffle: what one ticket costs in chips */
+  ticket: number;
+  /** raffle: the prizes, drawn in this order */
+  prizes: string[];
+}
+
+/**
+ * one thing that happened at a casino night. buy: chips bought at the bank;
+ * cash: chips turned back in; spin: a roulette pocket or a money wheel's
+ * payout, drawn on the dealer's screen; roll: a craps table's dice; draw: a
+ * raffle prize won
+ */
+export type CasinoEvent =
+  | { kind: "buy"; player: string; amount: number; at: number }
+  | { kind: "cash"; player: string; amount: number; at: number }
+  | { kind: "spin"; table: string; result: number; at: number }
+  | { kind: "roll"; table: string; dice: [number, number]; at: number }
+  | { kind: "draw"; player: string; prize: string; at: number };
 
 /** how a liar's dice game is played */
 export interface DiceSettings {
@@ -480,6 +516,9 @@ export interface Game {
   /** a pot game: how it's played, and everything that's happened to the pot */
   pot?: PotSettings;
   potEvents?: PotEvent[];
+  /** a casino night: its tables and finish, and everything the bank, the tables and the raffle did */
+  casino?: CasinoSettings;
+  casinoEvents?: CasinoEvent[];
   /** cash: the side games' bomb pots, 7-2 wins and high hands, in order */
   sides?: SideEvent[];
   /** shared costs: they go into settle-up, not into anyone's results */

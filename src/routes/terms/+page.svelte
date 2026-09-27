@@ -17,6 +17,7 @@
   <h2>{t("legal.terms.legalGame.title")}</h2>
   <p>{t("legal.terms.legalGame.p1")}</p>
   <p>{t("legal.terms.legalGame.p2")}</p>
+  <p>{t("legal.terms.legalGame.p3")}</p>
 
   <h2>{t("legal.terms.data.title")}</h2>
   <p>

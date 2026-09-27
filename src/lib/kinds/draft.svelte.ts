@@ -45,7 +45,7 @@ export class Draft {
   }
 
   /** deal it: the kind's own rules go in with the rest */
-  create(defaultName: string, rules: Pick<Game, "dice" | "lives" | "pot">) {
+  create(defaultName: string, rules: Pick<Game, "dice" | "lives" | "pot" | "casino">) {
     const g = newGame({ name: this.name?.trim() || defaultName, type: this.type, notes: this.notes, players: this.names, ...rules });
     if (this.src) g.from = this.src.id;
     if (this.leagues.some((l) => l.id === this.leagueId)) g.leagueId = this.leagueId;

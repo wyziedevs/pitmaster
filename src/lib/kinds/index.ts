@@ -10,8 +10,9 @@ import { tournament } from "./tournament";
 import { dice } from "./dice";
 import { lives } from "./lives";
 import { pot } from "./pot";
+import { casino } from "./casino";
 
-export const KINDS: Kind[] = [cash, tournament, dice, lives, pot];
+export const KINDS: Kind[] = [cash, tournament, dice, lives, pot, casino];
 
 /** the kinds a new game can be: poker always, the rest once they're switched on (Settings > Your Game) */
 export const offeredKinds = () => KINDS.filter((k) => k.poker || settings.useOtherGames);

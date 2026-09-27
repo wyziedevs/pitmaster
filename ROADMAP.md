@@ -260,6 +260,8 @@ Two engines cover most other games people play for chips around a table.
 
 ## Phase 12: Casino Night
 
+**Status: done.** Kind `casino`. Only events are saved (`casinoEvents`: chips bought and turned in, spins, rolls and raffle draws), and the bank, each table's results and the raffle are worked out from them (`kinds/casino/engine.ts`). Roulette and the money wheel spin, and craps rolls, on the dealer's screen, and the tv shows the result big with a board of recent numbers; the home page wheel stays a toy. A raffle ticket costs a set amount in chips, each draw uses up the ticket it picked, and the draw can run after the night ends. The bank pays and takes money on the spot, so settle-up only has shared costs. /terms has the line on casino games and raffles.
+
 Casino games run on chips, for an event, a fundraiser or a club night.
 
 - **Kind `casino`.** Players buy chips at the bank, like cash buy-ins. A list of tables: `{ game: "blackjack" | "roulette" | "craps" | "baccarat" | "wheel"; dealer; min; max }`. The bank tracks the chips out.

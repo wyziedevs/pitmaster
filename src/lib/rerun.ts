@@ -18,8 +18,8 @@ export const leagueOf = (g: Game, leagues: League[]) =>
 
 /** a fresh game with the same setup and the same people: chips, structure, buy-ins, and its kind's own rules (their rounds start over) */
 export function rerun(game: Game): Game {
-  const { name, type, chipSetName, multiplier, chips, notes, levels, tourney, cash, dice, lives, pot } = structuredClone(game);
-  const g = newGame({ name, type, chipSetName, multiplier, chips, notes, levels, tourney, cash, dice, lives, pot, players: namesOf(game) });
+  const { name, type, chipSetName, multiplier, chips, notes, levels, tourney, cash, dice, lives, pot, casino } = structuredClone(game);
+  const g = newGame({ name, type, chipSetName, multiplier, chips, notes, levels, tourney, cash, dice, lives, pot, casino, players: namesOf(game) });
   g.from = game.id;
   g.seatsPerTable = game.seatsPerTable;
   g.house = game.house;
