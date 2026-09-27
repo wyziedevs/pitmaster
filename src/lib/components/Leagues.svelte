@@ -11,6 +11,7 @@
   import { toast } from "$lib/toast.svelte";
   import { reveal, slide } from "$lib/motion";
   import type { Game, GameType, League, LeaguePoints } from "$lib/types";
+  import { KINDS, kind } from "$lib/kinds";
   import { t, tp } from "$lib/i18n";
 
   // games: everything saved, for the standings. reload: read them again after linking some
@@ -21,7 +22,8 @@
   let pick = $state(saved[0]?.id ?? "");
   const league = $derived(leagues.find((l) => l.id === pick) ?? null);
   const standings = $derived(league ? leagueStandings(league, games) : null);
-  const hasTourney = $derived(!!standings?.games.some((g) => g.type === "tournament"));
+  // a knockouts column once someone's scored one
+  const hasKos = $derived(!!standings?.rows.some((l) => l.kos));
 
   // ---- the form: a new league, or the one picked ----
   // dates go in and out of the date fields as the local day
@@ -40,8 +42,7 @@
     name: string;
     start: string;
     end: string;
-    cash: boolean;
-    tournament: boolean;
+    types: GameType[];
     kind: LeaguePoints["kind"];
     table: string;
     play: number;
@@ -58,8 +59,7 @@
       name: t("players.leagues.defaultName", { year: String(now.getFullYear()) }),
       start: toDay(new Date(now.getFullYear(), now.getMonth(), 1).getTime()),
       end: "",
-      cash: false,
-      tournament: true,
+      types: ["tournament"],
       kind: "table",
       table: POINT_TABLE.join(", "),
       play: 0,
@@ -73,8 +73,7 @@
       name: l.name,
       start: toDay(l.start),
       end: l.end ? toDay(l.end) : "",
-      cash: l.types.includes("cash"),
-      tournament: l.types.includes("tournament"),
+      types: [...l.types],
       kind: l.points.kind,
       table: l.points.table.join(", "),
       play: l.points.play,
@@ -97,7 +96,8 @@
     const d = draft;
     const start = fromDay(d.start);
     const end = d.end ? fromDay(d.end) : undefined;
-    const types: GameType[] = [...(d.tournament ? ["tournament" as const] : []), ...(d.cash ? ["cash" as const] : [])];
+    // in the order they're offered
+    const types = KINDS.map((k) => k.id).filter((id) => d.types.includes(id));
     if (!d.name.trim() || !Number.isFinite(start)) return void toast(t("players.leagues.form.needNameStart"), "bad");
     if (!types.length) return void toast(t("players.leagues.form.needType"), "bad");
     if (end !== undefined && !(end >= start)) return void toast(t("players.leagues.form.endBeforeStart"), "bad");
@@ -187,7 +187,7 @@
     [
       l.points.kind === "table" ? t("players.leagues.scoring.table", { table: l.points.table.join(", ") }) : t(`players.leagues.scoring.${l.points.kind}`),
       l.points.play ? t("players.leagues.scoring.play", { n: pts(l.points.play) }) : "",
-      l.points.ko && l.types.includes("tournament") ? t("players.leagues.scoring.ko", { n: pts(l.points.ko) }) : "",
+      l.points.ko ? t("players.leagues.scoring.ko", { n: pts(l.points.ko) }) : "",
       l.bestOf ? t("players.leagues.scoring.bestOf", { n: String(l.bestOf) }) : "",
     ]
       .filter(Boolean)
@@ -223,8 +223,7 @@
     </div>
     <div class="row">
       <span class="small muted">{t("players.leagues.form.counts")}</span>
-      <label class="across"><input type="checkbox" bind:checked={draft.tournament} /><span>{t("players.page.filter.tournaments")}</span></label>
-      <label class="across"><input type="checkbox" bind:checked={draft.cash} /><span>{t("players.page.filter.cash")}</span></label>
+      {#each KINDS as k (k.id)}<label class="across"><input type="checkbox" bind:group={draft.types} value={k.id} /><span>{k.plural()}</span></label>{/each}
     </div>
     <label>
       <span>{t("players.leagues.form.points")}</span>
@@ -240,10 +239,10 @@
     <p class="small muted -mt-1">{t(`players.leagues.form.hint.${draft.kind}`)} {sample}</p>
     <div class="row">
       <label><span>{t("players.leagues.form.play")}</span><input type="number" min="0" step="any" bind:value={draft.play} /></label>
-      {#if draft.tournament}<label><span>{t("players.leagues.form.ko")}</span><input type="number" min="0" step="any" bind:value={draft.ko} /></label>{/if}
+      <label><span>{t("players.leagues.form.ko")}</span><input type="number" min="0" step="any" bind:value={draft.ko} /></label>
       <label><span>{t("players.leagues.form.bestOf")}</span><input type="number" min="0" step="1" bind:value={draft.bestOf} /></label>
     </div>
-    <p class="small muted -mt-1">{draft.cash ? t("players.leagues.form.cashNote") : ""} {t("players.leagues.form.bestOfNote")}</p>
+    <p class="small muted -mt-1">{draft.types.some((id) => kind(id).ranks === "net") ? t("players.leagues.form.cashNote") : ""} {t("players.leagues.form.bestOfNote")}</p>
     <p class="row">
       <button>{isNew ? t("players.leagues.form.create") : t("common.save")}</button>
       <button type="button" class="link muted" data-sound="close" onclick={() => (draft = null)}>{t("common.cancel")}</button>
@@ -272,7 +271,7 @@
             <th class="num">{t("players.leagues.table.points")}</th>
             <th class="num">{t("players.leagues.table.played")}</th>
             <th class="num">{t("players.page.table.wins")}</th>
-            {#if hasTourney && league.points.ko}<th class="num hide-sm">{t("players.page.table.kos")}</th>{/if}
+            {#if hasKos && league.points.ko}<th class="num hide-sm">{t("players.page.table.kos")}</th>{/if}
             <th class="num hide-sm">{t("players.page.table.net")}</th>
           </tr>
         </thead>
@@ -284,7 +283,7 @@
               <td class="num"><b>{pts(l.points)}</b></td>
               <td class="num">{l.played}</td>
               <td class="num">{l.wins || ""}</td>
-              {#if hasTourney && league.points.ko}<td class="num hide-sm">{l.kos || ""}</td>{/if}
+              {#if hasKos && league.points.ko}<td class="num hide-sm">{l.kos || ""}</td>{/if}
               <td class="num hide-sm {cls(l.net)}">{signed(l.net)}</td>
             </tr>
           {/each}

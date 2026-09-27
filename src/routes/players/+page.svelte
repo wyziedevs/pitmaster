@@ -5,6 +5,7 @@
   import ArrowDown from "@lucide/svelte/icons/arrow-down";
   import Seg from "$lib/components/Seg.svelte";
   import Leagues from "$lib/components/Leagues.svelte";
+  import { KINDS, kind } from "$lib/kinds";
   import { flip as flipRows } from "svelte/animate";
   import { bump, reorder, reveal, slide } from "$lib/motion";
   import { getGame, getGames, getHandles, getLeagues, saveGame, saveHandles } from "$lib/store";
@@ -249,8 +250,7 @@
     value={type}
     options={[
       { id: "all", label: t("players.page.filter.allGames") },
-      { id: "cash", label: t("players.page.filter.cash") },
-      { id: "tournament", label: t("players.page.filter.tournaments") },
+      ...KINDS.map((k) => ({ id: k.id, label: k.plural() })),
     ]}
     onpick={(v) => (type = v)}
     labelledby="type-l"
@@ -369,23 +369,10 @@
                         <tr>
                           <td class="mono muted nowrap border-b-line pt-[3px] pr-[10px] pb-[3px] pl-0">{day(r.at)}</td>
                           <td class="border-b-line pt-[3px] pr-[10px] pb-[3px] pl-0"
-                            ><span class="pill"
-                              >{r.type === "cash" ? t("players.page.history.typeCash") : t("players.page.history.typeTournament")}</span
-                            > <a href="/game/{r.gameId}">{r.gameName}</a></td
+                            ><span class="pill">{kind(r.type).label()}</span> <a href="/game/{r.gameId}">{r.gameName}</a></td
                           >
                           <td class="muted border-b-line pt-[3px] pr-[10px] pb-[3px] pl-0">
-                            {#if r.type === "tournament"}{r.place
-                                ? t("players.page.history.place", { place: ordinal(r.place), entrants: r.entrants })
-                                : ""}{r.kos
-                                ? ` · ${tp("players.page.history.kos", r.kos)}`
-                                : ""}
-                            {:else}{t("players.page.history.cashInOut", { in: money(r.cost), out: money(r.won - r.highHand) })}{r.hours && r.hours >= 0.1
-                                ? ` · ${t("players.page.history.hoursSuffix", { h: r.hours.toFixed(1) })}`
-                                : ""}{r.highHand
-                                ? ` · ${t("players.page.history.highHand", { amount: money(r.highHand) })}`
-                                : ""}{r.sevenTwo
-                                ? ` · ${tp("players.page.history.sevenTwo", r.sevenTwo)}`
-                                : ""}{/if}
+                            {kind(r.type).describe(r)}
                           </td>
                           <td class="num {cls(r.net)} border-b-line pt-[3px] pr-[10px] pb-[3px] pl-0">{signed(r.net)}</td>
                         </tr>

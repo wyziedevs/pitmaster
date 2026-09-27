@@ -16,17 +16,17 @@
   import { time } from "$lib/now.svelte";
   import { provide } from "$lib/commands.svelte";
   import { play } from "$lib/sound";
-  import ChipLegend from "./ChipLegend.svelte";
-  import Breakdown from "./Breakdown.svelte";
-  import Chip from "./Chip.svelte";
-  import SeatTools from "./SeatTools.svelte";
-  import SideGames from "./SideGames.svelte";
-  import SettleMoves from "./SettleMoves.svelte";
-  import Costs from "./Costs.svelte";
-  import Waitlist from "./Waitlist.svelte";
+  import ChipLegend from "$lib/components/ChipLegend.svelte";
+  import Breakdown from "$lib/components/Breakdown.svelte";
+  import Chip from "$lib/components/Chip.svelte";
+  import SeatTools from "$lib/components/SeatTools.svelte";
+  import SideGames from "$lib/components/SideGames.svelte";
+  import SettleMoves from "$lib/components/SettleMoves.svelte";
+  import Costs from "$lib/components/Costs.svelte";
+  import Waitlist from "$lib/components/Waitlist.svelte";
   import { settings } from "$lib/settings.svelte";
-  import Count from "./Count.svelte";
-  import RemoveButton from "./RemoveButton.svelte";
+  import Count from "$lib/components/Count.svelte";
+  import RemoveButton from "$lib/components/RemoveButton.svelte";
   import { t, tp } from "$lib/i18n";
   import { cashGameNow, cashGames, cashStakes, isLimit, isStud, stakesText, variant, variantName } from "$lib/variants";
 

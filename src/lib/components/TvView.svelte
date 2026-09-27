@@ -36,6 +36,7 @@
   import FindMe from "./FindMe.svelte";
   import QrCode from "./QrCode.svelte";
   import Bracket from "./Bracket.svelte";
+  import { kind } from "$lib/kinds";
   import { fade, fly } from "svelte/transition";
   import { replay, fresh, rise, leave, reveal, slide } from "$lib/motion";
   // the local "t" below is tourney stats (t.left, t.pool…), already established
@@ -46,6 +47,9 @@
   let { game, status = "", code = "" }: { game: Game; status?: string; code?: string } = $props();
 
   const isCash = $derived(game.type === "cash");
+  // this is the poker board; a kind of game that isn't poker brings its own middle
+  const k = $derived(kind(game.type));
+  const board = $derived(k.poker ? null : (k.Board ?? null));
 
   // things that show up mid-game (a callout, the bubble, a new seat) make an
   // entrance. on the tv's first paint, or a reload, everything is simply there.
@@ -218,7 +222,9 @@
   const shownGame = $derived(d ? (d.level.isBreak ? d.next?.game : d.level.game) : undefined);
 
   const meta = $derived(
-    isCash
+    !k.poker
+      ? [k.label()]
+      : isCash
       ? [tr("tv.meta.cashGame"), cashNow && game.cash ? gameLine(cashStakes(game.cash, cashNow.id), true) : stakes]
       : [tr("tv.meta.tournament"), mix, showMoney && game.tourney ? tr("tv.meta.buyIn", { amount: money(game.tourney.buyIn) }) : ""]
   );
@@ -514,7 +520,12 @@
     <div class="banner" out:slide={leave()} use:replay={[bannerKey, "ring"]}>{game.message.text}</div>
   {/if}
 
-  {#if winner}
+  {#if board}
+    <!-- ================= ANOTHER KIND'S OWN BOARD ================= -->
+    <section class="kind-board">
+      {#await board() then m}<m.default {game} {narrow} />{/await}
+    </section>
+  {:else if winner}
     <!-- ================= WINNER ================= -->
     <section class="winner" class:entrance={justWon}>
       <div class="trophy"><Icon icon={Trophy} size="11vh" /></div>
@@ -1302,6 +1313,16 @@
   }
   .matches.many .match {
     font-size: 0.9em;
+  }
+  /* a kind that isn't poker draws everything under the header itself */
+  .kind-board {
+    grid-column: 1 / -1;
+    grid-row: 3 / -1;
+    min-height: 0;
+    min-width: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
   }
   /* the whole bracket takes the width of the board while it's on */
   .tv.full .col {

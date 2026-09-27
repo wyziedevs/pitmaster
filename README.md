@@ -82,11 +82,12 @@ src/lib/
   crypto.ts       all the encryption: sealing, keys, the passcode's key wrap, tv code keys, export passwords
   vault.ts        IndexedDB: the key and everything sealed with it, saved together; the other-tab messages
   lock.svelte.ts  the passcode lock: unlock, lock now, auto-lock, tabs sharing the lock, tv windows
-  check.ts        the shape check for anything from outside (imported files, tv snapshots)
+  check.ts        the shape check for anything from outside (imported files, tv snapshots); shape.ts has its building blocks
+  kinds/          one folder per kind of game (cash/, tournament/, and poker/ for what those two share: the new-game form and their settings' checks). each gives kinds/index.ts its form, its dealer screen, a tv board if it isn't poker, and its results, settle-up, recap, csv and check (kinds/kind.ts), so the rest of the app asks the kind instead of branching on game.type
   site.ts         the address, and each page's title and description for search and link previews
   store.ts        the game data (games, chip sets, templates, pay links, leagues), export + import
   sync.ts         BroadcastChannel + the end-to-end encrypted live api client
-  components/     Chip, ChipStack, Breakdown, StructureTable, TvView, TvPanel, TournamentControl, CashControl, SeatTools, DealCalc, Bracket, Leagues, Palette, Calculator, Intro + HowItWorks
+  components/     Chip, ChipStack, Breakdown, StructureTable, TvView (the poker board, and the frame every kind's board sits in), TvPanel, SeatTools, DealCalc, Bracket, Leagues, Palette, Calculator, Intro + HowItWorks
 server/api/live/  nitro routes for the tv relay (they only ever see sealed data)
 src/app.css       the raw shell theme; every color/font is a token in :root
 ```

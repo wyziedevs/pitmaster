@@ -12,10 +12,10 @@
   import { goto } from "$app/navigation";
   import { getGames, deleteGame, getChipSet, getDefaultChipSetId, saveGame, getTemplates, onOtherTab, lastExport } from "$lib/store";
   import { vault } from "$lib/lock.svelte";
-  import { tourneyStats, cashStats, rerun } from "$lib/game";
-  import { derive, cashElapsed } from "$lib/clock";
+  import { rerun } from "$lib/game";
   import { headline, leaderboard } from "$lib/stats";
-  import { ago, amt, clock, day, money, signed } from "$lib/util";
+  import { KINDS, kind as kindOf } from "$lib/kinds";
+  import { ago, amt, day, money, signed } from "$lib/util";
   import { totalCount } from "$lib/chips";
   import { calc, CALC_KEY } from "$lib/calcbox.svelte";
   import { palette } from "$lib/commands.svelte";
@@ -58,7 +58,7 @@
 
   // past games: search by game or player name, filter by type, ten at a time
   let q = $state("");
-  let kind = $state<"all" | "cash" | "tournament">("all");
+  let kind = $state<string>("all");
   let showAll = $state(false);
   const found = $derived(
     done.filter((g) => {
@@ -91,14 +91,7 @@
   /** what a running game is doing right now, ticking */
   function now(g: Game) {
     if (g.clock.status === "idle") return "";
-    if (g.type === "tournament" && g.levels.length) {
-      const d = derive(g, time.now);
-      const lvl = d.level.isBreak
-        ? t("toys.now.break")
-        : t("toys.now.level", { num: String(d.level.num ?? d.index + 1), sb: amt(d.level.sb), bb: amt(d.level.bb) });
-      return t("toys.now.left", { status: lvl, time: clock(d.remainingMs) });
-    }
-    return t("toys.now.cashStatus", { time: clock(cashElapsed(g, time.now)), money: money(cashStats(g).onTable) });
+    return kindOf(g.type).now(g, time.now);
   }
 
   function runItBack(g: Game) {
@@ -109,14 +102,7 @@
   }
 
   /** the setup in a line. a running cash game already says what's on the table, so it skips the bank */
-  function summary(g: Game, running = false) {
-    if (g.type === "tournament") {
-      const s = tourneyStats(g);
-      return t("toys.summary.tournament", { players: tp("toys.summary.players", s.entrants), buyIn: money(g.tourney!.buyIn), pool: money(s.pool) });
-    }
-    const blinds = t("toys.summary.cashBlinds", { players: tp("toys.summary.players", g.players.length), sb: money(g.cash!.sb), bb: money(g.cash!.bb) });
-    return running ? blinds : t("toys.summary.inPlay", { blinds, bank: money(cashStats(g).bank) });
-  }
+  const summary = (g: Game, running = false) => kindOf(g.type).summary(g, running);
 
   function status(g: Game) {
     if (g.finished) return t("toys.now.status.finished");
@@ -138,8 +124,7 @@
   <h1>{t("toys.hero.title")}</h1>
   <p class="mt-0 mx-0 mb-4 max-w-[60ch]">{t("toys.hero.subtitle")}</p>
   <div class="row">
-    <a class="btn big max-[480px]:flex-[1_1_100%]" href="/new?type=cash"><Icon icon={Plus} />{t("toys.hero.newCash")}</a>
-    <a class="btn big max-[480px]:flex-[1_1_100%]" href="/new?type=tournament"><Icon icon={Plus} />{t("toys.hero.newTournament")}</a>
+    {#each KINDS as k (k.id)}<a class="btn big max-[480px]:flex-[1_1_100%]" href="/new?type={k.id}"><Icon icon={Plus} />{k.newLabel()}</a>{/each}
   </div>
 </section>
 
@@ -157,7 +142,7 @@
         <!-- the name and where it's at on top; the details and the way out underneath -->
         <li class="py-[10px] border-b-[length:var(--hair)] border-solid border-line" out:slide={leave()}>
           <div class="spread">
-            <span><span class="pill">{g.type === "cash" ? t("toys.gameType.cash") : t("toys.gameType.tournament")}</span> <a class="game" href="/game/{g.id}">{g.name}</a></span>
+            <span><span class="pill">{kindOf(g.type).label()}</span> <a class="game" href="/game/{g.id}">{g.name}</a></span>
             <span class="pill" data-s={g.clock.status}>{status(g)}</span>
           </div>
           <div class="small muted mt-[2px]">
@@ -188,8 +173,7 @@
       <input class="w-[min(280px,100%)]" type="search" bind:value={q} placeholder={t("toys.past.searchPlaceholder")} aria-label={t("toys.past.searchAria")} />
       <select bind:value={kind} aria-label={t("toys.past.typeAria")}>
         <option value="all">{t("toys.past.allGames")}</option>
-        <option value="cash">{t("toys.past.cashGames")}</option>
-        <option value="tournament">{t("toys.past.tournaments")}</option>
+        {#each KINDS as k (k.id)}<option value={k.id}>{k.plural()}</option>{/each}
       </select>
       <span class="small muted">{t("toys.past.countOf", { shown: String(found.length), total: String(done.length) })}</span>
     </div>
@@ -202,7 +186,7 @@
           <!-- rows can't slide (a table row won't shrink below its text), so they fade -->
           <tr class="max-[600px]:grid max-[600px]:grid-cols-[auto_minmax(0,1fr)] max-[600px]:gap-x-[10px] max-[600px]:gap-y-[2px] max-[600px]:py-2 max-[600px]:border-b-[length:var(--hair)] max-[600px]:border-solid max-[600px]:border-line" in:fade={reveal()} out:fade={leave()}>
             <td class="mono nowrap max-[600px]:p-0 max-[600px]:border-0">{day(g.clock.startedAt ?? g.createdAt)}</td>
-            <td class="max-[600px]:p-0 max-[600px]:border-0"><span class="pill">{g.type === "cash" ? t("toys.gameType.cash") : t("toys.gameType.tournament")}</span> <a href="/game/{g.id}">{g.name}</a></td>
+            <td class="max-[600px]:p-0 max-[600px]:border-0"><span class="pill">{kindOf(g.type).label()}</span> <a href="/game/{g.id}">{g.name}</a></td>
             <td class="res max-[600px]:p-0 max-[600px]:border-0 max-[600px]:col-start-2">{headline(g)}</td>
             <td class="small muted hide-sm">{summary(g)}</td>
             <td class="nowrap small acts max-[600px]:p-0 max-[600px]:border-0 max-[600px]:col-start-2">
@@ -232,7 +216,7 @@
           <li class="grid grid-cols-[20px_minmax(0,1fr)_auto] items-center gap-2 min-h-[30px] py-[2px] border-b-[length:var(--hair)] border-solid border-line">
             <span class="muted inline-flex justify-self-center" aria-hidden="true"><Icon icon={Bookmark} size="1em" /></span>
             <a class="justify-self-start max-w-full truncate text-left" href="/new?type={tpl.type}&template={tpl.id}">{tpl.name}</a>
-            <span class="small muted">{tpl.type === "cash" ? t("toys.gameType.cash") : t("toys.gameType.tournament")}</span>
+            <span class="small muted">{kindOf(tpl.type).label()}</span>
           </li>
         {/each}
         {#each recent as g (g.id)}

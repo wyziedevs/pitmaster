@@ -19,8 +19,7 @@
   import { toast } from "$lib/toast.svelte";
   import { play } from "$lib/sound";
   import { reveal, slide } from "$lib/motion";
-  import TournamentControl from "$lib/components/TournamentControl.svelte";
-  import CashControl from "$lib/components/CashControl.svelte";
+  import { kind } from "$lib/kinds";
   import TvPanel from "$lib/components/TvPanel.svelte";
   import CopyButton from "$lib/components/CopyButton.svelte";
   import Kbd from "$lib/components/Kbd.svelte";
@@ -95,6 +94,9 @@
     e.preventDefault();
     undo();
   }
+
+  // the kind of game it is: its dealer screen, and what it's called
+  const k = $derived(game ? kind(game.type) : null);
 
   // ---- the league it counts toward ----
   const leagues = getLeagues();
@@ -181,7 +183,7 @@
 </script>
 
 <!-- the browser keeps tab titles in its history, unencrypted: the kind of game, never its name -->
-<svelte:head><title>{game ? (game.type === "cash" ? t("gamePlay.game.tabCash") : t("gamePlay.game.tabTournament")) : t("gamePlay.game.tabGeneric")} · PitMaster</title></svelte:head>
+<svelte:head><title>{k ? k.tabTitle() : t("gamePlay.game.tabGeneric")} · PitMaster</title></svelte:head>
 <svelte:window onkeydown={onKey} />
 
 {#if !game}
@@ -196,7 +198,7 @@
       <h1 class="sr-only">{game.name}</h1>
       <input class="title h-auto p-0 bg-transparent w-[min(600px,100%)]" type="text" bind:value={game.name} onchange={persist} aria-label={t("gamePlay.game.gameNameAria")} />
       <div class="small muted">
-        {game.type === "cash" ? t("gamePlay.game.tabCash") : t("gamePlay.game.tabTournament")} · {game.chipSetName}{game.multiplier !== 1 ? t("gamePlay.game.chipsMultiplier", { n: String(game.multiplier) }) : ""} · {day(game.createdAt)}
+        {k?.tabTitle()}{#if k?.poker}{` · ${game.chipSetName}`}{game.multiplier !== 1 ? t("gamePlay.game.chipsMultiplier", { n: String(game.multiplier) }) : ""}{/if} · {day(game.createdAt)}
       </div>
     </div>
     <div class="row">
@@ -216,10 +218,10 @@
     </div>
   {/if}
 
-  {#if game.type === "tournament"}
-    <TournamentControl bind:game {persist} />
-  {:else}
-    <CashControl bind:game {persist} />
+  {#if k}
+    {#await k.Control() then m}
+      <m.default bind:game {persist} />
+    {/await}
   {/if}
 
   <hr />

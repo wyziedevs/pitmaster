@@ -3,6 +3,7 @@ import { newClock } from "./clock";
 import { defaultPayouts, payoutAmounts } from "./blinds";
 import { money, nameKey, ordinal, round2, uid } from "./util";
 import { t, tp } from "./i18n";
+import { kind } from "./kinds";
 
 export function newGame(p: {
   name: string;
@@ -58,7 +59,8 @@ export function flash(game: Game, text: string, kind: EventKind = "note") {
 
 export function addPlayer(game: Game, name: string, quiet = false) {
   const p = newPlayer(name.trim() || `Seat ${game.players.length + 1}`);
-  if (game.type === "cash" && game.cash) {
+  // a cash game buys them in and starts their clock
+  if (game.cash) {
     p.cashIn = game.cash.defaultBuyIn;
     p.joinedAt = Date.now();
   }
@@ -71,9 +73,9 @@ export function addPlayer(game: Game, name: string, quiet = false) {
   if (!quiet) {
     logEvent(
       game,
-      game.type === "cash" ? t("gameEvents.satDownWithAmount", { name: p.name, amount: money(p.cashIn) }) : t("gameEvents.registered", { name: p.name }),
+      game.cash ? t("gameEvents.satDownWithAmount", { name: p.name, amount: money(p.cashIn) }) : t("gameEvents.registered", { name: p.name }),
     );
-    flash(game, game.type === "cash" ? t("gameEvents.satDownFlash", { name: p.name }) : t("gameEvents.isInFlash", { name: p.name }), "chips");
+    flash(game, game.cash ? t("gameEvents.satDownFlash", { name: p.name }) : t("gameEvents.isInFlash", { name: p.name }), "chips");
   }
   return p;
 }
@@ -642,7 +644,8 @@ export function tourneySettle(game: Game) {
   return settle(withCosts(game, nets, house));
 }
 
-export const settleUp = (game: Game) => (game.type === "cash" ? cashSettle(game) : tourneySettle(game));
+/** who pays who at the end, the way the game's kind works it out */
+export const settleUp = (game: Game) => kind(game.type).settle(game);
 
 type Owe = { from: string; to: string; amount: number };
 const samePair = (x: Owe, a: string, b: string) =>
@@ -683,8 +686,8 @@ export function unmarkPaid(game: Game, a: string, b: string) {
   logEvent(game, t("gameEvents.unpaidLog", { a, b }));
 }
 
-/** a game's settle-up counts toward what people owe once it's over: a winner, or everyone cashed out */
-export const settled = (game: Game) => game.finished || (game.type === "cash" && game.players.length > 0 && game.players.every((p) => p.cashOut !== null));
+/** a game's settle-up counts toward what people owe once it's over (a winner, or everyone cashed out) */
+export const settled = (game: Game) => kind(game.type).settled(game);
 
 /** fewest payments to square everyone up */
 export function settle(people: { name: string; net: number }[]) {
@@ -709,7 +712,7 @@ export function settle(people: { name: string; net: number }[]) {
 
 export const seatsPer = (game: Game) => game.seatsPerTable ?? 9;
 /** people who still need a chair: not busted, not cashed out */
-const playing = (game: Game) => game.players.filter((p) => (game.type === "cash" ? p.cashOut === null : !p.out));
+const playing = (game: Game) => game.players.filter((p) => kind(game.type).playing(game, p));
 export const seatsDrawn = (game: Game) => game.players.some((p) => p.seat);
 
 function shuffle<T>(xs: T[]) {

@@ -1,8 +1,9 @@
 // results and all-time numbers, worked out from the saved games every time.
 // nothing here is stored, so fixing a game fixes the leaderboard too.
 import type { Game, GameType, League, LeagueBoard, LeaguePoints } from "./types";
-import { tourneyStats, koCount, paidFor, cashRake, bountyBook, highHandPrizes, settled } from "./game";
-import { money, nameKey, round2, signed } from "./util";
+import { settled } from "./game";
+import { round2 } from "./util";
+import { kind } from "./kinds";
 
 /** one player's night in one game */
 export interface Result {
@@ -30,65 +31,10 @@ export interface Result {
 }
 
 /**
- * final results only. a cash player counts once they've cashed out; a
- * tournament counts once it has a winner (until then the pool can still grow).
+ * final results only, from the game's kind: a cash player counts once
+ * they've cashed out, a tournament once it has a winner, and so on.
  */
-export function results(game: Game): Result[] {
-  const base = { gameId: game.id, gameName: game.name, type: game.type, at: game.clock.startedAt ?? game.createdAt };
-  if (game.type === "cash") {
-    // a seat fee is part of what the night cost them
-    const r = cashRake(game);
-    const fee = r.mode === "seat" ? r.fee : 0;
-    const prizes = highHandPrizes(game);
-    return game.players
-      .filter((p) => p.cashOut !== null)
-      .map((p) => {
-        const start = Math.max(p.joinedAt ?? 0, game.clock.startedAt ?? 0) || null;
-        const hours = start && p.leftAt && p.leftAt > start ? (p.leftAt - start) / 3600000 : null;
-        const highHand = prizes[p.id] ?? 0;
-        return {
-          ...base,
-          key: nameKey(p.name),
-          name: p.name.trim(),
-          cost: round2(p.cashIn + fee),
-          won: round2((p.cashOut ?? 0) + highHand),
-          net: round2((p.cashOut ?? 0) + highHand - p.cashIn - fee),
-          place: null,
-          entrants: game.players.length,
-          itm: false,
-          kos: 0,
-          hours,
-          highHand,
-          sevenTwo: (game.sides ?? []).filter((e) => e.kind === "sevenTwo" && e.playerId === p.id).length,
-        };
-      });
-  }
-  if (!game.finished || !game.tourney) return [];
-  const t = game.tourney;
-  const s = tourneyStats(game);
-  const book = bountyBook(game);
-  return game.players.map((p) => {
-    const cost = t.buyIn + p.rebuys * t.rebuy.cost + p.addOns * t.addOn.cost;
-    const payout = p.place ? paidFor(game, p.id, p.place, s.payouts) : 0;
-    const kos = koCount(game, p.id);
-    const won = round2(payout + (book.won[p.id] ?? 0));
-    return {
-      ...base,
-      key: nameKey(p.name),
-      name: p.name.trim(),
-      cost,
-      won,
-      net: round2(won - cost),
-      place: p.place,
-      entrants: s.entrants,
-      itm: payout > 0,
-      kos,
-      hours: null,
-      highHand: 0,
-      sevenTwo: 0,
-    };
-  });
-}
+export const results = (game: Game): Result[] => kind(game.type).results(game);
 
 export interface PlayerLine {
   key: string;
@@ -142,13 +88,13 @@ export function leaderboard(games: Game[], opts: { period?: Period; type?: GameT
         l.cashGames++;
         l.cashNet = round2(l.cashNet + r.net);
         l.hours += r.hours ?? 0;
-      } else {
+      } else if (r.type === "tournament") {
         l.tourneys++;
         l.tourneyNet = round2(l.tourneyNet + r.net);
-        if (r.place === 1) l.wins++;
         if (r.itm) l.itm++;
         l.kos += r.kos;
       }
+      if (r.place === 1) l.wins++;
       l.net = round2(l.net + r.net);
       l.best = Math.max(l.best, r.net);
       l.worst = Math.min(l.worst, r.net);
@@ -162,15 +108,7 @@ export function leaderboard(games: Game[], opts: { period?: Period; type?: GameT
 }
 
 /** the night in one line, for lists: who won and by how much */
-export function headline(game: Game) {
-  const rs = results(game);
-  if (game.type === "tournament") {
-    const w = rs.find((r) => r.place === 1);
-    return w ? `${w.name} won ${money(w.won)}` : "";
-  }
-  const top = [...rs].sort((a, b) => b.net - a.net)[0];
-  return top && top.net > 0 ? `${top.name} ${signed(top.net)}` : "";
-}
+export const headline = (game: Game) => kind(game.type).headline(game);
 
 // ---------- leagues ----------
 // standings are worked out from the linked games every time, like the
@@ -222,12 +160,12 @@ export const leagueGames = (league: League, games: Game[]) =>
     .sort((a, b) => (a.clock.startedAt ?? a.createdAt) - (b.clock.startedAt ?? b.createdAt));
 
 /**
- * each game's places: a tournament's own, and a cash game's by what each player
- * won that night (level money shares the better place)
+ * each game's places: its own (a tournament's), or, for a game without them
+ * (cash), by what each player won that night (level money shares the better place)
  */
 function places(game: Game) {
   const rs = results(game).filter((r) => r.key);
-  if (game.type !== "cash") return rs.map((r) => ({ r, place: r.place ?? rs.length, entrants: r.entrants }));
+  if (rs.some((r) => r.place !== null)) return rs.map((r) => ({ r, place: r.place ?? rs.length, entrants: r.entrants }));
   const sorted = [...rs].sort((a, b) => b.net - a.net);
   return sorted.map((r) => ({ r, place: sorted.findIndex((x) => Math.abs(x.net - r.net) < 0.005) + 1, entrants: sorted.length }));
 }
@@ -240,7 +178,7 @@ export function leagueStandings(league: League, games: Game[]) {
     for (const { r, place, entrants } of places(g)) {
       let l = lines.get(r.key);
       if (!l) lines.set(r.key, (l = { key: r.key, name: r.name, points: 0, played: 0, wins: 0, kos: 0, net: 0, results: [] }));
-      const points = round1(placePoints(league.points, place, entrants) + league.points.play + (g.type === "tournament" ? r.kos * league.points.ko : 0));
+      const points = round1(placePoints(league.points, place, entrants) + league.points.play + r.kos * league.points.ko);
       l.results.push({ gameId: g.id, gameName: g.name, type: g.type, at: r.at, place, entrants, kos: r.kos, net: r.net, points, counted: true });
       l.played++;
       if (place === 1) l.wins++;

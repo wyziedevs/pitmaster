@@ -40,6 +40,7 @@
   import { settings, saveSettings, resolvedTheme, houseRules, adoptSettings, type Theme } from "$lib/settings.svelte";
   import { LANGS } from "$lib/i18n/langs";
   import { t, tp } from "$lib/i18n";
+  import { kind } from "$lib/kinds";
   import { revealTheme, reveal, rise, slide } from "$lib/motion";
   import { play, speak, sounds } from "$lib/sound";
   import { toast } from "$lib/toast.svelte";
@@ -770,7 +771,7 @@
         {#each templates as tpl (tpl.id)}
           <li class="flex gap-2 items-baseline py-0.5 px-0">
             <a href="/new?type={tpl.type}&template={tpl.id}">{tpl.name}</a>
-            <span class="small muted">{tpl.type === "cash" ? t("settings.defaults.templates.typeCash") : t("settings.defaults.templates.typeTournament")}{tpl.players.length ? ` · ${tp("settings.defaults.templates.playersCount", tpl.players.length, { n: tpl.players.length })}` : ""}</span>
+            <span class="small muted">{kind(tpl.type).label()}{tpl.players.length ? ` · ${tp("settings.defaults.templates.playersCount", tpl.players.length, { n: tpl.players.length })}` : ""}</span>
             <button class="link small muted" data-sound="thud" onclick={() => removeTemplate(tpl.id, tpl.name)} aria-label={t("settings.defaults.templates.deleteAriaLabel", { name: tpl.name })}>{t("common.delete")}</button>
           </li>
         {/each}

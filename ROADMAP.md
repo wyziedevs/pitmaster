@@ -157,6 +157,8 @@ The biggest poker change: blinds stop being the only kind of structure.
 
 ## Phase 9: Game kinds (groundwork for other games)
 
+**Status: done.** `kinds/kind.ts` is what a kind gives the app and `kinds/index.ts` lists them. Cash and tournaments each have a folder (`kinds/cash`, `kinds/tournament`: their dealer screen, results, settle-up, recap, csv, Find Me lines, history line, list summary and check), and `kinds/poker` holds what they share: the new-game form and their settings' checks. A kind's screens are loaded when they're needed, so the tv doesn't carry the dealer screens and the registry never imports a page. The TV stays one component: TvView draws the poker board for the poker kinds and gives any other kind the space under its header for its own `Board`. The remaining `game.type` checks are inside the poker kinds' own shared pieces (the form, the poker board).
+
 Today about 30 places branch on `game.type === "cash" | "tournament"`. Before adding games that aren't poker, give each kind one home:
 
 - `src/lib/kinds/<kind>.ts` holds its defaults, `results()` adapter, recap and CSV lines, and validator.

@@ -20,6 +20,7 @@
   import { goto } from "$app/navigation";
   import { provide, palette } from "$lib/commands.svelte";
   import { getGames, getTemplates, knownPlayers, exportAll } from "$lib/store";
+  import { KINDS } from "$lib/kinds";
   import { PRESETS } from "$lib/presets";
   import { vault, lockNow, watchIdle, forgetAll } from "$lib/lock.svelte";
   import { hooks, noKeeper } from "$lib/vault";
@@ -98,8 +99,7 @@
   ]);
   // not in the header, but still a few keys away in Commands
   const shortcuts = $derived([
-    { href: "/new?type=cash", label: t("nav.shortcuts.newCashGame"), keywords: "start ring" },
-    { href: "/new?type=tournament", label: t("nav.shortcuts.newTournament"), keywords: "start mtt sng" },
+    ...KINDS.map((k) => ({ href: `/new?type=${k.id}`, label: k.newLabel(), keywords: k.keywords })),
     { href: "/settings#chips", label: t("nav.shortcuts.chipSets"), keywords: "chips edit colors values denominations" },
     { href: "/help", label: t("common.help"), keywords: "how it works guide faq shortcuts keys question" },
   ]);

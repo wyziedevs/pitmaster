@@ -3,20 +3,16 @@
   // bounty and where you stand. it only reads the snapshot the tv already
   // has, and what's typed stays on this page (nothing is saved or sent).
   import type { Game } from "$lib/types";
-  import { bountyBook, koCount, paidFor, roundName, tableCounts, tourneyStats } from "$lib/game";
-  import { duration, money, nameKey, ordinal } from "$lib/util";
-  import { prefs } from "$lib/settings.svelte";
+  import { kind } from "$lib/kinds";
+  import type { Line } from "$lib/kinds/kind";
+  import { duration, nameKey, ordinal } from "$lib/util";
   import { time } from "$lib/now.svelte";
-  import { t, tp } from "$lib/i18n";
+  import { t } from "$lib/i18n";
 
   let { game }: { game: Game } = $props();
 
   let q = $state("");
   const key = $derived(nameKey(q));
-  const showMoney = $derived(prefs().tvMoney !== false);
-  const isCash = $derived(game.type === "cash");
-  const stats = $derived(!isCash && game.tourney ? tourneyStats(game) : null);
-  const tables = $derived(tableCounts(game).length);
 
   // players first, then whoever's waiting for a seat; a name typed in full wins outright
   type Found = { id: string; name: string; player?: Game["players"][number]; waiting?: number };
@@ -33,50 +29,18 @@
   });
   const me = $derived(matches.length === 1 ? matches[0] : null);
 
-  function lines(f: Found): { text: string; tone?: "good" | "hot" }[] {
+  function lines(f: Found): Line[] {
     const p = f.player;
     if (!p) {
       const w = game.waitlist![f.waiting!];
       return [{ text: t("tv.find.waiting", { place: ordinal(f.waiting! + 1) }), tone: "good" }, { text: t("tv.find.waited", { time: duration(Math.max(1, (time.now - w.at) / 60000)) }) }];
     }
-    const out: { text: string; tone?: "good" | "hot" }[] = [];
-    const seatText = p.seat ? (tables > 1 ? t("tv.find.tableSeat", { table: String(p.seat.table), seat: String(p.seat.seat) }) : t("tv.find.seat", { seat: String(p.seat.seat) })) : "";
-    if (isCash) {
-      if (p.cashOut === null) {
-        out.push({ text: seatText || t("tv.find.playing"), tone: "good" });
-        if (showMoney) out.push({ text: t("tv.find.inFor", { amount: money(p.cashIn) }) });
-      } else out.push({ text: showMoney ? t("tv.find.cashedOutFor", { amount: money(p.cashOut) }) : t("tv.find.cashedOut") });
-      return withLeague(out, p.name);
-    }
-    const s = stats!;
-    const seatWon = !!p.place && p.place <= s.seats;
-    if (p.place === 1 && !seatWon) out.push({ text: t("tv.find.winner"), tone: "good" });
-    else if (seatWon) out.push({ text: t("tv.find.wonSeat"), tone: "good" });
-    else if (p.out) out.push({ text: t("tv.find.outIn", { place: ordinal(p.place ?? 0) }), tone: "hot" });
-    else if (game.matches?.length) {
-      // a bracket: who they play next, or who they're waiting on
-      const m = game.matches.find((x) => !x.winner && (x.a === p.id || x.b === p.id));
-      const opp = m && (m.a === p.id ? m.b : m.a);
-      const name = (id: string) => game.players.find((x) => x.id === id)?.name ?? "?";
-      out.push({ text: m ? (opp ? t("tv.find.nextMatch", { name: name(opp), round: roundName(game, m.round) }) : t("tv.find.waitingMatch", { round: roundName(game, m.round) })) : t("tv.find.stillIn"), tone: "good" });
-      out.push({ text: tp("tv.find.left", s.left) });
-    } else {
-      out.push({ text: seatText || (tables ? t("tv.find.noSeat") : t("tv.find.stillIn")), tone: "good" });
-      out.push({ text: tp("tv.find.left", s.left) });
-    }
-    // what they took home, once they finished in the money
-    const won = p.place && !seatWon ? paidFor(game, p.id, p.place, s.payouts) : 0;
-    if (showMoney && won > 0) out.push({ text: t("tv.find.won", { amount: money(won) }), tone: "good" });
-    const kind = game.tourney!.bounty ? game.tourney!.bountyKind : null;
-    if (!p.out && showMoney && kind === "progressive") out.push({ text: t("tv.find.bountyOn", { amount: money(bountyBook(game).head[p.id] ?? 0) }) });
-    else if (!p.out && showMoney && kind === "flat") out.push({ text: t("tv.find.bountyOn", { amount: money(game.tourney!.bounty) }) });
-    const kos = koCount(game, p.id);
-    if (kos) out.push({ text: tp("tv.find.knockouts", kos) });
-    return withLeague(out, p.name);
+    // what there is to say about them depends on the kind of game
+    return withLeague(kind(game.type).find(game, p), p.name);
   }
 
   // a league game: where they stand in it, if they're on the board the host sent
-  function withLeague(out: { text: string; tone?: "good" | "hot" }[], name: string) {
+  function withLeague(out: Line[], name: string) {
     const rows = game.league?.rows ?? [];
     const i = rows.findIndex((r) => nameKey(r.name) === nameKey(name));
     if (i >= 0) out.push({ text: t("tv.find.league", { place: ordinal(i + 1), name: game.league!.name, points: String(rows[i].points) }) });
