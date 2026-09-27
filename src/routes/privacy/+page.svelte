@@ -60,6 +60,16 @@
   </ul>
   <p>{t("legal.privacy.tv.p3")}</p>
 
+  <h2 id="phones">{t("legal.privacy.phones.title")}</h2>
+  <p>{t("legal.privacy.phones.p1")}</p>
+  <ul>
+    <li>{t("legal.privacy.phones.li1")}</li>
+    <li>{t("legal.privacy.phones.li2")}</li>
+    <li>{t("legal.privacy.phones.li3")}</li>
+    <li>{t("legal.privacy.phones.li4")}</li>
+  </ul>
+  <p>{t("legal.privacy.phones.p2")}</p>
+
   <h2>{t("legal.privacy.protected.title")}</h2>
   <ul>
     <li>{t("legal.privacy.protected.li1")}</li>

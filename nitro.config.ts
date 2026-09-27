@@ -1,7 +1,9 @@
 import { defineNitroConfig } from "nitropack/config";
 
 export default defineNitroConfig({
-  preset: "cloudflare-module",
+  // one durable object holds every screen's websocket (routes/api/live/socket.ts)
+  preset: "cloudflare-durable",
+  experimental: { websocket: true },
   srcDir: "server",
   compatibilityDate: "2025-01-01",
   // matches compatibility_flags in wrangler.api.toml (nitro would otherwise

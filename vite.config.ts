@@ -9,7 +9,8 @@ export default defineConfig({
     // try a tv or phone, point an https tunnel at it (see README). vite turns
     // away hostnames it doesn't know, so cloudflare's quick tunnels are let in
     // by name (cloudflare hands those out, so no one can aim one at this computer).
-    proxy: { "/api": "http://localhost:3001" },
+    // (ws: the live screens' websockets go the same way)
+    proxy: { "/api": { target: "http://localhost:3001", ws: true } },
     allowedHosts: [".trycloudflare.com"],
   },
 });

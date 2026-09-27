@@ -4,5 +4,7 @@ export default defineEventHandler(async (event) => {
   const id = liveId(event);
   await ownLive(event, id);
   await putLive(id, { keyHash: "", data: null, updatedAt: Date.now() });
+  await dropMail(id);
+  push(event, id, { t: "gone", id });
   return { ok: true };
 });

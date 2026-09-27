@@ -68,6 +68,7 @@ export function metaFor(route: string | null, url: URL): Meta {
     case "/game/[id]":
     case "/game/[id]/tv":
     case "/tv":
+    case "/cup":
       return { title: NAME, description: DESCRIPTION, path: null };
     default:
       return { title: "Page Not Found · PitMaster", description: DESCRIPTION, path: null };

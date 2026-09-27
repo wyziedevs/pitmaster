@@ -60,6 +60,8 @@ pnpm run dev
 - **the site**: a strict content security policy from `svelte.config.js` (scripts only from this origin, with a per-request nonce for sveltekit's inline ones; `connect-src` is the site plus `VITE_API_URL`), and `src/hooks.server.ts` adds HSTS, `nosniff`, `no-referrer`, COOP and a permissions policy. `_headers` (in the project root; the adapter copies it) covers the static files.
 - **the api**: only answers browsers on pitmaster.cc, its preview deployments and `localhost` (`server/middleware/cors.ts`). it validates ids, keys and sealed payloads, caps bodies at 1 MB, compares key hashes in constant time, and answers with `default-src 'none'`, `nosniff` and HSTS. stop sharing leaves a blank record (no game, no key hash) until the code would have expired, so no one else can claim it and put something on a tv that still has it open (it answers `410`, and the tv stops asking).
 - **speed limits** (`server/middleware/limit.ts`): per address per minute, 20 new codes, 120 wrong codes or keys (past that, everything from that address waits out the minute) and 3,000 requests in all. counted in memory for a minute and never stored or logged. each worker instance counts on its own, so this is a speed bump; the real guard is a cloudflare rate limiting rule (security > waf > rate limiting rules) on `/api/live`, e.g. 300 requests per 10 seconds per ip.
+- **phones as dice cups (commit and reveal)**: no one, the host included, can see a phone's dice early or pick them. each round every phone picks its own random numbers and sends only `sha-256(game id | round | seat | numbers | salt)`; once every hash is in, the host's device picks its numbers and puts them in the snapshot; each die is the phone's number plus the host's, mod 6. on a call every phone sends its numbers and salt, the host checks them against the hashes, rebuilds every cup and counts, and a phone that doesn't match is caught and loses the round. all of it comes from `crypto.getRandomValues`. a phone's link is `/cup#CODE.SEAT.KEY`: its seat's key rides after the `#`, the relay keeps only a sha-256 of it (`h:<id>`), and a mailbox (`s:<id>:<seat>`) takes a write only with its own key. what's in a mailbox is sealed with the game's key on the phone, so the relay sees ids, key hashes and ciphertext. the phone keeps its numbers sealed in IndexedDB with a key made there that no script can read out (`kinds/dice/pocket.ts`). seat keys live only on the host's device: snapshots leave them out (`publicSnapshot`).
+- **websockets** (`server/routes/api/live/socket.ts`): every screen follows its game down one socket instead of asking every 2 seconds, and the host sends its snapshots (and a phone its mailbox) down its own; each one is pushed to the others the moment it lands. on cloudflare they all live in one durable object (nitro's `cloudflare-durable` preset), and writes that come in over http are handed to that object (`server/middleware/0-durable.ts`) so they're pushed too. a socket only opens from the site's own pages. kv still keeps every snapshot and mailbox, so a screen that joins gets the latest, and one that can't hold a socket polls as before.
 - **kv's one write a second per key**: the host spaces a code's writes at least 1.1 s apart (newest wins), retries busy or failed ones with backoff, and stop sharing waits for any write in flight and retries until the copy is gone.
 - **dependencies**: run `pnpm audit` before deploying, and keep it at zero.
 - in production, turn on **Always Use HTTPS** for any custom domain in cloudflare.
@@ -89,19 +91,20 @@ src/lib/
   store.ts        the game data (games, chip sets, templates, pay links, leagues), export + import
   sync.ts         BroadcastChannel + the end-to-end encrypted live api client
   components/     Chip, ChipStack, Breakdown, StructureTable, TvView (the poker board, and the frame every kind's board sits in), TvPanel, SeatTools, DealCalc, Bracket, Leagues, Palette, Calculator, Intro + HowItWorks
-server/api/live/  nitro routes for the tv relay (they only ever see sealed data)
+server/api/live/  nitro routes for the tv relay (they only ever see sealed data): snapshots, seats and their mailboxes
+server/routes/api/live/socket.ts  the websocket every live screen follows its game on
 src/app.css       the raw shell theme; every color/font is a token in :root
 ```
 
 ## search and sharing
 
-the app draws itself in the browser, so `src/hooks.server.ts` writes each page's title, description, canonical address and open graph tags (from `src/lib/site.ts`) into the html before it's sent: search engines and chat apps get them without running anything. the home page also carries schema.org data naming Wyzie LLC as the publisher. pages with someone's own data (`/game/*`, `/tv`, `/players`, `/settings`) and 404s are `noindex`. keep the titles in `site.ts` matching each page's `<svelte:head>`.
+the app draws itself in the browser, so `src/hooks.server.ts` writes each page's title, description, canonical address and open graph tags (from `src/lib/site.ts`) into the html before it's sent: search engines and chat apps get them without running anything. the home page also carries schema.org data naming Wyzie LLC as the publisher. pages with someone's own data (`/game/*`, `/tv`, `/cup`, `/players`, `/settings`) and 404s are `noindex`. keep the titles in `site.ts` matching each page's `<svelte:head>`.
 
 `static/` has the rest: `robots.txt`, `sitemap.xml` (add a page there when it should be found), `manifest.webmanifest` and its icons, `og.png` (the 1200 x 630 link preview), `favicon.ico` next to `favicon.svg`, and `.well-known/security.txt` (its `Expires` date needs moving forward before september 2027).
 
 ## deploy (cloudflare)
 
-two configs: `wrangler.toml` is the site (pages; sveltekit's adapter reads it too) and `wrangler.api.toml` is the tv relay worker. the site is **pitmaster.cc** and the api is **api.pitmaster.cc**; `pitmaster.cc` has to be a zone on the same cloudflare account.
+two configs: `wrangler.toml` is the site (pages; sveltekit's adapter reads it too) and `wrangler.api.toml` is the tv relay worker (with its durable object for the websockets; the first deploy creates it from `[[migrations]]`). the site is **pitmaster.cc** and the api is **api.pitmaster.cc**; `pitmaster.cc` has to be a zone on the same cloudflare account.
 
 ```bash
 pnpm exec wrangler kv namespace create LIVE -c wrangler.api.toml   # paste the id into wrangler.api.toml

@@ -227,6 +227,27 @@ export interface TvDict {
     bidWas: string;
     thereWere: Plural;
   };
+  cup: {
+    title: string;
+    badLink: string;
+    notOn: string;
+    noSeat: string;
+    yourStart: string;
+    realDice: string;
+    roll: string;
+    allowShake: string;
+    rolled: string;
+    waitingFor: string;
+    lostRoll: string;
+    shown: string;
+    hold: string;
+    lastCall: string;
+    caught: string;
+    rollingFor: string;
+    allIn: string;
+    bidding: string;
+    showing: string;
+  };
   league: {
     standings: string;
     points: string;
@@ -469,6 +490,27 @@ export const tv: Record<Lang, TvDict> = {
       bidWas: "The bid: {bid}",
       thereWere: { one: "There was {count}", other: "There were {count}" },
     },
+    cup: {
+      title: "Your Cup",
+      badLink: "This link isn't a whole cup. Scan your code on the host's screen again.",
+      notOn: "The table isn't using phones as cups right now.",
+      noSeat: "This phone's seat isn't in the game. Ask the host for your code.",
+      yourStart: "You Start",
+      realDice: "You're on real dice this round.",
+      roll: "Tap or Shake to Roll",
+      allowShake: "Let This Phone Feel a Shake",
+      rolled: "Rolled. Your dice come up once everyone's in.",
+      waitingFor: "Waiting for {names}",
+      lostRoll: "This phone lost its roll. Ask the host to put you on real dice for this round.",
+      shown: "Your cup is shown.",
+      hold: "Hold to Look",
+      lastCall: "Last call: {bid}, and there were {actual}",
+      caught: "Caught",
+      rollingFor: "Rolling: waiting for {names}",
+      allIn: "Every cup's in",
+      bidding: "Bidding",
+      showing: "Showing the cups",
+    },
     league: {
       standings: "League Standings",
       points: "{n} pts",
@@ -708,6 +750,27 @@ export const tv: Record<Lang, TvDict> = {
       spotOn: "刚好！",
       bidWas: "叫的是：{bid}",
       thereWere: { other: "实际有 {count} 个" },
+    },
+    cup: {
+      title: "你的骰盅",
+      badLink: "这个链接不完整。请在主持人的屏幕上重新扫描你的代码。",
+      notOn: "这桌现在没有使用手机当骰盅。",
+      noSeat: "这部手机的座位不在本局中。请向主持人要你的代码。",
+      yourStart: "你先开始",
+      realDice: "本轮你用真骰子。",
+      roll: "点一下或摇一摇来摇骰",
+      allowShake: "允许这部手机感应摇晃",
+      rolled: "已摇好。等大家都摇好后，你的骰子就会出现。",
+      waitingFor: "等待 {names}",
+      lostRoll: "这部手机丢失了本轮的点数。请主持人本轮让你改用真骰子。",
+      shown: "你的骰盅已亮出。",
+      hold: "按住查看",
+      lastCall: "上次喊的是：{bid}，实际有 {actual} 个",
+      caught: "被抓到",
+      rollingFor: "摇骰中：等待 {names}",
+      allIn: "所有骰盅都到齐了",
+      bidding: "叫数中",
+      showing: "正在亮出骰盅",
     },
     league: {
       standings: "联赛排名",
@@ -949,6 +1012,27 @@ export const tv: Record<Lang, TvDict> = {
       bidWas: "बोली: {bid}",
       thereWere: { one: "असल में {count} था", other: "असल में {count} थे" },
     },
+    cup: {
+      title: "आपका कप",
+      badLink: "यह लिंक पूरा कप नहीं है। होस्ट की स्क्रीन पर अपना कोड फिर से स्कैन करें।",
+      notOn: "यह टेबल अभी फ़ोन को कप की तरह इस्तेमाल नहीं कर रही है।",
+      noSeat: "इस फ़ोन की सीट गेम में नहीं है। होस्ट से अपना कोड मांगें।",
+      yourStart: "आप शुरू करेंगे",
+      realDice: "इस राउंड आप असली पासों से खेल रहे हैं।",
+      roll: "पासे फेंकने के लिए टैप करें या हिलाएं",
+      allowShake: "इस फ़ोन को हिलाना पहचानने दें",
+      rolled: "पासे फेंक दिए। सबके फेंकते ही आपके पासे दिखेंगे।",
+      waitingFor: "{names} का इंतज़ार है",
+      lostRoll: "इस फ़ोन के पासे खो गए। होस्ट से कहें कि इस राउंड आपको असली पासों पर कर दें।",
+      shown: "आपका कप दिख गया है।",
+      hold: "देखने के लिए दबाकर रखें",
+      lastCall: "पिछली चुनौती: {bid}, और असल में {actual} थे",
+      caught: "पकड़े गए",
+      rollingFor: "पासे फेंके जा रहे हैं: {names} का इंतज़ार है",
+      allIn: "सारे कप आ गए",
+      bidding: "बोली चल रही है",
+      showing: "कप दिखाए जा रहे हैं",
+    },
     league: {
       standings: "लीग तालिका",
       points: "{n} अंक",
@@ -1188,6 +1272,27 @@ export const tv: Record<Lang, TvDict> = {
       spotOn: "¡Calzo!",
       bidWas: "La apuesta: {bid}",
       thereWere: { one: "Había {count}", other: "Había {count}" },
+    },
+    cup: {
+      title: "Tu Cubilete",
+      badLink: "Este enlace no es un cubilete completo. Vuelve a escanear tu código en la pantalla del anfitrión.",
+      notOn: "La mesa no está usando teléfonos como cubiletes ahora mismo.",
+      noSeat: "El asiento de este teléfono no está en la partida. Pide tu código al anfitrión.",
+      yourStart: "Empiezas Tú",
+      realDice: "Juegas con dados de verdad esta ronda.",
+      roll: "Toca o Agita para Tirar",
+      allowShake: "Dejar que Este Teléfono Detecte el Movimiento",
+      rolled: "Ya tiraste. Tus dados aparecerán cuando todos hayan tirado.",
+      waitingFor: "Esperando a {names}",
+      lostRoll: "Este teléfono perdió su tirada. Pide al anfitrión que te pase a dados de verdad esta ronda.",
+      shown: "Tu cubilete está a la vista.",
+      hold: "Mantén para Mirar",
+      lastCall: "Última jugada: {bid}, y había {actual}",
+      caught: "Descubierto",
+      rollingFor: "Tirando: esperando a {names}",
+      allIn: "Todos los cubiletes listos",
+      bidding: "Apostando",
+      showing: "Mostrando los cubiletes",
     },
     league: {
       standings: "Clasificación de la Liga",
@@ -1429,6 +1534,27 @@ export const tv: Record<Lang, TvDict> = {
       bidWas: "L'annonce : {bid}",
       thereWere: { one: "Il y en avait {count}", other: "Il y en avait {count}" },
     },
+    cup: {
+      title: "Votre Gobelet",
+      badLink: "Ce lien n'est pas un gobelet complet. Scannez à nouveau votre code sur l'écran de l'hôte.",
+      notOn: "La table n'utilise pas les téléphones en gobelets pour le moment.",
+      noSeat: "Le siège de ce téléphone n'est pas dans la partie. Demandez votre code à l'hôte.",
+      yourStart: "Vous Commencez",
+      realDice: "Vous jouez avec de vrais dés cette manche.",
+      roll: "Touchez ou Secouez pour Lancer",
+      allowShake: "Laisser Ce Téléphone Sentir les Secousses",
+      rolled: "Lancé. Vos dés s'affichent dès que tout le monde a lancé.",
+      waitingFor: "En attente de {names}",
+      lostRoll: "Ce téléphone a perdu son lancer. Demandez à l'hôte de vous passer aux vrais dés pour cette manche.",
+      shown: "Votre gobelet est levé.",
+      hold: "Maintenir pour Voir",
+      lastCall: "Dernier défi : {bid}, et il y en avait {actual}",
+      caught: "Pris",
+      rollingFor: "Lancer en cours : en attente de {names}",
+      allIn: "Tous les gobelets sont prêts",
+      bidding: "Annonces",
+      showing: "Les gobelets se lèvent",
+    },
     league: {
       standings: "Classement de la Ligue",
       points: "{n} pts",
@@ -1668,6 +1794,27 @@ export const tv: Record<Lang, TvDict> = {
       spotOn: "بالضبط!",
       bidWas: "المزايدة: {bid}",
       thereWere: { zero: "لم يكن هناك أي حجر", one: "كان هناك حجر واحد", two: "كان هناك حجران", few: "كان هناك {count} أحجار", many: "كان هناك {count} حجرًا", other: "كان هناك {count} حجر" },
+    },
+    cup: {
+      title: "كوبك",
+      badLink: "هذا الرابط ليس كوبًا كاملًا. امسح رمزك مجددًا من شاشة المضيف.",
+      notOn: "الطاولة لا تستخدم الهواتف كأكواب الآن.",
+      noSeat: "مقعد هذا الهاتف ليس في اللعبة. اطلب رمزك من المضيف.",
+      yourStart: "أنت تبدأ",
+      realDice: "أنت تلعب بنرد حقيقي في هذه الجولة.",
+      roll: "انقر أو هزّ للرمي",
+      allowShake: "السماح لهذا الهاتف باستشعار الهز",
+      rolled: "تم الرمي. ستظهر أحجارك حين يرمي الجميع.",
+      waitingFor: "في انتظار {names}",
+      lostRoll: "فقد هذا الهاتف رميته. اطلب من المضيف أن يضعك على النرد الحقيقي في هذه الجولة.",
+      shown: "انكشف كوبك.",
+      hold: "اضغط مطولًا للنظر",
+      lastCall: "آخر تحدٍّ: {bid}، وكان العدد {actual}",
+      caught: "ضُبط",
+      rollingFor: "جارٍ الرمي: في انتظار {names}",
+      allIn: "وصلت كل الأكواب",
+      bidding: "المزايدة جارية",
+      showing: "كشف الأكواب",
     },
     league: {
       standings: "ترتيب الدوري",
@@ -1909,6 +2056,27 @@ export const tv: Record<Lang, TvDict> = {
       bidWas: "ডাক: {bid}",
       thereWere: { one: "ছিল {count}টি", other: "ছিল {count}টি" },
     },
+    cup: {
+      title: "আপনার কাপ",
+      badLink: "এই লিংকে পুরো কাপ নেই। হোস্টের স্ক্রিনে আপনার কোডটি আবার স্ক্যান করুন।",
+      notOn: "টেবিলটি এখন ফোনকে কাপ হিসেবে ব্যবহার করছে না।",
+      noSeat: "এই ফোনের আসনটি গেমে নেই। হোস্টের কাছে আপনার কোড চান।",
+      yourStart: "আপনি শুরু করবেন",
+      realDice: "এই রাউন্ডে আপনি আসল পাশায় খেলছেন।",
+      roll: "পাশা চালতে ট্যাপ করুন বা ঝাঁকান",
+      allowShake: "এই ফোনকে ঝাঁকুনি টের পেতে দিন",
+      rolled: "চালা হয়েছে। সবাই চাললেই আপনার পাশা দেখা যাবে।",
+      waitingFor: "{names}-এর জন্য অপেক্ষা",
+      lostRoll: "এই ফোনটি তার চাল হারিয়েছে। এই রাউন্ডে আপনাকে আসল পাশায় দিতে হোস্টকে বলুন।",
+      shown: "আপনার কাপ দেখানো হয়েছে।",
+      hold: "দেখতে চেপে ধরুন",
+      lastCall: "শেষ চ্যালেঞ্জ: {bid}, আর আসলে ছিল {actual}টি",
+      caught: "ধরা পড়েছে",
+      rollingFor: "পাশা চালা হচ্ছে: {names}-এর জন্য অপেক্ষা",
+      allIn: "সব কাপ চলে এসেছে",
+      bidding: "ডাক চলছে",
+      showing: "কাপ দেখানো হচ্ছে",
+    },
     league: {
       standings: "লিগ টেবিল",
       points: "{n} পয়েন্ট",
@@ -2148,6 +2316,27 @@ export const tv: Record<Lang, TvDict> = {
       spotOn: "Na Mosca!",
       bidWas: "A aposta: {bid}",
       thereWere: { one: "Havia {count}", other: "Havia {count}" },
+    },
+    cup: {
+      title: "Seu Copo",
+      badLink: "Este link não é um copo completo. Escaneie seu código de novo na tela do anfitrião.",
+      notOn: "A mesa não está usando celulares como copos agora.",
+      noSeat: "O lugar deste celular não está no jogo. Peça seu código ao anfitrião.",
+      yourStart: "Você Começa",
+      realDice: "Você está com dados de verdade nesta rodada.",
+      roll: "Toque ou Sacuda para Rolar",
+      allowShake: "Deixar Este Celular Sentir a Sacudida",
+      rolled: "Rolado. Seus dados aparecem quando todos tiverem rolado.",
+      waitingFor: "Esperando {names}",
+      lostRoll: "Este celular perdeu a rolagem. Peça ao anfitrião para colocar você nos dados de verdade nesta rodada.",
+      shown: "Seu copo foi mostrado.",
+      hold: "Segure para Ver",
+      lastCall: "Último desafio: {bid}, e havia {actual}",
+      caught: "Pego",
+      rollingFor: "Rolando: esperando {names}",
+      allIn: "Todos os copos prontos",
+      bidding: "Apostando",
+      showing: "Mostrando os copos",
     },
     league: {
       standings: "Classificação da Liga",

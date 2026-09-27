@@ -4,12 +4,17 @@
 //  - any other device (a smart tv's browser, phones): the nitro api relays
 //    snapshots under the tv code. each one is encrypted here first, with a key
 //    made from the code, and the api only ever sees an id made from the code,
-//    so it stores games it can't read.
+//    so it stores games it can't read. they go down a websocket (socket.ts)
+//    and are pushed to every screen the moment they land; without one, the
+//    host sends them over http and the screens ask every couple of seconds.
+//  - phones as dice cups write to their own seat's mailbox the same way,
+//    sealed with the same key.
 import type { Game } from "./types";
 import { API } from "./api";
 import { myPrefs } from "./settings.svelte";
 import { canEncrypt, codeKeys, newCode, seal, token, unseal } from "./crypto";
 import { isGame } from "./check";
+import { follow, onSocket, relay, socketOpen, type RelayMsg } from "./socket";
 import { leagueBoardFor } from "./boards";
 
 const bc = typeof BroadcastChannel !== "undefined" ? new BroadcastChannel("pitmaster") : null;
@@ -18,10 +23,29 @@ type Live = NonNullable<Game["live"]>;
 
 
 /** what a tv on this computer gets: the game minus its write key, plus the host's display prefs and its league's standings */
-export const publicSnapshot = (g: Game): Game => ({ ...g, live: g.live ? { code: g.live.code, key: "" } : null, prefs: myPrefs(), league: leagueBoardFor(g) });
+// (and never the phones' seat keys: each phone has its own, and only the host's device holds them all)
+export const publicSnapshot = (g: Game): Game => ({ ...g, live: g.live ? { code: g.live.code, key: "" } : null, prefs: myPrefs(), league: leagueBoardFor(g), cupKeys: undefined });
 
 /** what goes to the server: no code, no key and no log (the tv never shows it) */
 const remoteSnapshot = (g: Game): Game => ({ ...publicSnapshot(g), live: null, log: [] });
+
+// the host follows its own game on the socket: that keeps the socket up to send
+// snapshots down, and brings in its players' phones' mailboxes
+const hosting = new Map<string, () => void>();
+const seatListeners = new Map<string, Set<(seat: string, text: string) => void>>();
+async function host(code: string) {
+  if (hosting.has(code)) return;
+  hosting.set(code, () => {});
+  const { id, key } = await codeKeys(code);
+  hosting.set(
+    code,
+    follow(id, async (m) => {
+      if (m.t !== "seat" || !m.seat || !m.data) return;
+      const text = await unseal(key, m.data).catch(() => null);
+      if (text !== null) for (const cb of seatListeners.get(code) ?? []) cb(m.seat, text);
+    })
+  );
+}
 
 // cloudflare kv takes one write a second per code, so a code's writes go out
 // at least that far apart: the first right away, then the newest of whatever
@@ -41,6 +65,7 @@ export function publish(game: Game) {
   bc?.postMessage({ type: "game", game: publicSnapshot(game) });
   if (!game.live) return;
   const live = game.live;
+  void host(live.code);
   const p = pushes.get(live.code) ?? { next: null, last: 0, run: null };
   pushes.set(live.code, p);
   p.next = remoteSnapshot(game);
@@ -61,14 +86,16 @@ export function publish(game: Game) {
   })();
 }
 
-/** send one snapshot. the status, or 0 when the server couldn't be reached */
+/** send one snapshot: down the socket if it's open, or over http. the status, or 0 when the server couldn't be reached */
 async function push({ code, key }: Live, snap: Game) {
   try {
     const { id, key: lock } = await codeKeys(code);
+    const data = await seal(lock, JSON.stringify(snap));
+    if (relay({ t: "put", id, key, data })) return 200;
     const r = await fetch(`${API}/api/live/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json", "X-Live-Key": key },
-      body: JSON.stringify({ data: await seal(lock, JSON.stringify(snap)) }),
+      body: JSON.stringify({ data }),
     });
     return r.status;
   } catch {
@@ -141,6 +168,8 @@ export async function flushLive(maxMs = 3000) {
 export async function endLive({ code, key }: Live) {
   const p = pushes.get(code);
   pushes.delete(code);
+  hosting.get(code)?.();
+  hosting.delete(code);
   if (p) {
     p.next = null;
     await p.run;
@@ -159,10 +188,11 @@ export async function endLive({ code, key }: Live) {
 }
 
 /**
- * poll the api for code. cb gets each new snapshot; onError hears about wrong
- * codes and network trouble. a wrong code is asked about less often (a code
- * that was just made can take up to a minute to reach every server), and a
- * code whose host stopped sharing isn't asked about again.
+ * follow code: every new snapshot to cb, pushed down the socket the moment it
+ * lands. while there's no socket, the api is polled instead. onError hears
+ * about wrong codes and network trouble. a wrong code is asked about less
+ * often (a code that was just made can take up to a minute to reach every
+ * server), and a code whose host stopped sharing isn't asked about again.
  */
 export function pollLive(code: string, cb: (g: Game) => void, onError: (msg: string) => void, everyMs = 2000) {
   if (!canEncrypt()) {
@@ -172,12 +202,24 @@ export function pollLive(code: string, cb: (g: Game) => void, onError: (msg: str
   const keys = codeKeys(code);
   let since = 0;
   let stopped = false;
-  let timer: ReturnType<typeof setTimeout>;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+
+  async function take(data: string, at: number) {
+    if (at && at <= since) return;
+    const { key } = await keys;
+    const game = await unseal(key, data).then(JSON.parse, () => null);
+    if (!isGame(game)) return onError("That game couldn't be unlocked");
+    since = at || since;
+    cb(game);
+  }
 
   async function tick() {
+    timer = undefined;
+    // the socket's back: it'll bring what's new
+    if (stopped || socketOpen()) return;
     let wait = everyMs;
     try {
-      const { id, key } = await keys;
+      const { id } = await keys;
       const r = await fetch(`${API}/api/live/${id}?since=${since}`, { cache: "no-store" });
       if (r.status === 410) {
         stopped = true;
@@ -191,25 +233,89 @@ export function pollLive(code: string, cb: (g: Game) => void, onError: (msg: str
       } else if (!r.ok) onError(`The server said ${r.status}`);
       else {
         const body = await r.json();
-        if (body.changed && body.data) {
-          const game = await unseal(key, body.data).then(JSON.parse, () => null);
-          if (!isGame(game)) onError("That game couldn't be unlocked");
-          else {
-            since = Number(body.updatedAt) || 0;
-            cb(game);
-          }
-        } else if (body.changed) {
-          onError("Waiting for the host to start…");
-        }
+        if (body.changed && body.data) await take(body.data, Number(body.updatedAt) || 0);
+        else if (body.changed) onError("Waiting for the host to start…");
       }
     } catch {
       onError("Can't reach the server, retrying…");
     }
-    if (!stopped) timer = setTimeout(tick, wait);
+    if (!stopped && !socketOpen()) timer = setTimeout(tick, wait);
   }
-  tick();
+  const poll = () => {
+    if (!stopped && !timer && !socketOpen()) timer = setTimeout(tick, 0);
+  };
+
+  let unfollow = () => {};
+  keys.then(({ id }) => {
+    if (stopped) return;
+    unfollow = follow(id, (m: RelayMsg) => {
+      if (m.t === "snap" && m.data) take(m.data, m.at ?? 0);
+      else if (m.t === "gone") {
+        stopped = true;
+        onError("The host stopped sharing this game");
+      } else if (m.t === "none") onError("No game with that code");
+    });
+  });
+  // no socket (yet, or any more): ask over http until there is one
+  const stopWatch = onSocket((open) => !open && poll());
+  const first = setTimeout(poll, 2500);
   return () => {
     stopped = true;
     clearTimeout(timer);
+    clearTimeout(first);
+    stopWatch();
+    unfollow();
   };
+}
+
+// ---------- phones as dice cups: each seat's mailbox ----------
+
+/** the host: which seats may write, by the sha-256 of each seat's key */
+export async function registerSeats({ code, key }: Live, seats: Record<string, string>) {
+  const { id } = await codeKeys(code);
+  if (relay({ t: "seats", id, key, seats })) return true;
+  const r = await fetch(`${API}/api/live/${id}/seats`, { method: "PUT", headers: { "Content-Type": "application/json", "X-Live-Key": key }, body: JSON.stringify({ seats }) }).catch(() => null);
+  return !!r?.ok;
+}
+
+/**
+ * the host: hear each phone's mailbox (unsealed), as it's written. over the
+ * socket it's pushed; without one, the mailboxes are asked for every couple
+ * of seconds. returns stop
+ */
+export function watchSeats(code: string, cb: (seat: string, text: string) => void, everyMs = 2000) {
+  let set = seatListeners.get(code);
+  if (!set) seatListeners.set(code, (set = new Set()));
+  set.add(cb);
+  void host(code);
+  const seen = new Map<string, number>();
+  let timer: ReturnType<typeof setInterval> | undefined;
+  const ask = async () => {
+    if (socketOpen()) return;
+    const { id, key } = await codeKeys(code);
+    const r = await fetch(`${API}/api/live/${id}/mail`, { cache: "no-store" }).catch(() => null);
+    if (!r?.ok) return;
+    const { mail } = (await r.json()) as { mail: { seat: string; data: string; updatedAt: number }[] };
+    for (const m of mail) {
+      if ((seen.get(m.seat) ?? 0) >= m.updatedAt) continue;
+      seen.set(m.seat, m.updatedAt);
+      const text = await unseal(key, m.data).catch(() => null);
+      if (text !== null) cb(m.seat, text);
+    }
+  };
+  timer = setInterval(ask, everyMs);
+  ask();
+  return () => {
+    set!.delete(cb);
+    clearInterval(timer);
+  };
+}
+
+/** a phone: write to its own seat's mailbox, sealed with the game's key */
+export async function sendSeat(code: string, seat: string, seatKey: string, text: string) {
+  const { id, key } = await codeKeys(code);
+  const data = await seal(key, text);
+  if (relay({ t: "seat", id, seat, key: seatKey, data })) return true;
+  const r = await fetch(`${API}/api/live/${id}/seat/${seat}`, { method: "PUT", headers: { "Content-Type": "application/json", "X-Seat-Key": seatKey }, body: JSON.stringify({ data }) }).catch(() => null);
+  return !!r?.ok;
 }

@@ -37,7 +37,35 @@ const round = (r: unknown) =>
   list(id)(r.losers) &&
   maybe(list(id))(r.gains) &&
   maybe(id)(r.winner) &&
-  num(r.at);
+  num(r.at) &&
+  maybe(faces)(r.reveal) &&
+  maybe(list(id))(r.cheats);
+/** dice by player: faces 1 to 6 */
+const faces = (x: unknown) => obj(x) && Object.entries(x).every(([k, v]) => id(k) && list((d) => num(d) && d >= 1 && d <= 6)(v));
+/** numbers by player, 0 to 5 (the host's half of each die) */
+const halves = (x: unknown) => obj(x) && Object.entries(x).every(([k, v]) => id(k) && list((d) => num(d) && d >= 0 && d <= 5)(v));
+const strings = (x: unknown) => obj(x) && Object.entries(x).every(([k, v]) => id(k) && typeof v === "string" && v.length <= 128);
+const cups = (c: unknown) =>
+  obj(c) &&
+  bool(c.on) &&
+  strings(c.seats) &&
+  num(c.round) &&
+  oneOf("commit", "play", "reveal")(c.phase) &&
+  maybe(strings)(c.commits) &&
+  maybe(halves)(c.host) &&
+  maybe((x) => obj(x) && Object.entries(x).every(([k, v]) => id(k) && list((d) => num(d) && d >= 1 && d <= 6)(v)))(c.shown) &&
+  maybe(list(id))(c.real) &&
+  maybe(list(id))(c.cheats) &&
+  maybe(
+    (x) =>
+      obj(x) &&
+      obj(x.bid) &&
+      num(x.bid.count) &&
+      num(x.bid.face) &&
+      id(x.bidder) &&
+      id(x.caller) &&
+      oneOf("liar", "spot")(x.call)
+  )(c.call);
 
 /** the stakes in words: "$10 buy-in, pool $60" or "$1 a die, to the winner of each call" */
 export function stakesLine(game: Game) {
@@ -154,7 +182,7 @@ export const dice: Kind = {
   Setup: () => import("./Setup.svelte"),
   Control: () => import("./Control.svelte"),
   Board: () => import("./Board.svelte"),
-  check: (g) => settings(g.dice) && maybe(list(round))(g.rounds),
+  check: (g) => settings(g.dice) && maybe(list(round))(g.rounds) && maybe(cups)(g.cups) && maybe(strings)(g.cupKeys),
   results,
   settle: settleDice,
   settled: (game) => game.finished,

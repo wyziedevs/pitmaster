@@ -14,6 +14,7 @@
   import { diceState, expected } from "./engine";
   import { faceCount, roundText } from "./actions";
   import { stakesLine } from "./index";
+  import { waitingOn } from "./cups";
   import { t, tp } from "$lib/i18n";
 
   let { game, narrow = false }: { game: Game; narrow?: boolean } = $props();
@@ -32,6 +33,13 @@
   const last = $derived(game.rounds?.at(-1));
   const moment = $derived(last?.call && last.bid && last.actual !== undefined && time.now - last.at < 9000 ? last : null);
   const right = $derived(!!moment && (moment.call === "liar" ? moment.actual! < moment.bid!.count : moment.actual === moment.bid!.count));
+
+  // phones as cups: where the round's at, and (after a call) every cup face up
+  const cups = $derived(game.cups?.on ? game.cups : null);
+  const waiting = $derived(cups ? waitingOn(game, st.alive) : []);
+  const shown = $derived(moment?.reveal ?? null);
+  // a die that counts toward the bid: its face, or a wild one
+  const counts = (v: number) => !!moment?.bid && (v === moment.bid.face || (st.wild && moment.bid.face !== 1 && v === 1));
 </script>
 
 <div class="dice-board" class:narrow>
@@ -61,7 +69,12 @@
           {@const lives = st.lives[p.id]}
           <div class="cup" class:out={lives === 0} class:starts={st.starter === p.id}>
             <span class="pname">{p.name}{#if st.starter === p.id}<span class="tag">{t("tv.dice.starts")}</span>{/if}</span>
-            <span class="dice">{#each Array.from({ length: d.dice }) as _, i (i)}<Die size="var(--die)" dim={i >= lives} />{/each}</span>
+            {#if shown?.[p.id]}
+              <span class="dice shown">{#each shown[p.id] as v, i (i)}<span class:hit={counts(v)}><Die value={v} size="var(--die)" /></span>{/each}</span>
+            {:else}
+              <span class="dice">{#each Array.from({ length: d.dice }) as _, i (i)}<Die size="var(--die)" dim={i >= lives} />{/each}</span>
+            {/if}
+            {#if moment?.cheats?.includes(p.id)}<span class="sub hot">{t("tv.cup.caught")}</span>{/if}
             {#if st.places[p.id]}<span class="sub">{t("tv.dice.outIn", { place: ordinal(st.places[p.id]!) })}</span>{/if}
           </div>
         {/each}
@@ -71,6 +84,9 @@
           <span class="k">{t("tv.dice.onTable")}</span>
           <span class="v fig">{st.total}</span>
           <span class="sub">{t("tv.dice.round", { n: String((game.rounds?.length ?? 0) + 1) })}</span>
+          {#if cups}
+            <span class="sub">{cups.phase === "commit" ? (waiting.length ? t("tv.cup.rollingFor", { names: waiting.map((id) => pname(id)).join(", ") }) : t("tv.cup.allIn")) : cups.phase === "play" ? t("tv.cup.bidding") : t("tv.cup.showing")}</span>
+          {/if}
         </div>
         <div class="stat">
           <span class="k">{st.wild ? t("tv.dice.expectedWild") : t("tv.dice.expectedPlain")}</span>
@@ -188,6 +204,20 @@
   }
   .cup.out {
     opacity: 0.45;
+  }
+  /* the cups up after a call: the dice that count toward the bid stand out */
+  .shown > span {
+    line-height: 0;
+    opacity: 0.45;
+  }
+  .shown > span.hit {
+    opacity: 1;
+    outline: 2px solid var(--tv-banner);
+    outline-offset: 2px;
+    border-radius: 3px;
+  }
+  .hot {
+    color: var(--tv-hot);
   }
   .side {
     border-left: var(--hair) solid var(--tv-line);

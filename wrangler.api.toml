@@ -18,3 +18,15 @@ workers_dev = false
 [[kv_namespaces]]
 binding = "LIVE"
 id = "f5ff8e6ed4044521b90aa00755d2c9b3"
+
+# live screens' websockets: one durable object (nitro's cloudflare-durable
+# preset names it $DurableObject) holds every tv's and phone's socket, so a
+# snapshot or a phone's mailbox is pushed the moment it arrives. sqlite-backed,
+# which the free plan needs; it keeps nothing of its own (kv does that).
+[[durable_objects.bindings]]
+name = "$DurableObject"
+class_name = "$DurableObject"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["$DurableObject"]

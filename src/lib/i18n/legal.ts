@@ -116,6 +116,15 @@ export interface LegalDict {
     exports: { title: string; p1: string; p2: string };
     tv: { title: string; p1: string; p2: string; li1: string; li2: string; li3: string; li4: string; li5: string; p3: string };
     protected: { title: string; li1: string; li2: string; li3: string; li4: string; li5: string; p1: string };
+    phones: {
+      title: string;
+      p1: string;
+      li1: string;
+      li2: string;
+      li3: string;
+      li4: string;
+      p2: string;
+    };
     host: { title: string; p1pre: string; linkText: string; p1post: string };
     other: { title: string; li1: string; li2: string; li3: string };
     choices: { title: string; li1pre: string; li1post: string; li2: string; li3: string };
@@ -302,6 +311,15 @@ export const legal: Record<Lang, LegalDict> = {
         li4: "To slow down anyone trying to guess TV codes, the TV code server counts each IP address's requests for a minute at a time. The counts are kept only in memory and are never stored or logged.",
         li5: "Files you import are checked before anything is saved, and one that doesn't look exactly like a PitMaster export is turned away whole.",
         p1: "No system is perfectly secure, and PitMaster is a side project, not an audited security product. Don't put anything in it you couldn't stand to lose or to have seen.",
+      },
+      phones: {
+        title: "Player Phones",
+        p1: "With phones as cups in liar's dice, each player's phone is their cup. The host's screen shows each player a code for their own seat, and the key that lets a phone write to that seat never goes anywhere but that phone and the host's screen.",
+        li1: "What a phone sends: first a hash of its numbers for the round (which gives nothing away), then, when a bid is called, the numbers themselves. Both are sealed with the game's key on the phone, like a TV snapshot.",
+        li2: "What the server can see: the game's id, each seat's id, a SHA-256 of each seat's key, and ciphertext. It never has a seat's key, a player's name or anyone's dice.",
+        li3: "What the host's screen can see: only what a phone has already shown. The host's own numbers are half of every die, and they're no use without the phone's half.",
+        li4: "A phone keeps its own numbers for the round sealed, with a key made on the phone that no script can read out, so a reload doesn't lose the cup. Nothing is kept in plain text.",
+        p2: "Like everything live, the mailboxes are deleted when the host stops sharing, or two days after the last update.",
       },
       host: {
         title: "Our Host",
@@ -552,6 +570,15 @@ export const legal: Record<Lang, LegalDict> = {
         li5: "你导入的文件在保存前都会被检查,任何看起来不完全像 PitMaster 导出文件的内容都会被整体拒绝。",
         p1: "没有任何系统是绝对安全的,PitMaster 是一个副业项目,而不是经过审计的安全产品。请不要在里面存放任何你无法承受丢失或被人看到的内容。",
       },
+      phones: {
+        title: "玩家手机",
+        p1: "在大话骰中使用手机当骰盅时，每位玩家的手机就是自己的骰盅。主持人的屏幕会为每位玩家显示一个对应自己座位的代码，而允许手机写入该座位的密钥只存在于那部手机和主持人的屏幕上，不会去往别处。",
+        li1: "手机发送的内容：先发送本轮点数的一个哈希值（不会透露任何信息），等有人对叫数喊开或刚好时，再发送点数本身。两者都会在手机上用本局的密钥加密，就像电视副本一样。",
+        li2: "服务器能看到的：本局的 ID、每个座位的 ID、每个座位密钥的 SHA-256 哈希值，以及密文。它从不持有座位的密钥、玩家的名字或任何人的骰子。",
+        li3: "主持人的屏幕能看到的：只有手机已经亮出的内容。主持人自己的点数是每颗骰子的一半，没有手机那一半就毫无用处。",
+        li4: "手机会把自己本轮的点数加密保存，所用的密钥在手机上生成，任何脚本都无法读取，所以重新加载页面也不会丢失骰盅。不会以明文保存任何内容。",
+        p2: "和所有直播内容一样，这些信箱会在主持人停止分享时删除，或在最后一次更新两天后删除。",
+      },
       host: {
         title: "我们的托管方",
         p1pre:
@@ -799,6 +826,15 @@ export const legal: Record<Lang, LegalDict> = {
         li4: "टीवी कोड का अंदाज़ा लगाने की कोशिश करने वालों को धीमा करने के लिए, टीवी कोड सर्वर हर IP एड्रेस के रिक्वेस्ट एक मिनट के हिसाब से गिनता है. ये गिनतियां सिर्फ मेमोरी में रहती हैं और कभी सेव या लॉग नहीं होतीं.",
         li5: "आप जो फाइलें इंपोर्ट करते हैं उन्हें सेव करने से पहले जांचा जाता है, और जो बिल्कुल किसी PitMaster एक्सपोर्ट जैसी नहीं दिखती, उसे पूरी तरह अस्वीकार कर दिया जाता है.",
         p1: "कोई भी सिस्टम पूरी तरह सुरक्षित नहीं होता, और PitMaster एक साइड प्रोजेक्ट है, न कि कोई ऑडिट किया गया सिक्योरिटी प्रोडक्ट. इसमें ऐसी कोई भी चीज़ न रखें जिसे खोना या किसी और के देख लेना आपको बर्दाश्त न हो.",
+      },
+      phones: {
+        title: "खिलाड़ियों के फ़ोन",
+        p1: "लायर्स डाइस में फ़ोन को कप बनाने पर, हर खिलाड़ी का फ़ोन उसका कप होता है. होस्ट की स्क्रीन हर खिलाड़ी को उसकी अपनी सीट का कोड दिखाती है, और जिस कुंजी से फ़ोन उस सीट पर लिख सकता है, वह उस फ़ोन और होस्ट की स्क्रीन के सिवा कहीं नहीं जाती.",
+        li1: "फ़ोन क्या भेजता है: पहले राउंड के अपने अंकों का एक हैश (जिससे कुछ पता नहीं चलता), फिर जब किसी बोली को चुनौती दी जाती है, तब खुद अंक. दोनों फ़ोन पर ही गेम की कुंजी से लॉक किए जाते हैं, बिल्कुल टीवी कॉपी की तरह.",
+        li2: "सर्वर क्या देख सकता है: गेम की ID, हर सीट की ID, हर सीट की कुंजी का एक SHA-256, और एन्क्रिप्ट किया हुआ डेटा. उसके पास कभी किसी सीट की कुंजी, किसी खिलाड़ी का नाम या किसी के पासे नहीं होते.",
+        li3: "होस्ट की स्क्रीन क्या देख सकती है: सिर्फ वही जो कोई फ़ोन पहले ही दिखा चुका है. होस्ट के अपने अंक हर पासे का आधा हिस्सा हैं, और फ़ोन के आधे हिस्से के बिना उनका कोई काम नहीं.",
+        li4: "फ़ोन राउंड के अपने अंक लॉक करके रखता है, एक ऐसी कुंजी से जो फ़ोन पर ही बनती है और जिसे कोई स्क्रिप्ट पढ़ नहीं सकती, इसलिए पेज रीलोड करने पर भी कप नहीं खोता. कुछ भी सादे टेक्स्ट में नहीं रखा जाता.",
+        p2: "लाइव की बाकी हर चीज़ की तरह, ये मेलबॉक्स तब मिट जाते हैं जब होस्ट शेयर करना बंद करता है, या आखिरी अपडेट के दो दिन बाद.",
       },
       host: {
         title: "हमारी होस्टिंग",
@@ -1048,6 +1084,15 @@ export const legal: Record<Lang, LegalDict> = {
         li5: "Los archivos que importas se revisan antes de guardar nada, y uno que no se parezca exactamente a una exportación de PitMaster es rechazado por completo.",
         p1: "Ningún sistema es perfectamente seguro, y PitMaster es un proyecto paralelo, no un producto de seguridad auditado. No pongas en él nada que no puedas soportar perder o que alguien más lo vea.",
       },
+      phones: {
+        title: "Teléfonos de los Jugadores",
+        p1: "Con teléfonos como cubiletes en el Perudo, el teléfono de cada jugador es su cubilete. La pantalla del anfitrión muestra a cada jugador un código para su propio asiento, y la clave que permite a un teléfono escribir en ese asiento nunca va a ningún sitio más que a ese teléfono y a la pantalla del anfitrión.",
+        li1: "Lo que envía un teléfono: primero un hash de sus números de la ronda (que no revela nada) y luego, cuando se canta sobre una apuesta, los números en sí. Ambos van bloqueados con la clave de la partida en el propio teléfono, como una copia de la TV.",
+        li2: "Lo que puede ver el servidor: el ID de la partida, el ID de cada asiento, un SHA-256 de la clave de cada asiento y texto cifrado. Nunca tiene la clave de un asiento, el nombre de un jugador ni los dados de nadie.",
+        li3: "Lo que puede ver la pantalla del anfitrión: solo lo que un teléfono ya ha mostrado. Los números propios del anfitrión son la mitad de cada dado, y no sirven de nada sin la mitad del teléfono.",
+        li4: "Un teléfono guarda bloqueados sus propios números de la ronda, con una clave creada en el teléfono que ningún script puede leer, así que recargar la página no hace perder el cubilete. Nada se guarda en texto plano.",
+        p2: "Como todo lo que está en vivo, los buzones se borran cuando el anfitrión deja de compartir, o dos días después de la última actualización.",
+      },
       host: {
         title: "Nuestro Proveedor de Alojamiento",
         p1pre:
@@ -1295,6 +1340,15 @@ export const legal: Record<Lang, LegalDict> = {
         li4: "Pour ralentir quiconque essaie de deviner des codes TV, le serveur de codes TV compte les requêtes de chaque adresse IP minute par minute. Les compteurs restent uniquement en mémoire et ne sont jamais stockés ni journalisés.",
         li5: "Les fichiers que vous importez sont vérifiés avant tout enregistrement, et un fichier qui ne ressemble pas exactement à un export PitMaster est rejeté en bloc.",
         p1: "Aucun système n'est parfaitement sûr, et PitMaster est un projet parallèle, pas un produit de sécurité audité. N'y mettez rien que vous ne pourriez pas supporter de perdre ou de voir vu par quelqu'un d'autre.",
+      },
+      phones: {
+        title: "Téléphones des Joueurs",
+        p1: "Avec les téléphones en gobelets au Perudo, le téléphone de chaque joueur est son gobelet. L'écran de l'hôte montre à chaque joueur un code pour son propre siège, et la clé qui permet à un téléphone d'écrire sur ce siège ne va nulle part ailleurs que sur ce téléphone et l'écran de l'hôte.",
+        li1: "Ce qu'envoie un téléphone : d'abord un hachage de ses nombres pour la manche (qui ne révèle rien), puis, quand une annonce est contestée, les nombres eux-mêmes. Les deux sont verrouillés avec la clé de la partie sur le téléphone, comme une copie TV.",
+        li2: "Ce que le serveur peut voir : l'identifiant de la partie, celui de chaque siège, un SHA-256 de la clé de chaque siège, et du texte chiffré. Il n'a jamais la clé d'un siège, le nom d'un joueur ni les dés de qui que ce soit.",
+        li3: "Ce que l'écran de l'hôte peut voir : uniquement ce qu'un téléphone a déjà montré. Les nombres de l'hôte forment la moitié de chaque dé, et ils ne servent à rien sans la moitié du téléphone.",
+        li4: "Un téléphone garde ses propres nombres de la manche verrouillés, avec une clé créée sur le téléphone qu'aucun script ne peut lire, si bien qu'un rechargement ne fait pas perdre le gobelet. Rien n'est conservé en clair.",
+        p2: "Comme tout ce qui est en direct, les boîtes aux lettres sont supprimées quand l'hôte arrête le partage, ou deux jours après la dernière mise à jour.",
       },
       host: {
         title: "Notre Hébergeur",
@@ -1544,6 +1598,15 @@ export const legal: Record<Lang, LegalDict> = {
         li5: "تُفحص الملفات التي تستوردها قبل حفظ أي شيء منها، ويُرفض بالكامل أي ملف لا يبدو تماماً كتصدير حقيقي من PitMaster.",
         p1: "لا يوجد نظام آمن تماماً، وPitMaster مشروع جانبي، وليس منتج أمان خاضع للتدقيق. لا تضع فيه أي شيء لا تحتمل خسارته أو رؤية شخص آخر له.",
       },
+      phones: {
+        title: "هواتف اللاعبين",
+        p1: "عند استخدام الهواتف كأكواب في نرد الكذاب، يكون هاتف كل لاعب هو كوبه. تعرض شاشة المضيف لكل لاعب رمزًا لمقعده الخاص، والمفتاح الذي يتيح للهاتف الكتابة إلى ذلك المقعد لا يذهب أبدًا إلى أي مكان غير ذلك الهاتف وشاشة المضيف.",
+        li1: "ما يرسله الهاتف: أولًا تجزئة لأرقامه في الجولة (لا تكشف شيئًا)، ثم الأرقام نفسها عندما يُعلن تحدٍّ على مزايدة. كلاهما يُقفل بمفتاح اللعبة على الهاتف نفسه، مثل نسخة التلفاز.",
+        li2: "ما يمكن للخادم رؤيته: معرّف اللعبة، ومعرّف كل مقعد، وتجزئة SHA-256 لمفتاح كل مقعد، ونصًا مشفرًا. لا يملك أبدًا مفتاح أي مقعد، ولا اسم أي لاعب، ولا أحجار أي أحد.",
+        li3: "ما يمكن لشاشة المضيف رؤيته: فقط ما كشفه الهاتف بالفعل. أرقام المضيف نفسه هي نصف كل حجر، ولا فائدة منها دون نصف الهاتف.",
+        li4: "يحتفظ الهاتف بأرقامه للجولة مقفلة، بمفتاح يُنشأ على الهاتف لا يستطيع أي نص برمجي قراءته، لذا لا تؤدي إعادة تحميل الصفحة إلى فقدان الكوب. لا يُحفظ أي شيء كنص عادي.",
+        p2: "مثل كل ما هو مباشر، تُحذف صناديق البريد عندما يوقف المضيف المشاركة، أو بعد يومين من آخر تحديث.",
+      },
       host: {
         title: "من يستضيف الموقع",
         p1pre:
@@ -1792,6 +1855,15 @@ export const legal: Record<Lang, LegalDict> = {
         li5: "আপনার ইমপোর্ট করা ফাইলগুলো কিছু সংরক্ষণের আগেই যাচাই করা হয়, আর যেটি একদম PitMaster এক্সপোর্টের মতো দেখায় না তা সম্পূর্ণভাবে প্রত্যাখ্যান করা হয়।",
         p1: "কোনো সিস্টেমই পুরোপুরি নিরাপদ নয়, আর PitMaster একটি সাইড প্রজেক্ট, কোনো অডিট করা সিকিউরিটি প্রোডাক্ট নয়। এতে এমন কিছু রাখবেন না যা হারানো বা অন্য কারও দেখে ফেলা আপনি সহ্য করতে পারবেন না।",
       },
+      phones: {
+        title: "খেলোয়াড়দের ফোন",
+        p1: "লায়ার্স ডাইসে ফোনকে কাপ হিসেবে ব্যবহার করলে, প্রত্যেক খেলোয়াড়ের ফোনই তার কাপ। হোস্টের স্ক্রিন প্রত্যেক খেলোয়াড়কে তার নিজের আসনের একটি কোড দেখায়, আর যে কী দিয়ে একটি ফোন সেই আসনে লিখতে পারে, সেটি সেই ফোন আর হোস্টের স্ক্রিন ছাড়া আর কোথাও যায় না।",
+        li1: "একটি ফোন যা পাঠায়: প্রথমে রাউন্ডের জন্য তার সংখ্যাগুলোর একটি হ্যাশ (যা কিছুই ফাঁস করে না), তারপর কোনো ডাকে চ্যালেঞ্জ হলে সংখ্যাগুলো নিজেই। দুটোই ফোনেই গেমের কী দিয়ে লক করা হয়, ঠিক টিভির কপির মতো।",
+        li2: "সার্ভার যা দেখতে পায়: গেমের ID, প্রতিটি আসনের ID, প্রতিটি আসনের কী-এর একটি SHA-256, আর এনক্রিপ্ট করা লেখা। এর কাছে কখনো কোনো আসনের কী, কোনো খেলোয়াড়ের নাম বা কারও পাশা থাকে না।",
+        li3: "হোস্টের স্ক্রিন যা দেখতে পায়: শুধু যা কোনো ফোন আগেই দেখিয়েছে। হোস্টের নিজের সংখ্যাগুলো প্রতিটি পাশার অর্ধেক, আর ফোনের অর্ধেক ছাড়া সেগুলো কোনো কাজে আসে না।",
+        li4: "একটি ফোন রাউন্ডের জন্য তার নিজের সংখ্যাগুলো লক করে রাখে, ফোনেই তৈরি এমন একটি কী দিয়ে যা কোনো স্ক্রিপ্ট পড়তে পারে না, তাই রিলোড করলেও কাপ হারায় না। কিছুই সাধারণ লেখায় রাখা হয় না।",
+        p2: "লাইভের সবকিছুর মতো, হোস্ট শেয়ার করা বন্ধ করলে, অথবা শেষ আপডেটের দুই দিন পর, মেইলবক্সগুলো মুছে যায়।",
+      },
       host: {
         title: "আমাদের হোস্ট",
         p1pre:
@@ -2039,6 +2111,15 @@ export const legal: Record<Lang, LegalDict> = {
         li4: "Para atrasar quem tentar adivinhar códigos de TV, o servidor de códigos de TV conta as requisições de cada endereço IP minuto a minuto. As contagens ficam só na memória e nunca são armazenadas ou registradas.",
         li5: "Os arquivos que você importa são verificados antes de qualquer coisa ser salva, e um que não pareça exatamente com uma exportação do PitMaster é rejeitado por completo.",
         p1: "Nenhum sistema é perfeitamente seguro, e o PitMaster é um projeto paralelo, não um produto de segurança auditado. Não coloque nele nada que você não suportaria perder ou ver por outra pessoa.",
+      },
+      phones: {
+        title: "Celulares dos Jogadores",
+        p1: "Com celulares como copos no Dado Mentiroso, o celular de cada jogador é o copo dele. A tela do anfitrião mostra a cada jogador um código para o próprio lugar, e a chave que permite a um celular escrever nesse lugar nunca vai a lugar nenhum além desse celular e da tela do anfitrião.",
+        li1: "O que um celular envia: primeiro um hash dos seus números da rodada (que não revela nada) e depois, quando uma aposta é desafiada, os próprios números. Os dois são trancados com a chave do jogo no próprio celular, como uma cópia da TV.",
+        li2: "O que o servidor pode ver: o ID do jogo, o ID de cada lugar, um SHA-256 da chave de cada lugar e texto cifrado. Ele nunca tem a chave de um lugar, o nome de um jogador nem os dados de ninguém.",
+        li3: "O que a tela do anfitrião pode ver: só o que um celular já mostrou. Os números do próprio anfitrião são metade de cada dado, e não servem para nada sem a metade do celular.",
+        li4: "Um celular guarda os próprios números da rodada trancados, com uma chave criada no celular que nenhum script consegue ler, então recarregar a página não faz perder o copo. Nada é guardado em texto puro.",
+        p2: "Como tudo que é ao vivo, as caixas de correio são apagadas quando o anfitrião para de compartilhar, ou dois dias após a última atualização.",
       },
       host: {
         title: "Nosso Provedor",

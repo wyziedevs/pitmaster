@@ -344,6 +344,39 @@ export interface DiceRound {
   /** who won the call (a die lost is paid to them, when the stakes say so) */
   winner?: string;
   at: number;
+  /** phones as cups: everyone's dice, as the phones showed them at the call */
+  reveal?: Record<string, number[]>;
+  /** phones as cups: players whose phone's numbers didn't match what it locked in */
+  cheats?: string[];
+}
+
+/**
+ * phones as dice cups (kinds/dice/cups.ts): the round in play. what's here is
+ * safe for anyone holding the live code to see: seat ids, the phones' hashes,
+ * the host's numbers (no use without each phone's own), and what the phones
+ * have already shown.
+ */
+export interface CupState {
+  /** the table plays with phones (false: back to real cups) */
+  on: boolean;
+  /** each player's seat, by player id */
+  seats: Record<string, string>;
+  /** the round being dealt (the number of rounds played, plus one) */
+  round: number;
+  /** commit: the phones lock in; play: everyone can look; reveal: a call, the phones show */
+  phase: "commit" | "play" | "reveal";
+  /** each phone's hash for this round, by player id */
+  commits?: Record<string, string>;
+  /** the host's numbers, once every hash is in: one a die, by player id */
+  host?: Record<string, number[]>;
+  /** each phone's dice, once it's shown them on a call (empty: it didn't match) */
+  shown?: Record<string, number[]>;
+  /** players rolling real dice this round (their phone dropped out) */
+  real?: string[];
+  /** players whose numbers didn't match their hash this round */
+  cheats?: string[];
+  /** the call being counted */
+  call?: { bid: { count: number; face: number }; bidder: string; caller: string; call: "liar" | "spot" };
 }
 
 export interface Game {
@@ -390,6 +423,10 @@ export interface Game {
   /** liar's dice: how it's played, and every round so far */
   dice?: DiceSettings;
   rounds?: DiceRound[];
+  /** liar's dice with phones as cups: the round in play */
+  cups?: CupState;
+  /** each player's seat key: only on the host's own device, never in a snapshot */
+  cupKeys?: Record<string, string>;
   /** cash: the side games' bomb pots, 7-2 wins and high hands, in order */
   sides?: SideEvent[];
   /** shared costs: they go into settle-up, not into anyone's results */

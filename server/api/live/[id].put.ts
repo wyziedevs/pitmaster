@@ -1,4 +1,5 @@
-// the host pushes the latest snapshot, sealed in their browser. needs the write key.
+// the host pushes the latest snapshot, sealed in their browser. needs the write
+// key. (the host's own websocket does the same, faster: see routes/api/live/socket.ts)
 export default defineEventHandler(async (event) => {
   const id = liveId(event);
   const rec = await ownLive(event, id);
@@ -7,5 +8,7 @@ export default defineEventHandler(async (event) => {
 
   const updatedAt = Date.now();
   await putLive(id, { ...rec, data, updatedAt });
+  // screens following over a websocket hear it now
+  push(event, id, { t: "snap", id, data, at: updatedAt });
   return { ok: true, updatedAt };
 });

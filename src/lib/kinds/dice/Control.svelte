@@ -7,6 +7,12 @@
   import Undo2 from "@lucide/svelte/icons/undo-2";
   import Trophy from "@lucide/svelte/icons/trophy";
   import Megaphone from "@lucide/svelte/icons/megaphone";
+  import Smartphone from "@lucide/svelte/icons/smartphone";
+  import QrCode from "$lib/components/QrCode.svelte";
+  import CopyButton from "$lib/components/CopyButton.svelte";
+  import { registerSeats, watchSeats } from "$lib/sync";
+  import { callForReveal, countCall, seatHashes, startCups, stopCups, takeMail, toRealDice } from "./host";
+  import { waitingOn } from "./cups";
   import type { DiceRound, Game } from "$lib/types";
   import { addPlayer, logEvent, settleUp, HOUSE } from "$lib/game";
   import { money, ordinal, round2, signed } from "$lib/util";
@@ -122,6 +128,57 @@
     act(() => undoRound(game));
   }
 
+  // ---- phones as dice cups ----
+  const cups = $derived(game.cups?.on ? game.cups : null);
+  const waiting = $derived(cups ? waitingOn(game, st.alive) : []);
+  const cupLink = (pid: string) => (game.live && game.cups && game.cupKeys?.[pid] ? `${location.origin}/cup#${game.live.code}.${game.cups.seats[pid]}.${game.cupKeys[pid]}` : "");
+  // the relay learns each seat's key hash once, whenever the seats change
+  let registered = "";
+  $effect(() => {
+    const live = game.live;
+    if (!live || !cups) return;
+    const snap = $state.snapshot(game) as Game;
+    const key = `${live.code}|${JSON.stringify(snap.cups?.seats)}`;
+    if (key === registered) return;
+    registered = key;
+    seatHashes(snap).then((h) => registerSeats(live, h));
+  });
+  // each phone's mailbox, as it's written: a hash, then (on a call) its numbers
+  $effect(() => {
+    const code = game.live?.code;
+    if (!code || !game.cups?.on) return;
+    return watchSeats(code, async (seat, text) => {
+      if (!(await takeMail(game, seat, text))) return;
+      // every cup shown (and nobody on real dice): count it right away
+      const c = game.cups;
+      if (c?.phase === "reveal" && !waitingOn(game, diceState(game).alive).length && !c.real?.length) countCall(game);
+      persist();
+    });
+  });
+  function phonesOn() {
+    play("riffle");
+    act(() => startCups(game));
+    setEntry("full");
+  }
+  function phonesOff() {
+    if (!confirm(t("gamePlay.dice.cups.offConfirm"))) return;
+    act(() => stopCups(game));
+  }
+  // a call with phones: the bid and who called it, then the phones show and PitMaster counts
+  function phoneCall(e: SubmitEvent) {
+    e.preventDefault();
+    if (!count || !bidder || !caller || bidder === caller) return;
+    play("bust");
+    act(() => callForReveal(game, { bid: { count: count!, face }, bidder, caller, call }));
+  }
+  let realCounts = $state<Record<string, number>>({});
+  function countNow() {
+    play("chips");
+    act(() => countCall(game, $state.snapshot(realCounts)));
+    realCounts = {};
+    reset();
+  }
+
   const net = (id: string) => round2((st.money.won[id] ?? 0) - (st.money.paid[id] ?? 0));
   const cls = (n: number) => (n > 0.001 ? "good" : n < -0.001 ? "bad" : "");
   const showNet = $derived(game.finished || d.stakes.mode === "perDie");
@@ -205,11 +262,60 @@
       <div class="part mt-[22px]">
         <div class="spread">
           <h2>{t("gamePlay.dice.roundHeading", { n: String((game.rounds?.length ?? 0) + 1) })}</h2>
-          <Seg value={d.entry} options={[{ id: "full", label: t("gameSetup.dice.entryFull") }, { id: "quick", label: t("gameSetup.dice.entryQuick") }]} onpick={setEntry} labelledby="entry-l" />
+          {#if !cups}<Seg value={d.entry} options={[{ id: "full", label: t("gameSetup.dice.entryFull") }, { id: "quick", label: t("gameSetup.dice.entryQuick") }]} onpick={setEntry} labelledby="entry-l" />{/if}
           <span id="entry-l" class="sr-only">{t("gameSetup.dice.entryLegend")}</span>
         </div>
 
-        {#if d.entry === "quick"}
+        {#if cups}
+          {#if cups.phase === "commit"}
+            <p class="small mt-0"><Icon icon={Smartphone} size="1em" /> {waiting.length ? t("gamePlay.dice.cups.rolling", { names: waiting.map((id) => pname(id)).join(", ") }) : t("gamePlay.dice.cups.dealing")}</p>
+          {:else if cups.phase === "play"}
+            <p class="small mt-0"><Icon icon={Smartphone} size="1em" /> {t("gamePlay.dice.cups.bidAway")}</p>
+          {/if}
+          {#if cups.phase !== "reveal"}
+            <form autocomplete="off" onsubmit={phoneCall}>
+              <div class="row">
+                <label><span>{t("gamePlay.dice.bid")}</span><input type="number" min="1" step="1" class="w-[80px]" bind:value={count} /></label>
+                <div>
+                  <span class="block small muted mb-1">{t("gamePlay.dice.face")}</span>
+                  <span class="inline-flex gap-1" role="radiogroup" aria-label={t("gamePlay.dice.face")}>
+                    {#each [1, 2, 3, 4, 5, 6] as f (f)}<button type="button" class="facebtn" class:on={face === f} aria-pressed={face === f} data-sound="tap" onclick={() => (face = f)}><Die value={f} size="26px" label={String(f)} /></button>{/each}
+                  </span>
+                </div>
+              </div>
+              <div class="row">
+                <label><span>{t("gamePlay.dice.bidBy")}</span>
+                  <select bind:value={bidder}><option value="">…</option>{#each alivePlayers as p (p.id)}<option value={p.id}>{p.name}</option>{/each}</select>
+                </label>
+                <label><span>{t("gamePlay.dice.calledBy")}</span>
+                  <select bind:value={caller}><option value="">…</option>{#each alivePlayers.filter((p) => p.id !== bidder) as p (p.id)}<option value={p.id}>{p.name}</option>{/each}</select>
+                </label>
+                {#if d.spotOn !== "off"}
+                  <label><span>{t("gamePlay.dice.call")}</span>
+                    <select bind:value={call}><option value="liar">{t("gamePlay.dice.callLiar")}</option><option value="spot">{t("gamePlay.dice.callSpot")}</option></select>
+                  </label>
+                {/if}
+              </div>
+              <button data-sound="none" disabled={!count || !bidder || !caller || cups.phase !== "play"}>{call === "liar" ? t("gamePlay.dice.callLiarButton") : t("gamePlay.dice.callSpotButton")}</button>
+            </form>
+          {:else}
+            <p class="small mt-0"><Icon icon={Smartphone} size="1em" /> {waiting.length ? t("gamePlay.dice.cups.showing", { names: waiting.map((id) => pname(id)).join(", ") }) : t("gamePlay.dice.cups.allShown")}</p>
+            {#if cups.real?.length}
+              <div class="row">
+                {#each cups.real as id (id)}
+                  <label><span>{t("gamePlay.dice.cups.realCount", { name: pname(id), faces: t(`gamePlay.dice.faceNames.f${cups.call?.bid.face ?? 2}`) })}</span><input type="number" min="0" step="1" class="w-[80px]" bind:value={realCounts[id]} /></label>
+                {/each}
+              </div>
+            {/if}
+            <button data-sound="none" disabled={waiting.length > 0} onclick={countNow}>{t("gamePlay.dice.cups.countNow")}</button>
+          {/if}
+          {#if waiting.length}
+            <p class="small links mt-2">
+              <span class="muted">{t("gamePlay.dice.cups.dropped")}</span>
+              {#each waiting as id (id)}<button class="link" data-sound="tap" onclick={() => act(() => toRealDice(game, id))}>{t("gamePlay.dice.cups.toReal", { name: pname(id) })}</button>{/each}
+            </p>
+          {/if}
+        {:else if d.entry === "quick"}
           <p class="small muted mt-0">{perWinner ? t("gamePlay.dice.quickHintWinner") : t("gamePlay.dice.quickHint")}</p>
           <div class="row">
             {#each alivePlayers as p (p.id)}<button class:on={quickLoser === p.id} aria-pressed={quickLoser === p.id} data-sound={perWinner ? "tap" : "none"} onclick={() => tapLoser(p.id)}>{p.name}</button>{/each}
@@ -283,6 +389,29 @@
   </section>
 
   <section>
+    {#if !game.finished}
+      <div class="mb-[22px]">
+        <h2><Icon icon={Smartphone} size="1em" /> {t("gamePlay.dice.cups.heading")}</h2>
+        {#if !cups}
+          <p class="small muted mt-0">{t("gamePlay.dice.cups.intro")}</p>
+          {#if game.live}<button data-sound="none" onclick={phonesOn}>{t("gamePlay.dice.cups.turnOn")}</button>
+          {:else}<p class="small">{t("gamePlay.dice.cups.goLiveFirst")}</p>{/if}
+        {:else}
+          <p class="small muted mt-0">{t("gamePlay.dice.cups.scan")}</p>
+          <div class="seats">
+            {#each alivePlayers as p (p.id)}
+              {@const link = cupLink(p.id)}
+              <div class="seat">
+                <b>{p.name}{#if cups.commits?.[p.id] || cups.shown?.[p.id]}<span class="good small"> ✓</span>{/if}</b>
+                {#if link}<QrCode text={link} label={t("gamePlay.dice.cups.qrLabel", { name: p.name })} size="112px" />{/if}
+                {#if link}<CopyButton text={() => link} link icon={false} label={t("gamePlay.dice.cups.copyLink")} />{/if}
+              </div>
+            {/each}
+          </div>
+          <p class="small links"><button class="link muted" data-sound="off" onclick={phonesOff}>{t("gamePlay.dice.cups.turnOff")}</button></p>
+        {/if}
+      </div>
+    {/if}
     <h2>{t("gamePlay.dice.moneyHeading")}</h2>
     {#if d.stakes.mode === "pot"}
       <p class="small">{stakesLine(game)}</p>
@@ -337,5 +466,16 @@
   }
   .rounds li {
     padding: 2px 0;
+  }
+  .seats {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+    gap: 14px;
+  }
+  .seat {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
   }
 </style>

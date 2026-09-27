@@ -13,7 +13,7 @@ export default defineEventHandler((event) => {
   if (event.method !== "OPTIONS") return;
   setResponseHeaders(event, {
     "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, X-Live-Key",
+    "Access-Control-Allow-Headers": "Content-Type, X-Live-Key, X-Seat-Key",
     "Access-Control-Max-Age": "86400",
   });
   setResponseStatus(event, 204);

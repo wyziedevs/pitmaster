@@ -63,7 +63,8 @@
 
   // tv screens get the whole viewport, no site chrome. they're never locked
   // (they hold no key, see lock.svelte.ts) and nothing on them edits anything.
-  const bare = $derived(page.url.pathname.endsWith("/tv"));
+  // (a phone as a dice cup too: it's a screen of the game, not the site)
+  const bare = $derived(page.url.pathname.endsWith("/tv") || page.url.pathname === "/cup");
   // pages with nothing saved on them stay open while locked
   const unlockedPage = $derived(bare || ["/live", "/help", "/privacy", "/terms"].includes(page.url.pathname));
   // what's saved can be read (in memory only, on plain http)

@@ -16,10 +16,67 @@ export interface LiveRecord {
   updatedAt: number;
 }
 
+/** a seat's mailbox: what that phone last sent, sealed with the game's key on the phone */
+export interface SeatMail {
+  data: string;
+  updatedAt: number;
+}
+
 const TTL = 60 * 60 * 24 * 2; // copies are deleted 2 days after their last update
 const MAX_BODY = 1_000_000; // bytes; a big tournament's snapshot is well under this
 
 export const liveStorage = () => useStorage<LiveRecord>("live");
+const mailStorage = () => useStorage<SeatMail>("live");
+/**
+ * phones as dice cups: sha-256 of each seat's write key, by seat id (the keys
+ * themselves are never stored), so a phone can write to its own mailbox and no
+ * one else's. kept apart from the game ("h:<id>"), so the host's snapshots
+ * and its seats never race for the same record
+ */
+const seatsStorage = () => useStorage<Record<string, string>>("live");
+export const getSeats = async (id: string) => (await seatsStorage().getItem(`h:${id}`)) ?? {};
+export const putSeats = (id: string, seats: Record<string, string>) => seatsStorage().setItem(`h:${id}`, seats, { ttl: TTL });
+
+/** a seat's mailbox: "s:<id>:<seat>" (apart from the games, which are bare ids) */
+const mailKey = (id: string, seat: string) => `s:${id}:${seat}`;
+
+/** a seat id: 16 url-safe characters, made by the host */
+export const isSeat = (s: unknown): s is string => typeof s === "string" && /^[A-Za-z0-9_-]{16}$/.test(s);
+
+export async function putMail(id: string, seat: string, data: string) {
+  const mail = { data, updatedAt: Date.now() };
+  await mailStorage().setItem(mailKey(id, seat), mail, { ttl: TTL });
+  return mail;
+}
+
+/** every seat's mailbox for a game */
+export async function allMail(id: string) {
+  const keys = await mailStorage().getKeys(`s:${id}`);
+  const out: { seat: string; data: string; updatedAt: number }[] = [];
+  for (const k of keys) {
+    const m = await mailStorage().getItem(k);
+    const seat = k.split(":").at(-1)!;
+    if (m && isSeat(seat)) out.push({ seat, ...m });
+  }
+  return out;
+}
+
+/** stop sharing takes the mailboxes (and the seats) too */
+export async function dropMail(id: string) {
+  for (const k of await mailStorage().getKeys(`s:${id}`)) await mailStorage().removeItem(k);
+  await seatsStorage().removeItem(`h:${id}`);
+}
+
+/** a seat's own key, checked against the hash the host left for it */
+export async function ownSeat(id: string, seat: unknown, key: unknown) {
+  if (!isSeat(seat) || !isKey(key)) return false;
+  const hash = (await getSeats(id))[seat];
+  return !!hash && same(await hashKey(key), hash);
+}
+
+/** the seats a host may name: up to 40, each an id and a sha-256 */
+export const isSeats = (s: unknown): s is Record<string, string> =>
+  !!s && typeof s === "object" && Object.keys(s).length <= 40 && Object.entries(s).every(([k, h]) => isSeat(k) && typeof h === "string" && /^[0-9a-f]{64}$/.test(h));
 
 /** a wrong code or key. each one counts toward the address's limit (see middleware/limit.ts) */
 export function missing(event: H3Event, statusCode = 404) {
@@ -55,7 +112,7 @@ export async function ownLive(event: H3Event, id: string) {
 }
 
 /** compare two hashes in the same time whatever they hold */
-function same(a: string, b: string) {
+export function same(a: string, b: string) {
   if (a.length !== b.length) return false;
   let diff = 0;
   for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);

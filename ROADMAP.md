@@ -193,6 +193,8 @@ The first game that isn't poker. It's built on a **last one standing** engine, w
 
 ### Phase 10b: Phones as dice cups
 
+**Status: done.** The dice kind's dealer screen turns phones on once the game is live, and shows each player a QR code for their own cup (`/cup#CODE.SEAT.KEY`). The protocol is in `kinds/dice/cups.ts` (shared), `host.ts` (the host's device) and `Cup.svelte` (the phone). Every call is counted as soon as every cup is shown; with someone on real dice, the host types their count and counts it. The relay is the same nitro worker, now on the `cloudflare-durable` preset with websockets, and seat hashes are kept apart from the snapshot (`h:<id>`) so the two never race for kv's one write a second.
+
 Each player's phone is their cup. They shake it, peek at their dice, and on a call every phone reveals at once on the TV, and PitMaster counts the dice itself. No one, including the host, can see anyone's dice early, and no one can pick their own.
 
 **Fair rolls (commit, then reveal).** Neither side alone decides a die:
