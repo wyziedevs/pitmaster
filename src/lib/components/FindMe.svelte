@@ -3,7 +3,7 @@
   // bounty and where you stand. it only reads the snapshot the tv already
   // has, and what's typed stays on this page (nothing is saved or sent).
   import type { Game } from "$lib/types";
-  import { bountyBook, koCount, paidFor, tableCounts, tourneyStats } from "$lib/game";
+  import { bountyBook, koCount, paidFor, roundName, tableCounts, tourneyStats } from "$lib/game";
   import { duration, money, nameKey, ordinal } from "$lib/util";
   import { prefs } from "$lib/settings.svelte";
   import { time } from "$lib/now.svelte";
@@ -53,7 +53,14 @@
     if (p.place === 1 && !seatWon) out.push({ text: t("tv.find.winner"), tone: "good" });
     else if (seatWon) out.push({ text: t("tv.find.wonSeat"), tone: "good" });
     else if (p.out) out.push({ text: t("tv.find.outIn", { place: ordinal(p.place ?? 0) }), tone: "hot" });
-    else {
+    else if (game.matches?.length) {
+      // a bracket: who they play next, or who they're waiting on
+      const m = game.matches.find((x) => !x.winner && (x.a === p.id || x.b === p.id));
+      const opp = m && (m.a === p.id ? m.b : m.a);
+      const name = (id: string) => game.players.find((x) => x.id === id)?.name ?? "?";
+      out.push({ text: m ? (opp ? t("tv.find.nextMatch", { name: name(opp), round: roundName(game, m.round) }) : t("tv.find.waitingMatch", { round: roundName(game, m.round) })) : t("tv.find.stillIn"), tone: "good" });
+      out.push({ text: tp("tv.find.left", s.left) });
+    } else {
       out.push({ text: seatText || (tables ? t("tv.find.noSeat") : t("tv.find.stillIn")), tone: "good" });
       out.push({ text: tp("tv.find.left", s.left) });
     }

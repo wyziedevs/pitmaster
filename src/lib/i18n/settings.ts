@@ -69,6 +69,10 @@ export interface SettingsDict {
       payLinks: { label: string; hint: string };
       satellites: { label: string; hint: string };
       shootouts: { label: string; hint: string };
+      brackets: {
+        label: string;
+        hint: string;
+      };
       waitlist: { label: string; hint: string };
       leagues: {
         label: string;
@@ -371,6 +375,10 @@ export const settings: Record<Lang, SettingsDict> = {
         payLinks: { label: "Pay Links", hint: "Venmo, Cash App and PayPal links in settle-up and payouts." },
         satellites: { label: "Satellites", hint: "Tournaments whose prizes are seats in another game. The winners come in on New Game with their buy-in paid." },
         shootouts: { label: "Shootouts", hint: "Each table plays down to one winner, then the winners meet at a final table." },
+        brackets: {
+          label: "Heads-Up Brackets",
+          hint: "Tournaments played one on one, each winner moving on to the next round.",
+        },
         waitlist: { label: "Waitlist", hint: "Cash games: who's next for a seat, on the TV and on phones." },
         leagues: {
           label: "Leagues",
@@ -735,6 +743,10 @@ export const settings: Record<Lang, SettingsDict> = {
         payLinks: { label: "收款链接", hint: "在结算和派奖中使用的 Venmo、Cash App 和 PayPal 链接。" },
         satellites: { label: "卫星赛", hint: "奖品是另一场比赛席位的锦标赛。赢家在新建比赛时加入，买入已付。" },
         shootouts: { label: "淘汰赛", hint: "每桌打到只剩一位赢家，然后赢家们在决赛桌相遇。" },
+        brackets: {
+          label: "单挑对阵",
+          hint: "一对一进行的锦标赛，每位赢家晋级下一轮。",
+        },
         waitlist: { label: "候补名单", hint: "现金局：谁下一个入座，显示在电视和手机上。" },
         leagues: {
           label: "联赛",
@@ -1098,6 +1110,10 @@ export const settings: Record<Lang, SettingsDict> = {
         payLinks: { label: "पे लिंक्स", hint: "सेटल-अप और पेआउट्स में Venmo, Cash App और PayPal के लिंक्स।" },
         satellites: { label: "सैटेलाइट", hint: "ऐसे टूर्नामेंट जिनका इनाम दूसरे गेम की सीट है। विजेता नया गेम में बाय-इन चुकाए हुए आते हैं।" },
         shootouts: { label: "शूटआउट", hint: "हर टेबल एक विजेता तक खेलती है, फिर विजेता फाइनल टेबल पर मिलते हैं।" },
+        brackets: {
+          label: "हेड्स-अप ब्रैकेट",
+          hint: "आमने-सामने खेले जाने वाले टूर्नामेंट, जिनमें हर विजेता अगले राउंड में जाता है।",
+        },
         waitlist: { label: "वेटलिस्ट", hint: "कैश गेम: अगली सीट किसकी है, टीवी और फ़ोन पर।" },
         leagues: {
           label: "लीग",
@@ -1461,6 +1477,10 @@ export const settings: Record<Lang, SettingsDict> = {
         payLinks: { label: "Enlaces de Pago", hint: "Enlaces de Venmo, Cash App y PayPal en el saldo final y los premios." },
         satellites: { label: "Satélites", hint: "Torneos cuyos premios son plazas en otra partida. Los ganadores entran en Nueva Partida con la entrada pagada." },
         shootouts: { label: "Shootouts", hint: "Cada mesa juega hasta un ganador y luego los ganadores se enfrentan en una mesa final." },
+        brackets: {
+          label: "Cuadros Heads-Up",
+          hint: "Torneos uno contra uno, en los que cada ganador pasa a la siguiente ronda.",
+        },
         waitlist: { label: "Lista de espera", hint: "Partidas de cash: quién sigue para sentarse, en la TV y en los teléfonos." },
         leagues: {
           label: "Ligas",
@@ -1824,6 +1844,10 @@ export const settings: Record<Lang, SettingsDict> = {
         payLinks: { label: "Liens de Paiement", hint: "Liens Venmo, Cash App et PayPal dans les règlements et les gains." },
         satellites: { label: "Satellites", hint: "Des tournois dont les gains sont des places dans une autre partie. Les gagnants arrivent dans Nouvelle Partie, buy-in payé." },
         shootouts: { label: "Shootouts", hint: "Chaque table joue jusqu'à un gagnant, puis les gagnants se retrouvent à une table finale." },
+        brackets: {
+          label: "Tableaux Heads-Up",
+          hint: "Des tournois en tête-à-tête, où chaque gagnant passe au tour suivant.",
+        },
         waitlist: { label: "Liste d'attente", hint: "Parties cash : qui est le prochain à s'asseoir, sur la TV et les téléphones." },
         leagues: {
           label: "Ligues",
@@ -2187,6 +2211,10 @@ export const settings: Record<Lang, SettingsDict> = {
         payLinks: { label: "روابط الدفع", hint: "روابط Venmo وCash App وPayPal في التسوية والجوائز." },
         satellites: { label: "بطولات تأهيلية", hint: "بطولات جوائزها مقاعد في لعبة أخرى. يدخل الفائزون من اللعبة الجديدة ورسوم دخولهم مدفوعة." },
         shootouts: { label: "مواجهة الطاولات", hint: "تلعب كل طاولة حتى يبقى فائز واحد، ثم يلتقي الفائزون على طاولة نهائية." },
+        brackets: {
+          label: "مواجهات فردية",
+          hint: "بطولات تُلعب واحدًا لواحد، ويتأهل كل فائز إلى الدور التالي.",
+        },
         waitlist: { label: "قائمة الانتظار", hint: "ألعاب الكاش: من التالي للجلوس، على التلفاز والهواتف." },
         leagues: {
           label: "الدوريات",
@@ -2557,6 +2585,10 @@ export const settings: Record<Lang, SettingsDict> = {
         payLinks: { label: "পে লিংক", hint: "সেটল-আপ আর পেআউটে Venmo, Cash App আর PayPal লিংক।" },
         satellites: { label: "স্যাটেলাইট", hint: "যেসব টুর্নামেন্টের পুরস্কার অন্য গেমের সিট। বিজয়ীরা নতুন গেমে বাই-ইন দেওয়া অবস্থায় আসেন।" },
         shootouts: { label: "শুটআউট", hint: "প্রতিটি টেবিল একজন বিজয়ী পর্যন্ত খেলে, তারপর বিজয়ীরা ফাইনাল টেবিলে মেলেন।" },
+        brackets: {
+          label: "হেডস-আপ ব্র্যাকেট",
+          hint: "একে অপরের মুখোমুখি খেলা টুর্নামেন্ট, যেখানে প্রতিটি বিজয়ী পরের রাউন্ডে যান।",
+        },
         waitlist: { label: "ওয়েটলিস্ট", hint: "ক্যাশ গেম: পরের সিট কার, টিভিতে আর ফোনে।" },
         leagues: {
           label: "লিগ",
@@ -2920,6 +2952,10 @@ export const settings: Record<Lang, SettingsDict> = {
         payLinks: { label: "Links de Pagamento", hint: "Links de Venmo, Cash App e PayPal no acerto de contas e nos pagamentos." },
         satellites: { label: "Satélites", hint: "Torneios cujos prêmios são vagas em outro jogo. Os vencedores entram no Novo Jogo com a entrada paga." },
         shootouts: { label: "Shootouts", hint: "Cada mesa joga até um vencedor, depois os vencedores se enfrentam numa mesa final." },
+        brackets: {
+          label: "Chaves Heads-Up",
+          hint: "Torneios um contra um, com cada vencedor avançando para a próxima rodada.",
+        },
         waitlist: { label: "Lista de espera", hint: "Jogos a dinheiro: quem é o próximo a sentar, na TV e nos celulares." },
         leagues: {
           label: "Ligas",

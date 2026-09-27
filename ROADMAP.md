@@ -122,6 +122,8 @@ The extras cash tables actually play. Each has its own switch, off to start. Eve
 
 ## Phase 7: Heads-up brackets
 
+**Status: done.** One switch, off to start: Heads-Up Brackets, picked as a format on /new next to Standard and Shootout (no rebuys, add-ons or satellite seats). `game.matches` holds every round from the draw, each with a `slot`. Seeds are drawn in bracket order (1 v 16, 8 v 9 ...), so the byes go to the top seeds. A loser finishes at the best place of their round (out in the quarterfinals of 16 is 5th), and `roundShares` spreads the payout table so everyone out in the same round gets the same amount. The winner takes the knockout, so bounties work too. The field can change, and the bracket be drawn again, until the first match is played. On the TV the round's matches sit in the left column during play, and the whole bracket takes the board before the start and on breaks.
+
 - `TourneySettings.format` adds `"bracket"`. `game.matches: { round; a; b; winner; at }[]`, with seeds drawn randomly and byes filled for uneven fields.
 - Setting a match's winner moves them to the next round. Payouts go by the round reached.
 - The TV draws the bracket, and the current matches are large enough to read from across the room.

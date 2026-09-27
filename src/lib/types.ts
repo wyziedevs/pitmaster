@@ -153,11 +153,24 @@ export interface TourneySettings {
   /**
    *  standard: one field, tables balanced as they shrink
    *  shootout: each table plays down to one winner, then the winners meet at a final table
+   *  bracket:  heads-up matches, the winner of each moving on to the next round
    */
-  format: "standard" | "shootout";
+  format: "standard" | "shootout" | "bracket";
 }
 
 export type BountyKind = "flat" | "progressive" | "mystery";
+
+/** one heads-up match in a bracket. round 1 is the first; slot is its place in the round, top to bottom */
+export interface Match {
+  round: number;
+  slot: number;
+  /** player ids: null is a bye (round 1) or a winner still to come */
+  a: string | null;
+  b: string | null;
+  winner: string | null;
+  /** when it was decided */
+  at: number | null;
+}
 
 /** a mystery bounty game's envelopes, made when the mystery part starts */
 export interface Mystery {
@@ -304,6 +317,8 @@ export interface Game {
   mystery?: Mystery;
   /** shootouts: when the table winners were seated at the final table */
   finalAt?: number;
+  /** a heads-up bracket's matches, every round, drawn at the start */
+  matches?: Match[];
   /** cash: the side games' bomb pots, 7-2 wins and high hands, in order */
   sides?: SideEvent[];
   /** shared costs: they go into settle-up, not into anyone's results */

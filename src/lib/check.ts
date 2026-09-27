@@ -59,7 +59,7 @@ const tourney = (t: unknown) =>
   ["flat", "progressive", "mystery"].includes(t.bountyKind as string) &&
   num(t.mysteryFrom) &&
   orNull((x) => obj(x) && num(x.seatValue))(t.satellite) &&
-  ["standard", "shootout"].includes(t.format as string);
+  ["standard", "shootout", "bracket"].includes(t.format as string);
 /** one elimination, and (mystery bounties) the envelope it opened */
 const knockout = (k: unknown) => obj(k) && id(k.out) && orNull(id)(k.by) && num(k.at) && maybe(num)(k.prize);
 const mystery = (m: unknown) => obj(m) && num(m.at) && list(num)(m.prizes) && obj(m.own) && Object.values(m.own).every(num);
@@ -88,6 +88,8 @@ const cost = (c: unknown) => obj(c) && id(c.id) && str(c.label) && num(c.amount)
 const payment = (p: unknown) => obj(p) && str(p.from) && str(p.to) && num(p.amount) && num(p.at);
 const waiting = (w: unknown) => obj(w) && id(w.id) && str(w.name) && num(w.at);
 const entry = (e: unknown) => obj(e) && num(e.t) && str(e.text);
+/** one heads-up match in a bracket */
+const match = (m: unknown) => obj(m) && num(m.round) && num(m.slot) && orNull(id)(m.a) && orNull(id)(m.b) && orNull(id)(m.winner) && orNull(num)(m.at);
 /** a league's standings on a tv snapshot */
 const board = (b: unknown) =>
   obj(b) && str(b.name) && num(b.games) && list((r) => obj(r) && str(r.name) && num(r.points) && num(r.games))(b.rows);
@@ -117,6 +119,7 @@ export function isGame(g: unknown): g is Game {
     maybe(list(side))(g.sides) &&
     maybe(list(cost))(g.costs) &&
     maybe(num)(g.finalAt) &&
+    maybe(list(match))(g.matches) &&
     maybe(list(payment))(g.paid) &&
     maybe(list(waiting))(g.waitlist) &&
     maybe(id)(g.leagueId) &&

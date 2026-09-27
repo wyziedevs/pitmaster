@@ -18,7 +18,7 @@
   import Crown from "@lucide/svelte/icons/crown";
   import type { EventKind, Game } from "$lib/types";
   import { derive, cashElapsed } from "$lib/clock";
-  import { tourneyStats, cashStats, cashRake, seatLabel, tableCounts, paidFor, bountyBook, envelopesLeft, mysteryStartsAt, sideStats, shootout } from "$lib/game";
+  import { tourneyStats, cashStats, cashRake, seatLabel, tableCounts, paidFor, bountyBook, envelopesLeft, mysteryStartsAt, sideStats, shootout, currentRound, roundName, payGroups, placeRange } from "$lib/game";
   import { amt, clock, clockFace, duration, money, ordinal, timeOfDay } from "$lib/util";
   import { play, sounds, resumeAudio, audioReady, speak } from "$lib/sound";
   import { hostPrefs, prefs } from "$lib/settings.svelte";
@@ -33,6 +33,7 @@
   import { MediaQuery } from "svelte/reactivity";
   import FindMe from "./FindMe.svelte";
   import QrCode from "./QrCode.svelte";
+  import Bracket from "./Bracket.svelte";
   import { fade, fly } from "svelte/transition";
   import { replay, fresh, rise, leave, reveal, slide } from "$lib/motion";
   // the local "t" below is tourney stats (t.left, t.pool…), already established
@@ -116,7 +117,8 @@
   });
   const levelNum = $derived(d ? (d.level.isBreak ? game.levels.slice(0, d.index).filter((l) => !l.isBreak).length : (d.level.num ?? 0)) : 0);
   const rebuyOpen = $derived(!!d && !!game.tourney?.rebuy.on && levelNum <= game.tourney.rebuy.untilLevel);
-  const lateRegOpen = $derived(!!d && !!game.tourney?.lateRegLevel && levelNum <= game.tourney.lateRegLevel);
+  // a bracket is set once it's drawn: no late entries
+  const lateRegOpen = $derived(!!d && !!game.tourney?.lateRegLevel && levelNum <= game.tourney.lateRegLevel && game.tourney.format !== "bracket");
   const winner = $derived(game.finished && !isCash ? game.players.find((p) => p.place === 1) : null);
   // a wall clock doesn't pad the minutes: 8:27, not 08:27
   const timeLeft = $derived(d ? clockFace(d.remainingMs) : "");
@@ -146,6 +148,23 @@
   const seats = $derived(game.tourney?.satellite && t ? t.seats : 0);
   const shoot = $derived(shootout(game));
   const tablesWon = $derived(shoot ? shoot.tables.filter((x) => x.left.length === 1).length : 0);
+
+  // ---------- a heads-up bracket ----------
+  const bracket = $derived(!isCash && game.tourney?.format === "bracket" && !!game.matches?.length);
+  const round = $derived(bracket ? currentRound(game) : null);
+  // the round being played, big enough to read across the room (byes aren't matches)
+  const liveMatches = $derived(bracket && round ? game.matches!.filter((m) => m.round === round && m.a && m.b) : []);
+  const pname = (id: string | null) => game.players.find((p) => p.id === id)?.name ?? "";
+  const groups = $derived(bracket && t && !game.deal ? payGroups(t.entrants, t.payouts.length) : []);
+  // before the start and on breaks the whole bracket takes turns with the clock, bracket first
+  const bracketTime = $derived(bracket && !winner && (game.clock.status === "idle" || !!d?.level.isBreak));
+  let bracketTurn = $state(false);
+  $effect(() => {
+    if (!bracketTime) return void (bracketTurn = false);
+    bracketTurn = true;
+    const id = setInterval(() => (bracketTurn = !bracketTurn), 15000);
+    return () => clearInterval(id);
+  });
 
   // ---------- league ----------
   // a league game's standings take turns with a column while nothing's being
@@ -427,6 +446,7 @@
   class:two={isCash && !cashRight}
   class:wide-left={wideLeft}
   class:held={game.clock.status === "paused"}
+  class:full={bracketTurn}
 >
   <header>
     <!-- the logo's suits, turning over every time the level goes up -->
@@ -464,6 +484,17 @@
             </li>
           {/each}
         </ol>
+      {:else if t && groups.length}
+        {@const rows = groups.length > 5 ? Math.ceil(groups.length / 2) : groups.length}
+        <ol class="final" class:split={groups.length > 5} style:--rows={rows}>
+          {#each groups as g, i (g.from)}
+            <li class:top={i % rows === 0} style:--i={i}>
+              <span class="place">{placeRange(g)}</span>
+              <b>{game.players.filter((x) => x.place === g.from).map((x) => x.name).join(", ") || tr("tv.winner.nobodyYet")}</b>
+              {#if showMoney}<span class="fig">{money(t.payouts[g.from - 1] ?? 0)}</span>{/if}
+            </li>
+          {/each}
+        </ol>
       {:else if t}
         {@const places = Math.min(10, game.deal ? Object.keys(game.deal.amounts).length : t.payouts.length)}
         {@const rows = places > 5 ? Math.ceil(places / 2) : places}
@@ -487,7 +518,18 @@
         <span class="v fig"><span class="n" use:replay={[t.left, "tumble"]}>{t.left}</span><span class="of">/{t.entrants}</span></span>
         {#if t.bubble}<span class="sub hot-text" use:later={"stamp"}>{tr("tv.tourney.onBubble")}</span>{:else if t.itm}<span class="sub good-text" use:later={"stamp"}>{tr("tv.tourney.inTheMoney")}</span>{/if}
       </div>
-      {#if seating.length}
+      {#if bracket}
+        <div class="stat matches" class:many={liveMatches.length > 5}>
+          <span class="k">{round ? roundName(game, round) : ""}</span>
+          {#each liveMatches as m, i (m.slot)}
+            <div class="match" style:--i={i} use:later={"deal-in"}>
+              <span class:won={m.winner === m.a} class:lost={!!m.winner && m.winner !== m.a}>{pname(m.a)}</span>
+              <span class="vs">{tr("tv.bracket.vs")}</span>
+              <span class:won={m.winner === m.b} class:lost={!!m.winner && m.winner !== m.b}>{pname(m.b)}</span>
+            </div>
+          {/each}
+        </div>
+      {:else if seating.length}
         <div class="stat seats" class:many={seating.length > 10}>
           <span class="k">{tr("tv.tourney.seats")}</span>
           {@render seatList(seating)}
@@ -516,6 +558,9 @@
     </aside>
 
     <section class="main" class:flash={flashLevel}>
+      {#if bracketTurn}
+      <div class="bracket-wrap" in:fade={reveal()}><Bracket {game} tv /></div>
+      {:else}
       <div class="level">
         <span use:replay={[d.index, "roll"]}>{#if d.level.isBreak}{tr("tv.level.break")}{:else}{tr("tv.level.levelNum", { n: String(levelNum) })}{/if}</span>
         {#if game.clock.status === "paused"}<span class="pill" use:later={"pop"}><span class="blink">{tr("tv.status.paused")}</span></span>{/if}
@@ -579,6 +624,7 @@
           </div>
         {/if}
       {/if}
+      {/if}
     </section>
 
     <aside class="col right">
@@ -595,6 +641,18 @@
         <span class="k">{showMoney ? tr("tv.tourney.payouts") : tr("tv.tourney.pays")}</span>
         {#if showMoney}
           <!-- places fill in as players finish in the money: their name stamps onto the line -->
+          {#if groups.length}
+          <ol class="ladder" class:burst>
+            {#each groups.slice(0, LADDER) as g, i (g.from)}
+              {@const who = game.players.filter((x) => x.out && x.place === g.from)}
+              <li style:--i={i}>
+                <span class="place">{placeRange(g)}</span>
+                {#if who.length}<span class="who">{who.map((x) => x.name).join(", ")}</span>{/if}
+                <span class="fig">{money(t.payouts[g.from - 1] ?? 0)}</span>
+              </li>
+            {/each}
+          </ol>
+          {:else}
           <ol class="ladder" class:burst>
             {#each t.payouts.slice(0, LADDER) as p, i (i)}
               {@const who = game.players.find((x) => x.out && x.place === i + 1)}
@@ -605,7 +663,8 @@
               </li>
             {/each}
           </ol>
-          {#if t.payouts.length > LADDER}<span class="sub">{tp("tv.tourney.morePaid", t.payouts.length - LADDER)}</span>{/if}
+          {/if}
+          {#if !groups.length && t.payouts.length > LADDER}<span class="sub">{tp("tv.tourney.morePaid", t.payouts.length - LADDER)}</span>{/if}
         {:else}
           <span class="v">{tr("tv.tourney.topN", { n: String(t.paid) })}</span>
         {/if}
@@ -1122,6 +1181,64 @@
   }
   .lname {
     font: 1.15em / 1.15 var(--font-serif);
+  }
+  /* a bracket's matches: both names, big, with a quiet "vs" between */
+  .matches {
+    gap: calc(var(--u) * 0.5);
+  }
+  .match {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: baseline;
+    gap: 0.5em;
+    font-size: 1.15em;
+    font-weight: 700;
+    padding: calc(var(--u) * 0.35) 0;
+    border-top: var(--hair) solid var(--tv-line);
+  }
+  .match:global(.deal-in) {
+    animation: dealt var(--dur-pop) var(--ease-out-expo) backwards;
+    animation-delay: calc(var(--i, 0) * 70ms);
+  }
+  .match > span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .match > span:last-child {
+    text-align: right;
+  }
+  .match .vs {
+    color: var(--tv-muted);
+    font-size: 0.6em;
+    font-weight: 400;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .match .lost {
+    color: var(--tv-muted);
+    text-decoration: line-through;
+    font-weight: 400;
+  }
+  .match .won {
+    color: var(--tv-good);
+  }
+  .matches.many .match {
+    font-size: 0.9em;
+  }
+  /* the whole bracket takes the width of the board while it's on */
+  .tv.full .col {
+    display: none;
+  }
+  .tv.full .main {
+    grid-column: 1 / -1;
+  }
+  .bracket-wrap {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: stretch;
+    min-height: 0;
   }
   .league .who {
     font-size: 0.9em;

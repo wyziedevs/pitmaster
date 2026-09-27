@@ -43,6 +43,7 @@ export interface Settings {
   useLedger: boolean; // tick off settle-up payments, and see who still owes whom on Players
   useSatellites: boolean; // tournaments whose prizes are seats in another game
   useShootouts: boolean; // tournaments where each table plays down to one winner
+  useBrackets: boolean; // tournaments played as heads-up matches, winner moves on
   useWaitlist: boolean; // cash games: a list of who's next for a seat
   useLeagues: boolean; // seasons that score the games linked to them, on Players and the tv
 
@@ -125,6 +126,7 @@ const defaults: Settings = {
   useLedger: false,
   useSatellites: false,
   useShootouts: false,
+  useBrackets: false,
   useWaitlist: false,
   useLeagues: false,
 

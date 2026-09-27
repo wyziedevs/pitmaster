@@ -36,6 +36,14 @@
     HOUSE,
     shootout,
     drawFinalTable,
+    drawBracket,
+    decideMatch,
+    matchesPlayed,
+    currentRound,
+    roundName,
+    bracketSize,
+    payGroups,
+    placeRange,
   } from "$lib/game";
   import { annotate } from "$lib/blinds";
   import { distribute } from "$lib/chips";
@@ -47,6 +55,7 @@
   import SettleMoves from "./SettleMoves.svelte";
   import Costs from "./Costs.svelte";
   import SeatTools from "./SeatTools.svelte";
+  import Bracket from "./Bracket.svelte";
   import { prefs, settings } from "$lib/settings.svelte";
   import { provide } from "$lib/commands.svelte";
   import ChipLegend from "./ChipLegend.svelte";
@@ -87,7 +96,9 @@
   const alive = $derived(game.players.filter((p) => !p.out));
   const drawn = $derived(seatsDrawn(game));
   // tools the host switched off (Settings > Your Game) stay hidden, unless this game already uses them
-  const seatsOn = $derived(settings.useSeats || drawn);
+  // a heads-up bracket seats people by its matches, so the seat draw sits it out
+  const bracket = $derived(t.format === "bracket");
+  const seatsOn = $derived(!bracket && (settings.useSeats || drawn));
   const kosOn = $derived(settings.useBounties || !!t.bounty || !!game.kos?.some((k) => k.by));
   const dealsOn = $derived(settings.useDeals || !!game.deal);
   const tables = $derived(tableCounts(game).length);
@@ -134,6 +145,21 @@
     persist();
     editingEnvelopes = false;
   }
+  // ---- a heads-up bracket ----
+  // it can be drawn again (with whoever's in now) until a match has been played
+  const canDraw = $derived(bracket && !game.finished && alive.length >= 2 && matchesPlayed(game) === 0);
+  function drawTheBracket() {
+    play("seats", { n: alive.length });
+    act(() => drawBracket(game));
+  }
+  function pickWinner(i: number, id: string) {
+    act(() => decideMatch(game, i, id));
+    if (game.flash?.kind === "bounty" && Date.now() - game.flash.at < 1000) play(mystery ? "jackpot" : "chips");
+  }
+  const bracketRound = $derived(bracket ? currentRound(game) : null);
+  // payouts by round: 1st, 2nd, then 3rd to 4th, 5th to 8th ... sharing
+  const groups = $derived(bracket && !game.deal ? payGroups(s.entrants, s.payouts.length) : null);
+
   function finalTable() {
     play("seats", { n: alive.length });
     act(() => drawFinalTable(game));
@@ -193,6 +219,9 @@
 
   function addNamed(name: string) {
     if (!name.trim()) return;
+    // a bracket takes a new player only until its first match is played, and draws again to fit them
+    if (bracket && game.matches && matchesPlayed(game) > 0) return void alert(tt("gamePlay.bracket.startedAlert"));
+    if (bracket && game.matches) return act(() => (addPlayer(game, name), drawBracket(game)));
     if (!lateRegOpen && game.clock.status !== "idle" && !confirm(tt("gamePlay.tournament.lateRegClosedConfirm"))) return;
     act(() => addPlayer(game, name));
   }
@@ -226,9 +255,11 @@
 
   function removePlayer(id: string) {
     const p = game.players.find((x) => x.id === id)!;
+    if (bracket && game.matches && matchesPlayed(game) > 0) return void alert(tt("gamePlay.bracket.startedAlert"));
     if (!confirm(tt("gamePlay.tournament.removeConfirm", { name: p.name }))) return;
     act(() => {
       game.players = game.players.filter((x) => x.id !== id);
+      if (bracket && game.matches) drawBracket(game);
       fitEnvelopes(game);
       logEvent(game, tt("gamePlay.shared.removedLog", { name: p.name }));
     });
@@ -248,10 +279,16 @@
       { id: "t:structure", label: tt("gamePlay.tournament.cmdEditStructure"), group: tt("gamePlay.shared.groupThisGame"), keywords: "blinds levels", run: () => (play("open"), (editStructure = true)) },
       ...(shoot?.ready ? [{ id: "t:final", label: tt("gamePlay.tournament.drawFinalTable"), group: tt("gamePlay.shared.groupThisGame"), keywords: "shootout final table seats", run: finalTable }] : []),
       ...(canDeal && dealsOn ? [{ id: "t:deal", label: tt("gamePlay.tournament.cmdDealCalculator"), group: tt("gamePlay.shared.groupThisGame"), keywords: "icm chop split", run: () => (play("open"), (showDeal = true)) }] : []),
-      ...alive.map((p) => ({ id: `t:bust:${p.id}`, label: tt("gamePlay.tournament.bustCommandLabel", { name: p.name }), group: tt("gamePlay.shared.groupPlayers"), keywords: "out eliminate", run: () => (play("bust"), act(() => bust(game, p.id))) })),
+      ...(canDraw ? [{ id: "t:bracket", label: game.matches ? tt("gamePlay.bracket.redraw") : tt("gamePlay.bracket.draw"), group: tt("gamePlay.shared.groupThisGame"), keywords: "heads up matches seeds", run: drawTheBracket }] : []),
+      ...(game.matches ?? []).flatMap((m, i) =>
+        !m.winner && m.a && m.b
+          ? [m.a, m.b].map((w) => ({ id: `t:match:${i}:${w}`, label: tt("gamePlay.bracket.cmdBeats", { winner: game.players.find((p) => p.id === w)?.name ?? "?", loser: game.players.find((p) => p.id === (w === m.a ? m.b : m.a))?.name ?? "?" }), group: tt("gamePlay.shared.groupPlayers"), keywords: "match won heads up", run: () => (play("bust"), pickWinner(i, w)) }))
+          : []
+      ),
+      ...(bracket ? [] : alive).map((p) => ({ id: `t:bust:${p.id}`, label: tt("gamePlay.tournament.bustCommandLabel", { name: p.name }), group: tt("gamePlay.shared.groupPlayers"), keywords: "out eliminate", run: () => (play("bust"), act(() => bust(game, p.id))) })),
       ...(t.rebuy.on && rebuyOpen ? game.players.map((p) => ({ id: `t:rebuy:${p.id}`, label: tt("gamePlay.tournament.rebuyCommandLabel", { name: p.name }), group: tt("gamePlay.shared.groupPlayers"), hint: money(t.rebuy.cost), run: () => (play("chips"), rebuy(p.id, 1)) })) : []),
       ...(t.addOn.on ? alive.map((p) => ({ id: `t:addon:${p.id}`, label: tt("gamePlay.tournament.addOnCommandLabel", { name: p.name }), group: tt("gamePlay.shared.groupPlayers"), hint: money(t.addOn.cost), run: () => (play("chips"), addOn(p.id, 1)) })) : []),
-      ...game.players.filter((p) => p.out && !game.deal).map((p) => ({ id: `t:unbust:${p.id}`, label: tt("gamePlay.tournament.undoBustCommandLabel", { name: p.name }), group: tt("gamePlay.shared.groupPlayers"), run: () => (play("rewind"), act(() => unbust(game, p.id))) })),
+      ...game.players.filter((p) => p.out && !game.deal && !bracket).map((p) => ({ id: `t:unbust:${p.id}`, label: tt("gamePlay.tournament.undoBustCommandLabel", { name: p.name }), group: tt("gamePlay.shared.groupPlayers"), run: () => (play("rewind"), act(() => unbust(game, p.id))) })),
     ])
   );
 
@@ -348,7 +385,8 @@
     <div class="spread">
       <h2>{tt("gamePlay.shared.groupPlayers")}</h2>
       <span class="small">
-        {#key lateRegOpen}<span class="pop" class:good={lateRegOpen} class:muted={!lateRegOpen}>{lateRegOpen ? tt("gamePlay.tournament.lateRegOpenThrough", { level: String(t.lateRegLevel) }) : tt("gamePlay.tournament.lateRegClosed")}</span>{/key}
+        {#if bracket}{#if bracketRound}<span class="pop">{roundName(game, bracketRound)}</span>{/if}
+        {:else}{#key lateRegOpen}<span class="pop" class:good={lateRegOpen} class:muted={!lateRegOpen}>{lateRegOpen ? tt("gamePlay.tournament.lateRegOpenThrough", { level: String(t.lateRegLevel) }) : tt("gamePlay.tournament.lateRegClosed")}</span>{/key}{/if}
         {#if t.rebuy.on}· {#key rebuyOpen}<span class="pop" class:good={rebuyOpen} class:muted={!rebuyOpen}>{rebuyOpen ? tt("gamePlay.tournament.rebuysOpen") : tt("gamePlay.tournament.rebuysClosed")}</span>{/key}{/if}
       </span>
     </div>
@@ -393,7 +431,9 @@
             {#if pko}<td class="num" class:blank={p.out} data-l={tt("gamePlay.tournament.bountyHeader")}>{#if !p.out}<span use:bump={book.head[p.id]}>{money(book.head[p.id] ?? 0)}</span>{/if}</td>{/if}
             <!-- a busted row's actions may wrap to a second line rather than push the table wider -->
             <td class="acts leading-[30px]">
-              {#if p.out && !game.deal}
+              {#if bracket}
+                <!-- out by losing a match: the bracket below does it -->
+              {:else if p.out && !game.deal}
                 {#if kosOn}<select class="ko max-w-[150px]" value={lastKo(p.id)} onchange={(e) => credit(p.id, (e.target as HTMLSelectElement).value || null)} aria-label={tt("gamePlay.tournament.whoKnockedOutAria", { name: p.name })}>
                   <option value="">{tt("gamePlay.tournament.koByPlaceholder")}</option>
                   {#each game.players.filter((x) => x.id !== p.id) as x (x.id)}<option value={x.id}>{x.name}</option>{/each}
@@ -416,6 +456,22 @@
       <button data-sound="chips"><Icon icon={Plus} />{tt("gamePlay.tournament.addPlayerButton", { amount: money(t.buyIn) })}</button>
     </form>
 
+    {#if bracket}
+      <div class="part mt-[22px]">
+        <div class="spread">
+          <h2>{tt("gamePlay.bracket.heading")}</h2>
+          {#if canDraw && game.matches}<button class="link small" data-sound="none" onclick={drawTheBracket}>{tt("gamePlay.bracket.redraw")}</button>{/if}
+        </div>
+        {#if !game.matches}
+          <p class="small muted">{#if alive.length >= 2}{tt("gamePlay.bracket.drawHint", { size: String(bracketSize(alive.length)) })}{#if bracketSize(alive.length) > alive.length}{" "}{tp("gamePlay.bracket.byes", bracketSize(alive.length) - alive.length)}{/if}{:else}{tt("gamePlay.bracket.needTwo")}{/if}</p>
+          {#if canDraw}<button data-sound="none" onclick={drawTheBracket}>{tt("gamePlay.bracket.draw")}</button>{/if}
+        {:else}
+          <Bracket {game} onpick={game.finished ? undefined : pickWinner} />
+          {#if !game.finished}<p class="small muted">{tt("gamePlay.bracket.pickHint")}</p>{/if}
+        {/if}
+      </div>
+    {/if}
+
     {#if shoot && !game.finished}
       <div class="part mt-[22px]" transition:slide={reveal()}>
         <h2>{tt("gamePlay.tournament.shootoutHeading")}</h2>
@@ -435,6 +491,20 @@
     {/if}
 
     <h2 class="part mt-[22px]">{tt("gamePlay.tournament.payoutsHeading")}{#if game.deal} <span class="pill">{tt("gamePlay.shared.dealPill")}</span>{/if}</h2>
+    {#if groups}
+    <table>
+      <tbody>
+        {#each groups as g (g.from)}
+          {@const who = game.players.filter((p) => p.place === g.from)}
+          <tr>
+            <td class="nowrap">{placeRange(g)}</td>
+            <td class="num"><b>{money(s.payouts[g.from - 1] ?? 0)}</b>{#if g.to > g.from} <span class="small muted">{tt("gamePlay.bracket.each")}</span>{/if}</td>
+            <td>{#each who as w (w.id)}<span class="paid inline-block me-2" use:fresh={[w.bustedAt ?? game.endedAt, "stamp"]}>{w.name}</span>{/each}</td>
+          </tr>
+        {/each}
+      </tbody>
+    </table>
+    {:else}
     <table>
       <tbody>
         {#each payRows as i (i)}
@@ -452,6 +522,7 @@
         {/each}
       </tbody>
     </table>
+    {/if}
     <p class="small muted">
       {s.entrants} × {money(t.buyIn)}{#if s.rebuys} + {tp("gamePlay.tournament.rebuysCount", s.rebuys)}{/if}{#if s.addOns} + {tp("gamePlay.tournament.addOnsCount", s.addOns)}{/if} = {money(s.gross)}{#if s.bounties} − {tt(pko ? "gamePlay.tournament.bountiesNotePko" : mystery ? "gamePlay.tournament.bountiesNoteMystery" : "gamePlay.tournament.bountiesNote", { bounties: money(s.bounties), bounty: money(s.bounty) })}{/if}{#if s.rake} − {tt("gamePlay.tournament.rakeNote", { rake: money(s.rake) })}{/if}
     </p>

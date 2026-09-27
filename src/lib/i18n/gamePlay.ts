@@ -207,6 +207,21 @@ export interface GamePlayDict {
     cmdEditStructure: string;
     cmdDealCalculator: string;
   };
+  bracket: {
+    heading: string;
+    draw: string;
+    redraw: string;
+    drawHint: string;
+    byes: Plural;
+    needTwo: string;
+    pickHint: string;
+    pickTitle: string;
+    bye: string;
+    champion: string;
+    startedAlert: string;
+    cmdBeats: string;
+    each: string;
+  };
   cash: {
     sessionLabel: string;
     startSession: string;
@@ -613,6 +628,21 @@ export const gamePlay: Record<Lang, GamePlayDict> = {
       cmdEditStructure: "Edit the Structure",
       cmdDealCalculator: "Deal Calculator",
     },
+    bracket: {
+      heading: "Bracket",
+      draw: "Draw Bracket",
+      redraw: "Redraw Bracket",
+      drawHint: "Seeds are drawn at random into a bracket of {size}.",
+      byes: { one: "{count} top seed gets a bye into the second round.", other: "The top {count} seeds get a bye into the second round." },
+      needTwo: "A bracket needs at least two players.",
+      pickHint: "Click the winner of each match. The loser is out, and the winner moves on.",
+      pickTitle: "{name} won this match",
+      bye: "Bye",
+      champion: "Champion",
+      startedAlert: "The first match has been played, so the field is set. Undo back to before it to change who's in.",
+      cmdBeats: "{winner} Beats {loser}",
+      each: "each",
+    },
     cash: {
       sessionLabel: "Session",
       startSession: "Start Session",
@@ -1016,6 +1046,21 @@ export const gamePlay: Record<Lang, GamePlayDict> = {
       cmdAddPlayerPrompt: "对方姓名",
       cmdEditStructure: "编辑级别结构",
       cmdDealCalculator: "分账计算器",
+    },
+    bracket: {
+      heading: "对阵表",
+      draw: "抽签生成对阵表",
+      redraw: "重新抽签",
+      drawHint: "种子位随机抽入 {size} 人的对阵表。",
+      byes: { other: "前 {count} 号种子轮空，直接进入第二轮。" },
+      needTwo: "对阵表至少需要两名玩家。",
+      pickHint: "点击每场对决的获胜者。输家出局，赢家晋级。",
+      pickTitle: "{name} 赢下这场对决",
+      bye: "轮空",
+      champion: "冠军",
+      startedAlert: "第一场对决已经打完，参赛名单已锁定。要更改参赛者，请撤销到那场对决之前。",
+      cmdBeats: "{winner} 击败 {loser}",
+      each: "每人",
     },
     cash: {
       sessionLabel: "场次",
@@ -1421,6 +1466,21 @@ export const gamePlay: Record<Lang, GamePlayDict> = {
       cmdEditStructure: "स्ट्रक्चर एडिट करें",
       cmdDealCalculator: "डील कैलकुलेटर",
     },
+    bracket: {
+      heading: "ब्रैकेट",
+      draw: "ब्रैकेट निकालें",
+      redraw: "ब्रैकेट दोबारा निकालें",
+      drawHint: "सीड {size} के ब्रैकेट में रैंडम तरीके से निकाले जाते हैं।",
+      byes: { one: "शीर्ष {count} सीड को बाई मिलती है और वह सीधे दूसरे राउंड में जाता है।", other: "शीर्ष {count} सीड को बाई मिलती है और वे सीधे दूसरे राउंड में जाते हैं।" },
+      needTwo: "ब्रैकेट के लिए कम से कम दो खिलाड़ी चाहिए।",
+      pickHint: "हर मुकाबले के विजेता पर क्लिक करें। हारने वाला बाहर, और विजेता आगे बढ़ता है।",
+      pickTitle: "{name} ने यह मुकाबला जीता",
+      bye: "बाई",
+      champion: "चैंपियन",
+      startedAlert: "पहला मुकाबला खेला जा चुका है, इसलिए खिलाड़ी तय हो गए हैं। कौन खेलेगा यह बदलने के लिए उस मुकाबले से पहले तक पूर्ववत करें।",
+      cmdBeats: "{winner} ने {loser} को हराया",
+      each: "प्रत्येक",
+    },
     cash: {
       sessionLabel: "सेशन",
       startSession: "सेशन शुरू करें",
@@ -1824,6 +1884,21 @@ export const gamePlay: Record<Lang, GamePlayDict> = {
       cmdAddPlayerPrompt: "su nombre",
       cmdEditStructure: "Editar la Estructura",
       cmdDealCalculator: "Calculadora de Reparto",
+    },
+    bracket: {
+      heading: "Cuadro",
+      draw: "Sortear Cuadro",
+      redraw: "Volver a Sortear Cuadro",
+      drawHint: "Las posiciones se sortean al azar en un cuadro de {size}.",
+      byes: { one: "{count} cabeza de serie pasa directo a la segunda ronda.", other: "Los {count} primeros cabezas de serie pasan directo a la segunda ronda." },
+      needTwo: "Un cuadro necesita al menos dos jugadores.",
+      pickHint: "Haz clic en el ganador de cada duelo. El perdedor queda eliminado y el ganador avanza.",
+      pickTitle: "{name} ganó este duelo",
+      bye: "Bye",
+      champion: "Campeón",
+      startedAlert: "Ya se jugó el primer duelo, así que los participantes están fijados. Deshaz hasta antes de ese duelo para cambiar quién juega.",
+      cmdBeats: "{winner} Vence a {loser}",
+      each: "cada uno",
     },
     cash: {
       sessionLabel: "Sesión",
@@ -2229,6 +2304,21 @@ export const gamePlay: Record<Lang, GamePlayDict> = {
       cmdEditStructure: "Modifier la Structure",
       cmdDealCalculator: "Calculateur d'Accord",
     },
+    bracket: {
+      heading: "Tableau",
+      draw: "Tirer le Tableau",
+      redraw: "Retirer le Tableau",
+      drawHint: "Les places sont tirées au hasard dans un tableau de {size}.",
+      byes: { one: "{count} tête de série passe directement au deuxième tour.", other: "Les {count} premières têtes de série passent directement au deuxième tour." },
+      needTwo: "Un tableau demande au moins deux joueurs.",
+      pickHint: "Cliquez sur le gagnant de chaque match. Le perdant est éliminé et le gagnant passe au tour suivant.",
+      pickTitle: "{name} a gagné ce match",
+      bye: "Exempt",
+      champion: "Champion",
+      startedAlert: "Le premier match a été joué, donc le tableau est figé. Annulez jusqu'avant ce match pour changer les participants.",
+      cmdBeats: "{winner} Bat {loser}",
+      each: "chacun",
+    },
     cash: {
       sessionLabel: "Session",
       startSession: "Démarrer la Session",
@@ -2632,6 +2722,21 @@ export const gamePlay: Record<Lang, GamePlayDict> = {
       cmdAddPlayerPrompt: "اسمه",
       cmdEditStructure: "تعديل الهيكل",
       cmdDealCalculator: "حاسبة الاتفاق",
+    },
+    bracket: {
+      heading: "جدول المواجهات",
+      draw: "اسحب جدول المواجهات",
+      redraw: "أعد سحب جدول المواجهات",
+      drawHint: "تُسحب المراكز عشوائيًا في جدول من {size}.",
+      byes: { zero: "لا يحصل أي مصنف على إعفاء إلى الدور الثاني.", one: "يحصل المصنف الأول على إعفاء ويتأهل مباشرة إلى الدور الثاني.", two: "يحصل المصنفان الأولان على إعفاء ويتأهلان مباشرة إلى الدور الثاني.", few: "يحصل أعلى {count} مصنفين على إعفاء ويتأهلون مباشرة إلى الدور الثاني.", many: "يحصل أعلى {count} مصنفًا على إعفاء ويتأهلون مباشرة إلى الدور الثاني.", other: "يحصل أعلى {count} مصنف على إعفاء ويتأهلون مباشرة إلى الدور الثاني." },
+      needTwo: "يحتاج جدول المواجهات إلى لاعبَين على الأقل.",
+      pickHint: "انقر على الفائز في كل مباراة. يخرج الخاسر ويتأهل الفائز.",
+      pickTitle: "{name} فاز بهذه المباراة",
+      bye: "إعفاء",
+      champion: "البطل",
+      startedAlert: "لُعبت المباراة الأولى، لذا ثبتت قائمة المشاركين. تراجع إلى ما قبلها لتغيير المشاركين.",
+      cmdBeats: "{winner} يهزم {loser}",
+      each: "لكل لاعب",
     },
     cash: {
       sessionLabel: "الجلسة",
@@ -3037,6 +3142,21 @@ export const gamePlay: Record<Lang, GamePlayDict> = {
       cmdEditStructure: "স্ট্রাকচার এডিট করুন",
       cmdDealCalculator: "চুক্তির ক্যালকুলেটর",
     },
+    bracket: {
+      heading: "ব্র্যাকেট",
+      draw: "ব্র্যাকেট টানুন",
+      redraw: "আবার ব্র্যাকেট টানুন",
+      drawHint: "সিডগুলো এলোমেলোভাবে {size} জনের ব্র্যাকেটে টানা হয়।",
+      byes: { other: "শীর্ষ {count} সিড বাই পেয়ে সরাসরি দ্বিতীয় রাউন্ডে যায়।" },
+      needTwo: "ব্র্যাকেটের জন্য অন্তত দুজন খেলোয়াড় লাগে।",
+      pickHint: "প্রতিটি ম্যাচের বিজয়ীর ওপর ক্লিক করুন। হেরে যাওয়া খেলোয়াড় বাদ পড়েন, আর বিজয়ী এগিয়ে যান।",
+      pickTitle: "{name} এই ম্যাচ জিতেছেন",
+      bye: "বাই",
+      champion: "চ্যাম্পিয়ন",
+      startedAlert: "প্রথম ম্যাচ খেলা হয়ে গেছে, তাই খেলোয়াড় তালিকা ঠিক হয়ে গেছে। কে খেলবেন তা বদলাতে সেই ম্যাচের আগ পর্যন্ত পূর্বাবস্থায় ফেরান।",
+      cmdBeats: "{winner} হারালেন {loser}-কে",
+      each: "প্রত্যেকে",
+    },
     cash: {
       sessionLabel: "সেশন",
       startSession: "সেশন শুরু করুন",
@@ -3440,6 +3560,21 @@ export const gamePlay: Record<Lang, GamePlayDict> = {
       cmdAddPlayerPrompt: "o nome dele",
       cmdEditStructure: "Editar a Estrutura",
       cmdDealCalculator: "Calculadora de Acordo",
+    },
+    bracket: {
+      heading: "Chave",
+      draw: "Sortear Chave",
+      redraw: "Sortear Chave de Novo",
+      drawHint: "As posições são sorteadas numa chave de {size}.",
+      byes: { one: "{count} cabeça de chave passa direto para a segunda rodada.", other: "Os {count} primeiros cabeças de chave passam direto para a segunda rodada." },
+      needTwo: "Uma chave precisa de pelo menos dois jogadores.",
+      pickHint: "Clique no vencedor de cada confronto. O perdedor está fora, e o vencedor avança.",
+      pickTitle: "{name} venceu este confronto",
+      bye: "Bye",
+      champion: "Campeão",
+      startedAlert: "O primeiro confronto já foi jogado, então os participantes estão definidos. Desfaça até antes dele para mudar quem joga.",
+      cmdBeats: "{winner} Vence {loser}",
+      each: "cada",
     },
     cash: {
       sessionLabel: "Sessão",

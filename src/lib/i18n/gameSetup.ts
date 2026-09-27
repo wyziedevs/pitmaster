@@ -141,6 +141,9 @@ export interface GameSetupDict {
       remove: string;
       shootout: string;
       shootoutHint: string;
+      standard: string;
+      bracket: string;
+      bracketHint: string;
       satellite: string;
       satelliteHint: string;
       seatValue: string;
@@ -349,10 +352,13 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       },
       format: {
         legend: "Format",
-        addable: "Shootout or Satellite",
+        addable: "Shootout, Bracket or Satellite",
         remove: "Remove",
         shootout: "Shootout",
         shootoutHint: "Each table plays down to one winner, then the winners meet at a final table. Seats are drawn and the tables aren't balanced.",
+        standard: "Standard",
+        bracket: "Heads-Up Bracket",
+        bracketHint: "Players meet one on one, and each match winner moves on. Seeds are drawn at random, byes fill out an uneven field, and payouts go by the round reached.",
         satellite: "Satellite",
         satelliteHint: "The prizes are seats in another game. The winners come in on that game's New Game with their buy-in paid.",
         seatValue: "Seat Worth ({sym})",
@@ -559,10 +565,13 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       },
       format: {
         legend: "赛制",
-        addable: "淘汰赛或卫星赛",
+        addable: "淘汰赛、对阵表或卫星赛",
         remove: "移除",
         shootout: "淘汰赛",
         shootoutHint: "每桌打到只剩一位赢家，然后赢家们在决赛桌相遇。会抽座位，各桌不做平衡。",
+        standard: "标准",
+        bracket: "单挑对阵",
+        bracketHint: "玩家一对一交手，每场的赢家晋级。种子位随机抽签，人数不齐时用轮空补齐，奖金按打到的轮次发放。",
         satellite: "卫星赛",
         satelliteHint: "奖品是另一场比赛的席位。赢家在那场比赛的新建页面加入，买入已付。",
         seatValue: "每席价值（{sym}）",
@@ -769,10 +778,13 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       },
       format: {
         legend: "फॉर्मेट",
-        addable: "शूटआउट या सैटेलाइट",
+        addable: "शूटआउट, ब्रैकेट या सैटेलाइट",
         remove: "हटाएं",
         shootout: "शूटआउट",
         shootoutHint: "हर टेबल एक विजेता तक खेलती है, फिर विजेता फाइनल टेबल पर मिलते हैं। सीटें निकाली जाती हैं और टेबल बैलेंस नहीं होतीं।",
+        standard: "मानक",
+        bracket: "हेड्स-अप ब्रैकेट",
+        bracketHint: "खिलाड़ी आमने-सामने खेलते हैं, और हर मुकाबले का विजेता आगे बढ़ता है। सीड रैंडम तरीके से निकाले जाते हैं, खिलाड़ियों की संख्या पूरी न हो तो बाई से भरी जाती है, और पेआउट पहुंचे हुए राउंड के हिसाब से होते हैं।",
         satellite: "सैटेलाइट",
         satelliteHint: "इनाम दूसरे गेम की सीटें हैं। विजेता उस गेम के नया गेम पेज पर बाय-इन चुकाए हुए आते हैं।",
         seatValue: "सीट की कीमत ({sym})",
@@ -979,10 +991,13 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       },
       format: {
         legend: "Formato",
-        addable: "Shootout o Satélite",
+        addable: "Shootout, Cuadro o Satélite",
         remove: "Quitar",
         shootout: "Shootout",
         shootoutHint: "Cada mesa juega hasta un ganador y luego los ganadores se enfrentan en una mesa final. Se sortean los asientos y las mesas no se equilibran.",
+        standard: "Estándar",
+        bracket: "Cuadro Heads-Up",
+        bracketHint: "Los jugadores se enfrentan uno contra uno y el ganador de cada duelo avanza. Las posiciones se sortean al azar, los byes cubren los huecos del cuadro y los premios dependen de la ronda alcanzada.",
         satellite: "Satélite",
         satelliteHint: "Los premios son plazas en otra partida. Los ganadores entran desde la Nueva Partida de esa partida con la entrada pagada.",
         seatValue: "Valor de la Plaza ({sym})",
@@ -1189,10 +1204,13 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       },
       format: {
         legend: "Format",
-        addable: "Shootout ou Satellite",
+        addable: "Shootout, Tableau ou Satellite",
         remove: "Retirer",
         shootout: "Shootout",
         shootoutHint: "Chaque table joue jusqu'à un gagnant, puis les gagnants se retrouvent à une table finale. Les places sont tirées et les tables ne sont pas rééquilibrées.",
+        standard: "Standard",
+        bracket: "Tableau Heads-Up",
+        bracketHint: "Les joueurs s'affrontent en tête-à-tête et le gagnant de chaque match passe au tour suivant. Les places sont tirées au hasard, des exemptions complètent un tableau incomplet et les gains dépendent du tour atteint.",
         satellite: "Satellite",
         satelliteHint: "Les gains sont des places dans une autre partie. Les gagnants arrivent depuis la Nouvelle Partie de celle-ci, buy-in payé.",
         seatValue: "Valeur de la Place ({sym})",
@@ -1399,10 +1417,13 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       },
       format: {
         legend: "النظام",
-        addable: "مواجهة الطاولات أو تأهيلية",
+        addable: "مواجهة الطاولات أو جدول المواجهات أو تأهيلية",
         remove: "إزالة",
         shootout: "مواجهة الطاولات",
         shootoutHint: "تلعب كل طاولة حتى يبقى فائز واحد، ثم يلتقي الفائزون على طاولة نهائية. تُسحب المقاعد ولا تُوازَن الطاولات.",
+        standard: "عادي",
+        bracket: "مواجهات فردية",
+        bracketHint: "يتواجه اللاعبون واحدًا لواحد، ويتأهل الفائز في كل مباراة. تُسحب المراكز عشوائيًا، وتُكمل الإعفاءات العدد الناقص، وتُوزع الجوائز حسب الدور الذي يصل إليه اللاعب.",
         satellite: "بطولة تأهيلية",
         satelliteHint: "الجوائز مقاعد في لعبة أخرى. يدخل الفائزون من صفحة اللعبة الجديدة لتلك اللعبة ورسوم دخولهم مدفوعة.",
         seatValue: "قيمة المقعد ({sym})",
@@ -1616,10 +1637,13 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       },
       format: {
         legend: "ফরম্যাট",
-        addable: "শুটআউট বা স্যাটেলাইট",
+        addable: "শুটআউট, ব্র্যাকেট বা স্যাটেলাইট",
         remove: "সরান",
         shootout: "শুটআউট",
         shootoutHint: "প্রতিটি টেবিল একজন বিজয়ী পর্যন্ত খেলে, তারপর বিজয়ীরা ফাইনাল টেবিলে মেলেন। সিট টানা হয় আর টেবিল ব্যালান্স হয় না।",
+        standard: "সাধারণ",
+        bracket: "হেডস-আপ ব্র্যাকেট",
+        bracketHint: "খেলোয়াড়রা একে অপরের মুখোমুখি খেলেন, আর প্রতিটি ম্যাচের বিজয়ী এগিয়ে যান। সিড এলোমেলোভাবে টানা হয়, খেলোয়াড় কম পড়লে বাই দিয়ে পূরণ হয়, আর পুরস্কার দেওয়া হয় কোন রাউন্ড পর্যন্ত পৌঁছেছেন সেই অনুযায়ী।",
         satellite: "স্যাটেলাইট",
         satelliteHint: "পুরস্কার অন্য গেমের সিট। বিজয়ীরা সেই গেমের নতুন গেম পেজে বাই-ইন দেওয়া অবস্থায় আসেন।",
         seatValue: "সিটের দাম ({sym})",
@@ -1826,10 +1850,13 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       },
       format: {
         legend: "Formato",
-        addable: "Shootout ou Satélite",
+        addable: "Shootout, Chave ou Satélite",
         remove: "Remover",
         shootout: "Shootout",
         shootoutHint: "Cada mesa joga até um vencedor, depois os vencedores se enfrentam numa mesa final. Os lugares são sorteados e as mesas não são equilibradas.",
+        standard: "Padrão",
+        bracket: "Chave Heads-Up",
+        bracketHint: "Os jogadores se enfrentam um contra um, e o vencedor de cada confronto avança. As posições são sorteadas, os byes completam uma chave incompleta e os prêmios dependem da rodada alcançada.",
         satellite: "Satélite",
         satelliteHint: "Os prêmios são vagas em outro jogo. Os vencedores entram pelo Novo Jogo daquele jogo com a entrada paga.",
         seatValue: "Valor da Vaga ({sym})",

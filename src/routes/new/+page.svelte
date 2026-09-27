@@ -120,8 +120,8 @@
   let bounty = $state(settings.tBounty);
   let bountyKind = $state<BountyKind>(settings.tBountyKind);
   let mysteryFrom = $state(0);
-  // the format: a shootout, and a satellite whose prizes are seats worth this much
-  let shootoutOn = $state(false);
+  // the format: standard, a shootout or a heads-up bracket, and a satellite whose prizes are seats worth this much
+  let format = $state<TourneySettings["format"]>("standard");
   let satelliteOn = $state(false);
   let seatValue = $state(0);
   let levels = $state<Level[]>([]);
@@ -213,7 +213,10 @@
   const highHandShown = $derived(settings.useHighHand || tonight.highHand);
   const satelliteShown = $derived(settings.useSatellites || tonight.format);
   const shootoutShown = $derived(settings.useShootouts || tonight.format);
-  const satellite = $derived(satelliteShown && satelliteOn && seatValue > 0);
+  const bracketShown = $derived(settings.useBrackets || tonight.format);
+  // a bracket is heads-up all the way: no rebuys, no add-ons, and its prizes are cash
+  const isBracket = $derived(bracketShown && format === "bracket");
+  const satellite = $derived(satelliteShown && satelliteOn && seatValue > 0 && !isBracket);
   const addable = $derived(
     (isCash
       ? [
@@ -226,7 +229,7 @@
           !rebuysOn && { key: "rebuys", labelKey: "gameSetup.addable.rebuysAddOns" },
           !bountyOn && { key: "bounty", labelKey: "gameSetup.addable.bounty" },
           !cutOn && { key: "cut", labelKey: "gameSetup.tournament.houseCut.legend" },
-          !(satelliteShown && shootoutShown) && { key: "format", labelKey: "gameSetup.tournament.format.addable" },
+          !(satelliteShown && shootoutShown && bracketShown) && { key: "format", labelKey: "gameSetup.tournament.format.addable" },
         ]
     ).filter((x) => !!x) as { key: keyof typeof tonight; labelKey: string }[]
   );
@@ -239,8 +242,8 @@
   const useFee = $derived(cutOn ? Math.max(0, fee) : 0);
   const useRakePct = $derived(cutOn ? rakePct : 0);
   const useBounty = $derived(bountyOn ? Math.max(0, Math.min(bounty, buyIn)) : 0);
-  const useRebuy = $derived(rebuysOn && rebuyOn);
-  const useAddOn = $derived(rebuysOn && addOnOn);
+  const useRebuy = $derived(rebuysOn && rebuyOn && !isBracket);
+  const useAddOn = $derived(rebuysOn && addOnOn && !isBracket);
   const useRake = $derived<CashRake["mode"]>(rakeOn ? rakeMode : "none");
 
   const estPool = $derived(expected * Math.max(0, buyIn - useBounty - useFee) * (1 - useRakePct / 100));
@@ -281,7 +284,7 @@
     bountyKind,
     mysteryFrom: Math.max(0, Math.round(mysteryFrom || 0)),
     satellite: satellite ? { seatValue } : null,
-    format: shootoutShown && shootoutOn ? "shootout" : "standard",
+    format: (format === "shootout" && shootoutShown) || isBracket ? format : "standard",
   });
   const cashSettings = (): CashSettings => ({
     sb,
@@ -344,8 +347,8 @@
       if (ts.rebuy.on || ts.addOn.on) tonight.rebuys = true;
       satelliteOn = !!ts.satellite;
       if (ts.satellite) seatValue = ts.satellite.seatValue;
-      shootoutOn = ts.format === "shootout";
-      if (satelliteOn || shootoutOn) tonight.format = true;
+      format = ts.format;
+      if (satelliteOn || format !== "standard") tonight.format = true;
     }
     if (x.levels?.length) {
       levels = x.levels;
@@ -664,8 +667,8 @@
       </fieldset>
 
       <fieldset class="border-0 mt-0 mx-0 mb-[22px] p-0 min-w-0">
-        <legend class="ruled w-full px-0">{[rebuysOn ? t("gameSetup.tournament.rebuys.rebuysAddOn") : "", t("gameSetup.tournament.rebuys.lateRegistration"), bountyOn ? t("gameSetup.tournament.rebuys.bounty") : ""].filter(Boolean).join(" / ")}</legend>
-        {#if rebuysOn}
+        <legend class="ruled w-full px-0">{[rebuysOn && !isBracket ? t("gameSetup.tournament.rebuys.rebuysAddOn") : "", t("gameSetup.tournament.rebuys.lateRegistration"), bountyOn ? t("gameSetup.tournament.rebuys.bounty") : ""].filter(Boolean).join(" / ")}</legend>
+        {#if rebuysOn && !isBracket}
         <label class="across"><input type="checkbox" bind:checked={rebuyOn} /><span>{t("gameSetup.tournament.rebuys.rebuysLabel")}</span></label>
         {#if rebuyOn}
           <div class="row" transition:slide={reveal()}>
@@ -702,14 +705,18 @@
         {/if}
       </fieldset>
 
-      {#if satelliteShown || shootoutShown}
+      {#if satelliteShown || shootoutShown || bracketShown}
       <fieldset class="border-0 mt-0 mx-0 mb-[22px] p-0 min-w-0" transition:slide={reveal()}>
-        <legend class="ruled w-full px-0">{t("gameSetup.tournament.format.legend")}{#if tonight.format}<button class="link small opt ml-2" data-sound="off" onclick={() => ((tonight.format = false), (satelliteOn = false), (shootoutOn = false))}>{t("gameSetup.tournament.format.remove")}</button>{/if}</legend>
-        {#if shootoutShown}
-          <label class="across"><input type="checkbox" bind:checked={shootoutOn} /><span>{t("gameSetup.tournament.format.shootout")}</span></label>
-          <p class="small muted -mt-1 mx-0 mb-[10px]">{t("gameSetup.tournament.format.shootoutHint")}</p>
+        <legend class="ruled w-full px-0">{t("gameSetup.tournament.format.legend")}{#if tonight.format}<button class="link small opt ml-2" data-sound="off" onclick={() => ((tonight.format = false), (satelliteOn = false), (format = "standard"))}>{t("gameSetup.tournament.format.remove")}</button>{/if}</legend>
+        {#if shootoutShown || bracketShown}
+          <div class="row" role="radiogroup" aria-label={t("gameSetup.tournament.format.legend")}>
+            <label class="across"><input type="radio" name="format" value="standard" bind:group={format} /><span>{t("gameSetup.tournament.format.standard")}</span></label>
+            {#if shootoutShown}<label class="across"><input type="radio" name="format" value="shootout" bind:group={format} /><span>{t("gameSetup.tournament.format.shootout")}</span></label>{/if}
+            {#if bracketShown}<label class="across"><input type="radio" name="format" value="bracket" bind:group={format} /><span>{t("gameSetup.tournament.format.bracket")}</span></label>{/if}
+          </div>
+          {#if format !== "standard"}<p class="small muted -mt-1 mx-0 mb-[10px]" transition:slide={reveal()}>{t(format === "bracket" ? "gameSetup.tournament.format.bracketHint" : "gameSetup.tournament.format.shootoutHint")}</p>{/if}
         {/if}
-        {#if satelliteShown}
+        {#if satelliteShown && !isBracket}
           <label class="across"><input type="checkbox" bind:checked={satelliteOn} onchange={() => satelliteOn && !seatValue && (seatValue = buyIn * 10)} /><span>{t("gameSetup.tournament.format.satellite")}</span></label>
           {#if satelliteOn}
             <div class="row" transition:slide={reveal()}>

@@ -176,6 +176,8 @@ export interface TvDict {
     placeholder: string;
     which: string;
     noMatch: string;
+    nextMatch: string;
+    waitingMatch: string;
     league: string;
     tableSeat: string;
     seat: string;
@@ -198,6 +200,9 @@ export interface TvDict {
   phone: {
     follow: string;
     qrLabel: string;
+  };
+  bracket: {
+    vs: string;
   };
   league: {
     standings: string;
@@ -386,6 +391,8 @@ export const tv: Record<Lang, TvDict> = {
       placeholder: "Your Name",
       which: "Which one are you?",
       noMatch: "No one by that name yet.",
+      nextMatch: "{round} vs {name}",
+      waitingMatch: "{round}, opponent to come",
       league: "{place} in {name} · {points} pts",
       tableSeat: "Table {table}, Seat {seat}",
       seat: "Seat {seat}",
@@ -408,6 +415,9 @@ export const tv: Record<Lang, TvDict> = {
     phone: {
       follow: "Follow on your phone",
       qrLabel: "QR code for this game's live link",
+    },
+    bracket: {
+      vs: "vs",
     },
     league: {
       standings: "League Standings",
@@ -594,6 +604,8 @@ export const tv: Record<Lang, TvDict> = {
       placeholder: "你的名字",
       which: "你是哪一位？",
       noMatch: "还没有这个名字。",
+      nextMatch: "{round} 对阵 {name}",
+      waitingMatch: "{round}，对手待定",
       league: "{name}{place}名 · {points} 分",
       tableSeat: "第 {table} 桌，{seat} 号座",
       seat: "{seat} 号座",
@@ -616,6 +628,9 @@ export const tv: Record<Lang, TvDict> = {
     phone: {
       follow: "用手机跟看",
       qrLabel: "本局直播链接的二维码",
+    },
+    bracket: {
+      vs: "对阵",
     },
     league: {
       standings: "联赛排名",
@@ -802,6 +817,8 @@ export const tv: Record<Lang, TvDict> = {
       placeholder: "आपका नाम",
       which: "आप कौन से हैं?",
       noMatch: "इस नाम से अभी कोई नहीं।",
+      nextMatch: "{round}: {name} से मुकाबला",
+      waitingMatch: "{round}, विरोधी तय होना बाकी",
       league: "{name} में {place} · {points} अंक",
       tableSeat: "टेबल {table}, सीट {seat}",
       seat: "सीट {seat}",
@@ -824,6 +841,9 @@ export const tv: Record<Lang, TvDict> = {
     phone: {
       follow: "फ़ोन पर देखें",
       qrLabel: "इस गेम के लाइव लिंक का QR कोड",
+    },
+    bracket: {
+      vs: "बनाम",
     },
     league: {
       standings: "लीग तालिका",
@@ -1010,6 +1030,8 @@ export const tv: Record<Lang, TvDict> = {
       placeholder: "Tu Nombre",
       which: "¿Cuál eres?",
       noMatch: "Nadie con ese nombre todavía.",
+      nextMatch: "{round} vs {name}",
+      waitingMatch: "{round}, rival por definir",
       league: "{place} en {name} · {points} pts",
       tableSeat: "Mesa {table}, Asiento {seat}",
       seat: "Asiento {seat}",
@@ -1032,6 +1054,9 @@ export const tv: Record<Lang, TvDict> = {
     phone: {
       follow: "Síguela en tu teléfono",
       qrLabel: "Código QR del enlace en vivo de esta partida",
+    },
+    bracket: {
+      vs: "vs",
     },
     league: {
       standings: "Clasificación de la Liga",
@@ -1218,6 +1243,8 @@ export const tv: Record<Lang, TvDict> = {
       placeholder: "Votre Nom",
       which: "Lequel êtes-vous ?",
       noMatch: "Personne à ce nom pour l'instant.",
+      nextMatch: "{round} contre {name}",
+      waitingMatch: "{round}, adversaire à venir",
       league: "{place} dans {name} · {points} pts",
       tableSeat: "Table {table}, Place {seat}",
       seat: "Place {seat}",
@@ -1240,6 +1267,9 @@ export const tv: Record<Lang, TvDict> = {
     phone: {
       follow: "Suivez sur votre téléphone",
       qrLabel: "QR code du lien en direct de cette partie",
+    },
+    bracket: {
+      vs: "contre",
     },
     league: {
       standings: "Classement de la Ligue",
@@ -1426,6 +1456,8 @@ export const tv: Record<Lang, TvDict> = {
       placeholder: "اسمك",
       which: "أيّهم أنت؟",
       noMatch: "لا أحد بهذا الاسم بعد.",
+      nextMatch: "{round} ضد {name}",
+      waitingMatch: "{round}، المنافس لم يتحدد بعد",
       league: "المركز {place} في {name} · {points} نقطة",
       tableSeat: "الطاولة {table}، المقعد {seat}",
       seat: "المقعد {seat}",
@@ -1448,6 +1480,9 @@ export const tv: Record<Lang, TvDict> = {
     phone: {
       follow: "تابع على هاتفك",
       qrLabel: "رمز QR للرابط المباشر لهذه اللعبة",
+    },
+    bracket: {
+      vs: "ضد",
     },
     league: {
       standings: "ترتيب الدوري",
@@ -1634,6 +1669,8 @@ export const tv: Record<Lang, TvDict> = {
       placeholder: "আপনার নাম",
       which: "আপনি কোনজন?",
       noMatch: "এই নামে এখনো কেউ নেই।",
+      nextMatch: "{round}: {name}-এর বিপক্ষে",
+      waitingMatch: "{round}, প্রতিপক্ষ এখনো ঠিক হয়নি",
       league: "{name}-এ {place} · {points} পয়েন্ট",
       tableSeat: "টেবিল {table}, আসন {seat}",
       seat: "আসন {seat}",
@@ -1656,6 +1693,9 @@ export const tv: Record<Lang, TvDict> = {
     phone: {
       follow: "ফোনে দেখুন",
       qrLabel: "এই গেমের লাইভ লিংকের QR কোড",
+    },
+    bracket: {
+      vs: "বনাম",
     },
     league: {
       standings: "লিগ টেবিল",
@@ -1842,6 +1882,8 @@ export const tv: Record<Lang, TvDict> = {
       placeholder: "Seu Nome",
       which: "Qual deles é você?",
       noMatch: "Ninguém com esse nome ainda.",
+      nextMatch: "{round} contra {name}",
+      waitingMatch: "{round}, adversário a definir",
       league: "{place} em {name} · {points} pts",
       tableSeat: "Mesa {table}, Assento {seat}",
       seat: "Assento {seat}",
@@ -1864,6 +1906,9 @@ export const tv: Record<Lang, TvDict> = {
     phone: {
       follow: "Acompanhe no celular",
       qrLabel: "QR code do link ao vivo deste jogo",
+    },
+    bracket: {
+      vs: "contra",
     },
     league: {
       standings: "Classificação da Liga",
