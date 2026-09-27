@@ -29,19 +29,19 @@
     {@const r = i + from - 1}
     <div class="round" class:now={now === r + 1}>
       <span class="rname">{roundName(game, r + 1)}</span>
-      <div class="col">
+      <div class="lane">
         {#each pairs(ms) as pair, pi (pi)}
-          <div class="pair" class:single={pair.length < 2}>
+          <div class="duo" class:single={pair.length < 2}>
             {#each pair as m (m.i)}
               {@const open = !m.winner && !!m.a && !!m.b}
-              <div class="match" class:open class:first={i === 0}>
+              <div class="bout" class:open class:first={i === 0}>
                 {#each [m.a, m.b] as id, k (k)}
                   {@const won = !!m.winner && m.winner === id}
                   {@const lost = !!m.winner && !!id && m.winner !== id}
                   {#if open && onpick && id}
-                    <button class="who pick" data-sound="bust" onclick={() => onpick(m.i, id)} title={t("gamePlay.bracket.pickTitle", { name: name(id) })}>{name(id)}</button>
+                    <button class="side pick" data-sound="bust" onclick={() => onpick(m.i, id)} title={t("gamePlay.bracket.pickTitle", { name: name(id) })}>{name(id)}</button>
                   {:else}
-                    <span class="who" class:won class:lost class:bye={r === 0 && !id} class:tbd={r > 0 && !id}>{id ? name(id) : r === 0 ? t("gamePlay.bracket.bye") : ""}</span>
+                    <span class="side" class:won class:lost class:bye={r === 0 && !id} class:tbd={r > 0 && !id}>{id ? name(id) : r === 0 ? t("gamePlay.bracket.bye") : ""}</span>
                   {/if}
                 {/each}
               </div>
@@ -53,7 +53,7 @@
   {/each}
   <div class="round champ">
     <span class="rname">{t("gamePlay.bracket.champion")}</span>
-    <div class="col"><div class="pair single"><div class="match"><span class="who won">{#if champ}<Icon icon={Trophy} size="1em" /> {champ.name}{/if}</span></div></div></div>
+    <div class="lane"><div class="duo single"><div class="bout"><span class="side won">{#if champ}<Icon icon={Trophy} size="1em" /> {champ.name}{/if}</span></div></div></div>
   </div>
 </div>
 
@@ -85,12 +85,12 @@
     color: var(--fg);
     font-weight: 700;
   }
-  .col {
+  .lane {
     flex: 1;
     display: flex;
     flex-direction: column;
   }
-  .pair {
+  .duo {
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -98,7 +98,7 @@
     position: relative;
   }
   /* the two matches of a pair join, then run on to the match they feed */
-  .pair:not(.single)::after {
+  .duo:not(.single)::after {
     content: "";
     position: absolute;
     top: 25%;
@@ -108,15 +108,15 @@
     border: var(--hair) solid var(--line);
     border-inline-start: 0;
   }
-  .match {
+  .bout {
     position: relative;
     display: flex;
     flex-direction: column;
     border: var(--hair) solid var(--line);
     background: var(--bg);
   }
-  .match:not(.first)::before,
-  .champ .match::before {
+  .bout:not(.first)::before,
+  .champ .bout::before {
     content: "";
     position: absolute;
     top: 50%;
@@ -124,10 +124,10 @@
     width: calc(var(--gap) / 2);
     border-top: var(--hair) solid var(--line);
   }
-  .match.open {
+  .bout.open {
     border-color: var(--fg);
   }
-  .who {
+  .side {
     padding: 2px 6px;
     white-space: nowrap;
     overflow: hidden;
@@ -135,7 +135,7 @@
     min-height: 1.6em;
     text-align: start;
   }
-  .who + .who {
+  .side + .side {
     border-top: var(--hair) solid var(--line);
   }
   .pick {
@@ -163,12 +163,12 @@
   .tbd {
     color: var(--muted);
   }
-  .champ .match {
+  .champ .bout {
     border-color: transparent;
     background: transparent;
   }
   /* the final stands alone, so its line runs the whole way across to the champion */
-  .champ .match::before {
+  .champ .bout::before {
     inset-inline-start: calc(var(--gap) * -1);
     width: var(--gap);
   }
@@ -193,13 +193,13 @@
   .tv .now .rname {
     color: var(--tv-banner);
   }
-  .tv .match {
+  .tv .bout {
     background: var(--tv-raise);
   }
-  .tv .champ .match {
+  .tv .champ .bout {
     background: transparent;
   }
-  .tv .match.open {
+  .tv .bout.open {
     border-color: var(--tv-fg);
   }
   .tv .lost,

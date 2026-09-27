@@ -1,0 +1,684 @@
+/* the poker board on the tv (TvView and its views in this folder): shared by
+   the tournament, the cash game and the winner, so they live here instead of
+   in one component's scoped styles. everything sits under .tv .pk, the board's
+   own box (display: contents, so its parts still land on the tv's grid), which
+   keeps it off another kind's board (kinds/<kind>/Board.svelte) */
+.tv .pk {
+  display: contents;
+}
+/* big numbers are Arial Bold: its figures are all one width, so the clock
+   never jitters, and at room size it reads as a clock, not code */
+.tv .pk .fig {
+  font-family: var(--font);
+  font-variant-numeric: tabular-nums;
+}
+/* labels: small, tracked, uppercase through css */
+.tv .pk .k {
+  display: block;
+  color: var(--tv-muted);
+  font-size: max(12px, calc(var(--u) * 1.05));
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  line-height: 1.3;
+}
+.tv .pk .hot-text {
+  color: var(--tv-hot);
+}
+.tv .pk .good-text {
+  color: var(--tv-good);
+}
+/* ---------- the side columns: ledger stats, label over number ---------- */
+.tv .pk .col {
+  padding: calc(var(--u) * 1.6) calc(var(--u) * 2);
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+  font-size: max(14px, calc(var(--u) * 1.5));
+}
+.tv .pk .left {
+  grid-area: left;
+  border-right: var(--hair) solid var(--tv-line);
+}
+.tv .pk .right {
+  grid-area: right;
+  border-left: var(--hair) solid var(--tv-line);
+}
+.tv .pk .stat {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--u) * 0.3);
+  padding: calc(var(--u) * 1.3) 0;
+  border-bottom: var(--hair) solid var(--tv-line);
+}
+.tv .pk .stat:first-child {
+  padding-top: calc(var(--u) * 0.4);
+}
+.tv .pk .v {
+  font-size: calc(var(--u) * 3.7);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+.tv .pk .of {
+  color: var(--tv-muted);
+  font-weight: 400;
+}
+/* one fewer player: the new count drops into place */
+.tv .pk .n {
+  display: inline-block;
+}
+.tv .pk .n.tumble {
+  animation: tv-tumble 600ms var(--ease-out-expo);
+}
+@keyframes tv-tumble {
+  from {
+    transform: translateY(-0.45em);
+    opacity: 0;
+  }
+}
+/* money going up catches the light: the number counts up out of banner yellow */
+.tv .pk .v.glint {
+  animation: tv-glint 1.6s var(--ease-out);
+}
+@keyframes tv-glint {
+  from,
+  15% {
+    color: var(--tv-banner);
+  }
+}
+.tv .pk .sub {
+  color: var(--tv-muted);
+  font-size: 0.95em;
+}
+/* bubble / in the money: a word the table should catch, so it's loud */
+.tv .pk .sub.hot-text,
+.tv .pk .sub.good-text {
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.85em;
+}
+.tv .pk .sub.hot-text {
+  color: var(--tv-hot);
+}
+.tv .pk .sub.good-text {
+  color: var(--tv-good);
+}
+.tv .pk .pair {
+  flex-direction: row;
+  gap: calc(var(--u) * 2.6);
+}
+.tv .pk .pair > div {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--u) * 0.3);
+}
+.tv .pk .notes-col {
+  margin-top: auto;
+  padding-top: calc(var(--u) * 1.2);
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--u) * 0.4);
+  color: var(--tv-muted);
+  font-size: 0.9em;
+}
+.tv .pk .seats {
+  gap: calc(var(--u) * 0.2);
+}
+.tv .pk .seat {
+  display: flex;
+  gap: 0.6em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tv .pk .seat .fig {
+  min-width: 3.4em;
+  color: var(--tv-muted);
+}
+/* seats drawn (or a player sitting down) mid-game: dealt in like cards off the top */
+.tv .pk .seat.deal-in {
+  animation: dealt var(--dur-pop) var(--ease-out-expo) backwards;
+  animation-delay: calc(var(--i, 0) * 70ms);
+}
+.tv .pk .seats.many {
+  font-size: 0.8em;
+}
+.tv .pk .tables {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9em, 1fr));
+  gap: calc(var(--u) * 0.8) calc(var(--u) * 1.6);
+}
+.tv .pk .tables > div {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--u) * 0.15);
+  min-width: 0;
+}
+.tv .pk .tname {
+  font-weight: 700;
+  padding-bottom: calc(var(--u) * 0.2);
+  margin-bottom: calc(var(--u) * 0.2);
+  border-bottom: var(--hair) solid var(--tv-line);
+}
+.tv .pk .tables .seat .fig {
+  min-width: 1.6em;
+}
+.tv .pk .ladder {
+  list-style: none;
+  margin: calc(var(--u) * 0.3) 0 0;
+  padding: 0;
+  font-size: 1.15em;
+}
+.tv .pk .ladder li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 0.6em;
+  padding: calc(var(--u) * 0.35) calc(var(--u) * 0.3);
+  margin: 0 calc(var(--u) * -0.3);
+  border-top: var(--hair) solid var(--tv-line);
+}
+.tv .pk .ladder .fig {
+  grid-column: 3;
+}
+.tv .pk .who {
+  font-size: 0.8em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* the bubble bursts: a flash of banner yellow runs down the ladder */
+.tv .pk .ladder.burst li {
+  animation: tv-burst 1.2s var(--ease-out);
+  animation-delay: calc(var(--i) * 90ms);
+}
+@keyframes tv-burst {
+  25% {
+    background: color-mix(in oklch, var(--tv-banner) 32%, transparent);
+  }
+}
+.tv .pk .ladder li:first-child {
+  border-top: 0;
+  font-weight: 700;
+}
+.tv .pk .lname {
+  font: 1.15em / 1.15 var(--font-serif);
+}
+/* the game being played (another poker game, a mix, dealer's choice): its name, big */
+.tv .pk .gname {
+  font: max(22px, min(calc(var(--u) * 4.2), 8.5cqh)) / 1.05 var(--font-serif);
+  letter-spacing: -0.01em;
+}
+.tv .pk .gname .k {
+  font-family: var(--font);
+  font-size: max(14px, min(calc(var(--u) * 1.3), 3cqh));
+}
+/* the game's name takes a line, so the clock and the numbers under it give it the room */
+.tv .pk .main:has(.gname) .clock {
+  font-size: min(var(--big), 30vh, 36cqh, var(--fit));
+}
+.tv .pk .main:has(.gname):has(.callout) .clock {
+  font-size: min(var(--big), 26vh, 27cqh, var(--fit));
+}
+.tv .pk .main:has(.gname) .cell .v {
+  font-size: min(calc(var(--u) * 7.8), 13.5vh, 12.5cqh, calc(92cqw / (var(--n, 5) * 0.58)));
+}
+.tv .pk .cell .k {
+  white-space: nowrap;
+}
+/* a bracket's matches: both names, big, with a quiet "vs" between */
+.tv .pk .matches {
+  gap: calc(var(--u) * 0.5);
+}
+.tv .pk .match {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: baseline;
+  gap: 0.5em;
+  font-size: 1.15em;
+  font-weight: 700;
+  padding: calc(var(--u) * 0.35) 0;
+  border-top: var(--hair) solid var(--tv-line);
+}
+.tv .pk .match.deal-in {
+  animation: dealt var(--dur-pop) var(--ease-out-expo) backwards;
+  animation-delay: calc(var(--i, 0) * 70ms);
+}
+.tv .pk .match > span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tv .pk .match > span:last-child {
+  text-align: right;
+}
+.tv .pk .match .vs {
+  color: var(--tv-muted);
+  font-size: 0.6em;
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.tv .pk .match .lost {
+  color: var(--tv-muted);
+  text-decoration: line-through;
+  font-weight: 400;
+}
+.tv .pk .match .won {
+  color: var(--tv-good);
+}
+.tv .pk .matches.many .match {
+  font-size: 0.9em;
+}
+/* the whole bracket takes the width of the board while it's on */
+.tv.full .pk .col {
+  display: none;
+}
+.tv.full .pk .main {
+  grid-column: 1 / -1;
+}
+.tv .pk .bracket-wrap {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: stretch;
+  min-height: 0;
+}
+.tv .pk .league .who {
+  font-size: 0.9em;
+}
+.tv .pk .ladder li > span:first-child {
+  color: var(--tv-muted);
+}
+/* ---------- the middle: level, clock, blinds ---------- */
+/* the middle sizes itself off its own height too (cqh), so a banner or a
+   color-up callout shrinks the clock instead of pushing things off screen */
+.tv .pk .main {
+  grid-area: main;
+  container-type: size;
+  padding: calc(var(--u) * 1.6) calc(var(--u) * 3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: min(calc(var(--u) * 1.2), 2cqh);
+  min-width: 0;
+  text-align: center;
+}
+.tv .pk .main > * {
+  flex-shrink: 0;
+}
+.tv .pk .main.wait {
+  grid-column: 1 / -1;
+}
+.tv .pk .main.flash {
+  animation: tv-flash 0.6s var(--ease-out) 4;
+}
+.tv .pk .main.flash .level {
+  color: var(--tv-banner);
+}
+@keyframes tv-flash {
+  30% {
+    background: var(--tv-raise);
+  }
+}
+.tv .pk .level {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--u) * 1.2);
+  font-size: max(18px, min(calc(var(--u) * 2.9), 7cqh));
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+.tv .pk .pill {
+  font-size: 0.5em;
+  letter-spacing: 0.1em;
+  padding: 0.3em 0.5em;
+}
+.tv .pk .blink {
+  animation: tv-blink 1.2s steps(1) infinite;
+}
+@keyframes tv-blink {
+  50% {
+    opacity: 0.35;
+  }
+}
+/* --big is the size it wants, --fit the most its width allows */
+.tv .pk .clock {
+  --big: calc(var(--u) * 19);
+  --fit: 38cqw;
+  font-size: min(var(--big), 31vh, 44cqh, var(--fit));
+  font-weight: 700;
+  line-height: 0.84;
+  letter-spacing: -0.03em;
+  white-space: nowrap;
+  transition:
+    color var(--dur-slow) var(--ease-out),
+    opacity var(--dur-slow) var(--ease-out);
+}
+.tv .pk .clock.long {
+  --big: calc(var(--u) * 14);
+  --fit: 28cqw;
+}
+.tv .pk .main:has(.callout) .clock {
+  font-size: min(var(--big), 31vh, 34cqh, var(--fit));
+}
+.tv .pk .pulse,
+.tv .pk .face {
+  display: inline-block;
+}
+/* the last five seconds: each tick punches the clock out in banner yellow and
+   it settles back, in time with the sound (or instead of it) */
+.tv .pk .pulse.tick {
+  animation: tv-tick 720ms var(--ease-out);
+}
+@keyframes tv-tick {
+  from {
+    transform: scale(1.09);
+    color: var(--tv-banner);
+  }
+}
+/* the minute's blink steps aside so the ticks read cleanly */
+.tv .pk .main.final .clock {
+  animation: none;
+}
+.tv .pk .warn-pill {
+  color: var(--tv-hot);
+}
+.tv .pk .main.held .clock {
+  opacity: 0.55;
+}
+/* cash stakes run from $1/$2 to $0.25/$0.50: fit by character count */
+.tv .pk .clock.stakes {
+  --big: calc(var(--u) * 13);
+  --fit: calc(92cqw / (var(--n, 5) * 0.52));
+}
+.tv .pk .sep {
+  color: var(--tv-muted);
+  font-weight: 400;
+  margin: 0 0.08em;
+}
+.tv .pk .main.hot .clock {
+  color: var(--tv-hot);
+}
+.tv .pk .main.last .clock {
+  animation: tv-blink 1s steps(1) infinite;
+}
+/* the dealer screen's bar (ProgressBar), at room size in the board's colors */
+.tv .pk .bar {
+  width: 100%;
+  max-width: calc(var(--u) * 50);
+  margin: min(calc(var(--u) * 0.6), 1cqh) 0 min(calc(var(--u) * 0.4), 0.7cqh);
+  --bar-h: max(4px, calc(var(--u) * 0.55));
+  --track: var(--tv-line);
+  --fill: var(--tv-fg);
+}
+.tv .pk .main.hot .bar {
+  --fill: var(--tv-hot);
+}
+/* blinds and ante: two cells split by a hairline, the second-biggest thing on the board */
+.tv .pk .strip {
+  display: flex;
+  justify-content: center;
+}
+.tv .pk .cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--u) * 0.5);
+  padding: 0 calc(var(--u) * 2.6);
+}
+.tv .pk .cell + .cell {
+  border-left: var(--hair) solid var(--tv-line);
+}
+.tv .pk .cell .k {
+  font-size: max(13px, calc(var(--u) * 1.25));
+}
+.tv .pk .cell .v {
+  font-size: min(calc(var(--u) * 7), 12vh, 15cqh, calc(92cqw / (var(--n, 5) * 0.58)));
+  letter-spacing: -0.02em;
+}
+.tv .pk .main:has(.callout) .cell .v {
+  font-size: min(calc(var(--u) * 7), 12vh, 12cqh, calc(92cqw / (var(--n, 5) * 0.58)));
+}
+/* a new level rolls up into place: the label, the clock, the blinds, what's next */
+.tv .roll {
+  display: inline-block;
+  animation: tv-roll 0.7s var(--ease-out-expo);
+}
+@keyframes tv-roll {
+  from {
+    transform: translateY(0.45em);
+    opacity: 0;
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+.tv .pk .after {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: calc(var(--u) * 0.6) calc(var(--u) * 3);
+  font-size: max(16px, min(calc(var(--u) * 2), 4.2cqh));
+  line-height: 1.3;
+  margin-top: min(calc(var(--u) * 0.6), 1cqh);
+}
+.tv .pk .after .k {
+  display: inline;
+  margin-right: 0.5em;
+  font-size: 0.6em;
+  vertical-align: 0.15em;
+}
+/* more than one callout stacks as a column of equal-width boxes */
+.tv .pk .callouts {
+  display: grid;
+  gap: min(calc(var(--u) * 0.8), 1.4cqh);
+  margin-top: min(calc(var(--u) * 0.6), 1cqh);
+}
+.tv .pk .callouts .callout {
+  justify-content: center;
+  margin-top: 0;
+}
+.tv .pk .callout {
+  display: flex;
+  gap: calc(var(--u) * 1.2);
+  align-items: center;
+  font-size: max(16px, calc(var(--u) * 2));
+  background: var(--tv-raise);
+  border: var(--hair) solid var(--tv-line);
+  padding: min(calc(var(--u) * 0.8), 1.4cqh) calc(var(--u) * 1.4);
+  margin-top: min(calc(var(--u) * 0.6), 1cqh);
+}
+.tv .pk .callout .k {
+  font-size: 0.6em;
+}
+.tv .pk .callout {
+  perspective: 700px;
+}
+.tv .pk .flip {
+  display: inline-block;
+  line-height: 0;
+}
+/* color-up chips: flicked onto the felt one after another, like the chip editor */
+.tv .pk .flip.flip-in {
+  animation: tv-flip-in 640ms var(--ease-out-expo) backwards;
+  animation-delay: calc(250ms + var(--i) * 130ms);
+}
+@keyframes tv-flip-in {
+  from {
+    transform: translateY(-14px) rotateY(90deg);
+    opacity: 0;
+  }
+}
+/* on the felt, a gray box reads as a hole; darken the felt instead */
+.tv.brk .pk .callout {
+  background: color-mix(in oklch, var(--tv-bg) 45%, transparent);
+}
+.tv .pk .callout.plain {
+  background: none;
+}
+.tv .pk .seat .waited {
+  margin-left: auto;
+  min-width: 0;
+  color: var(--tv-muted);
+}
+/* ---------- winner ---------- */
+.tv .pk .winner {
+  grid-column: 1 / -1;
+  grid-row: 3 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--u) * 1.2);
+  text-align: center;
+}
+.tv .pk .trophy {
+  color: var(--tv-banner);
+  line-height: 0;
+}
+/* the game just ended: trophy lands, the name wipes up, the pot drops, then
+   the standings are dealt out one line at a time */
+.tv .pk .entrance .trophy {
+  animation: tv-land 0.7s var(--ease-out-expo) backwards;
+}
+.tv .pk .entrance > .k {
+  animation: tv-land 0.6s var(--ease-out-expo) 0.2s backwards;
+}
+.tv .pk .entrance .big {
+  animation: tv-wipe 0.9s var(--ease-out-expo) 0.3s backwards;
+}
+.tv .pk .entrance .final li {
+  animation: dealt var(--dur-pop) var(--ease-out-expo) backwards;
+  animation-delay: calc(1400ms + var(--i) * 90ms);
+}
+@keyframes tv-wipe {
+  from {
+    clip-path: inset(0 0 100% 0);
+    transform: translateY(0.25em);
+  }
+  to {
+    clip-path: inset(0 0 -10% 0);
+  }
+}
+@keyframes tv-land {
+  from {
+    transform: translateY(-4vh) scale(0.8);
+    opacity: 0;
+  }
+}
+.tv .pk .winner .k {
+  font-size: max(14px, calc(var(--u) * 1.6));
+}
+.tv .pk .winner .big {
+  font: min(calc(var(--u) * 9), 15vh) / 1 var(--font-serif);
+  letter-spacing: -0.01em;
+}
+.tv .pk .pot {
+  display: flex;
+  align-items: flex-end;
+  gap: calc(var(--u) * 0.8);
+  margin: calc(var(--u) * 0.6) 0;
+}
+.tv .pk .pot .stack {
+  --t: 1vh;
+}
+.tv .pk .final {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: max(16px, calc(var(--u) * 2.1));
+  line-height: 1.25;
+  min-width: calc(var(--u) * 40);
+}
+.tv .pk .final li {
+  display: grid;
+  grid-template-columns: 3.2em 1fr auto;
+  gap: 1em;
+  text-align: left;
+  padding: calc(var(--u) * 0.45) 0;
+  border-top: var(--hair) solid var(--tv-line);
+}
+.tv .pk .final li.top {
+  border-top: 0;
+}
+/* a big payout list runs down two columns instead of off the screen */
+.tv .pk .final.split {
+  display: grid;
+  grid-auto-flow: column;
+  grid-template-rows: repeat(var(--rows), auto);
+  column-gap: calc(var(--u) * 4);
+  /* never wider than the screen, on a tv stood on its end */
+  min-width: min(calc(var(--u) * 76), 96vw);
+}
+.tv .pk .place {
+  color: var(--tv-muted);
+}
+/* a bomb pot coming due is the one callout that asks for attention */
+.tv .pk .callout.hot-callout {
+  color: var(--tv-hot);
+  border-color: var(--tv-hot);
+}
+/* a tv on its side: the clock across the top, the two stat columns under it */
+@media (orientation: portrait) {
+  .tv .pk .col {
+    border: 0;
+    border-top: var(--hair) solid var(--tv-line);
+  }
+  .tv .pk .right {
+    border-left: var(--hair) solid var(--tv-line);
+  }
+}
+/* a phone, or any short screen (a phone on its side): one column that
+   scrolls, clock first, so nothing gets cut off at the bottom */
+@media (max-width: 700px), (max-height: 500px) {
+  /* the results take the clock's place, and Find Me still comes after them */
+  .tv .pk .winner {
+    grid-area: main;
+    padding-block: calc(var(--u) * 5);
+  }
+  .tv .pk .main {
+    container-type: normal;
+    padding-block: calc(var(--u) * 5);
+  }
+  /* no size container here, so cqw means the screen's width */
+  .tv .pk .main .clock,
+  .tv .pk .main:has(.callout) .clock {
+    font-size: min(24vw, var(--fit));
+  }
+  .tv .pk .cell .v,
+  .tv .pk .main:has(.callout) .cell .v {
+    font-size: 11vw;
+  }
+  .tv .pk .level {
+    font-size: 4.5vw;
+  }
+  .tv .pk .col {
+    border: 0;
+    border-top: var(--hair) solid var(--tv-line);
+    font-size: max(14px, calc(var(--u) * 2.4));
+    overflow: visible;
+  }
+}
+/* on its side the screen is wide but short: the board goes by whichever runs
+   out first (the same unit as the script's), and the clock and blinds by the
+   height, so the clock still fits on the first screen */
+@media (min-width: 701px) and (max-height: 500px) {
+  .tv .pk .main .clock,
+  .tv .pk .main:has(.callout) .clock {
+    font-size: min(24vw, 44vh, var(--fit));
+  }
+  .tv .pk .cell .v,
+  .tv .pk .main:has(.callout) .cell .v {
+    font-size: min(11vw, 18vh);
+  }
+  .tv .pk .level {
+    font-size: min(4.5vw, 7vh);
+  }
+}
