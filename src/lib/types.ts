@@ -258,15 +258,14 @@ export interface HighHand {
  *  highHand:     playerId has the high hand now (hand is what the host typed)
  *  highHandPaid: playerId was paid amount for the high hand; the next window starts clean
  */
-export interface SideEvent {
-  kind: "bomb" | "sevenTwo" | "highHand" | "highHandPaid";
-  at: number;
-  playerId?: string;
-  amount?: number;
-  hand?: string;
-  /** high hand: which window of play it was set in (see HighHand.everyMinutes) */
-  window?: number;
-}
+export type SideEvent =
+  | { kind: "bomb"; at: number }
+  | { kind: "sevenTwo"; at: number; playerId: string; amount: number }
+  /** window: which window of play it was set in (see HighHand.everyMinutes) */
+  | { kind: "highHand"; at: number; playerId: string; hand: string; window: number }
+  | { kind: "highHandPaid"; at: number; playerId: string; amount: number; hand: string };
+export type HighHandSet = Extract<SideEvent, { kind: "highHand" }>;
+export type HighHandPaid = Extract<SideEvent, { kind: "highHandPaid" }>;
 
 /** something bought for the game (food, drinks, a new deck), split among the players */
 export interface Cost {

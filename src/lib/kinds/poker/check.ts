@@ -39,14 +39,14 @@ export const isCashSettings = (c: unknown) =>
   maybe(num)(c.bringIn);
 
 /** one bomb pot, 7-2 win or high hand in a cash game */
-export const isSide = (e: unknown) =>
-  obj(e) &&
-  oneOf("bomb", "sevenTwo", "highHand", "highHandPaid")(e.kind) &&
-  num(e.at) &&
-  maybe(id)(e.playerId) &&
-  maybe(num)(e.amount) &&
-  maybe(str)(e.hand) &&
-  maybe(num)(e.window);
+export const isSide = (e: unknown) => {
+  if (!obj(e) || !num(e.at)) return false;
+  if (e.kind === "bomb") return true;
+  if (!id(e.playerId)) return false;
+  if (e.kind === "sevenTwo") return num(e.amount);
+  if (e.kind === "highHand") return str(e.hand) && num(e.window);
+  return e.kind === "highHandPaid" && num(e.amount) && str(e.hand);
+};
 /** someone waiting for a seat */
 export const isWaiting = (w: unknown) => obj(w) && id(w.id) && str(w.name) && num(w.at);
 /** one elimination, and (mystery bounties) the envelope it opened */

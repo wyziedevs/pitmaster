@@ -1,4 +1,4 @@
-import type { CashSettings, Cost, EventKind, Game, GameChip, GameType, Level, Match, Player, Seat, SideEvent, TourneySettings } from "./types";
+import type { CashSettings, Cost, EventKind, Game, GameChip, GameType, HighHandSet, Level, Match, Player, Seat, SideEvent, TourneySettings } from "./types";
 import { newClock } from "./clock";
 import { defaultPayouts, payoutAmounts, roundShares } from "./blinds";
 import { money, nameKey, ordinal, round2, uid } from "./util";
@@ -518,9 +518,9 @@ export function sideStats(game: Game, played: number) {
   const window = hhEvery ? Math.floor(elapsed / hhEvery) : 0;
   const windowLeft = hhEvery ? (window + 1) * hhEvery - elapsed : null;
   const lastPaid = list.findLastIndex((e) => e.kind === "highHandPaid");
-  const current = list.slice(lastPaid + 1).findLast((e) => e.kind === "highHand") ?? null;
+  const current = list.slice(lastPaid + 1).findLast((e): e is HighHandSet => e.kind === "highHand") ?? null;
   // the window it was set in is over: time to pay it
-  const hhDue = !!current && !!hhEvery && (current.window ?? 0) < window;
+  const hhDue = !!current && !!hhEvery && current.window < window;
   const sevenTwos = list.filter((e) => e.kind === "sevenTwo").length;
   return { bombs, bombDue, bombIn, window, windowLeft, current, hhDue, sevenTwos };
 }
@@ -551,7 +551,7 @@ export function setHighHand(game: Game, playerId: string, hand: string, window: 
 /** the house pays whoever holds the high hand; the next window starts with none */
 export function payHighHand(game: Game, elapsed: number) {
   const cur = sideStats(game, elapsed).current;
-  if (!cur?.playerId) return;
+  if (!cur) return;
   const amount = game.cash!.highHand.prize;
   addSide(game, { kind: "highHandPaid", at: Date.now(), playerId: cur.playerId, amount, hand: cur.hand });
   const text = t("gameEvents.highHandPaidFlash", { name: playerName(game, cur.playerId), amount: money(amount) });
@@ -562,7 +562,7 @@ export function payHighHand(game: Game, elapsed: number) {
 /** high hand prizes paid so far, by player */
 export function highHandPrizes(game: Game) {
   const won: Record<string, number> = {};
-  for (const e of game.sides ?? []) if (e.kind === "highHandPaid" && e.playerId) won[e.playerId] = round2((won[e.playerId] ?? 0) + (e.amount ?? 0));
+  for (const e of game.sides ?? []) if (e.kind === "highHandPaid") won[e.playerId] = round2((won[e.playerId] ?? 0) + e.amount);
   return won;
 }
 

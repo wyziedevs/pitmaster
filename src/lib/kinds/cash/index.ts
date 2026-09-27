@@ -1,7 +1,7 @@
 // a cash game: buy in, play for as long as you like, cash out what's in front
 // of you. its dealer screen is Control.svelte; its form and its tv board are
 // the poker ones it shares with tournaments.
-import type { Game, Player } from "$lib/types";
+import type { Game, HighHandPaid, Player } from "$lib/types";
 import type { Kind, Line } from "../kind";
 import { resultRow, type Result } from "$lib/stats";
 import { cashRake, cashStats, gameDate, highHandPrizes, seatFee } from "$lib/game";
@@ -70,7 +70,7 @@ function recap(game: Game) {
   const sideLines = [
     bombs ? tp("players.report.cash.bombPots", bombs) : "",
     sevenTwos.size ? t("players.report.cash.sevenTwo", { list: [...sevenTwos].map(([n, k]) => (k > 1 ? `${n} ×${k}` : n)).join(", ") }) : "",
-    ...sides.filter((e) => e.kind === "highHandPaid").map((e) => t("players.report.cash.highHand", { name: playerName(game, e.playerId), hand: e.hand ?? "", amount: money(e.amount ?? 0), house })),
+    ...sides.filter((e): e is HighHandPaid => e.kind === "highHandPaid").map((e) => t("players.report.cash.highHand", { name: playerName(game, e.playerId), hand: e.hand, amount: money(e.amount), house })),
   ].filter(Boolean);
   if (sideLines.length) lines.push("", ...sideLines);
   lines.push(...settleLines(game));
