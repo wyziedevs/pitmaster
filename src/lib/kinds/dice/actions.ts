@@ -2,6 +2,7 @@
 // told to the room), or the last one comes back out. everything else is
 // worked out from the rounds (engine.ts).
 import type { DiceRound, Game } from "$lib/types";
+import { finish, reopen } from "$lib/game";
 import { flash, logEvent, playerName } from "$lib/events";
 import { ordinal } from "$lib/util";
 import { t, tp } from "$lib/i18n";
@@ -42,8 +43,7 @@ export function addRound(game: Game, r: DiceRound) {
   const out = before.alive.filter((id) => after.lives[id] === 0);
   if (after.over) {
     const champ = game.players.find((p) => after.places[p.id] === 1);
-    game.finished = true;
-    game.endedAt = r.at;
+    finish(game, r.at);
     const w = t("gameEvents.wins", { name: champ?.name ?? "?" });
     logEvent(game, w);
     flash(game, w, "win");
@@ -59,7 +59,6 @@ export function addRound(game: Game, r: DiceRound) {
 export function undoRound(game: Game) {
   const r = game.rounds?.pop();
   if (!r) return;
-  game.finished = false;
-  game.endedAt = undefined;
+  reopen(game);
   logEvent(game, t("gamePlay.dice.undoLog", { n: String(game.rounds!.length + 1) }));
 }

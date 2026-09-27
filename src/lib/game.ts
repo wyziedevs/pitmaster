@@ -11,6 +11,17 @@ export const playedAt = (game: Game) => game.clock.startedAt ?? game.createdAt;
 /** its day, for a spreadsheet: 2026-09-27 */
 export const gameDate = (game: Game) => new Date(playedAt(game)).toISOString().slice(0, 10);
 
+/** it's over (at `at`, or now) */
+export function finish(game: Game, at = Date.now()) {
+  game.finished = true;
+  game.endedAt = at;
+}
+
+/** back on: the end was taken back */
+export function reopen(game: Game) {
+  reopen(game);
+}
+
 /** the rules only its kind reads: a tournament's structure, a cash game's stakes, the other kinds' own */
 type Rules = Partial<Pick<Game, "tourney" | "cash" | "dice" | "lives" | "pot">>;
 
@@ -178,8 +189,7 @@ export function bust(game: Game, playerId: string, place?: number) {
   const seats = tourneyStats(game).seats;
   if (tr.satellite && alive.length > 1 && alive.length <= seats) {
     alive.forEach((x, i) => (x.place = i + 1));
-    game.finished = true;
-    game.endedAt = Date.now();
+    finish(game);
     const names = alive.map((x) => x.name).join(", ");
     logEvent(game, t("gameEvents.seatsWonFlash", { names }));
     flash(game, t("gameEvents.seatsWonFlash", { names }), "win");
@@ -187,8 +197,7 @@ export function bust(game: Game, playerId: string, place?: number) {
   }
   if (alive.length === 1) {
     alive[0].place = 1;
-    game.finished = true;
-    game.endedAt = Date.now();
+    finish(game);
     logEvent(game, t("gameEvents.wins", { name: alive[0].name }));
     flash(game, t("gameEvents.wins", { name: alive[0].name }), "win");
     openOwnEnvelopes(game);
@@ -210,8 +219,7 @@ export function unbust(game: Game, playerId: string, rebuy = false) {
   // anyone who busted after them now finished one spot lower (a bracket's places go by round instead)
   if (game.tourney?.format !== "bracket") for (const x of game.players) if (x.out && x.place !== null && x.place < place) x.place++;
   for (const x of game.players) if (!x.out) x.place = null;
-  game.finished = false;
-  game.endedAt = undefined;
+  reopen(game);
   // what the survivors opened goes back in the pile until it's over again
   if (game.mystery) game.mystery.own = {};
   reseat(game, p);
@@ -233,8 +241,7 @@ export function takeDeal(game: Game, kind: "icm" | "chop", amounts: Record<strin
     }
   });
   game.deal = { kind, amounts, at: now };
-  game.finished = true;
-  game.endedAt = now;
+  finish(game, now);
   openOwnEnvelopes(game);
   const list = alive.map((p) => `${p.name} ${money(amounts[p.id] ?? 0)}`).join(", ");
   logEvent(game, t("gameEvents.dealLog", { kind: kind === "icm" ? t("gameEvents.dealKindIcm") : t("gameEvents.dealKindChop"), list }));

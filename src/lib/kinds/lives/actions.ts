@@ -1,6 +1,7 @@
 // what the dealer screen does to a lives game: a round goes in (and the room
 // hears about it), or the last one comes back out.
 import type { Game, LivesRound } from "$lib/types";
+import { finish, reopen } from "$lib/game";
 import { flash, logEvent, playerName } from "$lib/events";
 import { ordinal } from "$lib/util";
 import { t, tp } from "$lib/i18n";
@@ -49,8 +50,7 @@ export function addLifeRound(game: Game, round: LivesRound) {
   const out = before.alive.filter((id) => after.lives[id] === 0);
   if (after.over) {
     const champ = game.players.find((p) => after.places[p.id] === 1);
-    game.finished = true;
-    game.endedAt = r.at;
+    finish(game, r.at);
     const w = t("gameEvents.wins", { name: champ?.name ?? "?" });
     logEvent(game, w);
     flash(game, w, "win");
@@ -62,7 +62,6 @@ export function addLifeRound(game: Game, round: LivesRound) {
 /** takes back the last round */
 export function undoLifeRound(game: Game) {
   if (!game.lifeRounds?.pop()) return;
-  game.finished = false;
-  game.endedAt = undefined;
+  reopen(game);
   logEvent(game, t("gamePlay.dice.undoLog", { n: String(game.lifeRounds.length + 1) }));
 }

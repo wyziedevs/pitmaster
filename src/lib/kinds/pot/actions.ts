@@ -1,6 +1,7 @@
 // what the dealer screen does to a pot game. each action is one event, told
 // to the room; the pot and everyone's money come from the events (engine.ts).
 import type { Game, PotEvent } from "$lib/types";
+import { finish } from "$lib/game";
 import { flash, logEvent, playerName } from "$lib/events";
 import { money, round2 } from "$lib/util";
 import { t } from "$lib/i18n";
@@ -92,15 +93,8 @@ export function undoPot(game: Game) {
 /** the game's over: whatever's left in the pot goes back out (engine.ts says how) */
 export function endPot(game: Game) {
   const left = potState(game).left;
-  game.finished = true;
-  game.endedAt = Date.now();
+  finish(game);
   const text = left > 0.004 ? t(game.pot!.leftover === "back" ? "gamePlay.pot.endBackLog" : "gamePlay.pot.endSplitLog", { amount: money(left) }) : t("gamePlay.pot.endLog");
   logEvent(game, text);
   flash(game, text, "money");
-}
-
-/** back on: a game ended by mistake */
-export function reopenPot(game: Game) {
-  game.finished = false;
-  game.endedAt = undefined;
 }

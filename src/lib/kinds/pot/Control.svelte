@@ -8,7 +8,7 @@
   import Undo2 from "@lucide/svelte/icons/undo-2";
   import Coins from "@lucide/svelte/icons/coins";
   import type { Game } from "$lib/types";
-  import { addPlayer } from "$lib/game";
+  import { addPlayer, reopen } from "$lib/game";
   import { logEvent, playerName } from "$lib/events";
   import { settleUp } from "$lib/settle";
   import { money, signed } from "$lib/util";
@@ -21,7 +21,7 @@
   import Costs from "$lib/components/Costs.svelte";
   import RemoveButton from "$lib/components/RemoveButton.svelte";
   import { potCap, potState } from "./engine";
-  import { anteUp, bet, endPot, matchPot, pay, reopenPot, take, takePot, undoPot } from "./actions";
+  import { anteUp, bet, endPot, matchPot, pay, take, takePot, undoPot } from "./actions";
   import { potPreset } from "./presets";
   import { presetName, setupLine } from "./index";
   import { t, tp } from "$lib/i18n";
@@ -144,7 +144,7 @@
       <button data-sound="none" onclick={end}>{t("gamePlay.cash.endGame")}</button>
     {:else}
       <span class="pill pop">{t("gamePlay.cash.finishedPill")}</span>
-      <button class="link small" data-sound="rewind" onclick={() => act(() => reopenPot(game))}>{t("gamePlay.pot.reopen")}</button>
+      <button class="link small" data-sound="rewind" onclick={() => act(() => reopen(game))}>{t("gamePlay.pot.reopen")}</button>
     {/if}
   </div>
 </section>

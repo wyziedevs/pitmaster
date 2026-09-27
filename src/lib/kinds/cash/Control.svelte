@@ -9,7 +9,7 @@
   import { bump, reveal, leave, slide } from "$lib/motion";
   import type { Game } from "$lib/types";
   import { cashElapsed, cashToggle } from "$lib/clock";
-  import { addPlayer, cashStats, cashRake, highHandPrizes, seatWaiting, waitingReturn } from "$lib/game";
+  import { addPlayer, cashRake, cashStats, finish, highHandPrizes, seatWaiting, waitingReturn } from "$lib/game";
   import { logEvent, flash } from "$lib/events";
   import { settleUp } from "$lib/settle";
   import { reseat, seatsDrawn, seatLabel, tableCounts } from "$lib/seats";
@@ -273,8 +273,7 @@
   function endGame() {
     if (!s.allOut && !confirm(t("gamePlay.cash.endGameConfirm"))) return;
     act(() => {
-      game.finished = true;
-      game.endedAt = Date.now();
+      finish(game);
       if (running) cashToggle(game);
       logEvent(game, t("gamePlay.cash.gameOverLog"));
     });
