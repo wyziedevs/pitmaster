@@ -7,6 +7,8 @@ export interface CommonDict {
   copied: string;
   close: string;
   cancel: string;
+  /** a finished game in a line: who won and what they took home */
+  wonHeadline: string;
   save: string;
   delete: string;
   remove: string;
@@ -93,6 +95,7 @@ export const common: Record<Lang, CommonDict> = {
     copied: "Copied",
     close: "Close",
     cancel: "Cancel",
+    wonHeadline: "{name} won {amount}",
     save: "Save",
     delete: "Delete",
     remove: "Remove",
@@ -177,6 +180,7 @@ export const common: Record<Lang, CommonDict> = {
     copied: "已复制",
     close: "关闭",
     cancel: "取消",
+    wonHeadline: "{name} 赢得 {amount}",
     save: "保存",
     delete: "删除",
     remove: "移除",
@@ -261,6 +265,7 @@ export const common: Record<Lang, CommonDict> = {
     copied: "कॉपी हो गया",
     close: "बंद करें",
     cancel: "रद्द करें",
+    wonHeadline: "{name} ने {amount} जीते",
     save: "सहेजें",
     delete: "मिटाएं",
     remove: "हटाएं",
@@ -345,6 +350,7 @@ export const common: Record<Lang, CommonDict> = {
     copied: "Copiado",
     close: "Cerrar",
     cancel: "Cancelar",
+    wonHeadline: "{name} ganó {amount}",
     save: "Guardar",
     delete: "Eliminar",
     remove: "Quitar",
@@ -429,6 +435,7 @@ export const common: Record<Lang, CommonDict> = {
     copied: "Copié",
     close: "Fermer",
     cancel: "Annuler",
+    wonHeadline: "{name} a gagné {amount}",
     save: "Enregistrer",
     delete: "Supprimer",
     remove: "Retirer",
@@ -513,6 +520,7 @@ export const common: Record<Lang, CommonDict> = {
     copied: "تم النسخ",
     close: "إغلاق",
     cancel: "إلغاء",
+    wonHeadline: "فاز {name} بـ {amount}",
     save: "حفظ",
     delete: "حذف",
     remove: "إزالة",
@@ -597,6 +605,7 @@ export const common: Record<Lang, CommonDict> = {
     copied: "কপি হয়েছে",
     close: "বন্ধ করুন",
     cancel: "বাতিল করুন",
+    wonHeadline: "{name} জিতেছে {amount}",
     save: "সংরক্ষণ করুন",
     delete: "মুছুন",
     remove: "সরান",
@@ -681,6 +690,7 @@ export const common: Record<Lang, CommonDict> = {
     copied: "Copiado",
     close: "Fechar",
     cancel: "Cancelar",
+    wonHeadline: "{name} ganhou {amount}",
     save: "Salvar",
     delete: "Excluir",
     remove: "Remover",

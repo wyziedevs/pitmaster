@@ -16,28 +16,35 @@
   import type { GameType, LivesSettings } from "$lib/types";
   import { LIVES_DEFAULTS } from "./index";
   import { LIVES_PRESETS, livesPreset } from "./presets";
+  import { leagueOf, namesOf, startFrom } from "../rerun";
   import { t, tp } from "$lib/i18n";
 
   // (this form is only ever a lives game)
   let {}: { type: GameType } = $props();
   const type: GameType = "lives";
 
-  const d = LIVES_DEFAULTS();
+  // tweak and rerun starts from an earlier game's setup
+  const src = startFrom(type);
+  const d = src?.lives ?? LIVES_DEFAULTS();
   const day = new Date().toLocaleDateString(settings.language, { weekday: "long" });
   let preset = $state<LivesSettings["preset"]>(d.preset);
-  let name = $state("");
-  let named = false;
+  let name = $state(src?.name ?? "");
+  let named = !!src;
   // the name follows the game picked until the host types their own
   $effect(() => {
     if (!named) name = `${day} ${t(`common.kinds.lives.presets.${preset}`)}`;
   });
   let lives = $state(d.lives);
+  // a new pick brings that game's usual lives (a copied game keeps its own)
+  let picked = d.preset;
   $effect(() => {
+    if (preset === picked) return;
+    picked = preset;
     lives = livesPreset(preset).lives;
   });
-  let stakes = $state({ ...d.stakes, payoutRound: settings.payoutRound || 1 });
-  let playerNames = $state("");
-  let notes = $state(settings.rulesOnNew ? houseRules().join("\n") : "");
+  let stakes = $state(src ? structuredClone(d.stakes) : { ...d.stakes, payoutRound: settings.payoutRound || 1 });
+  let playerNames = $state(src ? namesOf(src) : "");
+  let notes = $state(src ? src.notes : settings.rulesOnNew ? houseRules().join("\n") : "");
   const names = $derived(
     playerNames
       .split(/\n|,/)
@@ -46,16 +53,17 @@
   );
 
   const leagues = getLeagues().filter((l) => l.types.includes(type));
-  let leagueId = $state(currentLeague(leagues, type)?.id ?? "");
+  let leagueId = $state(leagueOf(src, leagues) ?? currentLeague(leagues, type)?.id ?? "");
   const regulars = knownPlayers().slice(0, 16);
   const unlisted = $derived(regulars.filter((r) => !names.some((n) => nameKey(n) === nameKey(r.name))));
   const addRegular = (n: string) => (playerNames = (playerNames.trim() ? playerNames.trim() + "\n" : "") + n);
 
   function create() {
-    if (names.length < 2 && !confirm(t("gameSetup.dice.fewPlayersConfirm"))) return;
+    if (names.length < 2 && !confirm(t("gameSetup.players.fewPlayersConfirm"))) return;
     const g = newGame({ name: name.trim() || `${day} ${t(`common.kinds.lives.presets.${preset}`)}`, type, chipSetName: "", multiplier: 1, chips: [], notes, players: names, levels: [] });
     g.lives = { preset, lives: Math.max(1, Math.min(50, Math.round(lives || 1))), stakes: { ...$state.snapshot(stakes), buyIn: Math.max(0, stakes.buyIn || 0), perDie: Math.max(0, stakes.perDie || 0) } };
     if (leagueId && leagues.some((l) => l.id === leagueId)) g.leagueId = leagueId;
+    if (src) g.from = src.id;
     saveGame(g);
     goto(`/game/${g.id}`);
   }
@@ -72,7 +80,7 @@
     <fieldset class="border-0 mt-0 mx-0 mb-[22px] p-0 min-w-0">
       <legend class="ruled w-full px-0">{t("gameSetup.basics.legend")}</legend>
       <label>
-        <span>{t("gameSetup.lives.game")}</span>
+        <span>{t("gameSetup.basics.game")}</span>
         <select bind:value={preset}>
           {#each LIVES_PRESETS as p (p.id)}<option value={p.id}>{t(`common.kinds.lives.presets.${p.id}`)}</option>{/each}
         </select>
@@ -118,7 +126,7 @@
   </div>
 
   <div class="preview">
-    <h2>{t("gameSetup.dice.eachPlayer")}</h2>
+    <h2>{t("gameSetup.lives.eachPlayer")}</h2>
     <div class="felt flex flex-wrap gap-2 items-center">{#each Array.from({ length: Math.max(1, Math.min(50, lives || 1)) }) as _, i (i)}<Life token={livesPreset(preset).token} size="28px" />{/each}</div>
     <p class="small">{tp("gamePlay.lives.livesEach", lives || 1)}</p>
   </div>

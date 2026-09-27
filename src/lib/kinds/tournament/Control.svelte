@@ -38,6 +38,8 @@
     drawFinalTable,
     drawBracket,
     decideMatch,
+    lostMatch,
+    undoMatch,
     matchesPlayed,
     currentRound,
     roundName,
@@ -260,7 +262,11 @@
     if (!confirm(tt("gamePlay.tournament.removeConfirm", { name: p.name }))) return;
     act(() => {
       game.players = game.players.filter((x) => x.id !== id);
-      if (bracket && game.matches) drawBracket(game);
+      // the bracket's drawn again without them, or put away if there's no one left to play
+      if (bracket && game.matches) {
+        if (game.players.filter((x) => !x.out).length >= 2) drawBracket(game);
+        else delete game.matches;
+      }
       fitEnvelopes(game);
       logEvent(game, tt("gamePlay.shared.removedLog", { name: p.name }));
     });
@@ -289,7 +295,7 @@
       ...(bracket ? [] : alive).map((p) => ({ id: `t:bust:${p.id}`, label: tt("gamePlay.tournament.bustCommandLabel", { name: p.name }), group: tt("gamePlay.shared.groupPlayers"), keywords: "out eliminate", run: () => (play("bust"), act(() => bust(game, p.id))) })),
       ...(t.rebuy.on && rebuyOpen ? game.players.map((p) => ({ id: `t:rebuy:${p.id}`, label: tt("gamePlay.tournament.rebuyCommandLabel", { name: p.name }), group: tt("gamePlay.shared.groupPlayers"), hint: money(t.rebuy.cost), run: () => (play("chips"), rebuy(p.id, 1)) })) : []),
       ...(t.addOn.on ? alive.map((p) => ({ id: `t:addon:${p.id}`, label: tt("gamePlay.tournament.addOnCommandLabel", { name: p.name }), group: tt("gamePlay.shared.groupPlayers"), hint: money(t.addOn.cost), run: () => (play("chips"), addOn(p.id, 1)) })) : []),
-      ...game.players.filter((p) => p.out && !game.deal && !bracket).map((p) => ({ id: `t:unbust:${p.id}`, label: tt("gamePlay.tournament.undoBustCommandLabel", { name: p.name }), group: tt("gamePlay.shared.groupPlayers"), run: () => (play("rewind"), act(() => unbust(game, p.id))) })),
+      ...game.players.filter((p) => p.out && !game.deal && (!bracket || lostMatch(game, p.id))).map((p) => ({ id: `t:unbust:${p.id}`, label: tt("gamePlay.tournament.undoBustCommandLabel", { name: p.name }), group: tt("gamePlay.shared.groupPlayers"), run: () => (play("rewind"), act(() => (bracket ? undoMatch(game, p.id) : unbust(game, p.id)))) })),
     ])
   );
 
@@ -436,7 +442,8 @@
             <!-- a busted row's actions may wrap to a second line rather than push the table wider -->
             <td class="acts leading-[30px]">
               {#if bracket}
-                <!-- out by losing a match: the bracket below does it -->
+                <!-- out by losing a match: the bracket below does it, and one just lost can be taken back -->
+                {#if p.out && !game.deal && lostMatch(game, p.id)}<button class="link small nowrap" data-sound="rewind" onclick={() => act(() => undoMatch(game, p.id))}>{tt("gamePlay.tournament.undoBust")}</button>{/if}
               {:else if p.out && !game.deal}
                 {#if kosOn}<select class="ko max-w-[150px]" value={lastKo(p.id)} onchange={(e) => credit(p.id, (e.target as HTMLSelectElement).value || null)} aria-label={tt("gamePlay.tournament.whoKnockedOutAria", { name: p.name })}>
                   <option value="">{tt("gamePlay.tournament.koByPlaceholder")}</option>
@@ -470,7 +477,7 @@
           <p class="small muted">{#if alive.length >= 2}{tt("gamePlay.bracket.drawHint", { size: String(bracketSize(alive.length)) })}{#if bracketSize(alive.length) > alive.length}{" "}{tp("gamePlay.bracket.byes", bracketSize(alive.length) - alive.length)}{/if}{:else}{tt("gamePlay.bracket.needTwo")}{/if}</p>
           {#if canDraw}<button data-sound="none" onclick={drawTheBracket}>{tt("gamePlay.bracket.draw")}</button>{/if}
         {:else}
-          <Bracket {game} onpick={game.finished ? undefined : pickWinner} />
+          <div class="scroll-x"><Bracket {game} onpick={game.finished ? undefined : pickWinner} /></div>
           {#if !game.finished}<p class="small muted">{tt("gamePlay.bracket.pickHint")}</p>{/if}
         {/if}
       </div>

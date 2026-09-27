@@ -18,31 +18,36 @@
   const showMoney = $derived(prefs().tvMoney !== false);
   const pname = (id: string | null | undefined) => game.players.find((p) => p.id === id)?.name ?? "";
   // the last few things that happened, newest first, each with its round
+  // (keyed by where they are in the game, so an old one keeps its place as new ones come in)
   const recent = $derived.by(() => {
     let round = 0;
-    const all = (game.potEvents ?? []).map((e) => {
+    const all = (game.potEvents ?? []).map((e, n) => {
       if (e.kind === "ante") round++;
-      return { e, text: eventText(game, e, round) };
+      return { n, text: eventText(game, e, round) };
     });
     return all.slice(-5).reverse();
   });
   const byNet = $derived([...game.players].sort((a, b) => st.net[b.id] - st.net[a.id]));
+  const many = $derived(game.players.length > 10);
 </script>
 
-<div class="pot-board" class:narrow>
+<div class="pot-board" class:narrow class:solo={!showMoney}>
   <section class="middle">
     <span class="k">{game.finished ? t("gamePlay.cash.finishedPill") : `${presetName(game)} · ${tp("gamePlay.pot.rounds", st.rounds)}`}</span>
     {#if showMoney}<span class="pot fig" use:replay={[st.pot, "glint"]}><Count value={st.pot} format={money} /></span>{/if}
-    <span class="sub">{setupLine(game)}</span>
+    {#if showMoney}<span class="sub">{setupLine(game)}</span>{/if}
     {#if !game.finished && st.turn}<span class="turn">{t("tv.pot.turn", { name: pname(st.turn) })}</span>{/if}
-    <ol class="recent">
-      {#each recent as r, i (r.e.at + ":" + i)}<li class:first={i === 0} in:fade={reveal()}>{r.text}</li>{/each}
-    </ol>
+    <!-- (every event is money, so they stay off a board with the money off) -->
+    {#if showMoney}
+      <ol class="recent">
+        {#each recent as r, i (r.n)}<li class:first={i === 0} in:fade={reveal()}>{r.text}</li>{/each}
+      </ol>
+    {/if}
   </section>
   {#if showMoney}
     <aside class="side">
       <span class="k">{t("tv.pot.standings")}</span>
-      <ol class="nets">
+      <ol class="nets" class:many>
         {#each byNet as p (p.id)}<li class:turn={!game.finished && st.turn === p.id}><b>{p.name}</b><span class="fig" class:good={st.net[p.id] > 0.004} class:bad={st.net[p.id] < -0.004}>{signed(st.net[p.id])}</span></li>{/each}
       </ol>
     </aside>
@@ -134,6 +139,10 @@
     padding: calc(var(--u) * 0.45) 0;
     border-top: var(--hair) solid var(--tv-line);
   }
+  .nets.many li {
+    padding: calc(var(--u) * 0.2) 0;
+    font-size: max(15px, calc(var(--u) * 1.45));
+  }
   .nets li.turn b {
     color: var(--tv-banner);
   }
@@ -143,7 +152,8 @@
   .bad {
     color: var(--tv-hot);
   }
-  .narrow {
+  .narrow,
+  .solo {
     grid-template-columns: 1fr;
   }
   .narrow .middle {

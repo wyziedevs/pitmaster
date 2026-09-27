@@ -28,7 +28,7 @@
   import Count from "$lib/components/Count.svelte";
   import RemoveButton from "$lib/components/RemoveButton.svelte";
   import { t, tp } from "$lib/i18n";
-  import { cashGameNow, cashGames, cashStakes, isLimit, isStud, stakesText, variant, variantName } from "$lib/variants";
+  import { cashGameNow, cashGames, cashStakes, isLimit, isStud, stakesText, studAmounts, variant, variantName } from "$lib/variants";
 
   let { game = $bindable(), persist }: { game: Game; persist: () => void } = $props();
 
@@ -222,6 +222,8 @@
     act(() => {
       game.cash!.sb = newSb;
       game.cash!.bb = newBb;
+      // stud's ante and bring-in follow the small bet, like the blinds do
+      if (cashGames(game.cash!).some(isStud)) Object.assign(game.cash!, studAmounts(newBb, Math.min(...game.chips.map((ch) => ch.value), newBb)));
       logEvent(game, t("gamePlay.cash.blindsNowLog", { sb: money(newSb), bb: money(newBb) }));
       flash(game, t("gamePlay.cash.blindsAreNowFlash", { sb: money(newSb), bb: money(newBb) }));
     });
@@ -321,7 +323,7 @@
       {#if variantsOn}
         <div class="small" use:bump={gameNow.id}><b>{variantName(gameNow.id)}</b>{#if isLimit(gameNow.id)}<span class="muted">{` · ${t("gamePlay.variants.limits")}`}</span>{/if}</div>
         <div class="num bb" dir="ltr"><span use:bump={c.sb * 1e6 + c.bb}>{isLimit(gameNow.id) ? `${money(c.bb)}/${money(c.bb * 2)}` : `${money(c.sb)}/${money(c.bb)}`}</span></div>
-        {#if isStud(gameNow.id)}<div class="small num">{stakesText(cashStakes(c, gameNow.id), true).split(" · ")[0]}</div>{/if}
+        {#if isStud(gameNow.id)}<div class="small num">{t("common.stakes.studLine", { ante: money(c.ante ?? 0), bringIn: money(c.bringIn ?? 0) })}</div>{/if}
       {:else}
       <div class="num bb" dir="ltr"><span use:bump={c.sb * 1e6 + c.bb}>{money(c.sb)}/{money(c.bb)}</span></div>
       {/if}

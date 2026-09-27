@@ -8,11 +8,11 @@
   import { page } from "$app/state";
   import { goto } from "$app/navigation";
   import { getChipSets, getDefaultChipSetId, saveGame, getTemplates, getTemplate, saveTemplate, getGame, getGames, getLeagues, knownPlayers } from "$lib/store";
-  import { currentLeague } from "$lib/stats";
+  import { currentLeague, inSeason } from "$lib/stats";
   import { ROTATIONS, VARIANTS, isStud, rotationName, studAmounts, variant, variantName } from "$lib/variants";
   import { gameChips, distribute, maxStack } from "$lib/chips";
   import { generateStructure, defaultPayouts, payoutAmounts, plannedMinutes, structureMinutes } from "$lib/blinds";
-  import { newGame, unusedSeats } from "$lib/game";
+  import { newGame, payGroups, roundShares, unusedSeats } from "$lib/game";
   import type { BountyKind, CashRake, CashSettings, GameType, Level, Template, TourneySettings } from "$lib/types";
   import { PRESETS, getPreset, type Preset } from "$lib/presets";
   import { amt, currencySymbol, duration, money, nameKey, round2, timeOfDay, uid } from "$lib/util";
@@ -80,9 +80,12 @@
   let rotateMinutes = $state(0);
   let studAnte = $state(0);
   let studBringIn = $state(0);
+  // the host's own list with nothing ticked plays hold'em
   const games = $derived<string[]>(
     gamePick === "choice" || gamePick === "mix:custom"
-      ? customGames
+      ? customGames.length
+        ? customGames
+        : ["nlhe"]
       : gamePick.startsWith("mix:")
         ? (ROTATIONS.find((r) => `mix:${r.id}` === gamePick)?.games ?? ["nlhe"])
         : [gamePick]
@@ -291,6 +294,13 @@
   // a satellite: how many seats that pool covers, and what's left for the next place
   const estSeats = $derived(satellite ? Math.floor(round2(estPool / seatValue)) : 0);
   const estRest = $derived(satellite ? round2(estPool - estSeats * seatValue) : 0);
+  // what each place would take (a bracket's rounds share theirs: 3-4, 5-8 ...)
+  const estPaid = $derived.by(() => {
+    const table = payoutAmounts(estPool, payouts, payoutRound);
+    if (!isBracket) return table.map((amount, i) => ({ place: `${i + 1}`, amount }));
+    const shares = roundShares(table, expected, payoutRound);
+    return payGroups(expected, shares.length).map((g) => ({ place: g.to > g.from ? `${g.from}–${g.to}` : `${g.from}`, amount: shares[g.from - 1] }));
+  });
   const sym = $derived(currencySymbol());
   const deepBB = $derived(bb ? Math.round(defaultBuyIn / bb) : 0); // the standard buy-in, in big blinds
 
@@ -472,7 +482,8 @@
         name: g.name,
       });
       if (g.house) houseName = g.house;
-      if (g.leagueId && leagues.some((l) => l.id === g.leagueId && l.types.includes(type))) leagueId = g.leagueId;
+      // its league, if that season's still on (otherwise the one that's on now stays picked)
+      if (g.leagueId && leagues.some((l) => l.id === g.leagueId && l.types.includes(type) && inSeason(l, Date.now()))) leagueId = g.leagueId;
       toast(t("gameSetup.alerts.copiedSetup", { name: g.name }), "info");
     }
   });
@@ -845,7 +856,7 @@
         </label>
         <p class="small">
           {t("gameSetup.tournament.payouts.poolCaption", { n: expected, pool: money(estPool) })}{#if useBounty || estHouse > 0.001}{" "}{t("gameSetup.tournament.payouts.poolAfter", { parts: [useBounty ? t("gameSetup.tournament.payouts.bountyPart", { amount: money(useBounty) }) : "", estHouse > 0.001 ? t("gameSetup.tournament.payouts.housePart", { amount: money(estHouse) }) : ""].filter(Boolean).join(` ${t("gameSetup.tournament.payouts.joinAnd")} `) })}{/if}:
-          {#each payoutAmounts(estPool, payouts, payoutRound) as p, i (i)}<span class="num ml-2" use:bump={p}>{i + 1}. {money(p)}</span>{/each}
+          {#each estPaid as p, i (i)}<span class="num ml-2" use:bump={p.amount}>{p.place}. {money(p.amount)}</span>{/each}
         </p>
         {/if}
       </fieldset>

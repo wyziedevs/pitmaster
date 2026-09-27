@@ -359,6 +359,7 @@ export interface GamePlayDict {
       custom: string;
     };
     endRound: string;
+    everyoneOut: string;
     thirtyOneBy: string;
     thirtyOneButton: string;
     wonBy: string;
@@ -404,6 +405,8 @@ export interface GamePlayDict {
     betHint: string;
     matchHeading: string;
     matchButton: string;
+    handWonBy: string;
+    matchHint: string;
     moneyHeading: string;
     amount: string;
     payIn: string;
@@ -976,6 +979,7 @@ export const gamePlay: Record<Lang, GamePlayDict> = {
         custom: "Tap the lives each player lost this round.",
       },
       endRound: "End the Round",
+      everyoneOut: "That would put everyone out. Someone has to be left, so play the round again.",
       thirtyOneBy: "31 By",
       thirtyOneButton: "31! Everyone Else Loses One",
       wonBy: "won by {name}",
@@ -1021,6 +1025,8 @@ export const gamePlay: Record<Lang, GamePlayDict> = {
       betHint: "Win takes the bet from the pot, lose pays it in, and the post pays double.",
       matchHeading: "Match the Pot ({amount} Each)",
       matchButton: "They Match It",
+      handWonBy: "Won By",
+      matchHint: "The winner takes the pot, and each player checked puts in what was in it, up to the limit.",
       moneyHeading: "Pay In or Take Out",
       amount: "Amount",
       payIn: "Pays In",
@@ -1591,6 +1597,7 @@ export const gamePlay: Record<Lang, GamePlayDict> = {
         custom: "点每位玩家本轮丢了几条命。",
       },
       endRound: "结束本轮",
+      everyoneOut: "这样所有人都会出局。必须有人留下，所以这一轮重新玩。",
       thirtyOneBy: "谁凑到 31",
       thirtyOneButton: "31！其他人各扣一条",
       wonBy: "由 {name} 赢得",
@@ -1636,6 +1643,8 @@ export const gamePlay: Record<Lang, GamePlayDict> = {
       betHint: "赢了从奖池拿走注额，输了放进奖池，撞柱赔双倍。",
       matchHeading: "赔奖池（每人 {amount}）",
       matchButton: "他们已赔",
+      handWonBy: "赢家",
+      matchHint: "赢家拿走奖池，勾选的每位玩家各放入原来奖池里的金额（不超过上限）。",
       moneyHeading: "放钱或拿钱",
       amount: "金额",
       payIn: "放入",
@@ -2206,6 +2215,7 @@ export const gamePlay: Record<Lang, GamePlayDict> = {
         custom: "इस राउंड में हर खिलाड़ी की गई जानों पर टैप करें।",
       },
       endRound: "राउंड खत्म करें",
+      everyoneOut: "इससे सब बाहर हो जाएंगे। किसी एक का बचना ज़रूरी है, इसलिए यह राउंड फिर से खेलें।",
       thirtyOneBy: "31 किसने बनाया",
       thirtyOneButton: "31! बाकी सबकी एक जान गई",
       wonBy: "{name} ने जीता",
@@ -2251,6 +2261,8 @@ export const gamePlay: Record<Lang, GamePlayDict> = {
       betHint: "जीत पर बेट पॉट से मिलती है, हार पर पॉट में जाती है, और पोस्ट पर दोगुना भरना होता है।",
       matchHeading: "पॉट के बराबर भरें (हर एक {amount})",
       matchButton: "उन्होंने भर दिया",
+      handWonBy: "किसने जीता",
+      matchHint: "विजेता पॉट ले लेता है, और चुना गया हर खिलाड़ी उतना डालता है जितना पॉट में था, सीमा तक।",
       moneyHeading: "पैसे डालें या निकालें",
       amount: "रकम",
       payIn: "डालें",
@@ -2821,6 +2833,7 @@ export const gamePlay: Record<Lang, GamePlayDict> = {
         custom: "Toca las vidas que perdió cada jugador en esta ronda.",
       },
       endRound: "Terminar la Ronda",
+      everyoneOut: "Así quedarían todos eliminados. Alguien tiene que quedar, así que jueguen la ronda otra vez.",
       thirtyOneBy: "Quién Hizo 31",
       thirtyOneButton: "¡31! Los Demás Pierden Una",
       wonBy: "ganada por {name}",
@@ -2866,6 +2879,8 @@ export const gamePlay: Record<Lang, GamePlayDict> = {
       betHint: "Si gana, se lleva la apuesta del bote; si pierde, la paga al bote; y el poste paga el doble.",
       matchHeading: "Igualar el Bote ({amount} Cada Uno)",
       matchButton: "Lo Igualan",
+      handWonBy: "Ganó",
+      matchHint: "El ganador se lleva el bote, y cada jugador marcado pone lo que había en él, hasta el límite.",
       moneyHeading: "Poner o Sacar",
       amount: "Cantidad",
       payIn: "Pone",
@@ -3436,6 +3451,7 @@ export const gamePlay: Record<Lang, GamePlayDict> = {
         custom: "Touchez les vies perdues par chaque joueur cette manche.",
       },
       endRound: "Terminer la Manche",
+      everyoneOut: "Tout le monde serait éliminé. Il faut qu'il en reste un, alors rejouez la manche.",
       thirtyOneBy: "31 par",
       thirtyOneButton: "31 ! Tous les Autres en Perdent Une",
       wonBy: "gagnée par {name}",
@@ -3481,6 +3497,8 @@ export const gamePlay: Record<Lang, GamePlayDict> = {
       betHint: "Gagné prend la mise dans le pot, perdu la paie au pot, et le poteau paie le double.",
       matchHeading: "Égaler le Pot ({amount} Chacun)",
       matchButton: "Ils l'Égalent",
+      handWonBy: "Gagné par",
+      matchHint: "Le gagnant prend le pot, et chaque joueur coché remet ce qu'il contenait, jusqu'à la limite.",
       moneyHeading: "Mettre ou Prendre",
       amount: "Montant",
       payIn: "Met",
@@ -4051,6 +4069,7 @@ export const gamePlay: Record<Lang, GamePlayDict> = {
         custom: "اضغط على الأرواح التي خسرها كل لاعب في هذه الجولة.",
       },
       endRound: "إنهاء الجولة",
+      everyoneOut: "بهذا يخرج الجميع. يجب أن يبقى أحد، فأعيدوا لعب الجولة.",
       thirtyOneBy: "من جمع 31",
       thirtyOneButton: "31! يخسر كل الباقين روحًا",
       wonBy: "فاز بها {name}",
@@ -4096,6 +4115,8 @@ export const gamePlay: Record<Lang, GamePlayDict> = {
       betHint: "الفوز يأخذ الرهان من البوت، والخسارة تدفعه فيه، والعمود يدفع الضعف.",
       matchHeading: "دفع مثل البوت ({amount} لكل لاعب)",
       matchButton: "دفعوا",
+      handWonBy: "الفائز",
+      matchHint: "يأخذ الفائز البوت، ويضع كل لاعب محدد ما كان فيه، حتى الحد الأقصى.",
       moneyHeading: "دفع أو سحب",
       amount: "المبلغ",
       payIn: "يدفع",
@@ -4666,6 +4687,7 @@ export const gamePlay: Record<Lang, GamePlayDict> = {
         custom: "এই রাউন্ডে প্রত্যেক খেলোয়াড় যে লাইফগুলো হারাল সেগুলো ট্যাপ করুন।",
       },
       endRound: "রাউন্ড শেষ করুন",
+      everyoneOut: "এতে সবাই বাদ পড়ে যাবে। কাউকে থাকতেই হবে, তাই রাউন্ডটা আবার খেলুন।",
       thirtyOneBy: "কে 31 করেছে",
       thirtyOneButton: "31! বাকি সবাই একটি হারায়",
       wonBy: "জিতেছে {name}",
@@ -4711,6 +4733,8 @@ export const gamePlay: Record<Lang, GamePlayDict> = {
       betHint: "জিতলে বেট পট থেকে আসে, হারলে পটে যায়, আর পোস্টে দ্বিগুণ দিতে হয়।",
       matchHeading: "পটের সমান দিন (প্রত্যেকে {amount})",
       matchButton: "তারা দিয়েছে",
+      handWonBy: "কে জিতেছে",
+      matchHint: "বিজয়ী পট নেয়, আর বাছাই করা প্রত্যেক খেলোয়াড় পটে যা ছিল তা দেয়, সীমা পর্যন্ত।",
       moneyHeading: "টাকা দিন বা নিন",
       amount: "পরিমাণ",
       payIn: "দেয়",
@@ -5281,6 +5305,7 @@ export const gamePlay: Record<Lang, GamePlayDict> = {
         custom: "Toque nas vidas que cada jogador perdeu nesta rodada.",
       },
       endRound: "Encerrar a Rodada",
+      everyoneOut: "Assim todos seriam eliminados. Alguém precisa ficar, então joguem a rodada de novo.",
       thirtyOneBy: "Quem Fez 31",
       thirtyOneButton: "31! Todos os Outros Perdem Uma",
       wonBy: "ganha por {name}",
@@ -5326,6 +5351,8 @@ export const gamePlay: Record<Lang, GamePlayDict> = {
       betHint: "Ganhou leva a aposta do pote, perdeu paga no pote, e a trave paga o dobro.",
       matchHeading: "Igualar o Pote ({amount} Cada)",
       matchButton: "Eles Igualam",
+      handWonBy: "Quem Ganhou",
+      matchHint: "O vencedor leva o pote, e cada jogador marcado põe o que havia nele, até o limite.",
       moneyHeading: "Colocar ou Tirar",
       amount: "Valor",
       payIn: "Coloca",

@@ -163,27 +163,40 @@
   const liveMatches = $derived(bracket && round ? game.matches!.filter((m) => m.round === round && m.a && m.b) : []);
   const pname = (id: string | null) => game.players.find((p) => p.id === id)?.name ?? "";
   const groups = $derived(bracket && t && !game.deal ? payGroups(t.entrants, t.payouts.length) : []);
-  // before the start and on breaks the whole bracket takes turns with the clock, bracket first
-  const bracketTime = $derived(bracket && !winner && (game.clock.status === "idle" || !!d?.level.isBreak));
-  let bracketTurn = $state(false);
-  $effect(() => {
-    if (!bracketTime) return void (bracketTurn = false);
-    bracketTurn = true;
-    const id = setInterval(() => (bracketTurn = !bracketTurn), 15000);
-    return () => clearInterval(id);
+  // the whole bracket starts at the first round of eight matches or fewer, so
+  // every name can be read across the room. until the one being played gets
+  // there, the matches in the left column are the bracket.
+  const bracketFrom = $derived.by(() => {
+    if (!bracket) return 1;
+    const count = (r: number) => game.matches!.filter((m) => m.round === r).length;
+    let r = 1;
+    while (count(r) > 8) r++;
+    return r;
   });
+  // before the start and on breaks the whole bracket takes turns with the clock
+  // (not on a phone, where the board scrolls instead)
+  const bracketTime = $derived(bracket && !winner && !narrow && (round ?? 1) >= bracketFrom && (game.clock.status === "idle" || !!d?.level.isBreak));
 
   // ---------- league ----------
   // a league game's standings take turns with a column while nothing's being
   // played: before the start, on a break, and once it's over
   const league = $derived(game.league?.rows.length ? game.league : null);
-  const leagueTime = $derived(!!league && (game.clock.status === "idle" || !!d?.level.isBreak || game.finished));
-  let leagueTurn = $state(false);
+  // another kind's game has no clock: its quiet times are before the first round and after the last
+  const leagueTime = $derived(!!league && (board ? !game.clock.startedAt || game.finished : game.clock.status === "idle" || !!d?.level.isBreak || game.finished));
+
+  // one timer for both, so they take their turns in order: the bracket, the
+  // clock, then the standings, 15 seconds each
+  const turns = $derived([...(bracketTime ? ["bracket"] : []), "clock", ...(leagueTime ? ["league"] : [])]);
+  let turnAt = $state(0);
   $effect(() => {
-    if (!leagueTime) return void (leagueTurn = false);
-    const id = setInterval(() => (leagueTurn = !leagueTurn), 15000);
+    if (turns.length < 2) return;
+    turnAt = 0;
+    const id = setInterval(() => turnAt++, 15000);
     return () => clearInterval(id);
   });
+  const turn = $derived(turns[turnAt % turns.length]);
+  const bracketTurn = $derived(turn === "bracket");
+  const leagueTurn = $derived(turn === "league");
   const pts = (n: number) => tr("tv.league.points", { n: String(Math.round(n * 10) / 10) });
 
   // the winner's pot: a row of stacks from the game's own chips, biggest first
@@ -525,9 +538,19 @@
 
   {#if board}
     <!-- ================= ANOTHER KIND'S OWN BOARD ================= -->
-    <section class="kind-board">
-      {#await board() then m}<m.default {game} {narrow} />{/await}
-    </section>
+    {#if leagueTurn && league}
+      <section class="kind-board standings">{@render leagueTable(league)}</section>
+    {:else}
+      <section class="kind-board">
+        {#await board() then m}<m.default {game} {narrow} />{/await}
+      </section>
+    {/if}
+    {#if rules.length || (followUrl && !narrow)}
+      <footer class="foot">
+        {@render houseRules()}
+        {@render follow()}
+      </footer>
+    {/if}
   {:else if winner}
     <!-- ================= WINNER ================= -->
     <section class="winner" class:entrance={justWon}>
@@ -539,17 +562,7 @@
         {#each pot as c, i (c.id)}<span style:--d="{500 + i * 160}ms"><ChipStack chip={c} n={[12, 18, 9, 15, 7][i]} width="min(6vw, 10vh)" /></span>{/each}
       </div>
       {#if leagueTurn && league}
-        {@const rows = league.rows.length > 5 ? Math.ceil(league.rows.length / 2) : league.rows.length}
-        <div class="k" in:fade={reveal()}>{tr("tv.league.standings")} · {league.name}</div>
-        <ol class="final" class:split={league.rows.length > 5} style:--rows={rows} in:fade={reveal()}>
-          {#each league.rows as r, i (i)}
-            <li class:top={i % rows === 0}>
-              <span class="place">{ordinal(i + 1)}</span>
-              <b>{r.name}</b>
-              <span class="fig">{pts(r.points)}</span>
-            </li>
-          {/each}
-        </ol>
+        {@render leagueTable(league)}
       {:else if t && groups.length}
         {@const rows = groups.length > 5 ? Math.ceil(groups.length / 2) : groups.length}
         <ol class="final" class:split={groups.length > 5} style:--rows={rows}>
@@ -625,7 +638,7 @@
 
     <section class="main" class:flash={flashLevel}>
       {#if bracketTurn}
-      <div class="bracket-wrap" in:fade={reveal()}><Bracket {game} tv /></div>
+      <div class="bracket-wrap" in:fade={reveal()}><Bracket {game} tv from={bracketFrom} /></div>
       {:else}
       <div class="level">
         <span use:replay={[d.index, "roll"]}>{#if d.level.isBreak}{tr("tv.level.break")}{:else}{tr("tv.level.levelNum", { n: String(levelNum) })}{/if}</span>
@@ -887,11 +900,25 @@
     <span class="lname">{b.name}</span>
     <ol class="ladder">
       {#each b.rows.slice(0, LADDER) as r, i (i)}
-        <li><span class="place">{i + 1}</span><span class="who">{r.name}</span><span class="fig">{pts(r.points)}</span></li>
+        <li><span class="place">{ordinal(i + 1)}</span><span class="who">{r.name}</span><span class="fig">{pts(r.points)}</span></li>
       {/each}
     </ol>
     <span class="sub">{tp("tv.league.afterGames", b.games)}</span>
   </div>
+{/snippet}
+
+{#snippet leagueTable(b: NonNullable<Game["league"]>)}
+  {@const rows = b.rows.length > 5 ? Math.ceil(b.rows.length / 2) : b.rows.length}
+  <div class="k" in:fade={reveal()}>{tr("tv.league.standings")} · {b.name}</div>
+  <ol class="final" class:split={b.rows.length > 5} style:--rows={rows} in:fade={reveal()}>
+    {#each b.rows as r, i (i)}
+      <li class:top={i % rows === 0}>
+        <span class="place">{ordinal(i + 1)}</span>
+        <b>{r.name}</b>
+        <span class="fig">{pts(r.points)}</span>
+      </li>
+    {/each}
+  </ol>
 {/snippet}
 
 {#snippet strip(l: Level, afterBreak: boolean)}
@@ -1320,12 +1347,21 @@
   /* a kind that isn't poker draws everything under the header itself */
   .kind-board {
     grid-column: 1 / -1;
-    grid-row: 3 / -1;
+    grid-row: 3;
     min-height: 0;
     min-width: 0;
     overflow: hidden;
     display: flex;
     flex-direction: column;
+  }
+  /* a league's standings, in the board's place while nothing's being played */
+  .kind-board.standings {
+    align-items: center;
+    justify-content: center;
+    gap: calc(var(--u) * 1.2);
+  }
+  .kind-board.standings .k {
+    font-size: max(17px, calc(var(--u) * 1.85));
   }
   /* the whole bracket takes the width of the board while it's on */
   .tv.full .col {

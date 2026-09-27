@@ -5,7 +5,7 @@
   import FileSpreadsheet from "@lucide/svelte/icons/file-spreadsheet";
   import Trophy from "@lucide/svelte/icons/trophy";
   import { deleteLeague, getLeagues, saveGame, saveLeague } from "$lib/store";
-  import { leagueStandings, placePoints, POINT_TABLE, round1 } from "$lib/stats";
+  import { inSeason, leagueStandings, placePoints, POINT_TABLE, round1 } from "$lib/stats";
   import { settled } from "$lib/game";
   import { csv, day, download, fileSlug, ordinal, signed, uid } from "$lib/util";
   import { toast } from "$lib/toast.svelte";
@@ -82,7 +82,7 @@
     };
   }
 
-  const tableNums = (s: string) => s.split(/[\s,]+/).map(Number).filter((n) => Number.isFinite(n) && n >= 0);
+  const tableNums = (s: string) => s.split(/[\s,]+/).filter(Boolean).map(Number).filter((n) => Number.isFinite(n) && n >= 0);
   // what 1st, 2nd and last of ten would get, so the pick explains itself
   const sample = $derived.by(() => {
     if (!draft) return "";
@@ -132,10 +132,7 @@
   // finished games from the season's dates that aren't in any league yet
   const strays = $derived(
     league
-      ? games.filter((g) => {
-          const at = g.clock.startedAt ?? g.createdAt;
-          return !g.leagueId && league.types.includes(g.type) && settled(g) && at >= league.start && (!league.end || at < league.end + 86400000);
-        })
+      ? games.filter((g) => !g.leagueId && league.types.includes(g.type) && settled(g) && inSeason(league, g.clock.startedAt ?? g.createdAt))
       : []
   );
   function linkStrays() {
@@ -194,32 +191,33 @@
       .join(" · ");
 </script>
 
-<div class="spread mb-2">
-  <div class="row">
+<!-- with no leagues yet, the empty state below carries New League -->
+{#if league}
+  <div class="spread" class:mb-2={leagues.length > 1}>
     {#if leagues.length > 1}
       <select bind:value={pick} aria-label={t("players.leagues.pickAria")} onchange={() => (draft = null)}>
         {#each leagues as l (l.id)}<option value={l.id}>{l.name}</option>{/each}
       </select>
-    {:else if league}
-      <h2 class="m-0">{league.name}</h2>
+    {:else}
+      <h2>{league.name}</h2>
+    {/if}
+    {#if !draft}
+      <span class="links small">
+        <button class="link" data-sound="open" onclick={() => edit(league)}><Icon icon={Pencil} size="1em" />{t("players.leagues.edit")}</button>
+        {#if standings?.rows.length}<button class="link" onclick={exportCsv}><Icon icon={FileSpreadsheet} size="1em" />{t("players.page.spreadsheetButton")}</button>{/if}
+        <button class="link" data-sound="open" onclick={startNew}><Icon icon={Plus} size="1em" />{t("players.leagues.new")}</button>
+      </span>
     {/if}
   </div>
-  <span class="row small">
-    {#if league && !draft}
-      <button class="link" data-sound="open" onclick={() => edit(league)}><Icon icon={Pencil} size="1em" />{t("players.leagues.edit")}</button>
-      {#if standings?.rows.length}<button class="link" onclick={exportCsv}><Icon icon={FileSpreadsheet} size="1em" />{t("players.page.spreadsheetButton")}</button>{/if}
-    {/if}
-    {#if !draft}<button class="link" data-sound="open" onclick={startNew}><Icon icon={Plus} size="1em" />{t("players.leagues.new")}</button>{/if}
-  </span>
-</div>
+{/if}
 
 {#if draft}
   <form class="box mb-[22px]" autocomplete="off" onsubmit={save} transition:slide={reveal()}>
     <h2>{isNew ? t("players.leagues.new") : t("players.leagues.edit")}</h2>
     <label><span>{t("players.leagues.form.name")}</span><input type="text" bind:value={draft.name} style="width:100%" /></label>
     <div class="row">
-      <label><span>{t("players.leagues.form.start")}</span><input type="date" bind:value={draft.start} /></label>
-      <label><span>{t("players.leagues.form.end")}</span><input type="date" bind:value={draft.end} /></label>
+      <label><span>{t("players.leagues.form.start")}</span><input type="date" class="num" bind:value={draft.start} /></label>
+      <label><span>{t("players.leagues.form.end")}</span><input type="date" class="num" bind:value={draft.end} /></label>
     </div>
     <div class="row">
       <span class="small muted">{t("players.leagues.form.counts")}</span>
@@ -308,7 +306,7 @@
               <td class="nowrap">{l.name}</td>
               {#each standings.games as g (g.id)}
                 {@const r = l.results.find((x) => x.gameId === g.id)}
-                <td class="num" class:dropped={r && !r.counted} title={r ? `${ordinal(r.place)} / ${r.entrants}` : ""}>{r ? pts(r.points) : ""}</td>
+                <td class="num">{#if r}<span class:dropped={!r.counted}>{pts(r.points)}</span><span class="block muted" title={t("players.page.history.place", { place: ordinal(r.place), entrants: r.entrants })}>{ordinal(r.place)}</span>{/if}</td>
               {/each}
               <td class="num"><b>{pts(l.points)}</b></td>
             </tr>

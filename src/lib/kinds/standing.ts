@@ -83,14 +83,15 @@ export function stakeMoney(
     for (const [place, who] of Object.entries(at)) {
       const from = Number(place);
       const share = payouts.slice(from - 1, from - 1 + who.length).reduce((a, v) => a + v, 0);
-      for (const id of who) won[id] = round2(share / who.length);
+      evenly(share, who).forEach((v, i) => (won[who[i]] = v));
     }
   } else {
     for (const id of ids) paid[id] = round2((lost[id] ?? 0) * s.perDie);
     if (s.perDieTo === "pot") {
       pool = round2(Object.values(paid).reduce((a, v) => a + v, 0));
-      const champ = ids.find((id) => places[id] === 1);
-      if (champ) won[champ] = pool;
+      // players out together at the very end share it
+      const champs = ids.filter((id) => places[id] === 1);
+      evenly(pool, champs).forEach((v, i) => (won[champs[i]] = v));
     } else
       for (const r of rounds) {
         if (!r.winner || !(r.winner in won)) continue;
@@ -99,4 +100,12 @@ export function stakeMoney(
       }
   }
   return { paid, won, pool, payouts };
+}
+
+/** `total` split evenly over `who`, to the cent: the odd cents go to the first */
+function evenly(total: number, who: string[]) {
+  if (!who.length) return [];
+  const cents = Math.round(total * 100);
+  const each = Math.floor(cents / who.length);
+  return who.map((_, i) => (each + (i < cents - each * who.length ? 1 : 0)) / 100);
 }

@@ -492,7 +492,7 @@ html:has(.tv) {
     --control-h: 40px;
     --control-h-big: 46px;
   }
-  input:is([type="text"], [type="search"], [type="number"], [type="password"], :not([type])),
+  input:is([type="text"], [type="search"], [type="number"], [type="password"], [type="date"], :not([type])),
   select,
   textarea {
     font-size: var(--fs-md);
@@ -772,6 +772,7 @@ input[type="text"],
 input[type="search"],
 input[type="number"],
 input[type="password"],
+input[type="date"],
 input:not([type]),
 select,
 textarea {
@@ -790,6 +791,7 @@ input[type="text"],
 input[type="search"],
 input[type="number"],
 input[type="password"],
+input[type="date"],
 input:not([type]),
 select {
   height: var(--control-h);
@@ -802,6 +804,7 @@ input[type="text"]:hover,
 input[type="search"]:hover,
 input[type="number"]:hover,
 input[type="password"]:hover,
+input[type="date"]:hover,
 input:not([type]):hover,
 select:hover,
 textarea:hover {

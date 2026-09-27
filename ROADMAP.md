@@ -132,7 +132,7 @@ The extras cash tables actually play. Each has its own switch, off to start. Eve
 
 ## Phase 8: Other poker games
 
-**Status: done.** One switch, off to start: Other Poker Games. Fifteen variants, and HORSE, HOSE, 8-Game and Hold'em and Omaha as mixes, plus the host's own. A stud level has no blinds (`sb` 0) and gets an ante of a fifth of the small bet and a bring-in of two fifths, in the smallest chip; a big blind ante only goes on no limit and pot limit levels. Dealer's choice stores the game picked and how much play had gone by (`current`, `since`), so a timed rotation is worked out on every screen with no writes, and the TV announces it when it moves on by itself. The calculator's Pot Limit mode takes the pot and the call from the display and gives the raise-to.
+**Status: done.** One switch, off to start: Other Poker Games. Fifteen variants, and HORSE, HOSE, 8-Game and Hold'em and Omaha as mixes, plus the host's own. A stud level has no blinds (`sb` 0) and gets an ante of a fifth of the small bet and a bring-in of two fifths, in the smallest chip; a big blind ante only goes on no limit and pot limit levels. Dealer's choice stores the game picked and how much play had gone by (`current`, `since`), so a timed rotation is worked out on every screen with no writes, and the TV announces it when it moves on by itself. The calculator's Pot Limit mode takes the pot and the call from the display and gives the most the player can put in (the call and a pot-sized raise).
 
 The biggest poker change: blinds stop being the only kind of structure.
 
@@ -157,7 +157,7 @@ The biggest poker change: blinds stop being the only kind of structure.
 
 ## Phase 9: Game kinds (groundwork for other games)
 
-**Status: done.** `kinds/kind.ts` is what a kind gives the app and `kinds/index.ts` lists them. Cash and tournaments each have a folder (`kinds/cash`, `kinds/tournament`: their dealer screen, results, settle-up, recap, csv, Find Me lines, history line, list summary and check), and `kinds/poker` holds what they share: the new-game form and their settings' checks. A kind's screens are loaded when they're needed, so the tv doesn't carry the dealer screens and the registry never imports a page. The TV stays one component: TvView draws the poker board for the poker kinds and gives any other kind the space under its header for its own `Board`. The remaining `game.type` checks are inside the poker kinds' own shared pieces (the form, the poker board).
+**Status: done.** `kinds/kind.ts` is what a kind gives the app and `kinds/index.ts` lists them. Cash and tournaments each have a folder (`kinds/cash`, `kinds/tournament`: their dealer screen, results, settle-up, recap, csv, Find Me lines, history line, list summary and check), and `kinds/poker` holds what they share: the new-game form and their settings' checks. A kind's screens are loaded when they're needed, so the tv doesn't carry the dealer screens and the registry never imports a page. The TV stays one component: TvView draws the poker board for the poker kinds and gives any other kind the space under its header for its own `Board`. The remaining `game.type` checks are inside the poker kinds' own shared pieces (the form, the poker board), and the leaderboard's separate cash and tournament columns.
 
 Today about 30 places branch on `game.type === "cash" | "tournament"`. Before adding games that aren't poker, give each kind one home:
 

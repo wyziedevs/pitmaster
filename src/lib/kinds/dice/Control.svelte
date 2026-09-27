@@ -8,10 +8,11 @@
   import Trophy from "@lucide/svelte/icons/trophy";
   import Megaphone from "@lucide/svelte/icons/megaphone";
   import Smartphone from "@lucide/svelte/icons/smartphone";
+  import Check from "@lucide/svelte/icons/check";
   import QrCode from "$lib/components/QrCode.svelte";
   import CopyButton from "$lib/components/CopyButton.svelte";
   import { registerSeats, watchSeats } from "$lib/sync";
-  import { callForReveal, countCall, seatHashes, startCups, stopCups, takeMail, toRealDice } from "./host";
+  import { callForReveal, countCall, nextRound, seatAll, seatHashes, startCups, stopCups, takeMail, toRealDice } from "./host";
   import { waitingOn } from "./cups";
   import type { DiceRound, Game } from "$lib/types";
   import { addPlayer, logEvent, settleUp, HOUSE } from "$lib/game";
@@ -54,8 +55,13 @@
   function add(e: SubmitEvent) {
     e.preventDefault();
     if (!newName.trim()) return;
-    act(() => addPlayer(game, newName));
+    act(() => seatNew(addPlayer(game, newName)));
     newName = "";
+  }
+  // a player added with the phones on gets a seat of their own too
+  function seatNew<T>(x: T) {
+    if (game.cups?.on) game.cups = { ...game.cups, seats: seatAll(game) };
+    return x;
   }
   function removePlayer(id: string) {
     const p = game.players.find((x) => x.id === id)!;
@@ -70,7 +76,11 @@
   const setEntry = (v: "quick" | "full") => act(() => (game.dice!.entry = v));
   function commit(r: Omit<DiceRound, "at">) {
     play(r.losers.length ? "bust" : "chips");
-    act(() => addRound(game, { ...r, at: Date.now() }));
+    act(() => {
+      addRound(game, { ...r, at: Date.now() });
+      // a round typed in with the phones on (from Commands): they roll again
+      nextRound(game);
+    });
     reset();
   }
 
@@ -125,7 +135,11 @@
 
   function takeBack() {
     play("rewind");
-    act(() => undoRound(game));
+    act(() => {
+      undoRound(game);
+      // the dice left changed: with phones, everyone rolls again
+      nextRound(game);
+    });
   }
 
   // ---- phones as dice cups ----
@@ -133,15 +147,26 @@
   const waiting = $derived(cups ? waitingOn(game, st.alive) : []);
   const cupLink = (pid: string) => (game.live && game.cups && game.cupKeys?.[pid] ? `${location.origin}/cup#${game.live.code}.${game.cups.seats[pid]}.${game.cupKeys[pid]}` : "");
   // the relay learns each seat's key hash once, whenever the seats change
+  // (tried again in a few seconds when the relay can't be reached)
   let registered = "";
+  let retry = $state(0);
   $effect(() => {
+    void retry;
     const live = game.live;
     if (!live || !cups) return;
     const snap = $state.snapshot(game) as Game;
     const key = `${live.code}|${JSON.stringify(snap.cups?.seats)}`;
     if (key === registered) return;
     registered = key;
-    seatHashes(snap).then((h) => registerSeats(live, h));
+    let again: ReturnType<typeof setTimeout> | undefined;
+    seatHashes(snap)
+      .then((h) => registerSeats(live, h))
+      .then((ok) => {
+        if (ok || registered !== key) return;
+        registered = "";
+        again = setTimeout(() => retry++, 5000);
+      });
+    return () => clearTimeout(again);
   });
   // each phone's mailbox, as it's written: a hash, then (on a call) its numbers
   $effect(() => {
@@ -151,7 +176,10 @@
       if (!(await takeMail(game, seat, text))) return;
       // every cup shown (and nobody on real dice): count it right away
       const c = game.cups;
-      if (c?.phase === "reveal" && !waitingOn(game, diceState(game).alive).length && !c.real?.length) countCall(game);
+      if (c?.phase === "reveal" && !waitingOn(game, diceState(game).alive).length && !c.real?.length) {
+        countCall(game);
+        reset();
+      }
       persist();
     });
   });
@@ -167,14 +195,16 @@
   // a call with phones: the bid and who called it, then the phones show and PitMaster counts
   function phoneCall(e: SubmitEvent) {
     e.preventDefault();
-    if (!count || !bidder || !caller || bidder === caller) return;
+    if (!count || !bidder || !caller || bidder === caller || game.cups?.phase !== "play") return;
     play("bust");
     act(() => callForReveal(game, { bid: { count: count!, face }, bidder, caller, call }));
   }
-  let realCounts = $state<Record<string, number>>({});
+  let realCounts = $state<Record<string, number | null>>({});
+  // everyone on real dice has a count typed in
+  const realReady = $derived((cups?.real ?? []).every((id) => !st.alive.includes(id) || (typeof realCounts[id] === "number" && realCounts[id]! >= 0)));
   function countNow() {
     play("chips");
-    act(() => countCall(game, $state.snapshot(realCounts)));
+    act(() => countCall(game, $state.snapshot(realCounts) as Record<string, number>));
     realCounts = {};
     reset();
   }
@@ -190,7 +220,7 @@
         ? alivePlayers.map((p) => ({ id: `d:lose:${p.id}`, label: t("gamePlay.dice.cmdLoses", { name: p.name }), group: t("gamePlay.shared.groupPlayers"), keywords: "liar dice lost", run: () => tapLoser(p.id) }))
         : []),
       ...(started ? [{ id: "d:undo", label: t("gamePlay.dice.takeBack"), group: t("gamePlay.shared.groupThisGame"), keywords: "undo round", run: takeBack }] : []),
-      ...(!started ? [{ id: "d:add", label: t("gamePlay.tournament.cmdAddPlayer"), group: t("gamePlay.shared.groupThisGame"), keywords: "register seat", prompt: t("gamePlay.tournament.cmdAddPlayerPrompt"), run: (n: string) => (play("chips"), act(() => addPlayer(game, n))) }] : []),
+      ...(!started ? [{ id: "d:add", label: t("gamePlay.tournament.cmdAddPlayer"), group: t("gamePlay.shared.groupThisGame"), keywords: "register seat", prompt: t("gamePlay.tournament.cmdAddPlayerPrompt"), run: (n: string) => (play("chips"), act(() => seatNew(addPlayer(game, n)))) }] : []),
     ])
   );
 </script>
@@ -241,8 +271,8 @@
                 <input type="text" bind:value={p.name} onchange={persist} class="edit-name" aria-label={t("gamePlay.shared.nameHeader")} />
                 {#if st.starter === p.id && !game.finished}<span class="pill">{t("gamePlay.dice.starts")}</span>{/if}
               </td>
-              <td><span class="inline-flex gap-[3px] flex-wrap" title={tp("gamePlay.dice.diceLeft", lives)}>{#each Array.from({ length: d.dice }) as _, i (i)}<Die size="16px" dim={i >= lives} />{/each}</span></td>
-              {#if showNet}<td class="num {cls(net(p.id))}">{signed(net(p.id))}</td>{/if}
+              <td data-l={t("gamePlay.dice.diceHeader")}><span class="inline-flex gap-[3px] flex-wrap" title={tp("gamePlay.dice.diceLeft", lives)}>{#each Array.from({ length: d.dice }) as _, i (i)}<Die size="16px" dim={i >= lives} />{/each}</span></td>
+              {#if showNet}<td class="num {cls(net(p.id))}" data-l={t("players.page.table.net")}>{signed(net(p.id))}</td>{/if}
               <td class="acts">{#if !started}<RemoveButton label={t("gamePlay.shared.removePlayer", { name: p.name })} onclick={() => removePlayer(p.id)} />{/if}</td>
             </tr>
           {:else}
@@ -307,7 +337,7 @@
                 {/each}
               </div>
             {/if}
-            <button data-sound="none" disabled={waiting.length > 0} onclick={countNow}>{t("gamePlay.dice.cups.countNow")}</button>
+            <button data-sound="none" disabled={waiting.length > 0 || !realReady} onclick={countNow}>{t("gamePlay.dice.cups.countNow")}</button>
           {/if}
           {#if waiting.length}
             <p class="small links mt-2">
@@ -402,7 +432,7 @@
             {#each alivePlayers as p (p.id)}
               {@const link = cupLink(p.id)}
               <div class="seat">
-                <b>{p.name}{#if cups.commits?.[p.id] || cups.shown?.[p.id]}<span class="good small"> ✓</span>{/if}</b>
+                <b>{p.name}{#if cups.commits?.[p.id] || cups.shown?.[p.id]} <span class="good"><Icon icon={Check} size="1em" /></span>{/if}</b>
                 {#if link}<QrCode text={link} label={t("gamePlay.dice.cups.qrLabel", { name: p.name })} size="112px" />{/if}
                 {#if link}<CopyButton text={() => link} link icon={false} label={t("gamePlay.dice.cups.copyLink")} />{/if}
               </div>

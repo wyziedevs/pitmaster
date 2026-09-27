@@ -11,21 +11,24 @@ import { combine, commitOf, newSeat, numbers, readMail, seatOwner, sha256, waiti
 
 const pname = (game: Game, id: string) => game.players.find((p) => p.id === id)?.name ?? "?";
 
-/** turn the phones on: a seat (and its key, kept here, never in a snapshot) for every player */
-export function startCups(game: Game) {
-  const seats: Record<string, string> = {};
+/** a seat (and its key, kept here, never in a snapshot) for every player who hasn't one yet */
+export function seatAll(game: Game) {
+  const seats: Record<string, string> = { ...(game.cups?.seats ?? {}) };
   const keys: Record<string, string> = { ...(game.cupKeys ?? {}) };
   for (const p of game.players) {
-    const old = game.cups?.seats[p.id];
-    if (old && keys[p.id]) seats[p.id] = old;
-    else {
-      const s = newSeat();
-      seats[p.id] = s.seat;
-      keys[p.id] = s.key;
-    }
+    if (seats[p.id] && keys[p.id]) continue;
+    const s = newSeat();
+    seats[p.id] = s.seat;
+    keys[p.id] = s.key;
   }
   game.cupKeys = keys;
-  game.cups = { on: true, seats, round: (game.rounds?.length ?? 0) + 1, phase: "commit", commits: {}, shown: {}, real: [] };
+  return seats;
+}
+
+/** turn the phones on: a seat for every player, and everyone rolls */
+export function startCups(game: Game) {
+  const seats = seatAll(game);
+  game.cups = { on: true, seats, round: nextNumber(game), phase: "commit", commits: {}, shown: {}, real: [] };
   logEvent(game, t("gamePlay.dice.cups.onLog"));
   flash(game, t("gamePlay.dice.cups.rollFlash"), "shuffle");
 }
@@ -43,10 +46,15 @@ export async function seatHashes(game: Game) {
   return out;
 }
 
-/** a new round's cups: everyone rolls again */
-function nextRound(game: Game) {
-  const c = game.cups!;
-  game.cups = { ...c, round: (game.rounds?.length ?? 0) + 1, phase: "commit", commits: {}, shown: {}, host: undefined, call: undefined, real: [] };
+// a cup round's number only ever goes up (a take back deals again under a new
+// one), so a phone's hash, and the numbers it showed, are never good twice
+const nextNumber = (game: Game) => Math.max((game.cups?.round ?? 0) + 1, (game.rounds?.length ?? 0) + 1);
+
+/** a new round's cups: everyone rolls again (after a call, or a round taken back) */
+export function nextRound(game: Game) {
+  const c = game.cups;
+  if (!c?.on || game.finished) return;
+  game.cups = { ...c, round: nextNumber(game), phase: "commit", commits: {}, shown: {}, host: undefined, call: undefined, cheats: undefined, real: [] };
 }
 
 /** once every phone has locked in, the host's numbers go out and everyone can look */
@@ -67,21 +75,24 @@ function dealIfReady(game: Game) {
  * after a call, and checked against the hash.
  */
 export async function takeMail(game: Game, seat: string, text: string) {
-  const c = game.cups;
-  if (!c?.on) return false;
-  const pid = seatOwner(c, seat);
   const mail = readMail(text);
-  if (!pid || !mail || mail.r !== c.round || game.finished) return false;
+  if (!mail || !game.cups?.on) return false;
+  // check a reveal's numbers first: the game can move on while that runs, so
+  // everything below reads it fresh
+  const seen = game.cups;
+  const pid = seatOwner(seen, seat);
+  const checked = pid && mail.n && mail.s !== undefined ? await commitOf(game.id, mail.r, seat, mail.n, mail.s) : null;
+  const c = game.cups;
+  if (!c?.on || c.round !== seen.round || !pid || mail.r !== c.round || game.finished) return false;
   const st = diceState(game);
   if (!st.alive.includes(pid)) return false;
-  if (c.phase === "commit" && !c.commits?.[pid]) {
+  if (c.phase === "commit" && !c.commits?.[pid] && !c.real?.includes(pid)) {
     game.cups = { ...c, commits: { ...c.commits, [pid]: mail.c } };
     dealIfReady(game);
     return true;
   }
-  if (c.phase === "reveal" && !c.shown?.[pid] && mail.n && mail.s !== undefined) {
-    const lives = st.lives[pid];
-    const good = mail.c === c.commits?.[pid] && mail.n.length === lives && (await commitOf(game.id, c.round, seat, mail.n, mail.s)) === c.commits?.[pid];
+  if (c.phase === "reveal" && !c.shown?.[pid] && !c.real?.includes(pid) && mail.n && checked) {
+    const good = mail.c === c.commits?.[pid] && mail.n.length === st.lives[pid] && checked === c.commits?.[pid];
     // a phone that doesn't match what it locked in is caught: its dice don't count
     const dice = good ? combine(mail.n, c.host?.[pid] ?? []) : [];
     game.cups = { ...c, shown: { ...c.shown, [pid]: dice }, cheats: good ? c.cheats : [...(c.cheats ?? []), pid] };
@@ -112,18 +123,22 @@ export function callForReveal(game: Game, call: { bid: { count: number; face: nu
 export function countCall(game: Game, realCounts: Record<string, number> = {}) {
   const c = game.cups!;
   const call = c.call;
-  if (!call) return;
+  if (!call || c.phase !== "reveal") return;
   const st = diceState(game);
   const face = call.bid.face;
   const wild = st.wild && face !== 1;
   let actual = 0;
-  for (const dice of Object.values(c.shown ?? {})) actual += dice.filter((d) => d === face || (wild && d === 1)).length;
-  for (const id of c.real ?? []) actual += Math.max(0, Math.round(realCounts[id] ?? 0));
+  for (const [id, dice] of Object.entries(c.shown ?? {})) if (!c.real?.includes(id)) actual += dice.filter((d) => d === face || (wild && d === 1)).length;
+  // no more of a face than the dice that player has
+  for (const id of c.real ?? []) if (st.alive.includes(id)) actual += Math.min(st.lives[id], Math.max(0, Math.round(realCounts[id] ?? 0)));
   const cheats = (c.cheats ?? []).filter((id) => st.alive.includes(id));
   const reveal = Object.fromEntries(Object.entries(c.shown ?? {}).filter(([, d]) => d.length));
+  const judged = judge(game.dice!, { ...call, actual }, st.alive);
   if (cheats.length) {
-    addRound(game, { ...call, actual, losers: cheats, reveal, cheats, at: Date.now() });
-    flash(game, tp("gamePlay.dice.cups.caughtFlash", cheats.length, { names: cheats.map((id) => pname(game, id)).join(", ") }), "bust");
-  } else addRound(game, { ...call, actual, ...judge(game.dice!, { ...call, actual }, st.alive), reveal, at: Date.now() });
-  if (!game.finished) nextRound(game);
+    // the dice a cheat loses go to whoever won the call (or the next one who played fair)
+    const winner = [judged.winner, call.bidder, call.caller, ...st.alive].find((id) => !cheats.includes(id));
+    addRound(game, { ...call, actual, losers: cheats, winner, reveal, cheats, at: Date.now() });
+    if (!game.finished) flash(game, tp("gamePlay.dice.cups.caughtFlash", cheats.length, { names: cheats.map((id) => pname(game, id)).join(", ") }), "bust");
+  } else addRound(game, { ...call, actual, ...judged, reveal, at: Date.now() });
+  nextRound(game);
 }

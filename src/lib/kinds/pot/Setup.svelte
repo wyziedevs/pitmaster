@@ -14,31 +14,38 @@
   import type { GameType, PotSettings } from "$lib/types";
   import { POT_DEFAULTS } from "./index";
   import { POT_PRESETS, potPreset } from "./presets";
+  import { leagueOf, namesOf, startFrom } from "../rerun";
   import { t, tp } from "$lib/i18n";
 
   // (this form is only ever a pot game)
   let {}: { type: GameType } = $props();
   const type: GameType = "pot";
 
-  const d = POT_DEFAULTS();
+  // tweak and rerun starts from an earlier game's setup
+  const src = startFrom(type);
+  const d = src?.pot ?? POT_DEFAULTS();
   const day = new Date().toLocaleDateString(settings.language, { weekday: "long" });
   const sym = $derived(currencySymbol());
   let preset = $state<PotSettings["preset"]>(d.preset);
-  let name = $state("");
-  let named = false;
+  let name = $state(src?.name ?? "");
+  let named = !!src;
   $effect(() => {
     if (!named) name = `${day} ${t(`common.kinds.pot.presets.${preset}`)}`;
   });
   let ante = $state(d.ante);
   let limit = $state(d.limit);
+  // a new pick brings that game's usual ante and limit (a copied game keeps its own)
+  let picked = d.preset;
   $effect(() => {
+    if (preset === picked) return;
+    picked = preset;
     const p = potPreset(preset);
     ante = p.ante;
     limit = p.limit;
   });
   let leftover = $state<PotSettings["leftover"]>(d.leftover);
-  let playerNames = $state("");
-  let notes = $state(settings.rulesOnNew ? houseRules().join("\n") : "");
+  let playerNames = $state(src ? namesOf(src) : "");
+  let notes = $state(src ? src.notes : settings.rulesOnNew ? houseRules().join("\n") : "");
   const names = $derived(
     playerNames
       .split(/\n|,/)
@@ -47,15 +54,16 @@
   );
 
   const leagues = getLeagues().filter((l) => l.types.includes(type));
-  let leagueId = $state(currentLeague(leagues, type)?.id ?? "");
+  let leagueId = $state(leagueOf(src, leagues) ?? currentLeague(leagues, type)?.id ?? "");
   const regulars = knownPlayers().slice(0, 16);
   const unlisted = $derived(regulars.filter((r) => !names.some((n) => nameKey(n) === nameKey(r.name))));
   const addRegular = (n: string) => (playerNames = (playerNames.trim() ? playerNames.trim() + "\n" : "") + n);
 
   function create() {
-    if (names.length < 2 && !confirm(t("gameSetup.dice.fewPlayersConfirm"))) return;
+    if (names.length < 2 && !confirm(t("gameSetup.players.fewPlayersConfirm"))) return;
     const g = newGame({ name: name.trim() || `${day} ${t(`common.kinds.pot.presets.${preset}`)}`, type, chipSetName: "", multiplier: 1, chips: [], notes, players: names, levels: [] });
     g.pot = { preset, ante: Math.max(0, ante || 0), limit: Math.max(0, limit || 0), leftover };
+    if (src) g.from = src.id;
     if (leagueId && leagues.some((l) => l.id === leagueId)) g.leagueId = leagueId;
     saveGame(g);
     goto(`/game/${g.id}`);
@@ -73,7 +81,7 @@
     <fieldset class="border-0 mt-0 mx-0 mb-[22px] p-0 min-w-0">
       <legend class="ruled w-full px-0">{t("gameSetup.basics.legend")}</legend>
       <label>
-        <span>{t("gameSetup.lives.game")}</span>
+        <span>{t("gameSetup.basics.game")}</span>
         <select bind:value={preset}>
           {#each POT_PRESETS as p (p.id)}<option value={p.id}>{t(`common.kinds.pot.presets.${p.id}`)}</option>{/each}
         </select>
@@ -128,8 +136,8 @@
 
   <div class="preview">
     <h2>{t("gameSetup.pot.eachRound")}</h2>
-    <p class="big-num num">{money((names.length || 0) * (ante || 0))}</p>
-    <p class="small">{t("gameSetup.pot.firstPot", { n: names.length, ante: money(ante || 0) })}</p>
+    <p class="big-num num">{money(names.length * (ante || 0))}</p>
+    <p class="small">{t("gameSetup.pot.firstPot", { players: tp("toys.summary.players", names.length), ante: money(ante || 0) })}</p>
   </div>
 </div>
 
@@ -157,7 +165,8 @@
     align-self: start;
   }
   .big-num {
-    font: var(--fs-2xl) / 1.2 var(--font-serif);
+    font-size: var(--fs-2xl);
+    line-height: 1.2;
     margin: 0;
   }
   @media (max-width: 800px) {

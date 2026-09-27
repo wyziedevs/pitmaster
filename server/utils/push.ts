@@ -27,8 +27,8 @@ interface DurableSockets {
   ctx: { getWebSockets(): { send(data: string): void; deserializeAttachment(): unknown }[] };
 }
 
-/** send `msg` to every socket following game `id` (but not `except`, the one it came from) */
-export function push(event: H3Event | null, id: string, msg: object, except?: Follower) {
+/** send `msg` to every socket following game `id` */
+export function push(event: H3Event | null, id: string, msg: object) {
   const text = JSON.stringify(msg);
   const durable = (event?.context.cloudflare as { durable?: DurableSockets } | undefined)?.durable;
   if (durable) {
@@ -38,5 +38,5 @@ export function push(event: H3Event | null, id: string, msg: object, except?: Fo
     }
     return;
   }
-  for (const p of local.get(id) ?? []) if (p !== except) p.send(text);
+  for (const p of local.get(id) ?? []) p.send(text);
 }

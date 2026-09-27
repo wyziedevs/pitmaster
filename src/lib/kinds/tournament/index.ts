@@ -178,7 +178,7 @@ export const tournament: Kind = {
   },
   headline: (game) => {
     const w = results(game).find((r) => r.place === 1);
-    return w ? `${w.name} won ${money(w.won)}` : "";
+    return w ? t("common.wonHeadline", { name: w.name, amount: money(w.won) }) : "";
   },
   describe: (r) =>
     [r.place ? t("players.page.history.place", { place: ordinal(r.place), entrants: r.entrants }) : "", r.kos ? tp("players.page.history.kos", r.kos) : ""].filter(Boolean).join(" · "),

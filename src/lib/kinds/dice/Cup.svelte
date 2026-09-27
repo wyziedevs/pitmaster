@@ -15,7 +15,7 @@
   import { money, ordinal, round2, signed } from "$lib/util";
   import { t, tp } from "$lib/i18n";
 
-  let { game, code, seat, seatKey }: { game: Game; code: string; seat: string; seatKey: string } = $props();
+  let { game, code, seat, seatKey, status = "" }: { game: Game; code: string; seat: string; seatKey: string; status?: string } = $props();
 
   const c = $derived(game.cups);
   const pid = $derived(c ? (Object.entries(c.seats).find(([, s]) => s === seat)?.[0] ?? null) : null);
@@ -25,32 +25,46 @@
   const slot = $derived(`${game.id}:${seat}`);
   const real = $derived(!!pid && !!c?.real?.includes(pid));
 
-  // this round's roll, from the pocket (so a reload keeps it)
+  // this round's roll, from the pocket (so a reload keeps it). nothing can be
+  // rolled until the pocket's been looked in
   let roll = $state<Roll | null>(null);
+  let loaded = $state(false);
   let loadedFor = "";
   $effect(() => {
-    const key = `${slot}:${c?.round}`;
+    const round = c?.round;
+    const key = `${slot}:${round}`;
     if (key === loadedFor) return;
     loadedFor = key;
-    readRoll(slot).then((r) => (roll = r && r.round === c?.round ? r : null));
+    loaded = false;
+    readRoll(slot).then((r) => {
+      if (loadedFor !== key) return;
+      if (!(roll && roll.round === round)) roll = r && r.round === round ? r : null;
+      loaded = true;
+    });
   });
 
   const hostNums = $derived(pid && c?.phase !== "commit" ? c?.host?.[pid] : undefined);
   const dice = $derived(roll && hostNums ? combine(roll.nums, hostNums) : null);
   const waiting = $derived(c ? waitingOn(game, st.alive) : []);
   const net = $derived(pid ? round2((st.money.won[pid] ?? 0) - (st.money.paid[pid] ?? 0)) : 0);
+  // the host can keep money off the tv, and so off the phones
+  const showMoney = $derived(game.prefs?.tvMoney !== false);
 
   // ---- rolling ----
   let rolling = $state(false);
   async function doRoll() {
-    if (!c || !pid || roll || rolling || c.phase !== "commit" || real || !lives) return;
+    // a hash already in for this round is the only one that counts, so a phone that lost its roll can't roll again
+    if (!c || !pid || !loaded || roll || rolling || c.phase !== "commit" || real || !lives || c.commits?.[pid]) return;
     rolling = true;
     const nums = numbers(lives);
     const salt = token(16);
     const r: Roll = { round: c.round, nums, salt, commit: await commitOf(game.id, c.round, seat, nums, salt) };
-    await keepRoll(slot, r);
-    roll = r;
+    // kept on the phone first, so it can always be shown; a phone that can't
+    // keep it still plays the round, it just can't be reloaded
+    await keepRoll(slot, r).catch(() => {});
     rolling = false;
+    if (game.cups?.round !== r.round) return;
+    roll = r;
     navigator.vibrate?.(60);
     void send();
   }
@@ -96,9 +110,13 @@
     return () => clearInterval(id);
   });
 
-  // a call: it shows by itself
+  // a call: it shows by itself (one buzz a call, not one a snapshot)
+  let calledFor = 0;
   $effect(() => {
-    if (c?.phase === "reveal" && roll && pid && !c.shown?.[pid]) navigator.vibrate?.([80, 60, 80]);
+    if (c?.phase === "reveal" && roll && pid && !c.shown?.[pid] && c.round !== calledFor) {
+      calledFor = c.round;
+      navigator.vibrate?.([80, 60, 80]);
+    }
   });
   // a new round that's yours to start buzzes
   let buzzedFor = 0;
@@ -112,9 +130,15 @@
   // ---- looking: only while the finger's down ----
   let looking = $state(false);
   const look = (on: boolean) => (looking = on && !!dice);
+  // a keyboard holds it with space or enter
+  const lookKey = (e: KeyboardEvent, on: boolean) => {
+    if (e.key !== " " && e.key !== "Enter") return;
+    e.preventDefault();
+    if (!e.repeat) look(on);
+  };
 
   const last = $derived(game.rounds?.at(-1));
-  const lostRoll = $derived(!!c && !!pid && c.phase !== "commit" && !roll && !real && !!c.commits?.[pid]);
+  const lostRoll = $derived(!!c && !!pid && loaded && !roll && !real && !!c.commits?.[pid]);
 </script>
 
 <main class="cup">
@@ -128,7 +152,7 @@
       <span class="left">{#each Array.from({ length: game.dice?.dice ?? 5 }) as _, i (i)}<Die size="18px" dim={i >= lives} />{/each}</span>
     </header>
     <p class="meta">
-      {t("tv.dice.round", { n: String(c.round) })} · {tp("gamePlay.dice.diceOnTable", st.total)}
+      {t("tv.dice.round", { n: String((game.rounds?.length ?? 0) + 1) })} · {tp("gamePlay.dice.diceOnTable", st.total)}
       {#if st.starter === pid}<span class="tag">{t("tv.cup.yourStart")}</span>{/if}
       {#if st.palifico}<span class="tag hot">{t("tv.dice.palifico")}</span>{/if}
     </p>
@@ -137,21 +161,33 @@
       <div class="stage"><p class="big">{st.places[me.id] === 1 ? t("tv.find.winner") : t("tv.find.outIn", { place: ordinal(st.places[me.id]!) })}</p></div>
     {:else if real}
       <div class="stage"><p class="big">{t("tv.cup.realDice")}</p></div>
+    {:else if lostRoll}
+      <div class="stage"><p class="big">{t("tv.cup.lostRoll")}</p></div>
     {:else if c.phase === "commit"}
       <div class="stage">
         {#if !roll}
-          <button class="roll" onclick={doRoll} disabled={rolling}>{t("tv.cup.roll")}</button>
+          <button class="roll" onclick={doRoll} disabled={rolling || !loaded}>{t("tv.cup.roll")}</button>
           {#if !motionAsked && typeof DeviceMotionEvent !== "undefined" && "requestPermission" in DeviceMotionEvent}<button class="link small" onclick={allowShake}>{t("tv.cup.allowShake")}</button>{/if}
         {:else}
           <p class="big">{t("tv.cup.rolled")}</p>
           {#if waiting.length}<p class="small">{t("tv.cup.waitingFor", { names: waiting.map((id) => game.players.find((p) => p.id === id)?.name ?? "?").join(", ") })}</p>{/if}
         {/if}
       </div>
-    {:else if lostRoll}
-      <div class="stage"><p class="big">{t("tv.cup.lostRoll")}</p></div>
     {:else}
-      <!-- svelte-ignore a11y_no_static_element_interactions -->
-      <div class="stage peek" class:on={looking} onpointerdown={() => look(true)} onpointerup={() => look(false)} onpointercancel={() => look(false)} onpointerleave={() => look(false)} oncontextmenu={(e) => e.preventDefault()}>
+      <div
+        class="stage peek"
+        class:on={looking}
+        role="button"
+        tabindex="0"
+        onpointerdown={() => look(true)}
+        onpointerup={() => look(false)}
+        onpointercancel={() => look(false)}
+        onpointerleave={() => look(false)}
+        onkeydown={(e) => lookKey(e, true)}
+        onkeyup={(e) => lookKey(e, false)}
+        onblur={() => look(false)}
+        oncontextmenu={(e) => e.preventDefault()}
+      >
         {#if looking && dice}
           <div class="dice">{#each dice as v, i (i)}<Die value={v} size="min(18vw, 84px)" />{/each}</div>
         {:else}
@@ -165,9 +201,11 @@
     {:else if last?.bid && last.actual !== undefined}
       <p class="call small">{t("tv.cup.lastCall", { bid: faceCount(last.bid.count, last.bid.face), actual: String(last.actual) })}</p>
     {/if}
-    {#if game.dice?.stakes.mode === "perDie" || game.finished}<p class="small">{signed(net)}</p>{/if}
-    {#if game.dice?.stakes.mode === "pot" && game.finished && (st.money.won[me.id] ?? 0) > 0}<p class="small">{t("tv.find.won", { amount: money(st.money.won[me.id]) })}</p>{/if}
+    {#if showMoney && (game.dice?.stakes.mode === "perDie" || game.finished)}<p class="small num">{signed(net)}</p>{/if}
+    {#if showMoney && game.dice?.stakes.mode === "pot" && game.finished && (st.money.won[me.id] ?? 0) > 0}<p class="small">{t("tv.find.won", { amount: money(st.money.won[me.id]) })}</p>{/if}
   {/if}
+  <!-- the connection dropped, or the host stopped sharing: say so over the last thing we heard -->
+  {#if status}<p class="small" role="status">{status}</p>{/if}
 </main>
 
 <style>
@@ -177,8 +215,8 @@
     flex-direction: column;
     gap: 12px;
     padding: 18px 16px calc(18px + env(safe-area-inset-bottom));
-    background: var(--tv-bg, #141414);
-    color: var(--tv-fg, #eee);
+    background: var(--tv-bg);
+    color: var(--tv-fg);
     text-align: center;
     user-select: none;
     -webkit-user-select: none;
@@ -202,19 +240,19 @@
   }
   .meta,
   .small {
-    color: var(--tv-muted, #aaa);
+    color: var(--tv-muted);
     font-size: 15px;
     margin: 0;
   }
   .tag {
     margin-left: 8px;
-    color: var(--tv-banner, #f5c400);
+    color: var(--tv-banner);
     text-transform: uppercase;
-    letter-spacing: 0.1em;
-    font-size: 12px;
+    letter-spacing: var(--track-caps);
+    font-size: var(--fs-xs);
   }
   .tag.hot {
-    color: var(--tv-hot, #f55);
+    color: var(--tv-hot);
   }
   .stage {
     flex: 1;
@@ -223,13 +261,17 @@
     align-items: center;
     justify-content: center;
     gap: 14px;
-    border: 1px solid var(--tv-line, #333);
-    background: var(--tv-felt, #1e3b2c);
+    border: var(--hair) solid var(--tv-line);
+    background: var(--tv-felt);
+    /* chalk on the felt, in either theme (like .felt) */
+    color: var(--felt-fg);
+    --tv-muted: color-mix(in oklch, var(--felt-fg) 70%, var(--tv-felt));
+    --link: var(--felt-fg);
     min-height: 46dvh;
     touch-action: none;
   }
   .peek.on {
-    background: var(--tv-raise, #222);
+    background: var(--tv-raise);
   }
   .big {
     font: 28px/1.2 var(--font-serif);

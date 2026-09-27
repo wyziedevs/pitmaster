@@ -5,6 +5,7 @@
   import ArrowDown from "@lucide/svelte/icons/arrow-down";
   import Seg from "$lib/components/Seg.svelte";
   import Leagues from "$lib/components/Leagues.svelte";
+  import { replaceState } from "$app/navigation";
   import { listedKinds, kind } from "$lib/kinds";
   import { flip as flipRows } from "svelte/animate";
   import { bump, reorder, reveal, slide } from "$lib/motion";
@@ -23,7 +24,6 @@
     download,
     money,
     nameKey,
-    ordinal,
     payLinks,
     round2,
     signed,
@@ -40,7 +40,7 @@
   let view = $state<"board" | "leagues">(leaguesOn && location.hash === "#leagues" ? "leagues" : "board");
   function pickView(v: typeof view) {
     view = v;
-    history.replaceState(history.state, "", v === "leagues" ? "#leagues" : location.pathname);
+    replaceState(v === "leagues" ? "#leagues" : location.pathname, {});
   }
 
   let period = $state<Period>("all");
@@ -243,7 +243,7 @@
 <div class="row mt-3 mx-0 mb-[14px] gap-[14px]">
   <Seg
     value={period}
-    options={PERIODS}
+    options={PERIODS.map((id) => ({ id, label: t(`players.page.filter.periods.${id}`) }))}
     onpick={(v) => (period = v)}
     labelledby="period-l"
   />

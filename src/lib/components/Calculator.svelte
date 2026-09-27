@@ -283,8 +283,9 @@
 
   // ---------- pot limit ----------
   // type the pot (everything in the middle and in front of the players) and
-  // take it, then the amount to call: the most a raise can be is to the call,
-  // plus the pot with that call in it
+  // take it, then the amount to call: the most the player can put in is the
+  // call, plus the pot with that call in it. (it's the raise-to only when they
+  // have nothing in front yet, so it's shown as what goes in)
   function takeForPot(which: "potSize" | "toCall") {
     const v = current();
     calc[which] = v === null ? 0 : Math.max(0, v);
@@ -601,7 +602,7 @@
 
     {#if calc.pot}
       <!-- pot limit: the pot and the call are taken from the display, and the
-           most anyone can raise to comes out under them -->
+           most the player can put in comes out beside them -->
       <div class="potbox" in:slide={reveal()} out:slide={leave()}>
         <button class="pk" data-sound="card" onclick={() => takeForPot("potSize")} title={t("calculator.pot.takeTitle")}><span>{t("calculator.pot.pot")}</span><b class="num" dir="ltr">{calc.potSize === null ? "–" : fmt(calc.potSize)}</b></button>
         <button class="pk" data-sound="card" onclick={() => takeForPot("toCall")} title={t("calculator.pot.takeTitle")}><span>{t("calculator.pot.toCall")}</span><b class="num" dir="ltr">{calc.toCall === null ? "–" : fmt(calc.toCall)}</b></button>

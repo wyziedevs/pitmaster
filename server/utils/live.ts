@@ -23,7 +23,7 @@ export interface SeatMail {
 }
 
 const TTL = 60 * 60 * 24 * 2; // copies are deleted 2 days after their last update
-const MAX_BODY = 1_000_000; // bytes; a big tournament's snapshot is well under this
+export const MAX_BODY = 1_000_000; // bytes; a big tournament's snapshot is well under this
 
 export const liveStorage = () => useStorage<LiveRecord>("live");
 const mailStorage = () => useStorage<SeatMail>("live");
@@ -133,6 +133,9 @@ export async function smallBody<T>(event: H3Event) {
 
 /** a snapshot as the host's browser sealed it (see src/lib/crypto.ts): version, zip flag, 12-byte iv, ciphertext */
 export const isSealed = (s: unknown): s is string => typeof s === "string" && /^pm1\.[pz]\.[A-Za-z0-9+/]{16}\.[A-Za-z0-9+/]+=*$/.test(s);
+
+/** a phone's mailbox: a hash, then a few numbers, sealed. far smaller than a snapshot */
+export const isMail = (s: unknown): s is string => isSealed(s) && s.length <= 4096;
 
 export async function putLive(id: string, record: LiveRecord) {
   await liveStorage().setItem(id, record, { ttl: TTL });

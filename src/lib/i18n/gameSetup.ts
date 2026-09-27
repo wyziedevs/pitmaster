@@ -34,6 +34,7 @@ export interface GameSetupDict {
   basics: {
     legend: string;
     name: string;
+    game: string;
     chipSet: string;
     league: string;
     editLeagues: string;
@@ -93,7 +94,7 @@ export interface GameSetupDict {
     howItPlays: string;
   };
   lives: {
-    game: string;
+    eachPlayer: string;
     livesEach: string;
     stakesPerLife: string;
     perLife: string;
@@ -243,6 +244,7 @@ export interface GameSetupDict {
   players: {
     legend: string;
     optional: string;
+    fewPlayersConfirm: string;
     namesLabel: string;
     namesPlaceholder: string;
     regulars: string;
@@ -326,6 +328,7 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
     basics: {
       legend: "The Basics",
       name: "Name",
+      game: "Game",
       chipSet: "Chip Set",
       league: "League",
       editLeagues: "Leagues",
@@ -385,7 +388,7 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       howItPlays: "Everyone rolls under a cup and bids on how many of a face there are on the whole table. Call a bid a liar and the cups come up: whoever was wrong loses a die. The last one with dice wins.",
     },
     lives: {
-      game: "Game",
+      eachPlayer: "Each Player Starts With",
       livesEach: "Lives Each",
       stakesPerLife: "Money per Life Lost",
       perLife: "Per Life Lost {sym}",
@@ -409,7 +412,7 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       leftoverSplit: "Split Evenly",
       leftoverBack: "Back to Whoever Put It In",
       eachRound: "The First Pot",
-      firstPot: "{n} players, {ante} each",
+      firstPot: "{players}, {ante} each",
       rules: {
         inbetween: "Two cards go up, and you bet up to the pot that the next one lands between them. Win and take your bet from the pot; lose and pay it in; hit either card (the post) and pay double.",
         guts: "Everyone antes and gets their cards, then says in or out. Of those in, the best hand takes the pot and the rest match it. When only one player is in, they take it.",
@@ -539,6 +542,7 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
     players: {
       legend: "Players",
       optional: "Optional, or Add Them Later",
+      fewPlayersConfirm: "This game needs at least two players. Start it anyway and add them on the next page?",
       namesLabel: "Names, One per Line or Split by Commas",
       namesPlaceholder: "Alex, Sam, Jordan",
       regulars: "Regulars:",
@@ -620,6 +624,7 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
     basics: {
       legend: "基本设置",
       name: "名称",
+      game: "游戏",
       chipSet: "筹码套装",
       league: "联赛",
       editLeagues: "联赛",
@@ -679,7 +684,7 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       howItPlays: "每个人把骰子摇在骰盅里，然后叫全桌某个点数一共有几个。有人喊开，就揭开骰盅：错的一方输一颗骰子。最后还有骰子的人获胜。",
     },
     lives: {
-      game: "游戏",
+      eachPlayer: "每人开局拥有",
       livesEach: "每人几条命",
       stakesPerLife: "每丢一条命付钱",
       perLife: "每丢一条命 {sym}",
@@ -703,7 +708,7 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       leftoverSplit: "平分",
       leftoverBack: "退还给出钱的人",
       eachRound: "第一个奖池",
-      firstPot: "{n} 名玩家，每人 {ante}",
+      firstPot: "{players}，每人 {ante}",
       rules: {
         inbetween: "翻开两张牌，你押不超过奖池的钱，赌下一张落在两张之间。赢了从奖池拿走你的注；输了把注放进奖池；和任一张相同（撞柱）要赔双倍。",
         guts: "每人下底注拿牌，然后说进还是不进。进的人里牌最好的拿走奖池，其余的人各赔一个奖池。只有一个人进时，他直接拿走。",
@@ -833,6 +838,7 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
     players: {
       legend: "玩家",
       optional: "可选，也可以稍后添加",
+      fewPlayersConfirm: "这个游戏至少需要两名玩家。仍要开始，并在下一页添加玩家吗？",
       namesLabel: "姓名，每行一个或用逗号分隔",
       namesPlaceholder: "小明, 小华, 小刚",
       regulars: "常客：",
@@ -914,6 +920,7 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
     basics: {
       legend: "मूल सेटिंग्स",
       name: "नाम",
+      game: "गेम",
       chipSet: "चिप सेट",
       league: "लीग",
       editLeagues: "लीग",
@@ -973,7 +980,7 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       howItPlays: "सब अपने कप के नीचे पासे फेंकते हैं और बोली लगाते हैं कि पूरी टेबल पर किसी अंक के कितने पासे हैं। किसी बोली को झूठ कहें तो कप उठते हैं: जो गलत था वह एक पासा हारता है। जिसके पास आखिर तक पासे बचें, वह जीतता है।",
     },
     lives: {
-      game: "गेम",
+      eachPlayer: "हर खिलाड़ी शुरू करता है",
       livesEach: "हर किसी की जानें",
       stakesPerLife: "हर गई जान पर पैसे",
       perLife: "हर गई जान पर {sym}",
@@ -997,7 +1004,7 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       leftoverSplit: "बराबर बांटें",
       leftoverBack: "जिसने डाला उसे वापस",
       eachRound: "पहला पॉट",
-      firstPot: "{n} खिलाड़ी, हर एक {ante}",
+      firstPot: "{players}, हर एक {ante}",
       rules: {
         inbetween: "दो पत्ते खुलते हैं, और आप पॉट तक की बेट लगाते हैं कि अगला पत्ता इनके बीच आएगा। जीतें तो अपनी बेट पॉट से लें; हारें तो उतना पॉट में डालें; किसी भी पत्ते से मेल खाए (पोस्ट) तो दोगुना भरें।",
         guts: "सब एंटी डालते हैं और पत्ते लेते हैं, फिर बताते हैं कि अंदर हैं या बाहर। अंदर वालों में सबसे अच्छा हाथ पॉट ले जाता है और बाकी पॉट के बराबर भरते हैं। अगर सिर्फ एक खिलाड़ी अंदर हो, तो वही पॉट ले जाता है।",
@@ -1127,6 +1134,7 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
     players: {
       legend: "खिलाड़ी",
       optional: "वैकल्पिक, बाद में भी जोड़ सकते हैं",
+      fewPlayersConfirm: "इस गेम के लिए कम से कम दो खिलाड़ी चाहिए। फिर भी शुरू करें और अगले पेज पर खिलाड़ी जोड़ें?",
       namesLabel: "नाम, एक लाइन में एक या कॉमा से अलग करें",
       namesPlaceholder: "अमन, रोहन, प्रिया",
       regulars: "नियमित खिलाड़ी:",
@@ -1208,6 +1216,7 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
     basics: {
       legend: "Lo básico",
       name: "Nombre",
+      game: "Juego",
       chipSet: "Set de fichas",
       league: "Liga",
       editLeagues: "Ligas",
@@ -1267,7 +1276,7 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       howItPlays: "Todos tiran los dados bajo un cubilete y apuestan cuántos dados de un número hay en toda la mesa. Si alguien dice \"dudo\", se levantan los cubiletes: quien se equivocó pierde un dado. El último que tenga dados gana.",
     },
     lives: {
-      game: "Juego",
+      eachPlayer: "Cada Jugador Empieza Con",
       livesEach: "Vidas por Jugador",
       stakesPerLife: "Dinero por Vida Perdida",
       perLife: "Por Vida Perdida {sym}",
@@ -1291,7 +1300,7 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       leftoverSplit: "Repartir a Partes Iguales",
       leftoverBack: "Devolver a Quien lo Puso",
       eachRound: "El Primer Bote",
-      firstPot: "{n} jugadores, {ante} cada uno",
+      firstPot: "{players}, {ante} cada uno",
       rules: {
         inbetween: "Se destapan dos cartas y apuestas, hasta el valor del bote, a que la siguiente cae entre ellas. Si ganas, te llevas tu apuesta del bote; si pierdes, la pagas al bote; si sale igual a una de las dos (el poste), pagas el doble.",
         guts: "Todos ponen el ante y reciben sus cartas, y luego dicen si entran o no. De los que entran, la mejor mano se lleva el bote y los demás lo igualan. Si solo entra un jugador, se lo lleva.",
@@ -1421,6 +1430,7 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
     players: {
       legend: "Jugadores",
       optional: "Opcional, o agrégalos después",
+      fewPlayersConfirm: "Este juego necesita al menos dos jugadores. ¿Empezar de todas formas y añadirlos en la página siguiente?",
       namesLabel: "Nombres, uno por línea o separados por comas",
       namesPlaceholder: "Álex, Sam, Jordan",
       regulars: "Habituales:",
@@ -1502,6 +1512,7 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
     basics: {
       legend: "Les bases",
       name: "Nom",
+      game: "Jeu",
       chipSet: "Set de jetons",
       league: "Ligue",
       editLeagues: "Ligues",
@@ -1561,7 +1572,7 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       howItPlays: "Chacun lance ses dés sous un gobelet et annonce combien de dés d'une valeur il y a sur toute la table. Si quelqu'un crie menteur, on lève les gobelets : celui qui s'est trompé perd un dé. Le dernier à avoir des dés gagne.",
     },
     lives: {
-      game: "Jeu",
+      eachPlayer: "Chaque Joueur Commence avec",
       livesEach: "Vies par Joueur",
       stakesPerLife: "De l'Argent par Vie Perdue",
       perLife: "Par Vie Perdue {sym}",
@@ -1585,7 +1596,7 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       leftoverSplit: "Partagé à Parts Égales",
       leftoverBack: "Rendu à Ceux Qui l'Ont Mis",
       eachRound: "Le Premier Pot",
-      firstPot: "{n} joueurs, {ante} chacun",
+      firstPot: "{players}, {ante} chacun",
       rules: {
         inbetween: "Deux cartes sont retournées, et vous misez, jusqu'au montant du pot, que la suivante tombera entre les deux. Gagnez et prenez votre mise dans le pot ; perdez et payez-la au pot ; tombez sur l'une des deux cartes (le poteau) et payez le double.",
         guts: "Chacun paie l'ante et reçoit ses cartes, puis dit s'il reste ou s'il sort. Parmi ceux qui restent, la meilleure main prend le pot et les autres l'égalent. Si un seul joueur reste, il le prend.",
@@ -1715,6 +1726,7 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
     players: {
       legend: "Joueurs",
       optional: "Facultatif, ou à ajouter plus tard",
+      fewPlayersConfirm: "Ce jeu se joue à deux joueurs minimum. Lancer quand même et les ajouter à la page suivante ?",
       namesLabel: "Noms, un par ligne ou séparés par des virgules",
       namesPlaceholder: "Alex, Sam, Jordan",
       regulars: "Habitués :",
@@ -1796,6 +1808,7 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
     basics: {
       legend: "الأساسيات",
       name: "الاسم",
+      game: "اللعبة",
       chipSet: "طقم الرقائق",
       league: "الدوري",
       editLeagues: "الدوريات",
@@ -1855,7 +1868,7 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       howItPlays: "يرمي الجميع النرد تحت كوب ويزايدون على عدد الأحجار التي تُظهر رقمًا معينًا على الطاولة كلها. إذا كذّب أحد مزايدة تُرفع الأكواب: من كان مخطئًا يخسر حجرًا. آخر من يبقى معه نرد يفوز.",
     },
     lives: {
-      game: "اللعبة",
+      eachPlayer: "يبدأ كل لاعب بـ",
       livesEach: "الأرواح لكل لاعب",
       stakesPerLife: "مبلغ عن كل روح تُخسَر",
       perLife: "عن كل روح تُخسَر {sym}",
@@ -1879,7 +1892,7 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       leftoverSplit: "يُقسَّم بالتساوي",
       leftoverBack: "يعود لمن دفعه",
       eachRound: "البوت الأول",
-      firstPot: "عدد اللاعبين {n}، و{ante} لكل لاعب",
+      firstPot: "{players}، و{ante} لكل لاعب",
       rules: {
         inbetween: "تُكشف ورقتان، وتراهن بما لا يزيد على البوت أن الورقة التالية ستقع بينهما. إن فزت تأخذ رهانك من البوت، وإن خسرت تدفعه فيه، وإن طابقت إحدى الورقتين (العمود) تدفع الضعف.",
         guts: "يدفع الجميع الأنتي ويأخذون أوراقهم، ثم يقول كل لاعب إنه داخل أو خارج. من بين الداخلين، تأخذ أفضل يد البوت ويدفع الباقون مثله. إذا دخل لاعب واحد فقط، يأخذ البوت.",
@@ -2009,6 +2022,7 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
     players: {
       legend: "اللاعبون",
       optional: "اختياري، أو يمكن إضافتهم لاحقًا",
+      fewPlayersConfirm: "تحتاج هذه اللعبة إلى لاعبَين على الأقل. هل تبدأها على أي حال وتضيفهم في الصفحة التالية؟",
       namesLabel: "الأسماء، اسم في كل سطر أو مفصولة بفواصل",
       namesPlaceholder: "علي, سام, جودي",
       regulars: "اللاعبون المعتادون:",
@@ -2097,6 +2111,7 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
     basics: {
       legend: "মূল বিষয়",
       name: "নাম",
+      game: "গেম",
       chipSet: "চিপ সেট",
       league: "লিগ",
       editLeagues: "লিগ",
@@ -2156,7 +2171,7 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       howItPlays: "সবাই একটি কাপের নিচে পাশা চালে আর ডাক দেয় পুরো টেবিলে কোনো একটি সংখ্যা কয়টি আছে। কেউ কোনো ডাককে মিথ্যা বললে কাপ তোলা হয়: যে ভুল, সে একটি পাশা হারায়। যার কাছে শেষ পর্যন্ত পাশা থাকে, সে জেতে।",
     },
     lives: {
-      game: "গেম",
+      eachPlayer: "প্রত্যেক খেলোয়াড় শুরু করে",
       livesEach: "প্রত্যেকের লাইফ",
       stakesPerLife: "প্রতি হারানো লাইফে টাকা",
       perLife: "প্রতি হারানো লাইফ {sym}",
@@ -2180,7 +2195,7 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       leftoverSplit: "সমান ভাগ",
       leftoverBack: "যে দিয়েছে তাকে ফেরত",
       eachRound: "প্রথম পট",
-      firstPot: "{n} জন খেলোয়াড়, প্রত্যেকে {ante}",
+      firstPot: "{players}, প্রত্যেকে {ante}",
       rules: {
         inbetween: "দুটি তাস খোলা হয়, আর আপনি পট পর্যন্ত বেট ধরেন যে পরের তাসটি এ দুটির মাঝে পড়বে। জিতলে বেটের টাকা পট থেকে নিন; হারলে পটে দিন; কোনো একটির সঙ্গে মিললে (পোস্ট) দ্বিগুণ দিন।",
         guts: "সবাই অ্যান্টি দেয় আর তাস পায়, তারপর বলে ইন নাকি আউট। যারা ইন, তাদের মধ্যে সেরা হাত পট নেয় আর বাকিরা পটের সমান দেয়। শুধু একজন ইন থাকলে সে-ই পট নেয়।",
@@ -2310,6 +2325,7 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
     players: {
       legend: "খেলোয়াড়",
       optional: "ঐচ্ছিক, পরেও যোগ করা যাবে",
+      fewPlayersConfirm: "এই গেমে কমপক্ষে দুজন খেলোয়াড় লাগে। তবুও শুরু করে পরের পেজে তাদের যোগ করবেন?",
       namesLabel: "নাম, প্রতি লাইনে একটি অথবা কমা দিয়ে আলাদা",
       namesPlaceholder: "অমিত, রাহুল, প্রিয়া",
       regulars: "নিয়মিত খেলোয়াড়:",
@@ -2391,6 +2407,7 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
     basics: {
       legend: "O básico",
       name: "Nome",
+      game: "Jogo",
       chipSet: "Conjunto de fichas",
       league: "Liga",
       editLeagues: "Ligas",
@@ -2450,7 +2467,7 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       howItPlays: "Todos rolam os dados sob um copo e apostam quantos dados de um número há na mesa inteira. Se alguém chamar uma aposta de mentira, os copos são levantados: quem errou perde um dado. O último com dados vence.",
     },
     lives: {
-      game: "Jogo",
+      eachPlayer: "Cada Jogador Começa Com",
       livesEach: "Vidas por Jogador",
       stakesPerLife: "Dinheiro por Vida Perdida",
       perLife: "Por Vida Perdida {sym}",
@@ -2474,7 +2491,7 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       leftoverSplit: "Dividir Igualmente",
       leftoverBack: "Devolver a Quem Colocou",
       eachRound: "O Primeiro Pote",
-      firstPot: "{n} jogadores, {ante} cada",
+      firstPot: "{players}, {ante} cada",
       rules: {
         inbetween: "Duas cartas são viradas, e você aposta, até o valor do pote, que a próxima cai entre elas. Ganhou, pega sua aposta do pote; perdeu, paga no pote; bateu em uma das duas (a trave), paga o dobro.",
         guts: "Todos pagam o ante e recebem as cartas, e então dizem se estão dentro ou fora. Entre os que estão dentro, a melhor mão leva o pote e os outros o igualam. Se só um jogador estiver dentro, ele leva.",
@@ -2604,6 +2621,7 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
     players: {
       legend: "Jogadores",
       optional: "Opcional, ou adicione depois",
+      fewPlayersConfirm: "Este jogo precisa de pelo menos dois jogadores. Começar mesmo assim e adicioná-los na próxima página?",
       namesLabel: "Nomes, um por linha ou separados por vírgulas",
       namesPlaceholder: "Alex, Sam, Jordan",
       regulars: "Frequentes:",

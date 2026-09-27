@@ -6,7 +6,7 @@ import type { ChipSet, EventKind, Game, League, PayHandles, Template } from "./t
 import { FACE_DEFAULTS } from "./chips";
 import { bool, id, list, maybe, num, obj, orNull, str } from "./shape";
 import { isCashSettings, isLevel, isTourneySettings } from "./kinds/poker/check";
-import { isKind, kindOf } from "./kinds";
+import { isKind, kind } from "./kinds";
 
 // the primitives (shape.ts) and each kind's own settings (kinds/) live elsewhere
 export { obj } from "./shape";
@@ -42,9 +42,9 @@ const EVENT_KINDS: EventKind[] = ["win", "deal", "money", "bounty", "bust", "chi
 const flashed = orNull((n) => obj(n) && str(n.text) && num(n.at) && (EVENT_KINDS as string[]).includes(n.kind as string));
 const clock = (c: unknown) =>
   obj(c) && ["idle", "running", "paused"].includes(c.status as string) && num(c.levelIndex) && num(c.levelElapsedMs) && num(c.elapsedMs);
-/** a line of the game's log: when, and what happened (game.ts keeps the latest 300) */
 const cost = (c: unknown) => obj(c) && id(c.id) && str(c.label) && num(c.amount) && orNull(id)(c.paidBy) && list(id)(c.split);
 const payment = (p: unknown) => obj(p) && str(p.from) && str(p.to) && num(p.amount) && num(p.at);
+/** a line of the game's log: when, and what happened (game.ts keeps the latest 300) */
 const entry = (e: unknown) => obj(e) && num(e.t) && str(e.text);
 /** a league's standings on a tv snapshot */
 const board = (b: unknown) =>
@@ -76,7 +76,7 @@ export function isGame(g: unknown): g is Game {
     maybe(board)(g.league) &&
     // and the parts that belong to its kind
     isKind(g.type) &&
-    kindOf(g.type).check(g)
+    kind(g.type).check(g)
   );
 }
 
@@ -87,7 +87,7 @@ export const isTemplate = (t: unknown): t is Template =>
   id(t.id) &&
   str(t.name) &&
   isKind(t.type) &&
-  kindOf(t.type).poker &&
+  kind(t.type).poker &&
   num(t.createdAt) &&
   str(t.chipSetId) &&
   num(t.multiplier) &&

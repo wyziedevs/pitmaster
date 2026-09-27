@@ -12,7 +12,7 @@ import { kind } from "./kinds";
 /** a column in the plain-text recap */
 export const pad = (s: string, n: number) => s + " ".repeat(Math.max(1, n - s.length));
 
-/** the shared costs and who pays who, the same for cash and tournaments */
+/** the shared costs and who pays who, the same for every kind of game */
 export function settleLines(game: Game) {
   const lines: string[] = [];
   const house = game.house?.trim() || HOUSE();

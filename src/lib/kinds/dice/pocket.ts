@@ -43,13 +43,19 @@ async function put(name: string, value: unknown) {
   });
 }
 
-/** this phone's key for its cup: made once, never readable */
-async function key() {
-  const k = await get<CryptoKey>("key");
-  if (k) return k;
-  const made = await newKey();
-  await put("key", made);
-  return made;
+/** this phone's key for its cup: made once, never readable (asked for once, so two can't be made at the same time) */
+let made: Promise<CryptoKey> | undefined;
+function key() {
+  return (made ??= (async () => {
+    const k = await get<CryptoKey>("key");
+    if (k) return k;
+    const fresh = await newKey();
+    await put("key", fresh);
+    return fresh;
+  })().catch((e) => {
+    made = undefined;
+    throw e;
+  }));
 }
 
 /** keep this seat's roll for the round */

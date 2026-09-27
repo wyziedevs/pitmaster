@@ -183,7 +183,7 @@ export const toys: Record<Lang, ToysDict> = {
     summary: {
       players: { one: "{count} player", other: "{count} players" },
       tournament: "{players} · {buyIn} buy-in · pool {pool}",
-      cashBlinds: "{players} · {sb}/{bb}",
+      cashBlinds: "{players} · {stakes}",
       inPlay: "{blinds} · {bank} in play",
     },
     past: {
@@ -281,7 +281,7 @@ export const toys: Record<Lang, ToysDict> = {
     summary: {
       players: { one: "{count} 名玩家", other: "{count} 名玩家" },
       tournament: "{players} · 买入 {buyIn} · 奖池 {pool}",
-      cashBlinds: "{players} · {sb}/{bb}",
+      cashBlinds: "{players} · {stakes}",
       inPlay: "{blinds} · 台面上 {bank}",
     },
     past: {
@@ -379,7 +379,7 @@ export const toys: Record<Lang, ToysDict> = {
     summary: {
       players: { one: "{count} खिलाड़ी", other: "{count} खिलाड़ी" },
       tournament: "{players} · {buyIn} बाय-इन · पूल {pool}",
-      cashBlinds: "{players} · {sb}/{bb}",
+      cashBlinds: "{players} · {stakes}",
       inPlay: "{blinds} · {bank} मेज़ पर",
     },
     past: {
@@ -477,7 +477,7 @@ export const toys: Record<Lang, ToysDict> = {
     summary: {
       players: { one: "{count} jugador", other: "{count} jugadores" },
       tournament: "{players} · {buyIn} buy-in · bote {pool}",
-      cashBlinds: "{players} · {sb}/{bb}",
+      cashBlinds: "{players} · {stakes}",
       inPlay: "{blinds} · {bank} en juego",
     },
     past: {
@@ -575,7 +575,7 @@ export const toys: Record<Lang, ToysDict> = {
     summary: {
       players: { one: "{count} joueur", other: "{count} joueurs" },
       tournament: "{players} · {buyIn} buy-in · pot {pool}",
-      cashBlinds: "{players} · {sb}/{bb}",
+      cashBlinds: "{players} · {stakes}",
       inPlay: "{blinds} · {bank} en jeu",
     },
     past: {
@@ -673,7 +673,7 @@ export const toys: Record<Lang, ToysDict> = {
     summary: {
       players: { one: "لاعب واحد", other: "{count} لاعب" },
       tournament: "{players} · قيمة دخول {buyIn} · وعاء {pool}",
-      cashBlinds: "{players} · {sb}/{bb}",
+      cashBlinds: "{players} · {stakes}",
       inPlay: "{blinds} · {bank} على الطاولة",
     },
     past: {
@@ -771,7 +771,7 @@ export const toys: Record<Lang, ToysDict> = {
     summary: {
       players: { one: "{count} জন খেলোয়াড়", other: "{count} জন খেলোয়াড়" },
       tournament: "{players} · {buyIn} বাই-ইন · পুল {pool}",
-      cashBlinds: "{players} · {sb}/{bb}",
+      cashBlinds: "{players} · {stakes}",
       inPlay: "{blinds} · টেবিলে {bank}",
     },
     past: {
@@ -869,7 +869,7 @@ export const toys: Record<Lang, ToysDict> = {
     summary: {
       players: { one: "{count} jogador", other: "{count} jogadores" },
       tournament: "{players} · {buyIn} buy-in · prêmio {pool}",
-      cashBlinds: "{players} · {sb}/{bb}",
+      cashBlinds: "{players} · {stakes}",
       inPlay: "{blinds} · {bank} em jogo",
     },
     past: {

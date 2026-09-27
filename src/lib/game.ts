@@ -134,7 +134,7 @@ export function tourneyStats(game: Game) {
   const rest = round2(pool - seats * seatValue);
   const table = seatValue > 0 ? [...Array<number>(seats).fill(seatValue), ...(rest > 0.004 ? [rest] : [])] : payoutAmounts(pool, t.payouts.length ? t.payouts : defaultPayouts(entrants), t.payoutRound || 1);
   // a bracket pays by the round reached: everyone out in the same round shares those places
-  const payouts = t.format === "bracket" ? roundShares(table, entrants) : table;
+  const payouts = t.format === "bracket" ? roundShares(table, entrants, t.payoutRound || 1) : table;
   const pcts = seatValue > 0 ? payouts.map((p) => (pool ? Math.round((p / pool) * 100) : 0)) : t.payouts.length ? t.payouts : defaultPayouts(entrants);
   // one out from the money, and in it
   const paid = payouts.filter((p) => p > 0).length;
@@ -908,16 +908,25 @@ export const bracketRounds = (n: number) => Math.log2(bracketSize(n));
 /** where a player out in `round` finishes: everyone out that round shares the best of those places */
 export const roundPlace = (entrants: number, round: number) => bracketSize(entrants) / 2 ** round + 1;
 
-/** a place table spread over the rounds: 3rd and 4th share their two payouts, 5th to 8th their four, and so on */
-export function roundShares(table: number[], entrants: number) {
-  const out = [...table];
+/**
+ * a place table spread over the rounds: 3rd and 4th share their two payouts,
+ * 5th to 8th their four, and so on. shares are in the payout rounding, and
+ * what that leaves over (and any places no one can finish in) goes to 1st,
+ * like payoutAmounts, so it still adds up to the pool
+ */
+export function roundShares(table: number[], entrants: number, unit = 1) {
+  const out = table.slice(0, 2);
+  let rest = 0;
   for (let lo = 3; lo <= entrants; lo = lo * 2 - 1) {
     const hi = Math.min(lo * 2 - 2, entrants);
     const sum = table.slice(lo - 1, hi).reduce((a, v) => a + v, 0);
-    if (sum <= 0) break;
-    const each = round2(sum / (hi - lo + 1));
+    const each = round2(Math.floor(sum / (hi - lo + 1) / unit + 1e-9) * unit);
+    if (each <= 0) break;
     for (let i = lo - 1; i < hi; i++) out[i] = each;
+    rest += sum - each * (hi - lo + 1);
   }
+  rest += table.slice(out.length).reduce((a, v) => a + v, 0);
+  if (out.length) out[0] = round2(out[0] + rest);
   return out;
 }
 
@@ -944,8 +953,11 @@ export const currentRound = (game: Game) => {
 /** matches decided by playing, not by a bye */
 export const matchesPlayed = (game: Game) => (game.matches ?? []).filter((m) => m.winner && m.a && m.b).length;
 
+/** the match a match's winner plays next (none after the final) */
+const nextMatch = (game: Game, m: Match) => game.matches?.find((x) => x.round === m.round + 1 && x.slot === Math.floor(m.slot / 2));
+
 function advance(game: Game, m: Match) {
-  const next = game.matches!.find((x) => x.round === m.round + 1 && x.slot === Math.floor(m.slot / 2));
+  const next = nextMatch(game, m);
   if (!next) return;
   if (m.slot % 2 === 0) next.a = m.winner;
   else next.b = m.winner;
@@ -1011,6 +1023,24 @@ export function decideMatch(game: Game, i: number, winnerId: string) {
   }
 }
 
+/** the match a player lost, while it can still be taken back: the winner hasn't played on since */
+export function lostMatch(game: Game, playerId: string) {
+  const m = game.matches?.find((x) => x.winner && x.a && x.b && x.winner !== playerId && (x.a === playerId || x.b === playerId));
+  return m && !nextMatch(game, m)?.winner ? m : undefined;
+}
+
+/** take a match back: the loser is in again, and the winner back out of the next round */
+export function undoMatch(game: Game, playerId: string) {
+  const m = lostMatch(game, playerId);
+  if (!m) return;
+  const next = nextMatch(game, m);
+  if (next && m.slot % 2 === 0) next.a = null;
+  else if (next) next.b = null;
+  m.winner = null;
+  m.at = null;
+  unbust(game, playerId);
+}
+
 export const seatLabel = (s: Seat | null | undefined, tables: number) => (!s ? "" : tables > 1 ? `T${s.table} · ${s.seat}` : `${s.seat}`);
 
 // ---------- run it back ----------
@@ -1039,6 +1069,10 @@ export function rerun(game: Game, keepPlayers = true): Game {
   g.seatsPerTable = game.seatsPerTable;
   g.house = game.house;
   g.leagueId = game.leagueId;
+  // the other kinds' own rules (their rounds and pot start over)
+  if (game.dice) g.dice = clone(game.dice);
+  if (game.lives) g.lives = clone(game.lives);
+  if (game.pot) g.pot = clone(game.pot);
   // cash regulars named up front shouldn't be on the clock before the game starts
   for (const p of g.players) p.joinedAt = undefined;
   return g;

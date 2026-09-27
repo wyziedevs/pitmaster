@@ -176,10 +176,6 @@ export function deleteGame(id: string) {
 // ---------- leagues ----------
 
 export const getLeagues = () => copy(data().leagues ?? []).sort((a, b) => b.start - a.start);
-export function getLeague(id: string) {
-  const l = data().leagues?.find((l) => l.id === id);
-  return l ? copy(l) : null;
-}
 
 export function saveLeague(l: League) {
   const d = data();

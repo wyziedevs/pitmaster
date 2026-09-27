@@ -20,10 +20,9 @@ export interface PlayersDict {
     spreadsheetButton: string;
     filter: {
       periodLabel: string;
+      periods: { all: string; year: string; "90d": string; "30d": string };
       typeLabel: string;
       allGames: string;
-      cash: string;
-      tournaments: string;
     };
     stats: {
       summary: string;
@@ -44,8 +43,6 @@ export interface PlayersDict {
       last: string;
     };
     history: {
-      typeCash: string;
-      typeTournament: string;
       place: string;
       kos: PluralText;
       cashInOut: string;
@@ -227,14 +224,13 @@ export const players: Record<Lang, PlayersDict> = {
     page: {
       title: "Players",
       subtitle:
-        "Results from finished tournaments and from cash players who've cashed out. Names match across games, so spell them the same way.",
+        "Results from finished games and from cash players who've cashed out. Names match across games, so spell them the same way.",
       spreadsheetButton: "Spreadsheet",
       filter: {
         periodLabel: "Time period",
+        periods: { all: "All Time", year: "This Year", "90d": "90 Days", "30d": "30 Days" },
         typeLabel: "Game type",
         allGames: "All Games",
-        cash: "Cash",
-        tournaments: "Tournaments",
       },
       stats: {
         summary: "{games} · {players} · {amount} bought in",
@@ -255,8 +251,6 @@ export const players: Record<Lang, PlayersDict> = {
         last: "Last Played",
       },
       history: {
-        typeCash: "Cash",
-        typeTournament: "Tournament",
         place: "{place} of {entrants}",
         kos: { one: "{n} KO", other: "{n} KOs" },
         cashInOut: "in {in}, out {out}",
@@ -322,8 +316,8 @@ export const players: Record<Lang, PlayersDict> = {
       strays: { one: "{count} finished game from these dates isn't in a league.", other: "{count} finished games from these dates aren't in a league." },
       addThem: "Add Them",
       byGame: "Game by Game",
-      byGameNote: "Each player's points from each game. Hover a number to see the place.",
-      byGameNoteBest: "Each player's points from each game. A struck-through score isn't one of their best, so it doesn't count.",
+      byGameNote: "Each player's points from each game, with where they finished under it.",
+      byGameNoteBest: "Each player's points from each game, with where they finished under it. A struck-through score isn't one of their best, so it doesn't count.",
       gameCol: "G{n}",
       noGames: "No finished games in this league yet. Pick it when you start a game, or on a game's page.",
       none: "No leagues yet. A league scores a season of games as a points race.",
@@ -438,14 +432,13 @@ export const players: Record<Lang, PlayersDict> = {
     page: {
       title: "选手",
       subtitle:
-        "已结束锦标赛和已兑现离场的现金局选手的战绩会显示在这里。姓名要在各场比赛中保持一致的写法。",
+        "已结束的比赛和已兑现离场的现金局选手的战绩会显示在这里。姓名要在各场比赛中保持一致的写法。",
       spreadsheetButton: "表格",
       filter: {
         periodLabel: "时间范围",
+        periods: { all: "全部", year: "今年", "90d": "90 天", "30d": "30 天" },
         typeLabel: "比赛类型",
         allGames: "全部比赛",
-        cash: "现金局",
-        tournaments: "锦标赛",
       },
       stats: {
         summary: "{games} · {players} · 共买入 {amount}",
@@ -466,8 +459,6 @@ export const players: Record<Lang, PlayersDict> = {
         last: "最近一次",
       },
       history: {
-        typeCash: "现金局",
-        typeTournament: "锦标赛",
         place: "第 {place} 名，共 {entrants} 人",
         kos: { one: "{n} 次淘汰", other: "{n} 次淘汰" },
         cashInOut: "买入 {in}，兑现 {out}",
@@ -533,8 +524,8 @@ export const players: Record<Lang, PlayersDict> = {
       strays: { one: "这段日期内有 {count} 场已结束的比赛不在任何联赛中。", other: "这段日期内有 {count} 场已结束的比赛不在任何联赛中。" },
       addThem: "加入它们",
       byGame: "逐场成绩",
-      byGameNote: "每位选手在每场比赛中的积分。将鼠标悬停在数字上可查看名次。",
-      byGameNoteBest: "每位选手在每场比赛中的积分。带删除线的分数不在其最佳成绩之列，因此不计入。",
+      byGameNote: "每位选手在每场比赛中的积分，下方是名次。",
+      byGameNoteBest: "每位选手在每场比赛中的积分，下方是名次。带删除线的分数不在其最佳成绩之列，因此不计入。",
       gameCol: "第{n}场",
       noGames: "这个联赛还没有已结束的比赛。开始比赛时或在比赛页面上选择它。",
       none: "还没有联赛。联赛把一个赛季的比赛按积分排名。",
@@ -649,14 +640,13 @@ export const players: Record<Lang, PlayersDict> = {
     page: {
       title: "खिलाड़ी",
       subtitle:
-        "समाप्त हो चुके टूर्नामेंट और कैश आउट कर चुके कैश गेम खिलाड़ियों के नतीजे यहाँ दिखते हैं। नाम सभी गेम में एक जैसे लिखें ताकि वे मेल खाएं।",
+        "समाप्त हो चुके गेम और कैश आउट कर चुके कैश गेम खिलाड़ियों के नतीजे यहाँ दिखते हैं। नाम सभी गेम में एक जैसे लिखें ताकि वे मेल खाएं।",
       spreadsheetButton: "स्प्रेडशीट",
       filter: {
         periodLabel: "समय अवधि",
+        periods: { all: "सारा समय", year: "इस साल", "90d": "90 दिन", "30d": "30 दिन" },
         typeLabel: "गेम प्रकार",
         allGames: "सभी गेम",
-        cash: "कैश",
-        tournaments: "टूर्नामेंट",
       },
       stats: {
         summary: "{games} · {players} · {amount} की बाय-इन",
@@ -677,8 +667,6 @@ export const players: Record<Lang, PlayersDict> = {
         last: "आखिरी बार खेला",
       },
       history: {
-        typeCash: "कैश",
-        typeTournament: "टूर्नामेंट",
         place: "{entrants} में से {place}",
         kos: { one: "{n} नॉकआउट", other: "{n} नॉकआउट" },
         cashInOut: "बाय-इन {in}, कैश आउट {out}",
@@ -744,8 +732,8 @@ export const players: Record<Lang, PlayersDict> = {
       strays: { one: "इन तारीखों का {count} पूरा हुआ गेम किसी लीग में नहीं है।", other: "इन तारीखों के {count} पूरे हुए गेम किसी लीग में नहीं हैं।" },
       addThem: "इन्हें जोड़ें",
       byGame: "गेम-दर-गेम",
-      byGameNote: "हर गेम में हर खिलाड़ी के अंक। स्थान देखने के लिए किसी संख्या पर होवर करें।",
-      byGameNoteBest: "हर गेम में हर खिलाड़ी के अंक। कटा हुआ स्कोर उनके सबसे अच्छे स्कोर में नहीं है, इसलिए गिना नहीं जाता।",
+      byGameNote: "हर गेम में हर खिलाड़ी के अंक, नीचे उनका स्थान।",
+      byGameNoteBest: "हर गेम में हर खिलाड़ी के अंक, नीचे उनका स्थान। कटा हुआ स्कोर उनके सबसे अच्छे स्कोर में नहीं है, इसलिए गिना नहीं जाता।",
       gameCol: "गेम {n}",
       noGames: "इस लीग में अभी कोई पूरा हुआ गेम नहीं है। गेम शुरू करते समय या गेम के पेज पर इसे चुनें।",
       none: "अभी कोई लीग नहीं। लीग पूरे सीज़न के गेम को अंकों की दौड़ की तरह गिनती है।",
@@ -860,14 +848,13 @@ export const players: Record<Lang, PlayersDict> = {
     page: {
       title: "Jugadores",
       subtitle:
-        "Resultados de torneos terminados y de jugadores de cash que ya cobraron. Los nombres deben coincidir entre partidas, así que escríbelos siempre igual.",
+        "Resultados de partidas terminadas y de jugadores de cash que ya cobraron. Los nombres deben coincidir entre partidas, así que escríbelos siempre igual.",
       spreadsheetButton: "Hoja de Cálculo",
       filter: {
         periodLabel: "Periodo",
+        periods: { all: "Todo el Tiempo", year: "Este Año", "90d": "90 Días", "30d": "30 Días" },
         typeLabel: "Tipo de partida",
         allGames: "Todas las Partidas",
-        cash: "Cash",
-        tournaments: "Torneos",
       },
       stats: {
         summary: "{games} · {players} · {amount} en buy-ins",
@@ -888,8 +875,6 @@ export const players: Record<Lang, PlayersDict> = {
         last: "Última Vez",
       },
       history: {
-        typeCash: "Cash",
-        typeTournament: "Torneo",
         place: "{place} de {entrants}",
         kos: { one: "{n} KO", other: "{n} KOs" },
         cashInOut: "entró con {in}, salió con {out}",
@@ -955,8 +940,8 @@ export const players: Record<Lang, PlayersDict> = {
       strays: { one: "{count} partida terminada de estas fechas no está en ninguna liga.", other: "{count} partidas terminadas de estas fechas no están en ninguna liga." },
       addThem: "Añadirlas",
       byGame: "Partida a Partida",
-      byGameNote: "Los puntos de cada jugador en cada partida. Pasa el ratón sobre un número para ver el puesto.",
-      byGameNoteBest: "Los puntos de cada jugador en cada partida. Una puntuación tachada no está entre sus mejores, así que no cuenta.",
+      byGameNote: "Los puntos de cada jugador en cada partida, con su puesto debajo.",
+      byGameNoteBest: "Los puntos de cada jugador en cada partida, con su puesto debajo. Una puntuación tachada no está entre sus mejores, así que no cuenta.",
       gameCol: "P{n}",
       noGames: "Todavía no hay partidas terminadas en esta liga. Elígela al empezar una partida o en la página de una partida.",
       none: "Todavía no hay ligas. Una liga puntúa una temporada de partidas como una carrera por puntos.",
@@ -1071,14 +1056,13 @@ export const players: Record<Lang, PlayersDict> = {
     page: {
       title: "Joueurs",
       subtitle:
-        "Résultats des tournois terminés et des joueurs de cash qui ont encaissé. Les noms doivent correspondre d'une partie à l'autre, alors gardez toujours la même orthographe.",
+        "Résultats des parties terminées et des joueurs de cash qui ont encaissé. Les noms doivent correspondre d'une partie à l'autre, alors gardez toujours la même orthographe.",
       spreadsheetButton: "Feuille de Calcul",
       filter: {
         periodLabel: "Période",
+        periods: { all: "Depuis le Début", year: "Cette Année", "90d": "90 Jours", "30d": "30 Jours" },
         typeLabel: "Type de partie",
         allGames: "Toutes les Parties",
-        cash: "Cash",
-        tournaments: "Tournois",
       },
       stats: {
         summary: "{games} · {players} · {amount} de buy-ins",
@@ -1099,8 +1083,6 @@ export const players: Record<Lang, PlayersDict> = {
         last: "Dernière Partie",
       },
       history: {
-        typeCash: "Cash",
-        typeTournament: "Tournoi",
         place: "{place} sur {entrants}",
         kos: { one: "{n} KO", other: "{n} KO" },
         cashInOut: "entré avec {in}, sorti avec {out}",
@@ -1166,8 +1148,8 @@ export const players: Record<Lang, PlayersDict> = {
       strays: { one: "{count} partie terminée à ces dates n'est dans aucune ligue.", other: "{count} parties terminées à ces dates ne sont dans aucune ligue." },
       addThem: "Les Ajouter",
       byGame: "Partie par Partie",
-      byGameNote: "Les points de chaque joueur à chaque partie. Survolez un nombre pour voir la place.",
-      byGameNoteBest: "Les points de chaque joueur à chaque partie. Un score barré ne fait pas partie de ses meilleurs, donc il ne compte pas.",
+      byGameNote: "Les points de chaque joueur à chaque partie, avec sa place en dessous.",
+      byGameNoteBest: "Les points de chaque joueur à chaque partie, avec sa place en dessous. Un score barré ne fait pas partie de ses meilleurs, donc il ne compte pas.",
       gameCol: "P{n}",
       noGames: "Aucune partie terminée dans cette ligue pour l'instant. Choisissez-la en lançant une partie, ou sur la page d'une partie.",
       none: "Aucune ligue pour l'instant. Une ligue transforme une saison de parties en course aux points.",
@@ -1282,14 +1264,13 @@ export const players: Record<Lang, PlayersDict> = {
     page: {
       title: "اللاعبون",
       subtitle:
-        "نتائج البطولات المنتهية ولاعبي الكاش الذين صرفوا رصيدهم تظهر هنا. اكتب الأسماء بنفس الطريقة في كل جولة حتى تتطابق.",
+        "نتائج الألعاب المنتهية ولاعبي الكاش الذين صرفوا رصيدهم تظهر هنا. اكتب الأسماء بنفس الطريقة في كل جولة حتى تتطابق.",
       spreadsheetButton: "جدول بيانات",
       filter: {
         periodLabel: "الفترة الزمنية",
+        periods: { all: "كل الأوقات", year: "هذا العام", "90d": "90 يومًا", "30d": "30 يومًا" },
         typeLabel: "نوع الجولة",
         allGames: "كل الجولات",
-        cash: "كاش",
-        tournaments: "البطولات",
       },
       stats: {
         summary: "{games} · {players} · {amount} إجمالي الدخول",
@@ -1310,8 +1291,6 @@ export const players: Record<Lang, PlayersDict> = {
         last: "آخر مرة",
       },
       history: {
-        typeCash: "كاش",
-        typeTournament: "بطولة",
         place: "{place} من {entrants}",
         kos: { one: "إقصاء واحد", other: "{n} إقصاء" },
         cashInOut: "دخل بـ {in}، وخرج بـ {out}",
@@ -1377,8 +1356,8 @@ export const players: Record<Lang, PlayersDict> = {
       strays: { zero: "لا توجد جولات منتهية من هذه التواريخ خارج الدوريات.", one: "جولة واحدة منتهية من هذه التواريخ ليست في أي دوري.", two: "جولتان منتهيتان من هذه التواريخ ليستا في أي دوري.", few: "{count} جولات منتهية من هذه التواريخ ليست في أي دوري.", many: "{count} جولة منتهية من هذه التواريخ ليست في أي دوري.", other: "{count} جولة منتهية من هذه التواريخ ليست في أي دوري." },
       addThem: "أضفها",
       byGame: "جولة بجولة",
-      byGameNote: "نقاط كل لاعب في كل جولة. مرّر المؤشر فوق رقم لترى المركز.",
-      byGameNoteBest: "نقاط كل لاعب في كل جولة. النتيجة المشطوبة ليست من أفضل نتائجه، لذا لا تُحتسب.",
+      byGameNote: "نقاط كل لاعب في كل جولة، ومركزه تحتها.",
+      byGameNoteBest: "نقاط كل لاعب في كل جولة، ومركزه تحتها. النتيجة المشطوبة ليست من أفضل نتائجه، لذا لا تُحتسب.",
       gameCol: "ج{n}",
       noGames: "لا جولات منتهية في هذا الدوري بعد. اختره عند بدء جولة، أو من صفحة الجولة.",
       none: "لا دوريات بعد. الدوري يحسب موسمًا من الجولات كسباق نقاط.",
@@ -1493,14 +1472,13 @@ export const players: Record<Lang, PlayersDict> = {
     page: {
       title: "খেলোয়াড়",
       subtitle:
-        "শেষ হওয়া টুর্নামেন্ট এবং যেসব ক্যাশ খেলোয়াড় ক্যাশ আউট করেছেন তাদের ফলাফল এখানে দেখা যায়। সব গেমে নাম একইভাবে লিখুন, যাতে সেগুলো মিলে যায়।",
+        "শেষ হওয়া গেম এবং যেসব ক্যাশ খেলোয়াড় ক্যাশ আউট করেছেন তাদের ফলাফল এখানে দেখা যায়। সব গেমে নাম একইভাবে লিখুন, যাতে সেগুলো মিলে যায়।",
       spreadsheetButton: "স্প্রেডশিট",
       filter: {
         periodLabel: "সময়কাল",
+        periods: { all: "সব সময়", year: "এই বছর", "90d": "90 দিন", "30d": "30 দিন" },
         typeLabel: "গেমের ধরন",
         allGames: "সব গেম",
-        cash: "ক্যাশ",
-        tournaments: "টুর্নামেন্ট",
       },
       stats: {
         summary: "{games} · {players} · মোট বাই-ইন {amount}",
@@ -1521,8 +1499,6 @@ export const players: Record<Lang, PlayersDict> = {
         last: "সর্বশেষ খেলা",
       },
       history: {
-        typeCash: "ক্যাশ",
-        typeTournament: "টুর্নামেন্ট",
         place: "{entrants} জনের মধ্যে {place}",
         kos: { one: "{n} নকআউট", other: "{n} নকআউট" },
         cashInOut: "বাই-ইন {in}, ক্যাশ আউট {out}",
@@ -1588,8 +1564,8 @@ export const players: Record<Lang, PlayersDict> = {
       strays: { one: "এই তারিখগুলোর {count}টি শেষ হওয়া গেম কোনো লিগে নেই।", other: "এই তারিখগুলোর {count}টি শেষ হওয়া গেম কোনো লিগে নেই।" },
       addThem: "এগুলো যোগ করুন",
       byGame: "গেম ধরে ধরে",
-      byGameNote: "প্রতিটি গেমে প্রত্যেক খেলোয়াড়ের পয়েন্ট। স্থান দেখতে কোনো সংখ্যার ওপর হোভার করুন।",
-      byGameNoteBest: "প্রতিটি গেমে প্রত্যেক খেলোয়াড়ের পয়েন্ট। কেটে দেওয়া স্কোর তাদের সেরাগুলোর মধ্যে নেই, তাই গোনা হয় না।",
+      byGameNote: "প্রতিটি গেমে প্রত্যেক খেলোয়াড়ের পয়েন্ট, নিচে তাদের স্থান।",
+      byGameNoteBest: "প্রতিটি গেমে প্রত্যেক খেলোয়াড়ের পয়েন্ট, নিচে তাদের স্থান। কেটে দেওয়া স্কোর তাদের সেরাগুলোর মধ্যে নেই, তাই গোনা হয় না।",
       gameCol: "গেম {n}",
       noGames: "এই লিগে এখনো কোনো শেষ হওয়া গেম নেই। গেম শুরু করার সময় বা গেমের পেজে এটা বেছে নিন।",
       none: "এখনো কোনো লিগ নেই। লিগ একটা সিজনের গেমগুলোকে পয়েন্টের দৌড় হিসেবে গোনে।",
@@ -1704,14 +1680,13 @@ export const players: Record<Lang, PlayersDict> = {
     page: {
       title: "Jogadores",
       subtitle:
-        "Resultados de torneios encerrados e de jogadores de cash que já sacaram aparecem aqui. Os nomes precisam bater entre as partidas, então escreva sempre do mesmo jeito.",
+        "Resultados de partidas encerradas e de jogadores de cash que já sacaram aparecem aqui. Os nomes precisam bater entre as partidas, então escreva sempre do mesmo jeito.",
       spreadsheetButton: "Planilha",
       filter: {
         periodLabel: "Período",
+        periods: { all: "Todo o Tempo", year: "Este Ano", "90d": "90 Dias", "30d": "30 Dias" },
         typeLabel: "Tipo de Partida",
         allGames: "Todas as Partidas",
-        cash: "Cash",
-        tournaments: "Torneios",
       },
       stats: {
         summary: "{games} · {players} · {amount} em buy-ins",
@@ -1732,8 +1707,6 @@ export const players: Record<Lang, PlayersDict> = {
         last: "Última Vez",
       },
       history: {
-        typeCash: "Cash",
-        typeTournament: "Torneio",
         place: "{place} de {entrants}",
         kos: { one: "{n} KO", other: "{n} KOs" },
         cashInOut: "entrou com {in}, saiu com {out}",
@@ -1799,8 +1772,8 @@ export const players: Record<Lang, PlayersDict> = {
       strays: { one: "{count} partida terminada nessas datas não está em nenhuma liga.", other: "{count} partidas terminadas nessas datas não estão em nenhuma liga." },
       addThem: "Adicionar Todas",
       byGame: "Partida a Partida",
-      byGameNote: "Os pontos de cada jogador em cada partida. Passe o mouse sobre um número para ver a posição.",
-      byGameNoteBest: "Os pontos de cada jogador em cada partida. Uma pontuação riscada não está entre as melhores dele, então não conta.",
+      byGameNote: "Os pontos de cada jogador em cada partida, com a posição embaixo.",
+      byGameNoteBest: "Os pontos de cada jogador em cada partida, com a posição embaixo. Uma pontuação riscada não está entre as melhores dele, então não conta.",
       gameCol: "P{n}",
       noGames: "Ainda não há partidas terminadas nesta liga. Escolha-a ao começar uma partida ou na página de uma partida.",
       none: "Ainda não há ligas. Uma liga pontua uma temporada de partidas como uma corrida por pontos.",

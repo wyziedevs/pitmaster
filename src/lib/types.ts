@@ -294,6 +294,7 @@ export interface Payment {
   at: number;
 }
 
+/** the kind of game: each has a folder in kinds/ and a line in kinds/index.ts */
 export type GameType = "cash" | "tournament" | "dice" | "lives" | "pot";
 
 /**
@@ -408,7 +409,7 @@ export interface CupState {
   on: boolean;
   /** each player's seat, by player id */
   seats: Record<string, string>;
-  /** the round being dealt (the number of rounds played, plus one) */
+  /** the deal's number: goes up with every deal and never repeats (a take back deals again), so a phone's hash is only good once */
   round: number;
   /** commit: the phones lock in; play: everyone can look; reveal: a call, the phones show */
   phase: "commit" | "play" | "reveal";
@@ -457,7 +458,7 @@ export interface Game {
   seatsPerTable?: number;
   /** the game this one was rerun from */
   from?: string;
-  /** when the game was ended (cash: End Game; tournament: the winner) */
+  /** when the game was ended (cash and pot games: End Game; the rest: the winner) */
   endedAt?: number;
   /** a final-table chop: what each remaining player took instead of the payout table */
   deal?: { kind: "icm" | "chop"; amounts: Record<string, number>; at: number };

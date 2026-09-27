@@ -9,7 +9,7 @@ export default defineEventHandler(async (event) => {
   if (!rec.keyHash) throw stopped();
   if (!(await ownSeat(id, seat, getHeader(event, "x-seat-key")))) throw missing(event, 403);
   const { data } = await smallBody<{ data: string }>(event);
-  if (!isSealed(data)) throw createError({ statusCode: 400, statusMessage: "missing mail" });
+  if (!isMail(data)) throw createError({ statusCode: 400, statusMessage: "missing mail" });
   const mail = await putMail(id, seat, data);
   push(event, id, { t: "seat", id, seat, data: mail.data, at: mail.updatedAt });
   return { ok: true, updatedAt: mail.updatedAt };

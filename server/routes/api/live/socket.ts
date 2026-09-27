@@ -10,14 +10,35 @@ const SITE = /^(https:\/\/(pitmaster\.cc|([a-z0-9-]+\.)?pitmaster\.pages\.dev)|h
 const ID = /^[0-9a-f]{32}$/;
 // a snapshot is well under this; anything bigger is turned away
 const MAX = 1_000_000;
+// a screen follows its own game (a host maybe a few), and sends a few messages a second at most
+const MAX_FOLLOWS = 8;
+const MAX_MESSAGES = 300; // a minute
+// games that aren't there a socket may ask after before it's closed: this is what guessing codes looks like
+const MAX_MISSES = 3;
 
 const send = (peer: Peer, msg: object) => peer.send(JSON.stringify(msg));
 
+/** what's counted on a socket (kept in memory, like the speed limits) */
+const tally = (peer: Peer) => peer.context as { misses?: number; sent?: number; until?: number };
+
+/** the address a socket came from (cloudflare sets it; gone once the object has slept, and never in dev) */
+const addressOf = (peer: Peer) => (peer.request as Request | undefined)?.headers?.get?.("cf-connecting-ip") ?? "";
+
 async function follow(peer: Peer, id: string) {
+  if (!peer.topics.has(id) && peer.topics.size >= MAX_FOLLOWS) return send(peer, { t: "err", why: "too many", id });
   peer.subscribe(id);
   followLocal(id, peer);
   const rec = await liveStorage().getItem(id);
-  if (!rec) return send(peer, { t: "none", id });
+  if (!rec) {
+    // no game with that id (or not yet: a new code takes a while to reach
+    // every server, so it's still followed). it counts as a wrong code
+    const ip = addressOf(peer);
+    if (ip) count(ip, "miss");
+    const c = tally(peer);
+    c.misses = (c.misses ?? 0) + 1;
+    if (c.misses > MAX_MISSES) return peer.close(4008, "too many misses");
+    return send(peer, { t: "none", id });
+  }
   if (!rec.keyHash) return send(peer, { t: "gone", id });
   if (rec.data) send(peer, { t: "snap", id, data: rec.data, at: rec.updatedAt });
   for (const m of await allMail(id)) send(peer, { t: "seat", id, seat: m.seat, data: m.data, at: m.updatedAt });
@@ -33,13 +54,25 @@ async function owned(id: string, key: unknown) {
 export default defineWebSocketHandler({
   // only the site's own pages may open one (a websocket isn't covered by cors).
   // in dev anything reaching this computer through vite is the site itself (a tunnel too)
+  // (import.meta.dev is fixed when it's built, so a deployed worker always checks)
   upgrade(request) {
-    if (import.meta.dev) return;
-    const origin = request.headers.get("origin") ?? "";
-    if (!SITE.test(origin)) return new Response("forbidden", { status: 403 });
+    if (!import.meta.dev && !SITE.test(request.headers.get("origin") ?? "")) return new Response("forbidden", { status: 403 });
+    // the speed limits (see middleware/limit.ts): new sockets, and none at all
+    // for an address that's been guessing codes
+    const ip = request.headers.get("cf-connecting-ip");
+    if (!ip) return;
+    if (tooMany(ip, "miss", 120) || tooMany(ip, "socket", 60)) return new Response("too many requests", { status: 429 });
+    count(ip, "socket");
   },
 
   async message(peer, message) {
+    // a socket that floods is closed
+    const c = tally(peer);
+    const now = Date.now();
+    if (!c.until || c.until <= now) Object.assign(c, { sent: 0, until: now + 60_000 });
+    c.sent = (c.sent ?? 0) + 1;
+    if (c.sent > MAX_MESSAGES) return peer.close(4029, "too many messages");
+
     const text = message.text();
     if (text.length > MAX) return send(peer, { t: "err", why: "too big" });
     let m: Record<string, unknown>;
@@ -48,8 +81,10 @@ export default defineWebSocketHandler({
     } catch {
       return send(peer, { t: "err", why: "not json" });
     }
+    // what the sender numbered it, sent back on the answer so it knows which one landed
+    const n = typeof m.n === "number" && Number.isSafeInteger(m.n) ? m.n : undefined;
     const id = typeof m.id === "string" && ID.test(m.id) ? m.id : null;
-    if (!id) return send(peer, { t: "err", why: "bad id" });
+    if (!id) return send(peer, { t: "err", why: "bad id", n });
 
     // a tv, a phone, or the host: follow this game
     if (m.t === "follow") return follow(peer, id);
@@ -57,34 +92,34 @@ export default defineWebSocketHandler({
     // the host: its latest snapshot, for everyone following
     if (m.t === "put") {
       const rec = await owned(id, m.key);
-      if (!rec) return send(peer, { t: "err", why: "wrong key", id });
-      if (!isSealed(m.data)) return send(peer, { t: "err", why: "missing game", id });
+      if (!rec) return send(peer, { t: "err", why: "wrong key", id, n });
+      if (!isSealed(m.data)) return send(peer, { t: "err", why: "missing game", id, n });
       const at = Date.now();
       await putLive(id, { ...rec, data: m.data, updatedAt: at });
       peer.publish(id, JSON.stringify({ t: "snap", id, data: m.data, at }));
-      return send(peer, { t: "ok", id, at });
+      return send(peer, { t: "ok", id, at, n });
     }
 
     // the host: the seats phones may write to, by the hash of each one's key
     if (m.t === "seats") {
-      if (!(await owned(id, m.key))) return send(peer, { t: "err", why: "wrong key", id });
-      if (!isSeats(m.seats)) return send(peer, { t: "err", why: "bad seats", id });
+      if (!(await owned(id, m.key))) return send(peer, { t: "err", why: "wrong key", id, n });
+      if (!isSeats(m.seats)) return send(peer, { t: "err", why: "bad seats", id, n });
       await putSeats(id, m.seats);
-      return send(peer, { t: "ok", id });
+      return send(peer, { t: "ok", id, n });
     }
 
     // a phone: what it has to say this round (a hash, then its numbers), sealed
     if (m.t === "seat") {
       const seat = m.seat;
       const rec = await liveStorage().getItem(id);
-      if (!rec?.keyHash || !(await ownSeat(id, seat, m.key))) return send(peer, { t: "err", why: "wrong key", id });
-      if (!isSealed(m.data)) return send(peer, { t: "err", why: "missing mail", id });
+      if (!rec?.keyHash || !(await ownSeat(id, seat, m.key))) return send(peer, { t: "err", why: "wrong key", id, n });
+      if (!isMail(m.data)) return send(peer, { t: "err", why: "missing mail", id, n });
       const mail = await putMail(id, seat as string, m.data);
       const out = JSON.stringify({ t: "seat", id, seat, data: mail.data, at: mail.updatedAt });
       peer.publish(id, out);
-      return send(peer, { t: "ok", id, at: mail.updatedAt });
+      return send(peer, { t: "ok", id, at: mail.updatedAt, n });
     }
-    send(peer, { t: "err", why: "unknown" });
+    send(peer, { t: "err", why: "unknown", n });
   },
 
   close(peer) {

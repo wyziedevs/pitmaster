@@ -1,19 +1,21 @@
 <script lang="ts">
   // a heads-up bracket, one column a round. the dealer screen passes onpick,
-  // and a match with both players in it takes a click on the winner's name
+  // and a match with both players in it takes a click on the winner's name.
+  // the tv can start it at a later round (`from`), when the first ones are too
+  // many to read across the room
   import Icon from "./Icon.svelte";
   import Trophy from "@lucide/svelte/icons/trophy";
   import type { Game } from "$lib/types";
   import { currentRound, roundName } from "$lib/game";
   import { t } from "$lib/i18n";
 
-  let { game, onpick, tv = false }: { game: Game; onpick?: (match: number, winner: string) => void; tv?: boolean } = $props();
+  let { game, onpick, tv = false, from = 1 }: { game: Game; onpick?: (match: number, winner: string) => void; tv?: boolean; from?: number } = $props();
 
   const name = (id: string | null) => (id ? (game.players.find((p) => p.id === id)?.name ?? "?") : "");
   const rounds = $derived.by(() => {
     const ms = (game.matches ?? []).map((m, i) => ({ ...m, i }));
     const n = Math.max(0, ...ms.map((m) => m.round));
-    return Array.from({ length: n }, (_, r) => ms.filter((m) => m.round === r + 1).sort((a, b) => a.slot - b.slot));
+    return Array.from({ length: n }, (_, r) => ms.filter((m) => m.round === r + 1).sort((a, b) => a.slot - b.slot)).slice(from - 1);
   });
   const now = $derived(currentRound(game));
   const champ = $derived(game.players.find((p) => p.place === 1));
@@ -22,7 +24,8 @@
 </script>
 
 <div class="bracket" class:tv style:--slots={rounds[0]?.length ?? 1}>
-  {#each rounds as ms, r (r)}
+  {#each rounds as ms, i (i)}
+    {@const r = i + from - 1}
     <div class="round" class:now={now === r + 1}>
       <span class="rname">{roundName(game, r + 1)}</span>
       <div class="col">
@@ -30,7 +33,7 @@
           <div class="pair" class:single={pair.length < 2}>
             {#each pair as m (m.i)}
               {@const open = !m.winner && !!m.a && !!m.b}
-              <div class="match" class:open class:first={r === 0}>
+              <div class="match" class:open class:first={i === 0}>
                 {#each [m.a, m.b] as id, k (k)}
                   {@const won = !!m.winner && m.winner === id}
                   {@const lost = !!m.winner && !!id && m.winner !== id}
@@ -61,7 +64,6 @@
     grid-auto-flow: column;
     grid-auto-columns: minmax(7.5em, 1fr);
     gap: var(--gap);
-    overflow-x: auto;
     font-size: var(--fs-sm, 0.9em);
     min-height: calc(var(--slots) * 3.6em);
   }
@@ -100,10 +102,10 @@
     position: absolute;
     top: 25%;
     bottom: 25%;
-    right: calc(var(--gap) / -2);
+    inset-inline-end: calc(var(--gap) / -2);
     width: calc(var(--gap) / 2);
     border: var(--hair) solid var(--line);
-    border-left: 0;
+    border-inline-start: 0;
   }
   .match {
     position: relative;
@@ -117,7 +119,7 @@
     content: "";
     position: absolute;
     top: 50%;
-    left: calc(var(--gap) / -2);
+    inset-inline-start: calc(var(--gap) / -2);
     width: calc(var(--gap) / 2);
     border-top: var(--hair) solid var(--line);
   }
@@ -144,9 +146,6 @@
     color: var(--fg);
     justify-content: flex-start;
   }
-  .who.pick + .who.pick {
-    border-top: var(--hair) solid var(--line);
-  }
   @media (hover: hover) {
     .pick:hover {
       background: var(--block);
@@ -166,6 +165,11 @@
   .champ .match {
     border-color: transparent;
     background: transparent;
+  }
+  /* the final stands alone, so its line runs the whole way across to the champion */
+  .champ .match::before {
+    inset-inline-start: calc(var(--gap) * -1);
+    width: var(--gap);
   }
 
   /* on the tv: the board's colors, sized to fill the middle of the screen */

@@ -58,6 +58,7 @@
     getGames,
     getHandles,
     getTemplates,
+    getLeagues,
     deleteTemplate,
     type Backup,
     type LockedBackup,
@@ -362,6 +363,7 @@
       tp("settings.data.count.games", d.games.length, { n: d.games.length }) + (live ? ` ${t("settings.data.count.inProgress", { n: live })}` : ""),
       d.chipSets.length > 0 && tp("settings.data.count.chipSets", d.chipSets.length, { n: d.chipSets.length }),
       (d.templates?.length ?? 0) > 0 && tp("settings.data.count.templates", d.templates!.length, { n: d.templates!.length }),
+      (d.leagues?.length ?? 0) > 0 && tp("settings.data.count.leagues", d.leagues!.length, { n: d.leagues!.length }),
       people > 0 && tp("settings.data.count.payLinksFor", people, { n: people }),
     ]);
   }
@@ -371,7 +373,7 @@
   const here = $derived.by(() => {
     void rev;
     const bytes = savedSize("data");
-    const summary = contents({ games: getGames(), chipSets: getChipSets(), templates: getTemplates(), handles: getHandles(), defaultChipSetId: "" });
+    const summary = contents({ games: getGames(), chipSets: getChipSets(), templates: getTemplates(), leagues: getLeagues(), handles: getHandles(), defaultChipSetId: "" });
     return { summary, kb: Math.max(1, Math.round(bytes / 1024)) };
   });
 

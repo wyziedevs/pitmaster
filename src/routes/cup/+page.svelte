@@ -39,7 +39,7 @@
 {#if !ok}
   <main class="wrap"><p>{t("tv.cup.badLink")}</p></main>
 {:else if game}
-  <Cup {game} {code} {seat} {seatKey} />
+  <Cup {game} {code} {seat} {seatKey} {status} />
 {:else}
   <main class="wrap"><p><Dealing label={t("tv.connect.connectingLabel")} />{status}</p></main>
 {/if}

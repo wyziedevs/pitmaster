@@ -7,10 +7,12 @@ import type { H3Event } from "h3";
 const MINUTE = 60_000;
 const counts = new Map<string, { n: number; until: number }>();
 
-function tally(event: H3Event, kind: string) {
-  // cloudflare sets cf-connecting-ip itself, so a client can't fake it
-  const ip = getHeader(event, "cf-connecting-ip") || getRequestIP(event) || "unknown";
-  const k = `${kind} ${ip}`;
+/** the address a request came from. cloudflare sets cf-connecting-ip itself, so a client can't fake it */
+export const ipOf = (event: H3Event) => getHeader(event, "cf-connecting-ip") || getRequestIP(event) || "unknown";
+
+// by a request, or (for a websocket, which has none) by its address
+function tally(who: H3Event | string, kind: string) {
+  const k = `${kind} ${typeof who === "string" ? who : ipOf(who)}`;
   const now = Date.now();
   let c = counts.get(k);
   if (!c || c.until <= now) {
@@ -30,6 +32,9 @@ export function slowDown(event: H3Event, kind: string, max: number) {
 }
 
 /** count one `kind` for this address */
-export function count(event: H3Event, kind: string) {
-  tally(event, kind).n++;
+export function count(who: H3Event | string, kind: string) {
+  tally(who, kind).n++;
 }
+
+/** whether this address has done `kind` `max` times this minute (for a websocket, which can't be answered 429) */
+export const tooMany = (ip: string, kind: string, max: number) => tally(ip, kind).n >= max;

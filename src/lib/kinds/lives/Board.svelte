@@ -22,7 +22,12 @@
   const showMoney = $derived(prefs().tvMoney !== false);
   const champ = $derived(game.finished ? game.players.find((p) => st.places[p.id] === 1) : null);
   const byPlace = $derived([...game.players].sort((a, b) => (st.places[a.id] ?? 99) - (st.places[b.id] ?? 99)));
+  // many players (or lives) get smaller tokens, and a big table smaller still
   const many = $derived(game.players.length > 8 || l.lives > 6);
+  const lots = $derived(game.players.length > 16);
+  // the final standings: ten at most, down two columns past five
+  const shown = $derived(byPlace.slice(0, 10));
+  const rows = $derived(shown.length > 5 ? Math.ceil(shown.length / 2) : shown.length);
   const net = (id: string) => round2((st.money.won[id] ?? 0) - (st.money.paid[id] ?? 0));
 </script>
 
@@ -32,9 +37,9 @@
       <div class="trophy"><Icon icon={Trophy} size="10vh" /></div>
       <div class="k">{t("tv.winner.champion")}</div>
       <div class="big">{champ.name}</div>
-      <ol class="final">
-        {#each byPlace.slice(0, 10) as p (p.id)}
-          <li>
+      <ol class="final" class:split={shown.length > 5} style:--rows={rows}>
+        {#each shown as p, i (p.id)}
+          <li class:top={i % rows === 0}>
             <span class="place">{ordinal(st.places[p.id] ?? 0)}</span>
             <b>{p.name}</b>
             {#if showMoney}<span class="fig">{l.stakes.mode === "pot" ? money(st.money.won[p.id] ?? 0) : signed(net(p.id))}</span>{/if}
@@ -44,7 +49,7 @@
     </section>
   {:else}
     <div class="table">
-      <section class="players" class:many>
+      <section class="players" class:many class:lots>
         {#each game.players as p (p.id)}
           {@const left = st.lives[p.id]}
           <div class="player" class:out={left === 0}>
@@ -114,6 +119,13 @@
   }
   .players.many {
     --tok: max(14px, calc(var(--u) * 2.2));
+  }
+  .players.lots {
+    --tok: max(12px, calc(var(--u) * 1.6));
+    gap: calc(var(--u) * 1) calc(var(--u) * 1.6);
+  }
+  .lots .pname {
+    font-size: max(17px, calc(var(--u) * 1.8));
   }
   .player {
     display: flex;
@@ -199,8 +211,16 @@
     padding: calc(var(--u) * 0.4) 0;
     border-top: var(--hair) solid var(--tv-line);
   }
-  .final li:first-child {
+  .final li.top {
     border-top: 0;
+  }
+  /* a big table's standings run down two columns instead of off the screen */
+  .final.split {
+    display: grid;
+    grid-auto-flow: column;
+    grid-template-rows: repeat(var(--rows), auto);
+    column-gap: calc(var(--u) * 4);
+    min-width: min(calc(var(--u) * 76), 96vw);
   }
   .place {
     color: var(--tv-muted);

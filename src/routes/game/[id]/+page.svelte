@@ -14,7 +14,7 @@
   import { recap, gameCsv } from "$lib/report";
   import { keyLabel } from "$lib/keys";
   import { settings } from "$lib/settings.svelte";
-  import { headline } from "$lib/stats";
+  import { headline, inSeason } from "$lib/stats";
   import { provide } from "$lib/commands.svelte";
   import { toast } from "$lib/toast.svelte";
   import { play } from "$lib/sound";
@@ -99,8 +99,9 @@
   const k = $derived(game ? kind(game.type) : null);
 
   // ---- the league it counts toward ----
+  // (with Leagues switched off, only a game that's already in one keeps the choice)
   const leagues = getLeagues();
-  const leagueChoices = $derived(game ? leagues.filter((l) => l.types.includes(game!.type)) : []);
+  const leagueChoices = $derived(game && (settings.useLeagues || game.leagueId) ? leagues.filter((l) => l.types.includes(game!.type)) : []);
   function setLeague(id: string) {
     if (!game) return;
     const l = leagues.find((x) => x.id === id);
@@ -156,6 +157,8 @@
   function runItBack() {
     if (!game) return;
     const g = rerun($state.snapshot(game) as Game);
+    // a rerun only stays in its league while the season is still on
+    if (g.leagueId && !getLeagues().some((l) => l.id === g.leagueId && inSeason(l, Date.now()))) g.leagueId = undefined;
     saveGame(g);
     toast(g.players.length ? tp("gamePlay.game.rerunToastWithPlayers", g.players.length) : t("gamePlay.game.rerunToastNoPlayers"));
     goto(`/game/${g.id}`);

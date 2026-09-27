@@ -196,7 +196,7 @@ export const dice: Kind = {
   },
   headline: (game) => {
     const w = results(game).find((r) => r.place === 1);
-    return w ? (w.won > 0 ? `${w.name} won ${money(w.won)}` : w.name) : "";
+    return w ? (w.won > 0 ? t("common.wonHeadline", { name: w.name, amount: money(w.won) }) : w.name) : "";
   },
   describe: (r) => [r.place ? t("players.page.history.place", { place: ordinal(r.place), entrants: r.entrants }) : ""].filter(Boolean).join(" · "),
   find,

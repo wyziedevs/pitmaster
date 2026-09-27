@@ -25,5 +25,4 @@ export function listedKinds(used: Iterable<string>) {
 export const isKind = (x: unknown): x is GameType => KINDS.some((k) => k.id === x);
 /** a kind by its id; anything else is a cash game */
 export const kind = (id: string | null | undefined): Kind => KINDS.find((k) => k.id === id) ?? KINDS[0];
-export const kindOf = kind;
 export type { Kind } from "./kind";

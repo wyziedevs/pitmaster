@@ -56,12 +56,7 @@ export interface PlayerLine {
 }
 
 export type Period = "all" | "year" | "90d" | "30d";
-export const PERIODS: { id: Period; label: string }[] = [
-  { id: "all", label: "All Time" },
-  { id: "year", label: "This Year" },
-  { id: "90d", label: "90 Days" },
-  { id: "30d", label: "30 Days" },
-];
+export const PERIODS: Period[] = ["all", "year", "90d", "30d"];
 
 export function since(period: Period, now = Date.now()) {
   if (period === "year") return new Date(new Date(now).getFullYear(), 0, 1).getTime();
@@ -165,7 +160,7 @@ export const leagueGames = (league: League, games: Game[]) =>
  */
 function places(game: Game) {
   const rs = results(game).filter((r) => r.key);
-  if (rs.some((r) => r.place !== null)) return rs.map((r) => ({ r, place: r.place ?? rs.length, entrants: r.entrants }));
+  if (kind(game.type).ranks === "place") return rs.map((r) => ({ r, place: r.place ?? rs.length, entrants: r.entrants }));
   const sorted = [...rs].sort((a, b) => b.net - a.net);
   return sorted.map((r) => ({ r, place: sorted.findIndex((x) => Math.abs(x.net - r.net) < 0.005) + 1, entrants: sorted.length }));
 }
@@ -205,8 +200,17 @@ export function leagueBoard(league: League, games: Game[], top = 10): LeagueBoar
   return { name: league.name, games: s.games.length, rows: s.rows.slice(0, top).map((l) => ({ name: l.name, points: l.points, games: l.played })) };
 }
 
+/** the season's dates hold `at` (the end date runs to the end of that day, local time) */
+export function inSeason(league: League, at: number) {
+  if (at < league.start) return false;
+  if (!league.end) return true;
+  const after = new Date(league.end);
+  after.setDate(after.getDate() + 1);
+  return at < after.getTime();
+}
+
 /** a league that's on at `at`, for a new game of this type (the latest to start wins) */
 export const currentLeague = (leagues: League[], type: GameType, at = Date.now()) =>
   leagues
-    .filter((l) => l.types.includes(type) && l.start <= at && (!l.end || at < l.end + 86400000))
+    .filter((l) => l.types.includes(type) && inSeason(l, at))
     .sort((a, b) => b.start - a.start)[0] ?? null;

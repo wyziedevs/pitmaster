@@ -53,8 +53,12 @@ export function diceState(game: Game) {
     const hit = Object.keys(last.effect).find((id) => last.before[id] === 2 && st.lives[id] === 1 && !st.history.slice(0, -1).some((h) => h.after[id] === 1));
     if (hit) palifico = hit;
   }
-  // the round starts with whoever lost the last one (if they're still in), or the next one along
-  const lastLoser = rounds.at(-1)?.losers[0] ?? rounds.at(-1)?.gains?.[0];
+  // the round starts with whoever lost the last one (if they're still in), or
+  // the next one along. a spot on that cost everyone else a die (or gave one
+  // back) was the caller's round, so they start
+  const r = rounds.at(-1);
+  const spotRight = r?.call === "spot" && !!r.caller && !r.losers.includes(r.caller) && !r.cheats?.length;
+  const lastLoser = r && (spotRight || r.losers.length !== 1) ? (r.caller ?? r.winner ?? r.gains?.[0] ?? r.losers[0]) : r?.losers[0];
   const from = lastLoser ? ids.indexOf(lastLoser) : 0;
   const starter = palifico ?? [...ids.slice(from), ...ids.slice(0, from)].find((id) => st.lives[id] > 0) ?? null;
   const wild = s.onesWild && !palifico;

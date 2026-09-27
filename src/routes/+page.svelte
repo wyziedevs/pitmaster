@@ -10,10 +10,10 @@
   import RotateCw from "@lucide/svelte/icons/rotate-cw";
   import Bookmark from "@lucide/svelte/icons/bookmark";
   import { goto } from "$app/navigation";
-  import { getGames, deleteGame, getChipSet, getDefaultChipSetId, saveGame, getTemplates, onOtherTab, lastExport } from "$lib/store";
+  import { getGames, deleteGame, getChipSet, getDefaultChipSetId, saveGame, getTemplates, onOtherTab, lastExport, getLeagues } from "$lib/store";
   import { vault } from "$lib/lock.svelte";
   import { rerun } from "$lib/game";
-  import { headline, leaderboard } from "$lib/stats";
+  import { headline, inSeason, leaderboard } from "$lib/stats";
   import { listedKinds, offeredKinds, kind as kindOf } from "$lib/kinds";
   import { ago, amt, day, money, signed } from "$lib/util";
   import { totalCount } from "$lib/chips";
@@ -88,14 +88,23 @@
     palette.open = true;
   }
 
+  /** where a game's at: a poker game goes by its clock, the rest by whether a round's been played */
+  function stage(g: Game) {
+    if (g.finished) return "finished";
+    if (kindOf(g.type).poker) return g.clock.status;
+    return g.clock.startedAt ? "running" : "idle";
+  }
+
   /** what a running game is doing right now, ticking */
   function now(g: Game) {
-    if (g.clock.status === "idle") return "";
+    if (stage(g) === "idle") return "";
     return kindOf(g.type).now(g, time.now);
   }
 
   function runItBack(g: Game) {
     const n = rerun(g);
+    // a rerun only stays in its league while the season is still on
+    if (n.leagueId && !getLeagues().some((l) => l.id === n.leagueId && inSeason(l, Date.now()))) n.leagueId = undefined;
     saveGame(n);
     toast(t("toys.toastRunningBack", { name: g.name }));
     goto(`/game/${n.id}`);
@@ -105,8 +114,8 @@
   const summary = (g: Game, running = false) => kindOf(g.type).summary(g, running);
 
   function status(g: Game) {
-    if (g.finished) return t("toys.now.status.finished");
-    return g.clock.status === "running" ? t("toys.now.status.running") : g.clock.status === "paused" ? t("toys.now.status.paused") : t("toys.now.status.notStarted");
+    const s = stage(g);
+    return s === "finished" ? t("toys.now.status.finished") : s === "running" ? t("toys.now.status.running") : s === "paused" ? t("toys.now.status.paused") : t("toys.now.status.notStarted");
   }
 
   function remove(g: Game) {
@@ -143,7 +152,7 @@
         <li class="py-[10px] border-b-[length:var(--hair)] border-solid border-line" out:slide={leave()}>
           <div class="spread">
             <span><span class="pill">{kindOf(g.type).label()}</span> <a class="game" href="/game/{g.id}">{g.name}</a></span>
-            <span class="pill" data-s={g.clock.status}>{status(g)}</span>
+            <span class="pill" data-s={stage(g)}>{status(g)}</span>
           </div>
           <div class="small muted mt-[2px]">
             {#if now(g)}<span class="tabular-nums">{now(g)}</span>{:else}{t("toys.now.made", { time: ago(g.createdAt) })}{/if} · {summary(g, !!now(g))}

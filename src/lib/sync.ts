@@ -16,6 +16,7 @@ import { canEncrypt, codeKeys, newCode, seal, token, unseal } from "./crypto";
 import { isGame } from "./check";
 import { follow, onSocket, relay, socketOpen, type RelayMsg } from "./socket";
 import { leagueBoardFor } from "./boards";
+import { t } from "./i18n";
 
 const bc = typeof BroadcastChannel !== "undefined" ? new BroadcastChannel("pitmaster") : null;
 
@@ -37,6 +38,8 @@ async function host(code: string) {
   if (hosting.has(code)) return;
   hosting.set(code, () => {});
   const { id, key } = await codeKeys(code);
+  // stopped sharing meanwhile: don't follow it after all
+  if (!hosting.has(code)) return;
   hosting.set(
     code,
     follow(id, async (m) => {
@@ -91,7 +94,7 @@ async function push({ code, key }: Live, snap: Game) {
   try {
     const { id, key: lock } = await codeKeys(code);
     const data = await seal(lock, JSON.stringify(snap));
-    if (relay({ t: "put", id, key, data })) return 200;
+    if (await relay({ t: "put", id, key, data })) return 200;
     const r = await fetch(`${API}/api/live/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json", "X-Live-Key": key },
@@ -196,7 +199,7 @@ export async function endLive({ code, key }: Live) {
  */
 export function pollLive(code: string, cb: (g: Game) => void, onError: (msg: string) => void, everyMs = 2000) {
   if (!canEncrypt()) {
-    onError("This screen can only unlock the game on a secure (https) page");
+    onError(t("tv.connect.needsHttps"));
     return () => {};
   }
   const keys = codeKeys(code);
@@ -208,7 +211,9 @@ export function pollLive(code: string, cb: (g: Game) => void, onError: (msg: str
     if (at && at <= since) return;
     const { key } = await keys;
     const game = await unseal(key, data).then(JSON.parse, () => null);
-    if (!isGame(game)) return onError("That game couldn't be unlocked");
+    // a newer one landed while this was being opened
+    if (stopped || (at && at <= since)) return;
+    if (!isGame(game)) return onError(t("tv.connect.cantUnlock"));
     since = at || since;
     cb(game);
   }
@@ -223,21 +228,21 @@ export function pollLive(code: string, cb: (g: Game) => void, onError: (msg: str
       const r = await fetch(`${API}/api/live/${id}?since=${since}`, { cache: "no-store" });
       if (r.status === 410) {
         stopped = true;
-        onError("The host stopped sharing this game");
+        onError(t("tv.connect.stopped"));
       } else if (r.status === 404) {
-        onError("No game with that code");
+        onError(t("tv.connect.noGame"));
         wait = everyMs * 3;
       } else if (r.status === 429) {
-        onError("Too many screens asking at once, retrying…");
+        onError(t("tv.connect.busy"));
         wait = everyMs * 5;
-      } else if (!r.ok) onError(`The server said ${r.status}`);
+      } else if (!r.ok) onError(t("tv.connect.serverSaid", { status: String(r.status) }));
       else {
         const body = await r.json();
         if (body.changed && body.data) await take(body.data, Number(body.updatedAt) || 0);
-        else if (body.changed) onError("Waiting for the host to start…");
+        else if (body.changed) onError(t("tv.connect.notStarted"));
       }
     } catch {
-      onError("Can't reach the server, retrying…");
+      onError(t("tv.connect.cantReach"));
     }
     if (!stopped && !socketOpen()) timer = setTimeout(tick, wait);
   }
@@ -252,8 +257,8 @@ export function pollLive(code: string, cb: (g: Game) => void, onError: (msg: str
       if (m.t === "snap" && m.data) take(m.data, m.at ?? 0);
       else if (m.t === "gone") {
         stopped = true;
-        onError("The host stopped sharing this game");
-      } else if (m.t === "none") onError("No game with that code");
+        onError(t("tv.connect.stopped"));
+      } else if (m.t === "none") onError(t("tv.connect.noGame"));
     });
   });
   // no socket (yet, or any more): ask over http until there is one
@@ -273,7 +278,7 @@ export function pollLive(code: string, cb: (g: Game) => void, onError: (msg: str
 /** the host: which seats may write, by the sha-256 of each seat's key */
 export async function registerSeats({ code, key }: Live, seats: Record<string, string>) {
   const { id } = await codeKeys(code);
-  if (relay({ t: "seats", id, key, seats })) return true;
+  if (await relay({ t: "seats", id, key, seats })) return true;
   const r = await fetch(`${API}/api/live/${id}/seats`, { method: "PUT", headers: { "Content-Type": "application/json", "X-Live-Key": key }, body: JSON.stringify({ seats }) }).catch(() => null);
   return !!r?.ok;
 }
@@ -315,7 +320,7 @@ export function watchSeats(code: string, cb: (seat: string, text: string) => voi
 export async function sendSeat(code: string, seat: string, seatKey: string, text: string) {
   const { id, key } = await codeKeys(code);
   const data = await seal(key, text);
-  if (relay({ t: "seat", id, seat, key: seatKey, data })) return true;
+  if (await relay({ t: "seat", id, seat, key: seatKey, data })) return true;
   const r = await fetch(`${API}/api/live/${id}/seat/${seat}`, { method: "PUT", headers: { "Content-Type": "application/json", "X-Seat-Key": seatKey }, body: JSON.stringify({ data }) }).catch(() => null);
   return !!r?.ok;
 }

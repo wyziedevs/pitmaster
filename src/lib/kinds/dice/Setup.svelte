@@ -16,23 +16,26 @@
   import Die from "$lib/components/Die.svelte";
   import type { DiceSettings, GameType } from "$lib/types";
   import { DICE_DEFAULTS, rulesLine } from "./index";
+  import { leagueOf, namesOf, startFrom } from "../rerun";
   import { t, tp } from "$lib/i18n";
 
   // (this form is only ever liar's dice)
   let {}: { type: GameType } = $props();
   const type: GameType = "dice";
 
-  const d = DICE_DEFAULTS();
+  // tweak and rerun starts from an earlier game's setup
+  const src = startFrom(type);
+  const d = src?.dice ?? DICE_DEFAULTS();
   const day = new Date().toLocaleDateString(settings.language, { weekday: "long" });
-  let name = $state(`${day} ${t("common.kinds.dice.label")}`);
-  let playerNames = $state("");
-  let notes = $state(settings.rulesOnNew ? houseRules().join("\n") : "");
+  let name = $state(src?.name ?? `${day} ${t("common.kinds.dice.label")}`);
+  let playerNames = $state(src ? namesOf(src) : "");
+  let notes = $state(src ? src.notes : settings.rulesOnNew ? houseRules().join("\n") : "");
   let dice = $state(d.dice);
   let onesWild = $state(d.onesWild);
   let spotOn = $state(d.spotOn);
   let palifico = $state(d.palifico);
   let entry = $state(d.entry);
-  let stakes = $state({ ...d.stakes, payoutRound: settings.payoutRound || 1 });
+  let stakes = $state(src ? structuredClone(d.stakes) : { ...d.stakes, payoutRound: settings.payoutRound || 1 });
 
   const names = $derived(
     playerNames
@@ -52,7 +55,7 @@
 
   // the league that's on for this kind of game, if there is one
   const leagues = getLeagues().filter((l) => l.types.includes(type));
-  let leagueId = $state(currentLeague(leagues, type)?.id ?? "");
+  let leagueId = $state(leagueOf(src, leagues) ?? currentLeague(leagues, type)?.id ?? "");
 
   // regulars one click away, most games first
   const regulars = knownPlayers().slice(0, 16);
@@ -63,6 +66,7 @@
     if (names.length < 2 && !confirm(t("gameSetup.dice.fewPlayersConfirm"))) return;
     const g = newGame({ name: name.trim() || `${day} ${t("common.kinds.dice.label")}`, type, chipSetName: "", multiplier: 1, chips: [], notes, players: names, levels: [] });
     g.dice = rules();
+    if (src) g.from = src.id;
     if (leagueId && leagues.some((l) => l.id === leagueId)) g.leagueId = leagueId;
     saveGame(g);
     goto(`/game/${g.id}`);

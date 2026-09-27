@@ -66,6 +66,14 @@ export interface TvDict {
   connect: {
     connecting: string;
     connectingLabel: string;
+    needsHttps: string;
+    cantUnlock: string;
+    stopped: string;
+    noGame: string;
+    busy: string;
+    serverSaid: string; // {status}
+    notStarted: string;
+    cantReach: string;
     live: string; // {code}
     sameComputer: string;
     tryDifferent: string;
@@ -90,7 +98,7 @@ export interface TvDict {
     levelNum: string; // {n}
     blinds: string;
     ante: string;
-    anteSuffix: string; // {n} — "Ante {n}", appended after a middle dot
+    anteSuffix: string; // {n}: "Ante {n}", appended after a middle dot
     blindsAfterBreak: string;
     colorUpNow: string;
     colorUp: string;
@@ -333,6 +341,14 @@ export const tv: Record<Lang, TvDict> = {
     connect: {
       connecting: "Connecting…",
       connectingLabel: "Connecting",
+      needsHttps: "This screen can only unlock the game on a secure (https) page",
+      cantUnlock: "That game couldn't be unlocked",
+      stopped: "The host stopped sharing this game",
+      noGame: "No game with that code",
+      busy: "Too many screens asking at once, retrying…",
+      serverSaid: "The server said {status}",
+      notStarted: "Waiting for the host to start…",
+      cantReach: "Can't reach the server, retrying…",
       live: "Live · {code}",
       sameComputer: "Same-Computer Mode",
       tryDifferent: "Try a Different Code",
@@ -598,6 +614,14 @@ export const tv: Record<Lang, TvDict> = {
     connect: {
       connecting: "正在连接…",
       connectingLabel: "正在连接",
+      needsHttps: "此屏幕只能在安全 (https) 页面上解锁游戏",
+      cantUnlock: "无法解锁该游戏",
+      stopped: "主持人已停止共享此游戏",
+      noGame: "没有使用该代码的游戏",
+      busy: "请求的屏幕太多，正在重试…",
+      serverSaid: "服务器返回 {status}",
+      notStarted: "正在等待主持人开始…",
+      cantReach: "无法连接服务器，正在重试…",
       live: "直播中 · {code}",
       sameComputer: "同机模式",
       tryDifferent: "换一个代码试试",
@@ -863,6 +887,14 @@ export const tv: Record<Lang, TvDict> = {
     connect: {
       connecting: "कनेक्ट हो रहा है…",
       connectingLabel: "कनेक्ट हो रहा है",
+      needsHttps: "यह स्क्रीन गेम को केवल सुरक्षित (https) पेज पर खोल सकती है",
+      cantUnlock: "वह गेम खोला नहीं जा सका",
+      stopped: "होस्ट ने इस गेम को शेयर करना बंद कर दिया",
+      noGame: "उस कोड का कोई गेम नहीं है",
+      busy: "एक साथ बहुत सारी स्क्रीन पूछ रही हैं, फिर से कोशिश हो रही है…",
+      serverSaid: "सर्वर ने {status} कहा",
+      notStarted: "होस्ट के शुरू करने का इंतज़ार…",
+      cantReach: "सर्वर तक नहीं पहुँच पा रहे, फिर से कोशिश हो रही है…",
       live: "लाइव · {code}",
       sameComputer: "सेम-कंप्यूटर मोड",
       tryDifferent: "दूसरा कोड आज़माएं",
@@ -1128,6 +1160,14 @@ export const tv: Record<Lang, TvDict> = {
     connect: {
       connecting: "Conectando…",
       connectingLabel: "Conectando",
+      needsHttps: "Esta pantalla solo puede abrir la partida en una página segura (https)",
+      cantUnlock: "No se pudo abrir esa partida",
+      stopped: "El anfitrión dejó de compartir esta partida",
+      noGame: "No hay ninguna partida con ese código",
+      busy: "Demasiadas pantallas preguntando a la vez, reintentando…",
+      serverSaid: "El servidor respondió {status}",
+      notStarted: "Esperando a que el anfitrión empiece…",
+      cantReach: "No se puede conectar con el servidor, reintentando…",
       live: "En Vivo · {code}",
       sameComputer: "Modo Misma Computadora",
       tryDifferent: "Probar Otro Código",
@@ -1393,6 +1433,14 @@ export const tv: Record<Lang, TvDict> = {
     connect: {
       connecting: "Connexion…",
       connectingLabel: "Connexion",
+      needsHttps: "Cet écran ne peut ouvrir la partie que sur une page sécurisée (https)",
+      cantUnlock: "Impossible d'ouvrir cette partie",
+      stopped: "L'hôte a arrêté de partager cette partie",
+      noGame: "Aucune partie avec ce code",
+      busy: "Trop d'écrans demandent en même temps, nouvel essai…",
+      serverSaid: "Le serveur a répondu {status}",
+      notStarted: "En attente du lancement par l'hôte…",
+      cantReach: "Serveur injoignable, nouvel essai…",
       live: "En Direct · {code}",
       sameComputer: "Mode Même Ordinateur",
       tryDifferent: "Essayer un Autre Code",
@@ -1658,6 +1706,14 @@ export const tv: Record<Lang, TvDict> = {
     connect: {
       connecting: "جارٍ الاتصال…",
       connectingLabel: "جارٍ الاتصال",
+      needsHttps: "لا تستطيع هذه الشاشة فتح اللعبة إلا على صفحة آمنة (https)",
+      cantUnlock: "تعذّر فتح تلك اللعبة",
+      stopped: "أوقف المضيف مشاركة هذه اللعبة",
+      noGame: "لا توجد لعبة بهذا الرمز",
+      busy: "شاشات كثيرة تطلب في وقت واحد، جارٍ إعادة المحاولة…",
+      serverSaid: "ردّ الخادم بـ {status}",
+      notStarted: "بانتظار أن يبدأ المضيف…",
+      cantReach: "تعذّر الوصول إلى الخادم، جارٍ إعادة المحاولة…",
       live: "مباشر · {code}",
       sameComputer: "وضع الحاسوب نفسه",
       tryDifferent: "جرّب رمزًا آخر",
@@ -1923,6 +1979,14 @@ export const tv: Record<Lang, TvDict> = {
     connect: {
       connecting: "সংযোগ হচ্ছে…",
       connectingLabel: "সংযোগ হচ্ছে",
+      needsHttps: "এই স্ক্রিন শুধু নিরাপদ (https) পেজে গেমটি খুলতে পারে",
+      cantUnlock: "গেমটি খোলা গেল না",
+      stopped: "হোস্ট এই গেম শেয়ার করা বন্ধ করেছেন",
+      noGame: "ওই কোডে কোনো গেম নেই",
+      busy: "একসাথে অনেক স্ক্রিন জিজ্ঞেস করছে, আবার চেষ্টা হচ্ছে…",
+      serverSaid: "সার্ভার বলেছে {status}",
+      notStarted: "হোস্টের শুরু করার অপেক্ষায়…",
+      cantReach: "সার্ভারে পৌঁছানো যাচ্ছে না, আবার চেষ্টা হচ্ছে…",
       live: "লাইভ · {code}",
       sameComputer: "একই-কম্পিউটার মোড",
       tryDifferent: "অন্য কোড চেষ্টা করুন",
@@ -2188,6 +2252,14 @@ export const tv: Record<Lang, TvDict> = {
     connect: {
       connecting: "Conectando…",
       connectingLabel: "Conectando",
+      needsHttps: "Esta tela só pode abrir a partida em uma página segura (https)",
+      cantUnlock: "Não foi possível abrir essa partida",
+      stopped: "O anfitrião parou de compartilhar esta partida",
+      noGame: "Nenhuma partida com esse código",
+      busy: "Telas demais pedindo ao mesmo tempo, tentando de novo…",
+      serverSaid: "O servidor respondeu {status}",
+      notStarted: "Esperando o anfitrião começar…",
+      cantReach: "Não foi possível alcançar o servidor, tentando de novo…",
       live: "Ao Vivo · {code}",
       sameComputer: "Modo Mesmo Computador",
       tryDifferent: "Tentar Outro Código",

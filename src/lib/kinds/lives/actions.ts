@@ -16,10 +16,31 @@ export function roundText(game: Game, r: LivesRound) {
     .join(" ");
 }
 
+/**
+ * what a round can really cost: no more than each player has left, nothing
+ * from anyone already out, and nothing from its winner (money per life goes
+ * to them, so every life lost has to be paid to someone)
+ */
+export function fairLost(game: Game, r: Pick<LivesRound, "lost" | "winner">) {
+  const lives = livesState(game).lives;
+  return Object.fromEntries(
+    Object.entries(r.lost)
+      .map(([id, n]) => [id, id === r.winner ? 0 : Math.min(Math.max(0, Math.round(n)), lives[id] ?? 0)] as const)
+      .filter(([, n]) => n > 0)
+  );
+}
+
+/** a round that would leave nobody with a life: last one standing needs one, so it's played again */
+export const wipesOut = (game: Game, lost: Record<string, number>) => {
+  const { alive, lives } = livesState(game);
+  return alive.length > 0 && alive.every((id) => (lost[id] ?? 0) >= lives[id]);
+};
+
 /** a round is played: in it goes; the winner, then anyone out, gets the tv */
-export function addLifeRound(game: Game, r: LivesRound) {
+export function addLifeRound(game: Game, round: LivesRound) {
   const before = livesState(game);
-  if (before.over || game.finished || !Object.values(r.lost).some((n) => n > 0)) return;
+  const r = { ...round, lost: fairLost(game, round) };
+  if (before.over || game.finished || !Object.keys(r.lost).length || wipesOut(game, r.lost)) return;
   if (!game.lifeRounds) game.lifeRounds = [];
   game.lifeRounds.push(r);
   if (!game.clock.startedAt) game.clock.startedAt = r.at;

@@ -75,6 +75,7 @@
   let who = $state("");
   let other = $state<number | null>(null);
   let matchers = $state<string[]>([]);
+  let handWinner = $state("");
   function payIn() {
     if (!who || !other) return;
     play("chips");
@@ -92,11 +93,14 @@
     play("ship");
     act(() => takePot(game, who));
   }
+  // guts and bourre: the hand's winner takes the pot, and the losers match what was in it
+  const losers = $derived(matchers.filter((id) => id !== handWinner));
   function match() {
-    if (!matchers.length) return;
-    play("bust");
-    act(() => matchPot(game, [...matchers]));
+    if (!losers.length) return;
+    play(handWinner ? "ship" : "bust");
+    act(() => matchPot(game, [...losers], handWinner || undefined));
     matchers = [];
+    handWinner = "";
   }
   function ante() {
     play("chips");
@@ -116,7 +120,7 @@
             ...game.players.map((p) => ({ id: `p:takepot:${p.id}`, label: t("gamePlay.pot.cmdTakesPot", { name: p.name }), group: t("gamePlay.shared.groupPlayers"), keywords: "win pot", run: () => (play("ship"), act(() => takePot(game, p.id))) })),
           ]
         : []),
-      ...(started ? [{ id: "p:undo", label: t("gamePlay.pot.undo"), group: t("gamePlay.shared.groupThisGame"), keywords: "undo", run: () => (play("rewind"), act(() => undoPot(game))) }] : []),
+      ...(started && !game.finished ? [{ id: "p:undo", label: t("gamePlay.pot.undo"), group: t("gamePlay.shared.groupThisGame"), keywords: "undo", run: () => (play("rewind"), act(() => undoPot(game))) }] : []),
     ])
   );
 </script>
@@ -129,7 +133,7 @@
       <div class="small muted">{presetName(game)} · {setupLine(game)}</div>
     </div>
     <div class="blinds text-right max-[600px]:text-left">
-      {#if !game.finished && st.turn}<div class="small muted">{t("gamePlay.pot.turn")}</div><div class="num bb">{pname(st.turn)}</div>{/if}
+      {#if !game.finished && st.turn}<div class="small muted">{t("gamePlay.pot.turn")}</div><div class="bb">{pname(st.turn)}</div>{/if}
       {#if !game.finished && s.limit > 0}<div class="small muted">{t("gamePlay.pot.maxBet", { amount: money(cap) })}</div>{/if}
     </div>
   </div>
@@ -170,10 +174,14 @@
       {#if preset.match}
         <div class="part mt-[22px]">
           <h2>{t("gamePlay.pot.matchHeading", { amount: money(matchCost(s, st.pot)) })}</h2>
+          <label><span>{t("gamePlay.pot.handWonBy")}</span>
+            <select bind:value={handWinner}><option value="">…</option>{#each game.players as p (p.id)}<option value={p.id}>{p.name}</option>{/each}</select>
+          </label>
           <div class="row">
-            {#each game.players as p (p.id)}<label class="across m-0"><input type="checkbox" bind:group={matchers} value={p.id} /><span>{p.name}</span></label>{/each}
+            {#each game.players as p (p.id)}<label class="across m-0"><input type="checkbox" bind:group={matchers} value={p.id} disabled={p.id === handWinner} /><span>{p.name}</span></label>{/each}
           </div>
-          <button class="mt-2" data-sound="none" disabled={!matchers.length || !(st.pot > 0)} onclick={match}>{t("gamePlay.pot.matchButton")}</button>
+          <button class="mt-2" data-sound="none" disabled={!losers.length || !(st.pot > 0)} onclick={match}>{t("gamePlay.pot.matchButton")}</button>
+          <p class="small muted">{t("gamePlay.pot.matchHint")}</p>
         </div>
       {/if}
 
@@ -213,9 +221,9 @@
           {#each game.players as p (p.id)}
             <tr class:turn={!game.finished && st.turn === p.id}>
               <td class="nowrap who"><input type="text" bind:value={p.name} onchange={persist} class="edit-name" aria-label={t("gamePlay.shared.nameHeader")} /></td>
-              <td class="num">{money(st.paid[p.id])}</td>
-              <td class="num">{money(st.taken[p.id])}</td>
-              <td class="num {cls(st.net[p.id])}"><b>{signed(st.net[p.id])}</b></td>
+              <td class="num" data-l={t("gamePlay.pot.paidHeader")}>{money(st.paid[p.id])}</td>
+              <td class="num" data-l={t("gamePlay.pot.takenHeader")}>{money(st.taken[p.id])}</td>
+              <td class="num {cls(st.net[p.id])}" data-l={t("players.page.table.net")}><b>{signed(st.net[p.id])}</b></td>
               <td class="acts">{#if !started}<RemoveButton label={t("gamePlay.shared.removePlayer", { name: p.name })} onclick={() => removePlayer(p.id)} />{/if}</td>
             </tr>
           {:else}

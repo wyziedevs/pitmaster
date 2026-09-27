@@ -158,7 +158,7 @@ export const cash: Kind = {
   recap,
   csv: gameCsv,
   summary: (game, running) => {
-    const blinds = t("toys.summary.cashBlinds", { players: tp("toys.summary.players", game.players.length), sb: money(game.cash!.sb), bb: money(game.cash!.bb) });
+    const blinds = t("toys.summary.cashBlinds", { players: tp("toys.summary.players", game.players.length), stakes: stakes(game) });
     return running ? blinds : t("toys.summary.inPlay", { blinds, bank: money(cashStats(game).bank) });
   },
   now: (game, at) => t("toys.now.cashStatus", { time: clock(cashElapsed(game, at)), money: money(cashStats(game).onTable) }),

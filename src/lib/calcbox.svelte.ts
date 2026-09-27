@@ -13,7 +13,7 @@ export const calc = $state({
   ghost: false,
   /** just the display, no keys */
   small: false,
-  /** pot limit: the pot and the call, and the most anyone can raise to */
+  /** pot limit: the pot and the call, and the most the player can put in */
   pot: false,
   potSize: null as number | null,
   toCall: null as number | null,

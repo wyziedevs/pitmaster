@@ -12,7 +12,7 @@
   import Chip from "./Chip.svelte";
   import RemoveButton from "./RemoveButton.svelte";
   import { t } from "$lib/i18n";
-  import { isStud, VARIANTS, variant, variantName } from "$lib/variants";
+  import { isLimit, isStud, studAmounts, VARIANTS, variant, variantName } from "$lib/variants";
 
   let {
     levels = $bindable(),
@@ -51,6 +51,21 @@
     const order = [...new Set(games)];
     return order[(order.indexOf(cur) + 1) % order.length];
   }
+  // a level's numbers follow its game: stud has no blinds and gets an ante and
+  // a bring-in, and a big blind ante only goes on the big-bet games
+  const unit = $derived(chips.length ? Math.min(...chips.map((c) => c.value)) : 1);
+  function fit(l: Level, was: string | undefined) {
+    if (isStud(l.game)) return void Object.assign(l, { sb: 0 }, studAmounts(l.bb, unit));
+    delete l.bringIn;
+    if (isStud(was)) Object.assign(l, { sb: +(l.bb / 2).toFixed(4), ante: 0 });
+    else if (isLimit(l.game)) l.ante = 0;
+  }
+  function setGame(l: Level, game: string) {
+    const was = l.game;
+    l.game = game;
+    fit(l, was);
+    changed();
+  }
 
   // levels are saved without ids, so each row gets one here and keeps it
   // through adds and removes: the rows below a change glide to their new place
@@ -73,14 +88,17 @@
   }
 
   function insertAfter(i: number, brk: boolean) {
-    const l = levels[i];
-    levels.splice(
-      i + 1,
-      0,
-      brk
-        ? { sb: 0, bb: 0, ante: 0, minutes: 10, isBreak: true }
-        : { sb: l.sb * 2 || (l.game && isStud(l.game) ? 0 : 1), bb: l.bb * 2 || 2, ante: l.ante ? l.ante * 2 : 0, minutes: l.minutes || 20, ...(l.game ? { game: nextGame(i) } : {}), ...(l.bringIn ? { bringIn: l.bringIn * 2 } : {}) }
-    );
+    // a level added under a break follows the level before the break
+    const from = levels.slice(0, i + 1).findLastIndex((x) => !x.isBreak);
+    const l = levels[from < 0 ? i : from];
+    const add: Level = brk
+      ? { sb: 0, bb: 0, ante: 0, minutes: 10, isBreak: true }
+      : { sb: l.sb * 2 || 1, bb: l.bb * 2 || 2, ante: l.ante ? l.ante * 2 : 0, minutes: l.minutes || 20 };
+    if (!brk && l.game) {
+      add.game = nextGame(from);
+      fit(add, l.game);
+    }
+    levels.splice(i + 1, 0, add);
     ids.splice(i + 1, 0, made++);
     changed();
   }
@@ -135,7 +153,7 @@
             {#if hasGame}
               <td class="nowrap">
                 {#if editable}
-                  <select class="w-full min-w-[5em]" value={l.game ?? "nlhe"} onchange={(e) => ((l.game = e.currentTarget.value), changed())} aria-label={t("gamePlay.structure.gameAria", { n: String(l.num) })}>
+                  <select class="w-full min-w-[5em]" value={l.game ?? "nlhe"} onchange={(e) => setGame(l, e.currentTarget.value)} aria-label={t("gamePlay.structure.gameAria", { n: String(l.num) })}>
                     {#each VARIANTS as v (v.id)}<option value={v.id}>{v.short}</option>{/each}
                   </select>
                 {:else}<span title={variantName(l.game)}>{variant(l.game).short}</span>{/if}

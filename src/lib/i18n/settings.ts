@@ -155,8 +155,6 @@ export interface SettingsDict {
     templates: {
       heading: string;
       empty: string;
-      typeCash: string;
-      typeTournament: string;
       playersCount: Plural; // {n}
       deleteAriaLabel: string; // {name}
       deleteConfirm: string; // {name}
@@ -241,6 +239,7 @@ export interface SettingsDict {
       games: Plural; // {n}
       chipSets: Plural; // {n}
       templates: Plural; // {n}
+      leagues: Plural; // {n}
       newGames: Plural; // {n}
       payLinksFor: Plural; // {n}
       inProgress: string; // {n}
@@ -487,8 +486,6 @@ export const settings: Record<Lang, SettingsDict> = {
       templates: {
         heading: "Templates",
         empty: "No templates yet.",
-        typeCash: "Cash",
-        typeTournament: "Tournament",
         playersCount: { one: "{n} player", other: "{n} players" },
         deleteAriaLabel: "Delete template {name}",
         deleteConfirm: 'Delete the template "{name}"? Games made from it stay.',
@@ -605,6 +602,7 @@ export const settings: Record<Lang, SettingsDict> = {
         games: { one: "{n} game", other: "{n} games" },
         chipSets: { one: "{n} chip set", other: "{n} chip sets" },
         templates: { one: "{n} template", other: "{n} templates" },
+        leagues: { one: "{n} league", other: "{n} leagues" },
         newGames: { one: "{n} new game", other: "{n} new games" },
         payLinksFor: { one: "pay links for {n} person", other: "pay links for {n} people" },
         inProgress: "({n} in progress)",
@@ -863,8 +861,6 @@ export const settings: Record<Lang, SettingsDict> = {
       templates: {
         heading: "模板",
         empty: "还没有模板。",
-        typeCash: "现金局",
-        typeTournament: "锦标赛",
         playersCount: { other: "{n} 名玩家" },
         deleteAriaLabel: "删除模板 {name}",
         deleteConfirm: "删除模板“{name}”?由它创建的对局不受影响。",
@@ -981,6 +977,7 @@ export const settings: Record<Lang, SettingsDict> = {
         games: { other: "{n} 局对局" },
         chipSets: { other: "{n} 组筹码" },
         templates: { other: "{n} 个模板" },
+        leagues: { other: "{n} 个联赛" },
         newGames: { other: "{n} 局新对局" },
         payLinksFor: { other: "{n} 人的收款链接" },
         inProgress: "(进行中 {n} 局)",
@@ -1238,8 +1235,6 @@ export const settings: Record<Lang, SettingsDict> = {
       templates: {
         heading: "टेम्पलेट्स",
         empty: "अभी कोई टेम्पलेट नहीं है।",
-        typeCash: "कैश",
-        typeTournament: "टूर्नामेंट",
         playersCount: { one: "{n} खिलाड़ी", other: "{n} खिलाड़ी" },
         deleteAriaLabel: "टेम्पलेट {name} मिटाएं",
         deleteConfirm: "टेम्पलेट “{name}” मिटाएं? इससे बने गेम्स बने रहेंगे।",
@@ -1356,6 +1351,7 @@ export const settings: Record<Lang, SettingsDict> = {
         games: { one: "{n} गेम", other: "{n} गेम्स" },
         chipSets: { one: "{n} चिप सेट", other: "{n} चिप सेट्स" },
         templates: { one: "{n} टेम्पलेट", other: "{n} टेम्पलेट्स" },
+        leagues: { one: "{n} लीग", other: "{n} लीग" },
         newGames: { one: "{n} नया गेम", other: "{n} नए गेम्स" },
         payLinksFor: { one: "{n} व्यक्ति के लिए पे लिंक्स", other: "{n} लोगों के लिए पे लिंक्स" },
         inProgress: "({n} चल रहे हैं)",
@@ -1613,8 +1609,6 @@ export const settings: Record<Lang, SettingsDict> = {
       templates: {
         heading: "Plantillas",
         empty: "Aún no hay plantillas.",
-        typeCash: "Cash",
-        typeTournament: "Torneo",
         playersCount: { one: "{n} jugador", other: "{n} jugadores" },
         deleteAriaLabel: "Eliminar plantilla {name}",
         deleteConfirm: "¿Eliminar la plantilla “{name}”? Las partidas hechas con ella se conservan.",
@@ -1731,6 +1725,7 @@ export const settings: Record<Lang, SettingsDict> = {
         games: { one: "{n} partida", other: "{n} partidas" },
         chipSets: { one: "{n} set de fichas", other: "{n} sets de fichas" },
         templates: { one: "{n} plantilla", other: "{n} plantillas" },
+        leagues: { one: "{n} liga", other: "{n} ligas" },
         newGames: { one: "{n} partida nueva", other: "{n} partidas nuevas" },
         payLinksFor: { one: "enlaces de pago para {n} persona", other: "enlaces de pago para {n} personas" },
         inProgress: "({n} en curso)",
@@ -1988,8 +1983,6 @@ export const settings: Record<Lang, SettingsDict> = {
       templates: {
         heading: "Modèles",
         empty: "Pas encore de modèle.",
-        typeCash: "Cash",
-        typeTournament: "Tournoi",
         playersCount: { one: "{n} joueur", other: "{n} joueurs" },
         deleteAriaLabel: "Supprimer le modèle {name}",
         deleteConfirm: "Supprimer le modèle « {name} » ? Les parties créées à partir de lui restent.",
@@ -2106,6 +2099,7 @@ export const settings: Record<Lang, SettingsDict> = {
         games: { one: "{n} partie", other: "{n} parties" },
         chipSets: { one: "{n} set de jetons", other: "{n} sets de jetons" },
         templates: { one: "{n} modèle", other: "{n} modèles" },
+        leagues: { one: "{n} ligue", other: "{n} ligues" },
         newGames: { one: "{n} nouvelle partie", other: "{n} nouvelles parties" },
         payLinksFor: { one: "liens de paiement pour {n} personne", other: "liens de paiement pour {n} personnes" },
         inProgress: "({n} en cours)",
@@ -2363,8 +2357,6 @@ export const settings: Record<Lang, SettingsDict> = {
       templates: {
         heading: "القوالب",
         empty: "لا توجد قوالب بعد.",
-        typeCash: "نقدية",
-        typeTournament: "بطولة",
         playersCount: { zero: "بلا لاعبين", one: "لاعب واحد", two: "لاعبان", few: "{n} لاعبين", many: "{n} لاعبًا", other: "{n} لاعب" },
         deleteAriaLabel: "حذف القالب {name}",
         deleteConfirm: "حذف القالب “{name}”؟ الألعاب المُنشأة منه تبقى كما هي.",
@@ -2481,6 +2473,7 @@ export const settings: Record<Lang, SettingsDict> = {
         games: { zero: "بلا ألعاب", one: "لعبة واحدة", two: "لعبتان", few: "{n} ألعاب", many: "{n} لعبة", other: "{n} لعبة" },
         chipSets: { zero: "بلا أطقم رقائق", one: "طقم رقائق واحد", two: "طقما رقائق", few: "{n} أطقم رقائق", many: "{n} طقم رقائق", other: "{n} طقم رقائق" },
         templates: { zero: "بلا قوالب", one: "قالب واحد", two: "قالبان", few: "{n} قوالب", many: "{n} قالبًا", other: "{n} قالب" },
+        leagues: { zero: "بلا دوريات", one: "دوري واحد", two: "دوريان", few: "{n} دوريات", many: "{n} دوريًا", other: "{n} دوري" },
         newGames: { zero: "بلا ألعاب جديدة", one: "لعبة جديدة واحدة", two: "لعبتان جديدتان", few: "{n} ألعاب جديدة", many: "{n} لعبة جديدة", other: "{n} لعبة جديدة" },
         payLinksFor: { one: "روابط دفع لشخص واحد", two: "روابط دفع لشخصين", few: "روابط دفع لـ {n} أشخاص", many: "روابط دفع لـ {n} شخصًا", other: "روابط دفع لـ {n} شخص" },
         inProgress: "({n} جارية)",
@@ -2745,8 +2738,6 @@ export const settings: Record<Lang, SettingsDict> = {
       templates: {
         heading: "টেমপ্লেট",
         empty: "এখনো কোনো টেমপ্লেট নেই।",
-        typeCash: "ক্যাশ",
-        typeTournament: "টুর্নামেন্ট",
         playersCount: { one: "{n} জন খেলোয়াড়", other: "{n} জন খেলোয়াড়" },
         deleteAriaLabel: "{name} টেমপ্লেট মুছুন",
         deleteConfirm: "“{name}” টেমপ্লেটটি মুছবেন? এটি দিয়ে তৈরি গেমগুলো থেকে যাবে।",
@@ -2863,6 +2854,7 @@ export const settings: Record<Lang, SettingsDict> = {
         games: { one: "{n}টি গেম", other: "{n}টি গেম" },
         chipSets: { one: "{n}টি চিপ সেট", other: "{n}টি চিপ সেট" },
         templates: { one: "{n}টি টেমপ্লেট", other: "{n}টি টেমপ্লেট" },
+        leagues: { one: "{n}টি লিগ", other: "{n}টি লিগ" },
         newGames: { one: "{n}টি নতুন গেম", other: "{n}টি নতুন গেম" },
         payLinksFor: { one: "{n} জনের জন্য পে লিংক", other: "{n} জনের জন্য পে লিংক" },
         inProgress: "({n}টি চলমান)",
@@ -3120,8 +3112,6 @@ export const settings: Record<Lang, SettingsDict> = {
       templates: {
         heading: "Modelos",
         empty: "Ainda não há modelos.",
-        typeCash: "Dinheiro",
-        typeTournament: "Torneio",
         playersCount: { one: "{n} jogador", other: "{n} jogadores" },
         deleteAriaLabel: "Excluir modelo {name}",
         deleteConfirm: "Excluir o modelo “{name}”? As partidas criadas a partir dele continuam existindo.",
@@ -3238,6 +3228,7 @@ export const settings: Record<Lang, SettingsDict> = {
         games: { one: "{n} partida", other: "{n} partidas" },
         chipSets: { one: "{n} conjunto de fichas", other: "{n} conjuntos de fichas" },
         templates: { one: "{n} modelo", other: "{n} modelos" },
+        leagues: { one: "{n} liga", other: "{n} ligas" },
         newGames: { one: "{n} partida nova", other: "{n} partidas novas" },
         payLinksFor: { one: "links de pagamento para {n} pessoa", other: "links de pagamento para {n} pessoas" },
         inProgress: "({n} em andamento)",

@@ -25,6 +25,9 @@
   const pname = (id: string | null | undefined) => game.players.find((p) => p.id === id)?.name ?? "";
   const champ = $derived(game.finished ? game.players.find((p) => st.places[p.id] === 1) : null);
   const byPlace = $derived([...game.players].sort((a, b) => (st.places[a.id] ?? 99) - (st.places[b.id] ?? 99)));
+  // the final standings: ten at most, down two columns past five
+  const finals = $derived(byPlace.slice(0, 10));
+  const rows = $derived(finals.length > 5 ? Math.ceil(finals.length / 2) : finals.length);
   // many players get smaller cups
   const many = $derived(game.players.length > 8);
   const net = (id: string) => round2((st.money.won[id] ?? 0) - (st.money.paid[id] ?? 0));
@@ -38,8 +41,10 @@
   const cups = $derived(game.cups?.on ? game.cups : null);
   const waiting = $derived(cups ? waitingOn(game, st.alive) : []);
   const shown = $derived(moment?.reveal ?? null);
-  // a die that counts toward the bid: its face, or a wild one
-  const counts = (v: number) => !!moment?.bid && (v === moment.bid.face || (st.wild && moment.bid.face !== 1 && v === 1));
+  // a die that counts toward the bid: its face, or a wild one (as the called
+  // round had it: the call can start a palifico, where ones aren't)
+  const calledWild = $derived(!!moment && diceState({ ...game, rounds: game.rounds!.slice(0, -1) }).wild);
+  const counts = (v: number) => !!moment?.bid && (v === moment.bid.face || (calledWild && moment.bid.face !== 1 && v === 1));
 </script>
 
 <div class="dice-board" class:narrow>
@@ -52,9 +57,9 @@
       <div class="trophy"><Icon icon={Trophy} size="10vh" /></div>
       <div class="k">{t("tv.winner.champion")}</div>
       <div class="big">{champ.name}</div>
-      <ol class="final">
-        {#each byPlace.slice(0, 10) as p (p.id)}
-          <li>
+      <ol class="final" class:split={finals.length > 5} style:--rows={rows}>
+        {#each finals as p, i (p.id)}
+          <li class:top={i % rows === 0}>
             <span class="place">{ordinal(st.places[p.id] ?? 0)}</span>
             <b>{p.name}</b>
             {#if showMoney}<span class="fig">{d.stakes.mode === "pot" ? money(st.money.won[p.id] ?? 0) : signed(net(p.id))}</span>{/if}
@@ -328,8 +333,16 @@
     padding: calc(var(--u) * 0.4) 0;
     border-top: var(--hair) solid var(--tv-line);
   }
-  .final li:first-child {
+  .final li.top {
     border-top: 0;
+  }
+  /* a big table's standings run down two columns instead of off the screen */
+  .final.split {
+    display: grid;
+    grid-auto-flow: column;
+    grid-template-rows: repeat(var(--rows), auto);
+    column-gap: calc(var(--u) * 4);
+    min-width: min(calc(var(--u) * 76), 96vw);
   }
   .place {
     color: var(--tv-muted);

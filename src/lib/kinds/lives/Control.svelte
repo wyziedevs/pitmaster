@@ -19,7 +19,7 @@
   import RemoveButton from "$lib/components/RemoveButton.svelte";
   import Life from "./Life.svelte";
   import { livesState } from "./engine";
-  import { addLifeRound, roundText, undoLifeRound } from "./actions";
+  import { addLifeRound, roundText, undoLifeRound, wipesOut } from "./actions";
   import { livesPreset } from "./presets";
   import { presetName, stakesLine } from "./index";
   import { t, tp } from "$lib/i18n";
@@ -62,9 +62,13 @@
   let lost = $state<Record<string, number>>({});
   let winner = $state("");
   const any = $derived(Object.values(lost).some((n) => n > 0));
+  // the round's winner loses nothing in it, and someone has to be left
+  const winners = $derived(alivePlayers.filter((p) => !lost[p.id]));
+  const needsWinner = $derived(perWinner && !winners.some((p) => p.id === winner));
+  const wipe = $derived(any && wipesOut(game, lost));
   const bump1 = (id: string, d: number) => (lost[id] = Math.max(0, Math.min(st.lives[id], (lost[id] ?? 0) + d)));
   function endRound() {
-    if (!any || (perWinner && !winner)) return;
+    if (!any || needsWinner || wipe) return;
     play("bust");
     act(() => addLifeRound(game, { lost: $state.snapshot(lost), winner: winner || undefined, at: Date.now() }));
     lost = {};
@@ -87,6 +91,8 @@
   const net = (id: string) => round2((st.money.won[id] ?? 0) - (st.money.paid[id] ?? 0));
   const cls = (n: number) => (n > 0.001 ? "good" : n < -0.001 ? "bad" : "");
   const showNet = $derived(game.finished || l.stakes.mode === "perDie");
+  // what's riding on it: the buy-in pot, or the pot lives lost have made
+  const pool = $derived(l.stakes.mode === "pot" || l.stakes.perDieTo === "pot" ? st.money.pool : null);
 
   $effect(() =>
     provide("lives", () => [
@@ -103,11 +109,11 @@
     <div>
       <div class="lvl">{game.finished ? t("gamePlay.dice.over") : t("gamePlay.dice.roundN", { n: String((game.lifeRounds?.length ?? 0) + 1) })}</div>
       <div class="clockface num" use:bump={st.alive.length}>{st.alive.length}</div>
-      <div class="small muted">{tp("gamePlay.lives.stillIn", st.alive.length)}</div>
+      <div class="small muted">{tp("gamePlay.lives.stillIn", st.alive.length)} · {presetName(game)} · {tp("gamePlay.lives.livesEach", l.lives)}</div>
     </div>
     <div class="blinds text-right max-[600px]:text-left">
-      <div class="num bb">{presetName(game)}</div>
-      <div class="small muted">{tp("gamePlay.lives.livesEach", l.lives)} · {stakesLine(game)}</div>
+      {#if pool !== null}<div class="small muted">{t("gamePlay.pot.potLabel")}</div><div class="bb" use:bump={pool}>{money(pool)}</div>{/if}
+      <div class="small muted">{stakesLine(game)}</div>
     </div>
   </div>
   <p class="small muted mt-2 mb-0">{t(`gameSetup.lives.rules.${l.preset}`)}</p>
@@ -139,9 +145,9 @@
                 {#if st.places[p.id]}<span class="num place inline-block min-w-[2.2em] text-muted">{ordinal(st.places[p.id]!)}</span>{/if}
                 <input type="text" bind:value={p.name} onchange={persist} class="edit-name" aria-label={t("gamePlay.shared.nameHeader")} />
               </td>
-              <td><span class="inline-flex gap-[3px] flex-wrap items-center" title={tp("gamePlay.lives.livesLeft", left)}>{#each Array.from({ length: Math.min(l.lives, 12) }) as _, i (i)}<Life token={preset.token} size="16px" dim={i >= left} />{/each}{#if l.lives > 12}<span class="num small ml-1">{left}</span>{/if}</span></td>
+              <td data-l={t("gamePlay.lives.livesHeader")}><span class="inline-flex gap-[3px] flex-wrap items-center" title={tp("gamePlay.lives.livesLeft", left)}>{#each Array.from({ length: Math.min(l.lives, 12) }) as _, i (i)}<Life token={preset.token} size="16px" dim={i >= left} />{/each}{#if l.lives > 12}<span class="num small ml-1">{left}</span>{/if}</span></td>
               {#if !game.finished}
-                <td class="num nowrap">
+                <td class="num nowrap" class:blank={left === 0} data-l={t("gamePlay.lives.thisRound")}>
                   {#if left > 0}
                     <button class="link" data-sound="rewind" onclick={() => bump1(p.id, -1)} disabled={!lost[p.id]} aria-label={t("gamePlay.lives.lessAria", { name: p.name })}><Icon icon={Minus} size="1em" /></button>
                     <b class:bad={!!lost[p.id]}>{lost[p.id] ? `−${lost[p.id]}` : "0"}</b>
@@ -149,7 +155,7 @@
                   {/if}
                 </td>
               {/if}
-              {#if showNet}<td class="num {cls(net(p.id))}">{signed(net(p.id))}</td>{/if}
+              {#if showNet}<td class="num {cls(net(p.id))}" data-l={t("players.page.table.net")}>{signed(net(p.id))}</td>{/if}
               <td class="acts">{#if !started}<RemoveButton label={t("gamePlay.shared.removePlayer", { name: p.name })} onclick={() => removePlayer(p.id)} />{/if}</td>
             </tr>
           {:else}
@@ -174,12 +180,13 @@
             <label class="across m-0"><span>{t("gamePlay.dice.wonBy")}</span>
               <select bind:value={winner}>
                 <option value="">…</option>
-                {#each alivePlayers as p (p.id)}<option value={p.id}>{p.name}</option>{/each}
+                {#each winners as p (p.id)}<option value={p.id}>{p.name}</option>{/each}
               </select>
             </label>
           {/if}
-          <button data-sound="none" disabled={!any || (perWinner && !winner)} onclick={endRound}>{t("gamePlay.lives.endRound")}</button>
+          <button data-sound="none" disabled={!any || needsWinner || wipe} onclick={endRound}>{t("gamePlay.lives.endRound")}</button>
         </div>
+        {#if wipe}<p class="warn small">{t("gamePlay.lives.everyoneOut")}</p>{/if}
         {#if preset.knock}
           <div class="row small mt-2">
             <span class="muted">{t("gamePlay.lives.thirtyOneBy")}</span>
