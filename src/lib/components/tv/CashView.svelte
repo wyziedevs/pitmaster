@@ -11,7 +11,7 @@
   import type { TvState } from "./state.svelte";
   import { cashStats, cashRake, sideStats } from "$lib/game";
   import { tableCounts } from "$lib/seats";
-  import { cashStakes, isLimit, isStud, stakesText, variant, variantName } from "$lib/variants";
+  import { cashStakes, isLimit, isStud, stakePair, stakesText, studLine, variant, variantName } from "$lib/variants";
   import { clock, duration, money, timeOfDay } from "$lib/util";
   import { time } from "$lib/now.svelte";
   import { fade } from "svelte/transition";
@@ -32,7 +32,7 @@
   const now = $derived(tv.cashNow);
   const stud = $derived(!!now && isStud(now.id));
   // a limit game's big number is its bets, not its blinds
-  const pair = $derived(now && isLimit(now.id) ? [c.bb, c.bb * 2] : [c.sb, c.bb]);
+  const pair = $derived(stakePair(cashStakes(c, now?.id ?? "nlhe")));
   const stakes = $derived(`${money(pair[0])}/${money(pair[1])}`);
   const highHolder = $derived(side.current ? game.players.find((p) => p.id === side.current!.playerId) : null);
 
@@ -95,7 +95,7 @@
       {/if}
     {/if}
   </div>
-  {#if stud}<div class="callout plain"><span class="fig">{t("common.stakes.studLine", { ante: money(c.ante ?? 0), bringIn: money(c.bringIn ?? 0) })}</span></div>{/if}
+  {#if stud}<div class="callout plain"><span class="fig">{studLine(c, true)}</span></div>{/if}
   {#if now && (c.games?.length ?? 0) > 1}
     <div class="callout plain">
       <span class="k">{t("tv.cash.dealersChoice")}</span>
