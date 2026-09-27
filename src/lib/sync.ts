@@ -10,17 +10,15 @@ import { API } from "./api";
 import { myPrefs } from "./settings.svelte";
 import { canEncrypt, codeKeys, newCode, seal, token, unseal } from "./crypto";
 import { isGame } from "./check";
+import { leagueBoardFor } from "./boards";
 
 const bc = typeof BroadcastChannel !== "undefined" ? new BroadcastChannel("pitmaster") : null;
 
 type Live = NonNullable<Game["live"]>;
 
-// a league game's standings, worked out from what's saved (store.ts hands this over)
-let boardFor: (g: Game) => Game["league"] = () => undefined;
-export const leagueBoards = (fn: typeof boardFor) => void (boardFor = fn);
 
 /** what a tv on this computer gets: the game minus its write key, plus the host's display prefs and its league's standings */
-export const publicSnapshot = (g: Game): Game => ({ ...g, live: g.live ? { code: g.live.code, key: "" } : null, prefs: myPrefs(), league: boardFor(g) });
+export const publicSnapshot = (g: Game): Game => ({ ...g, live: g.live ? { code: g.live.code, key: "" } : null, prefs: myPrefs(), league: leagueBoardFor(g) });
 
 /** what goes to the server: no code, no key and no log (the tv never shows it) */
 const remoteSnapshot = (g: Game): Game => ({ ...publicSnapshot(g), live: null, log: [] });

@@ -3,7 +3,8 @@
 import type { ChipSet, Game, League, PayHandles, Template } from "./types";
 import { nameKey } from "./util";
 import { PRESET_CHIP_SETS, presetCopy } from "./chips";
-import { endLive, leagueBoards, publish } from "./sync";
+import { endLive, publish } from "./sync";
+import { setLeagueBoards } from "./boards";
 import { leagueBoard } from "./stats";
 import { lockText, unlockText, type Locked } from "./crypto";
 import { onSaved, readSlot, save as saveSlot } from "./vault";
@@ -200,7 +201,7 @@ export function deleteLeague(id: string) {
 
 // a tv of a league game gets the standings with every snapshot (the tv only
 // ever holds the one game, so the host works them out)
-leagueBoards((g) => {
+setLeagueBoards((g) => {
   const l = g.leagueId ? data().leagues?.find((x) => x.id === g.leagueId) : undefined;
   return l ? leagueBoard(l, data().games) : undefined;
 });
