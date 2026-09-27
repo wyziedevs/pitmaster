@@ -6,7 +6,7 @@ import type { DiceSettings, Game } from "$lib/types";
 import type { Kind } from "../kind";
 import { isStakes, lastStandingKind } from "../lastStanding";
 import { money } from "$lib/util";
-import { bool, id, list, maybe, num, obj, oneOf } from "$lib/shape";
+import { bool, id, list, maybe, num, obj, oneOf, type Is } from "$lib/shape";
 import { diceState } from "./engine";
 import { t, tp } from "$lib/i18n";
 
@@ -22,9 +22,20 @@ export const DICE_DEFAULTS = (): DiceSettings => ({
 
 const settings = (d: unknown) =>
   obj(d) && num(d.dice) && d.dice >= 1 && d.dice <= 20 && bool(d.onesWild) && oneOf("off", "others", "gain")(d.spotOn) && bool(d.palifico) && isStakes(d.stakes) && oneOf("quick", "full")(d.entry);
+/** a bid: how many of which face */
+const bid = (b: unknown) => obj(b) && num(b.count) && num(b.face) && b.face >= 1 && b.face <= 6;
+/** something by player */
+const byPlayer = (is: Is) => (x: unknown) => obj(x) && Object.entries(x).every(([k, v]) => id(k) && is(v));
+/** numbers from lo to hi */
+const within = (lo: number, hi: number) => list((d) => num(d) && d >= lo && d <= hi);
+/** dice by player: faces 1 to 6 */
+const faces = byPlayer(within(1, 6));
+/** numbers by player, 0 to 5 (the host's half of each die) */
+const halves = byPlayer(within(0, 5));
+const strings = byPlayer((v) => typeof v === "string" && v.length <= 128);
 const round = (r: unknown) =>
   obj(r) &&
-  maybe((b) => obj(b) && num(b.count) && num(b.face) && b.face >= 1 && b.face <= 6)(r.bid) &&
+  maybe(bid)(r.bid) &&
   maybe(id)(r.bidder) &&
   maybe(id)(r.caller) &&
   maybe(oneOf("liar", "spot"))(r.call) &&
@@ -35,11 +46,6 @@ const round = (r: unknown) =>
   num(r.at) &&
   maybe(faces)(r.reveal) &&
   maybe(list(id))(r.cheats);
-/** dice by player: faces 1 to 6 */
-const faces = (x: unknown) => obj(x) && Object.entries(x).every(([k, v]) => id(k) && list((d) => num(d) && d >= 1 && d <= 6)(v));
-/** numbers by player, 0 to 5 (the host's half of each die) */
-const halves = (x: unknown) => obj(x) && Object.entries(x).every(([k, v]) => id(k) && list((d) => num(d) && d >= 0 && d <= 5)(v));
-const strings = (x: unknown) => obj(x) && Object.entries(x).every(([k, v]) => id(k) && typeof v === "string" && v.length <= 128);
 const cups = (c: unknown) =>
   obj(c) &&
   bool(c.on) &&
@@ -51,16 +57,7 @@ const cups = (c: unknown) =>
   maybe(faces)(c.shown) &&
   maybe(list(id))(c.real) &&
   maybe(list(id))(c.cheats) &&
-  maybe(
-    (x) =>
-      obj(x) &&
-      obj(x.bid) &&
-      num(x.bid.count) &&
-      num(x.bid.face) &&
-      id(x.bidder) &&
-      id(x.caller) &&
-      oneOf("liar", "spot")(x.call)
-  )(c.call);
+  maybe((x) => obj(x) && bid(x.bid) && id(x.bidder) && id(x.caller) && oneOf("liar", "spot")(x.call))(c.call);
 
 /** the stakes in words: "$10 buy-in, pool $60" or "$1 a die, to the winner of each call" */
 export function stakesLine(game: Game) {

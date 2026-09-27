@@ -14,20 +14,30 @@ function roundEffect(r: DiceRound): Record<string, number> {
   return out;
 }
 
+/** a called bid, as a round keeps it */
+export type Call = { bid: { count: number; face: number }; bidder: string; caller: string; call: "liar" | "spot" };
+
+/** a round that was a call (not a quick one): its bid, the call and the count are all there */
+export const called = (r: DiceRound): r is DiceRound & Pick<Call, "bid" | "call"> & { actual: number } => !!r.call && !!r.bid && r.actual !== undefined;
+
+/** whether the call was right: a liar with fewer than the bid there, or spot on with exactly that many */
+export const rightCall = (r: { bid: { count: number }; call: "liar" | "spot"; actual: number }) => (r.call === "liar" ? r.actual < r.bid.count : r.actual === r.bid.count);
+
+/** a die that counts toward a bid on `face`: that face, or a one when they're wild (ones themselves only count as ones) */
+export const countsToward = (v: number, face: number, wild: boolean) => v === face || (wild && face !== 1 && v === 1);
+
 /**
  * who loses a die (or gets one back) for a called bid, from how many of that
- * face there really were. liar: the bid stood (the caller loses) or it didn't
- * (the bidder loses). spot on: right on the number and everyone else loses one,
- * or the caller gets one back; wrong, and the caller loses one.
+ * face there really were. a wrong call costs the caller one. a right one:
+ * liar, and the bidder loses one; spot on, and everyone else loses one, or
+ * the caller gets one back.
  */
-export function judge(s: DiceSettings, r: { bid: { count: number; face: number }; bidder: string; caller: string; call: "liar" | "spot"; actual: number }, alive: string[]) {
-  if (r.call === "liar") {
-    const stood = r.actual >= r.bid.count;
-    return { losers: [stood ? r.caller : r.bidder], gains: [] as string[], winner: stood ? r.bidder : r.caller };
-  }
-  if (r.actual !== r.bid.count) return { losers: [r.caller], gains: [] as string[], winner: r.bidder };
-  if (s.spotOn === "gain") return { losers: [] as string[], gains: [r.caller], winner: r.caller };
-  return { losers: alive.filter((id) => id !== r.caller), gains: [] as string[], winner: r.caller };
+export function judge(s: DiceSettings, r: Call & { actual: number }, alive: string[]) {
+  const none: string[] = [];
+  if (!rightCall(r)) return { losers: [r.caller], gains: none, winner: r.bidder };
+  if (r.call === "liar") return { losers: [r.bidder], gains: none, winner: r.caller };
+  if (s.spotOn === "gain") return { losers: none, gains: [r.caller], winner: r.caller };
+  return { losers: alive.filter((id) => id !== r.caller), gains: none, winner: r.caller };
 }
 
 /** how many of `face` a bid can expect among `total` dice: a third of them with ones wild (a sixth for ones themselves), a sixth without */
@@ -46,14 +56,15 @@ export function diceState(game: Game) {
   const byRound = rounds.map((r) => ({ winner: r.winner, lost: Object.fromEntries(r.losers.map((id) => [id, 1])) }));
   const st = lastStanding(ids, s.dice, rounds.map((r) => ({ effect: roundEffect(r), at: r.at })), s.stakes, byRound);
   const total = st.alive.reduce((n, id) => n + st.lives[id], 0);
-  // palifico: someone just went down to their last die (for the first time)
-  // with three or more still in, so the round they start plays it
-  let palifico: string | null = null;
-  if (s.palifico && rounds.length && st.alive.length > 2) {
-    const last = st.history.at(-1)!;
-    const hit = Object.keys(last.effect).find((id) => last.before[id] === 2 && st.lives[id] === 1 && !st.history.slice(0, -1).some((h) => h.after[id] === 1));
-    if (hit) palifico = hit;
-  }
+  // palifico after the first n rounds: someone just went down to their last
+  // die (for the first time) with three or more still in, so the round they
+  // start plays it
+  const palificoAfter = (n: number) => {
+    const last = st.history[n - 1];
+    if (!s.palifico || !last || Object.values(last.after).filter((v) => v > 0).length <= 2) return null;
+    return Object.keys(last.effect).find((id) => last.before[id] === 2 && last.after[id] === 1 && !st.history.slice(0, n - 1).some((h) => h.after[id] === 1)) ?? null;
+  };
+  const palifico = palificoAfter(rounds.length);
   // the round starts with whoever lost the last one (if they're still in), or
   // the next one along. a spot on that cost everyone else a die (or gave one
   // back) was the caller's round, so they start
@@ -63,5 +74,7 @@ export function diceState(game: Game) {
   const from = lastLoser ? ids.indexOf(lastLoser) : 0;
   const starter = palifico ?? [...ids.slice(from), ...ids.slice(0, from)].find((id) => st.lives[id] > 0) ?? null;
   const wild = s.onesWild && !palifico;
-  return { ...st, total, palifico, starter, wild };
+  // (the round just played had its own: it can have been the palifico one)
+  const lastWild = s.onesWild && !palificoAfter(rounds.length - 1);
+  return { ...st, total, palifico, starter, wild, lastWild };
 }

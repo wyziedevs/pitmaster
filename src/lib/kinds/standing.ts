@@ -4,7 +4,7 @@
 // every lives game is worked out from its events with this, so none of it is
 // saved: lives, places, who's still in and the money come from the events
 // every time.
-import type { DiceStakes } from "$lib/types";
+import type { DiceStakes, Game } from "$lib/types";
 import { defaultPayouts, payoutAmounts } from "$lib/blinds";
 import { round2, splitCents } from "$lib/util";
 
@@ -64,6 +64,12 @@ export type Standing = ReturnType<typeof lastStanding>;
 
 /** what a player is up (or down) so far */
 export const netOf = (st: Standing, id: string) => round2((st.money.won[id] ?? 0) - (st.money.paid[id] ?? 0));
+
+/** the winner, once there is one */
+export const champOf = (game: Game, st: Standing) => game.players.find((p) => st.places[p.id] === 1);
+
+/** the players in order: everyone still in (most lives first), then who went out, best place first */
+export const ranked = (game: Game, st: Standing) => [...game.players].sort((a, b) => (st.places[a.id] ?? 0) - (st.places[b.id] ?? 0) || st.lives[b.id] - st.lives[a.id]);
 
 /**
  * what each player paid in and took home in a lives game.

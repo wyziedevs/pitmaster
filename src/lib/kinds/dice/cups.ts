@@ -43,7 +43,7 @@ export const combine = (phone: number[], host: number[]) => phone.map((n, i) => 
  * what a phone sends to its mailbox: its hash for the round, then (on a call)
  * its numbers and salt with it. nothing in the hash gives the numbers away.
  */
-export interface CupMail {
+interface CupMail {
   r: number;
   c: string;
   n?: number[];
@@ -65,11 +65,24 @@ export function readMail(text: string): CupMail | null {
 /** the player a seat belongs to */
 export const seatOwner = (cups: CupState, seat: string) => Object.entries(cups.seats).find(([, s]) => s === seat)?.[0] ?? null;
 
+/** the phones, while the table plays with them */
+export const activeCups = (game: Game) => (game.cups?.on ? game.cups : null);
+
 /** who still has to lock in (or reveal) this round: everyone still in who isn't on real dice */
-export function waitingOn(game: Game, alive: string[]) {
-  const c = game.cups!;
+export function waitingOn(c: CupState, alive: string[]) {
   const phones = alive.filter((id) => !c.real?.includes(id) && c.seats[id]);
   if (c.phase === "commit") return phones.filter((id) => !c.commits?.[id]);
   if (c.phase === "reveal") return phones.filter((id) => !c.shown?.[id]);
   return [];
+}
+
+// a cup round's number only ever goes up (a take back deals again under a new
+// one), so a phone's hash, and the numbers it showed, are never good twice
+export const nextNumber = (game: Game) => Math.max((game.cups?.round ?? 0) + 1, (game.rounds?.length ?? 0) + 1);
+
+/** a new round's cups: everyone rolls again (after a call, or a round taken back) */
+export function nextRound(game: Game) {
+  const c = activeCups(game);
+  if (!c || game.finished) return;
+  game.cups = { ...c, round: nextNumber(game), phase: "commit", commits: {}, shown: {}, host: undefined, call: undefined, cheats: undefined, real: [] };
 }

@@ -2,7 +2,7 @@
 // name, a usual ante and limit, the buttons its table needs most, and (in
 // the i18n files) its rules.
 
-export interface PotPreset {
+interface PotPreset {
   id: "inbetween" | "guts" | "bourre" | "pigs" | "custom";
   /** in-between's bet against the pot: win, lose or hit the post */
   bets?: boolean;

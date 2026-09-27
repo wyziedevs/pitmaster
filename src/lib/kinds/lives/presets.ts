@@ -3,7 +3,7 @@
 // as liar's dice (kinds/standing.ts). a preset is a name, how many lives, what
 // a life looks like on the tv, and (in the i18n files) its rules.
 
-export interface LivesPreset {
+interface LivesPreset {
   id: "scat" | "screw" | "whist" | "ship" | "custom";
   lives: number;
   /** what a life is at the table */

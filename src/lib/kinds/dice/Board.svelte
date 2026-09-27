@@ -2,19 +2,19 @@
   // liar's dice on the tv: every player's dice (the ones they've lost greyed,
   // and whoever's out greyed whole), the dice on the table and what a bid can
   // expect, a palifico banner, and the big moment when a bid is called.
-  import Icon from "$lib/components/Icon.svelte";
-  import Trophy from "@lucide/svelte/icons/trophy";
   import type { Game } from "$lib/types";
   import Die from "$lib/components/Die.svelte";
-  import { money, ordinal, round2, signed } from "$lib/util";
+  import { money, ordinal } from "$lib/util";
   import { prefs } from "$lib/settings.svelte";
   import { time } from "$lib/now.svelte";
   import { fade } from "svelte/transition";
   import { reveal } from "$lib/motion";
-  import { diceState, expected } from "./engine";
+  import FinalStandings from "../FinalStandings.svelte";
+  import { champOf } from "../standing";
+  import { called, countsToward, diceState, expected, rightCall } from "./engine";
   import { faceCount, roundText } from "./actions";
   import { stakesLine } from "./index";
-  import { waitingOn } from "./cups";
+  import { activeCups, waitingOn } from "./cups";
   import { t, tp } from "$lib/i18n";
   import { playerName } from "$lib/events";
 
@@ -23,28 +23,18 @@
   const d = $derived(game.dice!);
   const st = $derived(diceState(game));
   const showMoney = $derived(prefs().tvMoney !== false);
-  const champ = $derived(game.finished ? game.players.find((p) => st.places[p.id] === 1) : null);
-  const byPlace = $derived([...game.players].sort((a, b) => (st.places[a.id] ?? 99) - (st.places[b.id] ?? 99)));
-  // the final standings: ten at most, down two columns past five
-  const finals = $derived(byPlace.slice(0, 10));
-  const rows = $derived(finals.length > 5 ? Math.ceil(finals.length / 2) : finals.length);
+  const champ = $derived(game.finished ? champOf(game, st) : null);
   // many players get smaller cups
   const many = $derived(game.players.length > 8);
-  const net = (id: string) => round2((st.money.won[id] ?? 0) - (st.money.paid[id] ?? 0));
 
   // the call just made: it takes over the board for a few seconds
   const last = $derived(game.rounds?.at(-1));
-  const moment = $derived(last?.call && last.bid && last.actual !== undefined && time.now - last.at < 9000 ? last : null);
-  const right = $derived(!!moment && (moment.call === "liar" ? moment.actual! < moment.bid!.count : moment.actual === moment.bid!.count));
+  const moment = $derived(last && called(last) && time.now - last.at < 9000 ? last : null);
 
   // phones as cups: where the round's at, and (after a call) every cup face up
-  const cups = $derived(game.cups?.on ? game.cups : null);
-  const waiting = $derived(cups ? waitingOn(game, st.alive) : []);
+  const cups = $derived(activeCups(game));
+  const waiting = $derived(cups ? waitingOn(cups, st.alive) : []);
   const shown = $derived(moment?.reveal ?? null);
-  // a die that counts toward the bid: its face, or a wild one (as the called
-  // round had it: the call can start a palifico, where ones aren't)
-  const calledWild = $derived(!!moment && diceState({ ...game, rounds: game.rounds!.slice(0, -1) }).wild);
-  const counts = (v: number) => !!moment?.bid && (v === moment.bid.face || (calledWild && moment.bid.face !== 1 && v === 1));
 </script>
 
 <div class="dice-board" class:narrow>
@@ -53,20 +43,7 @@
   {/if}
 
   {#if champ}
-    <section class="winner" in:fade={reveal()}>
-      <div class="trophy"><Icon icon={Trophy} size="10vh" /></div>
-      <div class="k">{t("tv.winner.champion")}</div>
-      <div class="big">{champ.name}</div>
-      <ol class="final" class:split={finals.length > 5} style:--rows={rows}>
-        {#each finals as p, i (p.id)}
-          <li class:top={i % rows === 0}>
-            <span class="place">{ordinal(st.places[p.id] ?? 0)}</span>
-            <b>{p.name}</b>
-            {#if showMoney}<span class="fig">{d.stakes.mode === "pot" ? money(st.money.won[p.id] ?? 0) : signed(net(p.id))}</span>{/if}
-          </li>
-        {/each}
-      </ol>
-    </section>
+    <FinalStandings {game} {st} stakes={d.stakes} />
   {:else}
     <div class="table">
       <section class="cups" class:many>
@@ -75,7 +52,7 @@
           <div class="cup" class:out={lives === 0} class:starts={st.starter === p.id}>
             <span class="pname">{p.name}{#if st.starter === p.id}<span class="tag">{t("tv.dice.starts")}</span>{/if}</span>
             {#if shown?.[p.id]}
-              <span class="dice shown">{#each shown[p.id] as v, i (i)}<span class:hit={counts(v)}><Die value={v} size="var(--die)" /></span>{/each}</span>
+              <span class="dice shown">{#each shown[p.id] as v, i (i)}<span class:hit={!!moment && countsToward(v, moment.bid.face, st.lastWild)}><Die value={v} size="var(--die)" /></span>{/each}</span>
             {:else}
               <span class="dice">{#each Array.from({ length: d.dice }) as _, i (i)}<Die size="var(--die)" dim={i >= lives} />{/each}</span>
             {/if}
@@ -112,10 +89,10 @@
 
   {#if moment}
     {#key moment.at}
-      <div class="moment" class:good={right} in:fade={reveal()}>
+      <div class="moment" class:good={rightCall(moment)} in:fade={reveal()}>
         <span class="shout">{moment.call === "liar" ? t("tv.dice.liar") : t("tv.dice.spotOn")}</span>
-        <span class="bid">{t("tv.dice.bidWas", { bid: faceCount(moment.bid!.count, moment.bid!.face) })}</span>
-        <span class="there">{tp("tv.dice.thereWere", moment.actual!)}</span>
+        <span class="bid">{t("tv.dice.bidWas", { bid: faceCount(moment.bid.count, moment.bid.face) })}</span>
+        <span class="there">{tp("tv.dice.thereWere", moment.actual)}</span>
         <span class="res">{roundText(game, { ...moment, call: undefined })}</span>
       </div>
     {/key}
@@ -300,52 +277,6 @@
       transform: scale(1.25);
       opacity: 0;
     }
-  }
-
-  .winner {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: calc(var(--u) * 1);
-    text-align: center;
-  }
-  .trophy {
-    color: var(--tv-banner);
-    line-height: 0;
-  }
-  .big {
-    font: min(calc(var(--u) * 9.9), 16.5vh) / 1 var(--font-serif);
-  }
-  .final {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    font-size: max(19px, calc(var(--u) * 2.2));
-    min-width: min(calc(var(--u) * 40), 92vw);
-  }
-  .final li {
-    display: grid;
-    grid-template-columns: 3.2em 1fr auto;
-    gap: 1em;
-    text-align: left;
-    padding: calc(var(--u) * 0.4) 0;
-    border-top: var(--hair) solid var(--tv-line);
-  }
-  .final li.top {
-    border-top: 0;
-  }
-  /* a big table's standings run down two columns instead of off the screen */
-  .final.split {
-    display: grid;
-    grid-auto-flow: column;
-    grid-template-rows: repeat(var(--rows), auto);
-    column-gap: calc(var(--u) * 4);
-    min-width: min(calc(var(--u) * 76), 96vw);
-  }
-  .place {
-    color: var(--tv-muted);
   }
 
   /* a phone: the cups, then the counts under them */

@@ -4,22 +4,19 @@
   // bets against the pot (win, lose, or hit the post and pay double); guts and
   // bourre have the losers match it. the end sends what's left back out.
   import Icon from "$lib/components/Icon.svelte";
-  import Plus from "@lucide/svelte/icons/plus";
   import Undo2 from "@lucide/svelte/icons/undo-2";
   import Coins from "@lucide/svelte/icons/coins";
   import type { Game } from "$lib/types";
-  import { addPlayer, reopen } from "$lib/game";
-  import { logEvent, playerName } from "$lib/events";
-  import { settleUp } from "$lib/settle";
+  import { reopen } from "$lib/game";
+  import { playerName } from "$lib/events";
   import { money, signed } from "$lib/util";
   import { provide } from "$lib/commands.svelte";
-  import { settings } from "$lib/settings.svelte";
   import { play } from "$lib/sound";
   import { bump } from "$lib/motion";
   import Count from "$lib/components/Count.svelte";
-  import SettleMoves from "$lib/components/SettleMoves.svelte";
-  import Costs from "$lib/components/Costs.svelte";
-  import RemoveButton from "$lib/components/RemoveButton.svelte";
+  import Roster, { tone } from "../Roster.svelte";
+  import Settle from "../Settle.svelte";
+  import PlayerSelect from "../PlayerSelect.svelte";
   import { potCap, potState } from "./engine";
   import { anteUp, bet, endPot, matchPot, pay, take, takePot, undoPot } from "./actions";
   import { potPreset } from "./presets";
@@ -32,44 +29,25 @@
   const preset = $derived(potPreset(s.preset));
   const st = $derived(potState(game));
   const started = $derived(!!game.potEvents?.length);
-  const costsOn = $derived(settings.useCosts || !!game.costs?.length);
-  const moves = $derived(settleUp(game));
-  const cls = (n: number) => (n > 0.001 ? "good" : n < -0.001 ? "bad" : "");
 
   function act(fn: () => void) {
     fn();
     persist();
   }
 
-  let newName = $state("");
-  function add(e: SubmitEvent) {
-    e.preventDefault();
-    if (!newName.trim()) return;
-    act(() => addPlayer(game, newName));
-    newName = "";
-  }
-  function removePlayer(id: string) {
-    const p = game.players.find((x) => x.id === id)!;
-    if (!confirm(t("gamePlay.cash.removeConfirm", { name: p.name }))) return;
-    act(() => {
-      game.players = game.players.filter((x) => x.id !== id);
-      logEvent(game, t("gamePlay.shared.removedLog", { name: p.name }));
-    });
-  }
-
-  // ---- in-between: whoever's turn it is bets against the pot ----
-  let bettor = $state("");
+  // ---- in-between: whoever's turn it is bets against the pot (unless the dealer picks someone else) ----
+  let pick = $state("");
+  const bettor = $derived(game.players.some((p) => p.id === pick) ? pick : (st.turn ?? ""));
   let amount = $state<number | null>(null);
-  $effect(() => {
-    if (!bettor || !game.players.some((p) => p.id === bettor)) bettor = st.turn ?? "";
-  });
   const cap = $derived(potCap(s, st.pot));
   function settleBet(result: "win" | "lose" | "post") {
-    if (!bettor || !amount) return;
+    const who = bettor;
+    const a = amount;
+    if (!who || !a) return;
     play(result === "win" ? "chips" : "bust");
-    act(() => bet(game, bettor, amount!, result));
+    act(() => bet(game, who, a, result));
     amount = null;
-    bettor = "";
+    pick = "";
   }
 
   // ---- anything else: someone pays in, or takes out ----
@@ -77,16 +55,11 @@
   let other = $state<number | null>(null);
   let matchers = $state<string[]>([]);
   let handWinner = $state("");
-  function payIn() {
-    if (!who || !other) return;
+  function move(fn: typeof pay) {
+    const a = other;
+    if (!who || !a) return;
     play("chips");
-    act(() => pay(game, who, other!));
-    other = null;
-  }
-  function takeOut() {
-    if (!who || !other) return;
-    play("chips");
-    act(() => take(game, who, other!));
+    act(() => fn(game, who, a));
     other = null;
   }
   function wholePot() {
@@ -157,7 +130,7 @@
           <h2>{t("gamePlay.pot.betHeading")}</h2>
           <div class="row">
             <label><span>{t("gamePlay.pot.bettor")}</span>
-              <select bind:value={bettor}>{#each game.players as p (p.id)}<option value={p.id}>{p.name}</option>{/each}</select>
+              <PlayerSelect bind:value={() => bettor, (v) => (pick = v)} players={game.players} blank={false} />
             </label>
             <label><span>{t("gamePlay.pot.betAmount")}</span><input type="number" min="0" step="any" max={cap} class="w-[90px]" bind:value={amount} /></label>
             <button class="link small self-end mb-2" data-sound="chips" onclick={() => (amount = cap)} disabled={!(cap > 0)}>{t("gamePlay.pot.betThePot", { amount: money(cap) })}</button>
@@ -174,9 +147,9 @@
 
       {#if preset.match}
         <div class="part mt-[22px]">
-          <h2>{t("gamePlay.pot.matchHeading", { amount: money(potCap(s, st.pot)) })}</h2>
+          <h2>{t("gamePlay.pot.matchHeading", { amount: money(cap) })}</h2>
           <label><span>{t("gamePlay.pot.handWonBy")}</span>
-            <select bind:value={handWinner}><option value="">…</option>{#each game.players as p (p.id)}<option value={p.id}>{p.name}</option>{/each}</select>
+            <PlayerSelect bind:value={handWinner} players={game.players} />
           </label>
           <div class="row">
             {#each game.players as p (p.id)}<label class="across m-0"><input type="checkbox" bind:group={matchers} value={p.id} disabled={p.id === handWinner} /><span>{p.name}</span></label>{/each}
@@ -190,13 +163,13 @@
         <h2>{t("gamePlay.pot.moneyHeading")}</h2>
         <div class="row">
           <label><span>{t("gamePlay.shared.nameHeader")}</span>
-            <select bind:value={who}><option value="">…</option>{#each game.players as p (p.id)}<option value={p.id}>{p.name}</option>{/each}</select>
+            <PlayerSelect bind:value={who} players={game.players} />
           </label>
           <label><span>{t("gamePlay.pot.amount")}</span><input type="number" min="0" step="any" class="w-[90px]" bind:value={other} /></label>
         </div>
         <div class="row">
-          <button data-sound="none" disabled={!who || !other} onclick={payIn}>{t("gamePlay.pot.payIn")}</button>
-          <button data-sound="none" disabled={!who || !other} onclick={takeOut}>{t("gamePlay.pot.takeOut")}</button>
+          <button data-sound="none" disabled={!who || !other} onclick={() => move(pay)}>{t("gamePlay.pot.payIn")}</button>
+          <button data-sound="none" disabled={!who || !other} onclick={() => move(take)}>{t("gamePlay.pot.takeOut")}</button>
           <button data-sound="none" disabled={!who || !(st.pot > 0)} onclick={wholePot}>{t("gamePlay.pot.takePot")}</button>
         </div>
       </div>
@@ -214,40 +187,16 @@
   </section>
 
   <section>
-    <h2>{t("gamePlay.shared.groupPlayers")}</h2>
-    <div class="scroll-x">
-      <table class="roster">
-        <thead><tr><th>{t("gamePlay.shared.nameHeader")}</th><th class="num">{t("gamePlay.pot.paidHeader")}</th><th class="num">{t("gamePlay.pot.takenHeader")}</th><th class="num">{t("players.page.table.net")}</th><th></th></tr></thead>
-        <tbody>
-          {#each game.players as p (p.id)}
-            <tr class:turn={!game.finished && st.turn === p.id}>
-              <td class="nowrap who"><input type="text" bind:value={p.name} onchange={persist} class="edit-name" aria-label={t("gamePlay.shared.nameHeader")} /></td>
-              <td class="num" data-l={t("gamePlay.pot.paidHeader")}>{money(st.paid[p.id])}</td>
-              <td class="num" data-l={t("gamePlay.pot.takenHeader")}>{money(st.taken[p.id])}</td>
-              <td class="num {cls(st.net[p.id])}" data-l={t("players.page.table.net")}><b>{signed(st.net[p.id])}</b></td>
-              <td class="acts">{#if !started}<RemoveButton label={t("gamePlay.shared.removePlayer", { name: p.name })} onclick={() => removePlayer(p.id)} />{/if}</td>
-            </tr>
-          {:else}
-            <tr><td class="empty" colspan="5">{t("gamePlay.tournament.noPlayersYet")}</td></tr>
-          {/each}
-        </tbody>
-      </table>
-    </div>
-    {#if !game.finished}
-      <form autocomplete="off" class="row add mt-2" onsubmit={add}>
-        <input type="text" bind:value={newName} placeholder={t("gamePlay.shared.playerNamePlaceholder")} list="regulars" autocomplete="off" aria-label={t("gamePlay.shared.playerNamePlaceholder")} />
-        <button data-sound="chips"><Icon icon={Plus} />{t("gamePlay.dice.addPlayer")}</button>
-      </form>
-    {/if}
+    <Roster bind:game {persist} players={game.players} adding={!game.finished} removing={!started} turn={game.finished ? null : st.turn}>
+      {#snippet head()}<th class="num">{t("gamePlay.pot.paidHeader")}</th><th class="num">{t("gamePlay.pot.takenHeader")}</th><th class="num">{t("players.page.table.net")}</th>{/snippet}
+      {#snippet row(p)}
+        <td class="num" data-l={t("gamePlay.pot.paidHeader")}>{money(st.paid[p.id])}</td>
+        <td class="num" data-l={t("gamePlay.pot.takenHeader")}>{money(st.taken[p.id])}</td>
+        <td class="num {tone(st.net[p.id])}" data-l={t("players.page.table.net")}><b>{signed(st.net[p.id])}</b></td>
+      {/snippet}
+    </Roster>
     <p class="small muted mt-2">{t(`gameSetup.pot.rules.${s.preset}`)}</p>
-
-    {#if game.finished}
-      <div class="part mt-[22px]">
-        <h2>{t("gamePlay.shared.settleUp")}</h2>
-        {#if moves.length}<SettleMoves bind:game {persist} />{:else}<p class="small muted">{t("gamePlay.shared.square")}</p>{/if}
-      </div>
-    {/if}
-    {#if costsOn}<div class="part mt-[22px]"><Costs bind:game {persist} /></div>{/if}
+    <Settle bind:game {persist} />
   </section>
 </div>
 
@@ -258,8 +207,5 @@
   }
   .events li {
     padding: 2px 0;
-  }
-  tr.turn td {
-    background: var(--block);
   }
 </style>

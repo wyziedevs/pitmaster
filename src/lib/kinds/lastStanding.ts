@@ -1,12 +1,14 @@
 // what liar's dice and the lives games share as kinds: on the same
 // last-one-standing engine (standing.ts), their results, settle-up, recap,
-// spreadsheet and Find Me all read the same standing. each passes what's its
-// own: its state, its stakes, and its words for a die or a life.
+// spreadsheet and Find Me all read the same standing, and a round goes in
+// (or comes back out) the same way. each passes what's its own: its state,
+// its stakes, and its words for a die or a life.
 import type { DiceStakes, Game, Player } from "$lib/types";
 import type { Kind, Line } from "./kind";
 import type { Standing } from "./standing";
-import { netOf } from "./standing";
-import { gameDate } from "$lib/game";
+import { champOf, netOf, ranked } from "./standing";
+import { finish, gameDate, reopen } from "$lib/game";
+import { flash, logEvent } from "$lib/events";
 import { resultRow } from "$lib/stats";
 import { settleNets } from "$lib/settle";
 import { pad, settleLines } from "$lib/report";
@@ -59,7 +61,7 @@ export function lastStandingKind<S extends Standing>(k: {
     recap: (game) => {
       const st = k.state(game);
       const lines = [k.setup(game), tp("gamePlay.dice.roundsPlayed", k.played(game)), ""];
-      const byPlace = [...game.players].sort((a, b) => (st.places[a.id] ?? 0) - (st.places[b.id] ?? 0) || st.lives[b.id] - st.lives[a.id]);
+      const byPlace = ranked(game, st);
       const w = Math.max(...byPlace.map((p) => p.name.length), 4) + 2;
       for (const p of byPlace) {
         const place = st.places[p.id];
@@ -96,4 +98,43 @@ export function lastStandingKind<S extends Standing>(k: {
     },
     describe: (r) => (r.place ? t("players.page.history.place", { place: ordinal(r.place), entrants: r.entrants }) : ""),
   };
+}
+
+/**
+ * a round is played: in it goes (the night starts with its first round, if
+ * the host didn't start it) and the log hears about it. once one player is
+ * left it's over and the winner gets the tv; until then `news` says what does
+ */
+export function playRound<S extends Standing, R extends { at: number }>(
+  game: Game,
+  k: {
+    state: (game: Game) => S;
+    /** the game's list of rounds, made if it's missing (and read back through the game, so the push is seen) */
+    rounds: () => R[];
+    /** the log's line for round n */
+    log: (n: number) => string;
+  },
+  r: R,
+  news: (after: S, out: string[]) => void,
+) {
+  const before = k.state(game);
+  if (before.over || game.finished) return;
+  const rounds = k.rounds();
+  rounds.push(r);
+  if (!game.clock.startedAt) game.clock.startedAt = r.at;
+  logEvent(game, k.log(rounds.length));
+  const after = k.state(game);
+  const out = before.alive.filter((id) => after.lives[id] === 0);
+  if (!after.over) return news(after, out);
+  finish(game, r.at);
+  const w = t("gameEvents.wins", { name: champOf(game, after)?.name ?? "?" });
+  logEvent(game, w);
+  flash(game, w, "win");
+}
+
+/** takes back the last round (it's the only one that can come back out on its own) */
+export function takeBackRound(game: Game, rounds: unknown[] | undefined) {
+  if (!rounds?.pop()) return;
+  reopen(game);
+  logEvent(game, t("gamePlay.dice.undoLog", { n: String(rounds.length + 1) }));
 }

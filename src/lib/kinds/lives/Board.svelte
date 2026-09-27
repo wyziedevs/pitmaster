@@ -1,13 +1,11 @@
 <script lang="ts">
   // a lives game on the tv: every player's lives (the lost ones greyed, and
   // whoever's out greyed whole), the round, the stakes, and the winner
-  import Icon from "$lib/components/Icon.svelte";
-  import Trophy from "@lucide/svelte/icons/trophy";
   import type { Game } from "$lib/types";
-  import { money, ordinal, round2, signed } from "$lib/util";
+  import { money, ordinal } from "$lib/util";
   import { prefs } from "$lib/settings.svelte";
-  import { fade } from "svelte/transition";
-  import { reveal } from "$lib/motion";
+  import FinalStandings from "../FinalStandings.svelte";
+  import { champOf } from "../standing";
   import Life from "./Life.svelte";
   import { livesState } from "./engine";
   import { livesPreset } from "./presets";
@@ -20,33 +18,15 @@
   const token = $derived(livesPreset(l.preset).token);
   const st = $derived(livesState(game));
   const showMoney = $derived(prefs().tvMoney !== false);
-  const champ = $derived(game.finished ? game.players.find((p) => st.places[p.id] === 1) : null);
-  const byPlace = $derived([...game.players].sort((a, b) => (st.places[a.id] ?? 99) - (st.places[b.id] ?? 99)));
+  const champ = $derived(game.finished ? champOf(game, st) : null);
   // many players (or lives) get smaller tokens, and a big table smaller still
   const many = $derived(game.players.length > 8 || l.lives > 6);
   const lots = $derived(game.players.length > 16);
-  // the final standings: ten at most, down two columns past five
-  const shown = $derived(byPlace.slice(0, 10));
-  const rows = $derived(shown.length > 5 ? Math.ceil(shown.length / 2) : shown.length);
-  const net = (id: string) => round2((st.money.won[id] ?? 0) - (st.money.paid[id] ?? 0));
 </script>
 
 <div class="lives-board" class:narrow>
   {#if champ}
-    <section class="winner" in:fade={reveal()}>
-      <div class="trophy"><Icon icon={Trophy} size="10vh" /></div>
-      <div class="k">{t("tv.winner.champion")}</div>
-      <div class="big">{champ.name}</div>
-      <ol class="final" class:split={shown.length > 5} style:--rows={rows}>
-        {#each shown as p, i (p.id)}
-          <li class:top={i % rows === 0}>
-            <span class="place">{ordinal(st.places[p.id] ?? 0)}</span>
-            <b>{p.name}</b>
-            {#if showMoney}<span class="fig">{l.stakes.mode === "pot" ? money(st.money.won[p.id] ?? 0) : signed(net(p.id))}</span>{/if}
-          </li>
-        {/each}
-      </ol>
-    </section>
+    <FinalStandings {game} {st} stakes={l.stakes} />
   {:else}
     <div class="table">
       <section class="players" class:many class:lots>
@@ -179,51 +159,6 @@
     color: var(--tv-muted);
     font-size: 0.85em;
     line-height: 1.35;
-  }
-  .winner {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: calc(var(--u) * 1);
-    text-align: center;
-  }
-  .trophy {
-    color: var(--tv-banner);
-    line-height: 0;
-  }
-  .big {
-    font: min(calc(var(--u) * 9.9), 16.5vh) / 1 var(--font-serif);
-  }
-  .final {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    font-size: max(19px, calc(var(--u) * 2.2));
-    min-width: min(calc(var(--u) * 40), 92vw);
-  }
-  .final li {
-    display: grid;
-    grid-template-columns: 3.2em 1fr auto;
-    gap: 1em;
-    text-align: left;
-    padding: calc(var(--u) * 0.4) 0;
-    border-top: var(--hair) solid var(--tv-line);
-  }
-  .final li.top {
-    border-top: 0;
-  }
-  /* a big table's standings run down two columns instead of off the screen */
-  .final.split {
-    display: grid;
-    grid-auto-flow: column;
-    grid-template-rows: repeat(var(--rows), auto);
-    column-gap: calc(var(--u) * 4);
-    min-width: min(calc(var(--u) * 76), 96vw);
-  }
-  .place {
-    color: var(--tv-muted);
   }
   .narrow .table {
     grid-template-columns: 1fr;

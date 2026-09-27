@@ -8,18 +8,19 @@
   import Die from "$lib/components/Die.svelte";
   import { sendSeat } from "$lib/sync";
   import { diceState } from "./engine";
-  import { combine, commitOf, numbers, waitingOn } from "./cups";
+  import { combine, commitOf, numbers, seatOwner, waitingOn } from "./cups";
   import { keepRoll, readRoll, type Roll } from "./pocket";
   import { faceCount } from "./actions";
   import { token } from "$lib/crypto";
-  import { money, ordinal, round2, signed } from "$lib/util";
+  import { money, ordinal, signed } from "$lib/util";
+  import { netOf } from "../standing";
   import { t, tp } from "$lib/i18n";
   import { playerName } from "$lib/events";
 
   let { game, code, seat, seatKey, status = "" }: { game: Game; code: string; seat: string; seatKey: string; status?: string } = $props();
 
   const c = $derived(game.cups);
-  const pid = $derived(c ? (Object.entries(c.seats).find(([, s]) => s === seat)?.[0] ?? null) : null);
+  const pid = $derived(c ? seatOwner(c, seat) : null);
   const me = $derived(game.players.find((p) => p.id === pid) ?? null);
   const st = $derived(diceState(game));
   const lives = $derived(pid ? st.lives[pid] : 0);
@@ -46,8 +47,8 @@
 
   const hostNums = $derived(pid && c?.phase !== "commit" ? c?.host?.[pid] : undefined);
   const dice = $derived(roll && hostNums ? combine(roll.nums, hostNums) : null);
-  const waiting = $derived(c ? waitingOn(game, st.alive) : []);
-  const net = $derived(pid ? round2((st.money.won[pid] ?? 0) - (st.money.paid[pid] ?? 0)) : 0);
+  const waiting = $derived(c ? waitingOn(c, st.alive) : []);
+  const net = $derived(pid ? netOf(st, pid) : 0);
   // the host can keep money off the tv, and so off the phones
   const showMoney = $derived(game.prefs?.tvMoney !== false);
 
