@@ -287,8 +287,12 @@
                                 : ""}{r.kos
                                 ? ` · ${tp("players.page.history.kos", r.kos)}`
                                 : ""}
-                            {:else}{t("players.page.history.cashInOut", { in: money(r.cost), out: money(r.won) })}{r.hours && r.hours >= 0.1
+                            {:else}{t("players.page.history.cashInOut", { in: money(r.cost), out: money(r.won - r.highHand) })}{r.hours && r.hours >= 0.1
                                 ? ` · ${t("players.page.history.hoursSuffix", { h: r.hours.toFixed(1) })}`
+                                : ""}{r.highHand
+                                ? ` · ${t("players.page.history.highHand", { amount: money(r.highHand) })}`
+                                : ""}{r.sevenTwo
+                                ? ` · ${tp("players.page.history.sevenTwo", r.sevenTwo)}`
                                 : ""}{/if}
                           </td>
                           <td class="num {cls(r.net)} border-b-line pt-[3px] pr-[10px] pb-[3px] pl-0">{signed(r.net)}</td>

@@ -1,7 +1,7 @@
 // results and all-time numbers, worked out from the saved games every time.
 // nothing here is stored, so fixing a game fixes the leaderboard too.
 import type { Game, GameType } from "./types";
-import { tourneyStats, koCount, paidFor, cashRake, bountyBook } from "./game";
+import { tourneyStats, koCount, paidFor, cashRake, bountyBook, highHandPrizes } from "./game";
 import { money, nameKey, round2, signed } from "./util";
 
 /** one player's night in one game */
@@ -14,7 +14,7 @@ export interface Result {
   name: string;
   /** money put in: buy-ins, rebuys, add-ons, seat fees */
   cost: number;
-  /** money taken home: cash-out, or payout + bounties */
+  /** money taken home: cash-out and any high hand prize, or payout + bounties */
   won: number;
   net: number;
   /** tournaments */
@@ -24,6 +24,9 @@ export interface Result {
   kos: number;
   /** cash: hours at the table, when we know */
   hours: number | null;
+  /** cash side games: high hand prizes the house paid them, and hands won with 7-2 */
+  highHand: number;
+  sevenTwo: number;
 }
 
 /**
@@ -36,23 +39,27 @@ export function results(game: Game): Result[] {
     // a seat fee is part of what the night cost them
     const r = cashRake(game);
     const fee = r.mode === "seat" ? r.fee : 0;
+    const prizes = highHandPrizes(game);
     return game.players
       .filter((p) => p.cashOut !== null)
       .map((p) => {
         const start = Math.max(p.joinedAt ?? 0, game.clock.startedAt ?? 0) || null;
         const hours = start && p.leftAt && p.leftAt > start ? (p.leftAt - start) / 3600000 : null;
+        const highHand = prizes[p.id] ?? 0;
         return {
           ...base,
           key: nameKey(p.name),
           name: p.name.trim(),
           cost: round2(p.cashIn + fee),
-          won: p.cashOut ?? 0,
-          net: round2((p.cashOut ?? 0) - p.cashIn - fee),
+          won: round2((p.cashOut ?? 0) + highHand),
+          net: round2((p.cashOut ?? 0) + highHand - p.cashIn - fee),
           place: null,
           entrants: game.players.length,
           itm: false,
           kos: 0,
           hours,
+          highHand,
+          sevenTwo: (game.sides ?? []).filter((e) => e.kind === "sevenTwo" && e.playerId === p.id).length,
         };
       });
   }
@@ -77,6 +84,8 @@ export function results(game: Game): Result[] {
       itm: payout > 0,
       kos,
       hours: null,
+      highHand: 0,
+      sevenTwo: 0,
     };
   });
 }

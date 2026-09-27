@@ -36,6 +36,9 @@ export interface Settings {
   useSeats: boolean; // seat draw and table balancing
   useDeals: boolean; // the final-table deal calculator
   usePayLinks: boolean; // venmo / cash app / paypal links in settle-up
+  useBombPots: boolean; // cash games: bomb pots, called by hand or on a timer
+  useSevenTwo: boolean; // cash games: winning with 7-2 collects from everyone
+  useHighHand: boolean; // cash games: a prize for the best hand in each stretch of play
 
   // ---- the house ----
   houseRules: string; // one per line
@@ -72,6 +75,12 @@ export interface Settings {
   cashRakePct: number;
   cashRakeCap: number;
   cashSeatFee: number;
+  cashBombBB: number; // a bomb pot's ante, in big blinds
+  cashBombEvery: number; // minutes between bomb pots, 0 = only when called
+  cashBombDouble: boolean;
+  cashSevenTwoBB: number; // what a 7-2 win collects from each player, in big blinds
+  cashHighHandPrize: number;
+  cashHighHandEvery: number; // minutes in each high hand window, 0 = one for the whole game
   seatsPerTable: number;
 }
 
@@ -103,6 +112,9 @@ const defaults: Settings = {
   useSeats: true,
   useDeals: true,
   usePayLinks: true,
+  useBombPots: false,
+  useSevenTwo: false,
+  useHighHand: false,
 
   houseRules: "",
   rulesOnNew: true,
@@ -137,6 +149,12 @@ const defaults: Settings = {
   cashRakePct: 5,
   cashRakeCap: 3,
   cashSeatFee: 5,
+  cashBombBB: 2,
+  cashBombEvery: 0,
+  cashBombDouble: false,
+  cashSevenTwoBB: 2,
+  cashHighHandPrize: 50,
+  cashHighHandEvery: 60,
   seatsPerTable: 9,
 };
 

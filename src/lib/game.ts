@@ -1,4 +1,4 @@
-import type { CashSettings, EventKind, Game, GameChip, GameType, Level, Player, Seat, TourneySettings } from "./types";
+import type { CashSettings, EventKind, Game, GameChip, GameType, Level, Player, Seat, SideEvent, TourneySettings } from "./types";
 import { newClock } from "./clock";
 import { defaultPayouts, payoutAmounts } from "./blinds";
 import { money, nameKey, ordinal, round2, uid } from "./util";
@@ -425,14 +425,95 @@ export function cashSettle(game: Game) {
   const done = game.players.filter((p) => p.cashOut !== null);
   const house = game.house?.trim() || HOUSE();
   const fee = r.mode === "seat" ? r.fee : 0;
-  const nets = done.map((p) => ({ name: p.name, net: round2((p.cashOut ?? 0) - p.cashIn - fee) }));
-  const owed = round2((r.mode === "pot" ? (game.rakeBox ?? 0) : 0) + fee * done.length);
-  if (owed > 0.001) {
+  // a high hand prize is the house paying a player, outside the chips
+  const prizes = highHandPrizes(game);
+  const nets = done.map((p) => ({ name: p.name, net: round2((p.cashOut ?? 0) - p.cashIn - fee + (prizes[p.id] ?? 0)) }));
+  const paid = round2(done.reduce((s, p) => s + (prizes[p.id] ?? 0), 0));
+  const owed = round2((r.mode === "pot" ? (game.rakeBox ?? 0) : 0) + fee * done.length - paid);
+  if (Math.abs(owed) > 0.001) {
     const host = nets.find((x) => nameKey(x.name) === nameKey(house));
     if (host) host.net = round2(host.net + owed);
     else nets.push({ name: house, net: owed });
   }
   return settle(nets);
+}
+
+// ---------- cash side games ----------
+
+function addSide(game: Game, e: SideEvent) {
+  // assign first, then push through game.sides (see bust)
+  if (!game.sides) game.sides = [];
+  game.sides.push(e);
+}
+
+/**
+ * where the side games stand after `elapsed` of play, worked out from what's
+ * happened: bomb pots called and whether one's due, and the high hand now
+ * and its window.
+ */
+export function sideStats(game: Game, played: number) {
+  const c = game.cash!;
+  // the screen's clock can trail the session's own start by a moment
+  const elapsed = Math.max(0, played);
+  const list = game.sides ?? [];
+  const bombs = list.filter((e) => e.kind === "bomb").length;
+  // a timed bomb pot comes due each time another stretch of play goes by, and
+  // stays due until the host calls it
+  const bombEvery = c.bomb.on ? c.bomb.everyMinutes * 60000 : 0;
+  const bombDue = !!bombEvery && Math.floor(elapsed / bombEvery) > bombs;
+  const bombIn = bombEvery ? Math.max(0, (bombs + 1) * bombEvery - elapsed) : null;
+  const hhEvery = c.highHand.on ? c.highHand.everyMinutes * 60000 : 0;
+  const window = hhEvery ? Math.floor(elapsed / hhEvery) : 0;
+  const windowLeft = hhEvery ? (window + 1) * hhEvery - elapsed : null;
+  const lastPaid = list.findLastIndex((e) => e.kind === "highHandPaid");
+  const current = list.slice(lastPaid + 1).findLast((e) => e.kind === "highHand") ?? null;
+  // the window it was set in is over: time to pay it
+  const hhDue = !!current && !!hhEvery && (current.window ?? 0) < window;
+  const sevenTwos = list.filter((e) => e.kind === "sevenTwo").length;
+  return { bombs, bombDue, bombIn, window, windowLeft, current, hhDue, sevenTwos };
+}
+
+const playerName = (game: Game, id: string | undefined) => game.players.find((p) => p.id === id)?.name ?? "?";
+
+export function callBombPot(game: Game) {
+  const b = game.cash!.bomb;
+  addSide(game, { kind: "bomb", at: Date.now() });
+  const text = t(b.doubleBoard ? "gameEvents.bombDoubleFlash" : "gameEvents.bombFlash", { ante: money(b.ante) });
+  logEvent(game, text);
+  flash(game, text, "bomb");
+}
+
+export function sevenTwoWin(game: Game, playerId: string) {
+  const amount = game.cash!.sevenTwo.amount;
+  addSide(game, { kind: "sevenTwo", at: Date.now(), playerId, amount });
+  const text = t("gameEvents.sevenTwoFlash", { name: playerName(game, playerId), amount: money(amount) });
+  logEvent(game, text);
+  flash(game, text, "sevenTwo");
+}
+
+export function setHighHand(game: Game, playerId: string, hand: string, window: number) {
+  addSide(game, { kind: "highHand", at: Date.now(), playerId, hand: hand.trim(), window });
+  const text = t("gameEvents.highHandFlash", { name: playerName(game, playerId), hand: hand.trim() });
+  logEvent(game, text);
+  flash(game, text, "highHand");
+}
+
+/** the house pays whoever holds the high hand; the next window starts with none */
+export function payHighHand(game: Game, elapsed: number) {
+  const cur = sideStats(game, elapsed).current;
+  if (!cur?.playerId) return;
+  const amount = game.cash!.highHand.prize;
+  addSide(game, { kind: "highHandPaid", at: Date.now(), playerId: cur.playerId, amount, hand: cur.hand });
+  const text = t("gameEvents.highHandPaidFlash", { name: playerName(game, cur.playerId), amount: money(amount) });
+  logEvent(game, text);
+  flash(game, text, "money");
+}
+
+/** high hand prizes paid so far, by player */
+export function highHandPrizes(game: Game) {
+  const won: Record<string, number> = {};
+  for (const e of game.sides ?? []) if (e.kind === "highHandPaid" && e.playerId) won[e.playerId] = round2((won[e.playerId] ?? 0) + (e.amount ?? 0));
+  return won;
 }
 
 /** fewest payments to square everyone up */

@@ -41,7 +41,9 @@ Small changes to what already exists.
 
 ## Phase 2: Cash side games
 
-The extras cash tables actually play. Each has its own switch. Everything is logged in one list of events on the game: `game.sides: { kind, playerId?, amount?, text?, at }[]`.
+**Status: done.**
+
+The extras cash tables actually play. Each has its own switch, off to start. Everything is logged in one list of events on the game: `game.sides: { kind, at, playerId?, amount?, hand?, window? }[]`, and `sideStats()` in `game.ts` works out the rest from it. The dealer controls are `SideGames.svelte`.
 
 **2a. Bomb pots.** Everyone antes a set amount and the flop comes with no preflop betting.
 - `CashSettings.bomb: { on; ante; doubleBoard; everyMinutes }`. `everyMinutes: 0` means the host only calls them by hand.
@@ -51,12 +53,12 @@ The extras cash tables actually play. Each has its own switch. Everything is log
 **2b. The 7-2 game.** Winning a hand with 7-2 collects a set amount from every player dealt in.
 - `CashSettings.sevenTwo: { on; amount }`. The dealer screen has a **7-2 Win** button and picks who won.
 - TV flash: "Jess won with 7-2. Everyone pays 5." It's logged and counted, and the money moves in chips.
-- /players gets a count of 7-2 wins.
+- /players shows each player's 7-2 wins in their game history.
 
 **2c. High hand.** The best hand in a time window wins a prize paid by the house.
-- `CashSettings.highHand: { on; prize; everyMinutes; minHand }`. The host types the current high hand and who holds it.
+- `CashSettings.highHand: { on; prize; everyMinutes }`. The host types the current high hand and who holds it. When its window runs out, the dealer screen and the TV say it's time to pay.
 - The TV shows the hand ("Aces Full of Kings, Mike") with a countdown to the end of the window.
-- At the end, the prize is logged as a side event with an amount. `cashSettle` makes the house pay the player, and it comes out of the rake box first. `results()` counts it in the player's `won`.
+- At the end, the prize is logged as a side event with an amount. `cashSettle` makes the house pay the player: it comes off what the house is owed in rake and seat fees, and past that the house pays in. `results()` counts it in the player's `won`, and the recap and CSV list it.
 
 **Done when:** a cash game with all three runs, and settle-up still balances with rake, seat fees and a high-hand payout.
 

@@ -72,6 +72,16 @@
   let rakeCap = $state(settings.cashRakeCap);
   let seatFee = $state(settings.cashSeatFee);
   let houseName = $state(settings.houseName);
+  // side games: the amounts start from the host's usual, in big blinds
+  let bombOn = $state(true);
+  let bombAnte = $state(0);
+  let bombEvery = $state(settings.cashBombEvery);
+  let bombDouble = $state(settings.cashBombDouble);
+  let sevenTwoOn = $state(true);
+  let sevenTwoAmount = $state(0);
+  let highHandOn = $state(true);
+  let highHandPrize = $state(settings.cashHighHandPrize);
+  let highHandEvery = $state(settings.cashHighHandEvery);
 
   // ---- tournament ----
   let buyIn = $state(settings.tBuyIn);
@@ -132,6 +142,8 @@
       defaultBuyIn = +(bb * (settings.cashDepth || 100)).toFixed(2);
       minBuyIn = +(bb * (settings.cashMinBB || 40)).toFixed(2);
       maxBuyIn = +(bb * (settings.cashMaxBB || 200)).toFixed(2);
+      bombAnte = +(bb * settings.cashBombBB).toFixed(2);
+      sevenTwoAmount = +(bb * settings.cashSevenTwoBB).toFixed(2);
     }
   });
 
@@ -175,14 +187,22 @@
   // what the host switched on (Settings > Your Game) decides what's on the form.
   // anything off can still be added for just this game, and a template or rerun
   // that used it brings it along. off means off: it isn't in the game at all.
-  let tonight = $state({ rake: false, cut: false, bounty: false, rebuys: false });
+  let tonight = $state({ rake: false, cut: false, bounty: false, rebuys: false, bomb: false, sevenTwo: false, highHand: false });
   const rakeOn = $derived(settings.useRake || tonight.rake);
   const cutOn = $derived(settings.useHouseCut || tonight.cut);
   const bountyOn = $derived(settings.useBounties || tonight.bounty);
   const rebuysOn = $derived(settings.useRebuys || tonight.rebuys);
+  const bombShown = $derived(settings.useBombPots || tonight.bomb);
+  const sevenTwoShown = $derived(settings.useSevenTwo || tonight.sevenTwo);
+  const highHandShown = $derived(settings.useHighHand || tonight.highHand);
   const addable = $derived(
     (isCash
-      ? [!rakeOn && { key: "rake", labelKey: "gameSetup.addable.rakeOrSeatFee" }]
+      ? [
+          !rakeOn && { key: "rake", labelKey: "gameSetup.addable.rakeOrSeatFee" },
+          !bombShown && { key: "bomb", labelKey: "gameSetup.cash.sides.bombPots" },
+          !sevenTwoShown && { key: "sevenTwo", labelKey: "gameSetup.cash.sides.sevenTwo" },
+          !highHandShown && { key: "highHand", labelKey: "gameSetup.cash.sides.highHand" },
+        ]
       : [
           !rebuysOn && { key: "rebuys", labelKey: "gameSetup.addable.rebuysAddOns" },
           !bountyOn && { key: "bounty", labelKey: "gameSetup.addable.bounty" },
@@ -247,6 +267,9 @@
     defaultBuyIn,
     plannedMinutes: cashHours * 60,
     rake: { mode: useRake, pct: rakeCashPct, cap: rakeCap, fee: seatFee },
+    bomb: { on: bombShown && bombOn, ante: Math.max(0, bombAnte), doubleBoard: bombDouble, everyMinutes: Math.max(0, Math.round(bombEvery || 0)) },
+    sevenTwo: { on: sevenTwoShown && sevenTwoOn, amount: Math.max(0, sevenTwoAmount) },
+    highHand: { on: highHandShown && highHandOn, prize: Math.max(0, highHandPrize), everyMinutes: Math.max(0, Math.round(highHandEvery || 0)) },
   });
 
   // ---- templates, and "tweak and rerun" from an old game ----
@@ -275,6 +298,12 @@
       cashHours = x.cash.plannedMinutes / 60;
       ({ mode: rakeMode, pct: rakeCashPct, cap: rakeCap, fee: seatFee } = x.cash.rake);
       if (rakeMode !== "none") tonight.rake = true;
+      ({ on: bombOn, ante: bombAnte, doubleBoard: bombDouble, everyMinutes: bombEvery } = x.cash.bomb);
+      ({ on: sevenTwoOn, amount: sevenTwoAmount } = x.cash.sevenTwo);
+      ({ on: highHandOn, prize: highHandPrize, everyMinutes: highHandEvery } = x.cash.highHand);
+      if (bombOn) tonight.bomb = true;
+      if (sevenTwoOn) tonight.sevenTwo = true;
+      if (highHandOn) tonight.highHand = true;
       cashPlayers = Math.max(cashPlayers, x.players.length || 0);
     }
     const ts = x.tourney;
@@ -513,6 +542,39 @@
       <fieldset class="border-0 mt-0 mx-0 mb-[22px] p-0 min-w-0" transition:slide={reveal()}>
         <legend class="ruled w-full px-0">{t("gameSetup.cash.rake.legend")}{#if !settings.useRake}<button class="link small opt ml-2" data-sound="off" onclick={() => ((tonight.rake = false), (rakeMode = "none"))}>{t("gameSetup.cash.rake.remove")}</button>{/if}</legend>
         <RakeFields bind:mode={rakeMode} bind:pct={rakeCashPct} bind:cap={rakeCap} bind:fee={seatFee} bind:house={houseName} />
+      </fieldset>
+      {/if}
+      {#if bombShown || sevenTwoShown || highHandShown}
+      <fieldset class="border-0 mt-0 mx-0 mb-[22px] p-0 min-w-0" transition:slide={reveal()}>
+        <legend class="ruled w-full px-0">{t("gameSetup.cash.sides.legend")}</legend>
+        {#if bombShown}
+          <label class="across"><input type="checkbox" bind:checked={bombOn} /><span>{t("gameSetup.cash.sides.bombPots")}</span></label>
+          {#if bombOn}
+            <div class="row" transition:slide={reveal()}>
+              <label><span>{t("gameSetup.cash.sides.ante", { sym })}</span><input type="number" min="0" step="any" bind:value={bombAnte} /></label>
+              <label><span>{t("gameSetup.cash.sides.bombEvery")}</span><input type="number" min="0" step="1" bind:value={bombEvery} /></label>
+              <label class="across"><input type="checkbox" bind:checked={bombDouble} /><span>{t("gameSetup.cash.sides.doubleBoard")}</span></label>
+            </div>
+          {/if}
+        {/if}
+        {#if sevenTwoShown}
+          <label class="across"><input type="checkbox" bind:checked={sevenTwoOn} /><span>{t("gameSetup.cash.sides.sevenTwo")}</span></label>
+          {#if sevenTwoOn}
+            <div class="row" transition:slide={reveal()}>
+              <label><span>{t("gameSetup.cash.sides.eachPays", { sym })}</span><input type="number" min="0" step="any" bind:value={sevenTwoAmount} /></label>
+            </div>
+          {/if}
+        {/if}
+        {#if highHandShown}
+          <label class="across"><input type="checkbox" bind:checked={highHandOn} /><span>{t("gameSetup.cash.sides.highHand")}</span></label>
+          {#if highHandOn}
+            <div class="row" transition:slide={reveal()}>
+              <label><span>{t("gameSetup.cash.sides.prize", { sym })}</span><input type="number" min="0" step="any" bind:value={highHandPrize} /></label>
+              <label><span>{t("gameSetup.cash.sides.highHandEvery")}</span><input type="number" min="0" step="1" bind:value={highHandEvery} /></label>
+            </div>
+          {/if}
+        {/if}
+        <p class="small muted -mt-1 mx-0 mb-0">{t("gameSetup.cash.sides.note")}</p>
       </fieldset>
       {/if}
     {:else}

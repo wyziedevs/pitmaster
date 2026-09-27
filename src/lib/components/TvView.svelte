@@ -13,9 +13,12 @@
   import Armchair from "@lucide/svelte/icons/armchair";
   import Megaphone from "@lucide/svelte/icons/megaphone";
   import Gift from "@lucide/svelte/icons/gift";
+  import Bomb from "@lucide/svelte/icons/bomb";
+  import Spade from "@lucide/svelte/icons/spade";
+  import Crown from "@lucide/svelte/icons/crown";
   import type { EventKind, Game } from "$lib/types";
   import { derive, cashElapsed } from "$lib/clock";
-  import { tourneyStats, cashStats, cashRake, seatLabel, tableCounts, paidFor, bountyBook, envelopesLeft, mysteryStartsAt } from "$lib/game";
+  import { tourneyStats, cashStats, cashRake, seatLabel, tableCounts, paidFor, bountyBook, envelopesLeft, mysteryStartsAt, sideStats } from "$lib/game";
   import { amt, clock, clockFace, money, ordinal, timeOfDay } from "$lib/util";
   import { play, sounds, resumeAudio, audioReady, speak } from "$lib/sound";
   import { hostPrefs, prefs } from "$lib/settings.svelte";
@@ -136,6 +139,9 @@
   const cash = $derived(isCash ? cashStats(game) : null);
   const rake = $derived(isCash ? cashRake(game) : null);
   const elapsed = $derived(isCash ? cashElapsed(game, time.now) : 0);
+  // the side games: a bomb pot coming due, the 7-2 game, the high hand and its window
+  const side = $derived(isCash && game.cash ? sideStats(game, elapsed) : null);
+  const highHolder = $derived(side?.current ? game.players.find((p) => p.id === side.current!.playerId) : null);
   const planned = $derived(isCash && game.cash ? game.cash.plannedMinutes * 60000 : 0);
   const cashRemaining = $derived(planned - elapsed);
   const stakes = $derived(isCash && game.cash ? `${money(game.cash.sb)}/${money(game.cash.bb)}` : "");
@@ -228,6 +234,9 @@
     rack: { icon: Coins, sound: sounds.rack, color: CHALK, n: 2 },
     shuffle: { icon: Shuffle, sound: sounds.shuffle, color: CHALK, n: 2 },
     draw: { icon: Shuffle, sound: sounds.shuffle, color: CHALK, n: 2 },
+    bomb: { icon: Bomb, sound: sounds.bust, color: HOT, n: 3 },
+    sevenTwo: { icon: Spade, sound: sounds.chips, color: BANNER, n: 2 },
+    highHand: { icon: Crown, sound: sounds.chime, color: BANNER, n: 3 },
     seat: { icon: Armchair, sound: sounds.ding, color: CHALK, n: 2 },
     note: { icon: Megaphone, sound: sounds.ding, color: BANNER, n: 2 },
   };
@@ -605,6 +614,19 @@
         {/if}
       </div>
       {#if game.cash.straddle}<div class="callout plain"><span class="k">{tr("tv.cash.straddlesWelcome")}</span></div>{/if}
+      {#if side && game.cash.bomb.on}
+        {#if side.bombDue}<div class="callout hot-callout" use:later={"pop"}><span class="k">{tr("tv.cash.bombNextHand")}</span>{#if showMoney}<span class="fig">{money(game.cash.bomb.ante)}</span>{/if}</div>
+        {:else if side.bombIn !== null && game.clock.status === "running"}<div class="callout plain"><span class="k">{tr("tv.cash.nextBomb")}</span> <span class="fig">{clock(side.bombIn)}</span></div>{/if}
+      {/if}
+      {#if side && game.cash.highHand.on}
+        <div class="callout plain" use:replay={[side.current?.at ?? 0, "pop"]}>
+          <span class="k">{tr("tv.cash.highHand")}</span>
+          {#if side.current && highHolder}<b>{side.current.hand}</b> <span>{highHolder.name}</span>{:else}<span>{tr("tv.cash.highHandOpen")}</span>{/if}
+          {#if showMoney}<span class="fig">{money(game.cash.highHand.prize)}</span>{/if}
+          {#if side.hhDue}<span class="hot-text">{tr("tv.cash.highHandTimesUp")}</span>{:else if side.windowLeft !== null && game.clock.status === "running"}<span class="fig">{clock(side.windowLeft)}</span>{/if}
+        </div>
+      {/if}
+      {#if game.cash.sevenTwo.on}<div class="callout plain"><span class="k">{tr("tv.cash.sevenTwoGame")}</span>{#if showMoney}<span class="fig">{tr("tv.cash.sevenTwoPays", { amount: money(game.cash.sevenTwo.amount) })}</span>{/if}</div>{/if}
     </section>
 
     {#if cashRight}
@@ -1435,7 +1457,7 @@
   }
   /* each kind of news arrives its own way: a bust slams down like a stamp,
      money and the winner rise, a shuffle is dealt in from the side */
-  .tv-toast.is-bust {
+  .tv-toast:is(.is-bust, .is-bomb) {
     animation: slam 0.5s var(--ease-out-expo);
   }
   @keyframes slam {
@@ -1465,6 +1487,11 @@
       transform: translate(-50%, -50%) perspective(40em) rotateX(75deg);
       opacity: 0;
     }
+  }
+  /* a bomb pot coming due is the one callout that asks for attention */
+  .callout.hot-callout {
+    color: var(--tv-hot);
+    border-color: var(--tv-hot);
   }
   .tv-toast:is(.is-shuffle, .is-draw) {
     animation: deal 0.6s var(--ease-out-expo);

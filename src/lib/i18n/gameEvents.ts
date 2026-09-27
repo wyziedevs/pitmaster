@@ -48,6 +48,11 @@ export interface GameEventsDict {
   mysteryOpenFlash: string;
   mysteryOwnLog: string;
   envelopesEditedLog: string;
+  bombFlash: string;
+  bombDoubleFlash: string;
+  sevenTwoFlash: string;
+  highHandFlash: string;
+  highHandPaidFlash: string;
 }
 
 export const gameEvents: Record<Lang, GameEventsDict> = {
@@ -85,6 +90,11 @@ export const gameEvents: Record<Lang, GameEventsDict> = {
     mysteryOpenFlash: "{by} opens a mystery bounty: {prize}",
     mysteryOwnLog: "{name} opened a {prize} envelope",
     envelopesEditedLog: "Envelope amounts changed",
+    bombFlash: "Bomb pot! Everyone in for {ante}",
+    bombDoubleFlash: "Bomb pot! Everyone in for {ante}, double board",
+    sevenTwoFlash: "{name} won with 7-2. Everyone pays {amount}!",
+    highHandFlash: "New high hand: {hand}, {name}",
+    highHandPaidFlash: "{name} wins the high hand: {amount}",
   },
   zh: {
     defaultHouseName: "主办方",
@@ -120,6 +130,11 @@ export const gameEvents: Record<Lang, GameEventsDict> = {
     mysteryOpenFlash: "{by} 打开神秘赏金：{prize}",
     mysteryOwnLog: "{name} 打开了 {prize} 的信封",
     envelopesEditedLog: "信封金额已修改",
+    bombFlash: "炸弹底池！每人投入 {ante}",
+    bombDoubleFlash: "炸弹底池！每人投入 {ante}，双公共牌",
+    sevenTwoFlash: "{name} 用 7-2 赢了！每人付 {amount}！",
+    highHandFlash: "新的最大牌：{hand}，{name}",
+    highHandPaidFlash: "{name} 赢得最大牌奖：{amount}",
   },
   hi: {
     defaultHouseName: "हाउस",
@@ -155,6 +170,11 @@ export const gameEvents: Record<Lang, GameEventsDict> = {
     mysteryOpenFlash: "{by} ने मिस्ट्री बाउंटी खोली: {prize}",
     mysteryOwnLog: "{name} ने {prize} का लिफ़ाफ़ा खोला",
     envelopesEditedLog: "लिफ़ाफ़ों की रकम बदली गई",
+    bombFlash: "बॉम्ब पॉट! सब {ante} डालें",
+    bombDoubleFlash: "बॉम्ब पॉट! सब {ante} डालें, डबल बोर्ड",
+    sevenTwoFlash: "{name} 7-2 से जीते। सब {amount} दें!",
+    highHandFlash: "नया हाई हैंड: {hand}, {name}",
+    highHandPaidFlash: "{name} ने हाई हैंड जीता: {amount}",
   },
   es: {
     defaultHouseName: "La Casa",
@@ -190,6 +210,11 @@ export const gameEvents: Record<Lang, GameEventsDict> = {
     mysteryOpenFlash: "{by} abre una recompensa misteriosa: {prize}",
     mysteryOwnLog: "{name} abrió un sobre de {prize}",
     envelopesEditedLog: "Se cambiaron los montos de los sobres",
+    bombFlash: "¡Bomb pot! Todos ponen {ante}",
+    bombDoubleFlash: "¡Bomb pot! Todos ponen {ante}, doble board",
+    sevenTwoFlash: "{name} ganó con 7-2. ¡Todos pagan {amount}!",
+    highHandFlash: "Nueva mano más alta: {hand}, {name}",
+    highHandPaidFlash: "{name} gana la mano más alta: {amount}",
   },
   fr: {
     defaultHouseName: "La Maison",
@@ -225,6 +250,11 @@ export const gameEvents: Record<Lang, GameEventsDict> = {
     mysteryOpenFlash: "{by} ouvre une prime mystère : {prize}",
     mysteryOwnLog: "{name} a ouvert une enveloppe de {prize}",
     envelopesEditedLog: "Montants des enveloppes modifiés",
+    bombFlash: "Bomb pot ! Tout le monde met {ante}",
+    bombDoubleFlash: "Bomb pot ! Tout le monde met {ante}, double board",
+    sevenTwoFlash: "{name} a gagné avec 7-2. Tout le monde paie {amount} !",
+    highHandFlash: "Nouvelle meilleure main : {hand}, {name}",
+    highHandPaidFlash: "{name} remporte la meilleure main : {amount}",
   },
   ar: {
     defaultHouseName: "الجهة المنظمة",
@@ -267,6 +297,11 @@ export const gameEvents: Record<Lang, GameEventsDict> = {
     mysteryOpenFlash: "{by} يفتح مكافأة غامضة: {prize}",
     mysteryOwnLog: "{name} فتح ظرفًا بقيمة {prize}",
     envelopesEditedLog: "تم تغيير مبالغ الأظرف",
+    bombFlash: "بومب بوت! الجميع يدفع {ante}",
+    bombDoubleFlash: "بومب بوت! الجميع يدفع {ante}، لوحتان",
+    sevenTwoFlash: "{name} فاز بـ 7-2. الجميع يدفع {amount}!",
+    highHandFlash: "أعلى يد جديدة: {hand}، {name}",
+    highHandPaidFlash: "{name} يفوز بجائزة أعلى يد: {amount}",
   },
   bn: {
     defaultHouseName: "আয়োজক",
@@ -302,6 +337,11 @@ export const gameEvents: Record<Lang, GameEventsDict> = {
     mysteryOpenFlash: "{by} একটি মিস্ট্রি বাউন্টি খুললেন: {prize}",
     mysteryOwnLog: "{name} {prize}-এর একটি খাম খুলেছেন",
     envelopesEditedLog: "খামের অঙ্ক বদলানো হয়েছে",
+    bombFlash: "বম্ব পট! সবাই {ante} দিন",
+    bombDoubleFlash: "বম্ব পট! সবাই {ante} দিন, ডাবল বোর্ড",
+    sevenTwoFlash: "{name} 7-2 দিয়ে জিতেছেন। সবাই {amount} দিন!",
+    highHandFlash: "নতুন হাই হ্যান্ড: {hand}, {name}",
+    highHandPaidFlash: "{name} হাই হ্যান্ড জিতলেন: {amount}",
   },
   pt: {
     defaultHouseName: "A Casa",
@@ -337,5 +377,10 @@ export const gameEvents: Record<Lang, GameEventsDict> = {
     mysteryOpenFlash: "{by} abre uma recompensa misteriosa: {prize}",
     mysteryOwnLog: "{name} abriu um envelope de {prize}",
     envelopesEditedLog: "Valores dos envelopes alterados",
+    bombFlash: "Bomb pot! Todos entram com {ante}",
+    bombDoubleFlash: "Bomb pot! Todos entram com {ante}, board duplo",
+    sevenTwoFlash: "{name} ganhou com 7-2. Todos pagam {amount}!",
+    highHandFlash: "Nova mão mais alta: {hand}, {name}",
+    highHandPaidFlash: "{name} ganha a mão mais alta: {amount}",
   },
 };

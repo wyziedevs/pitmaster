@@ -54,6 +54,8 @@ export interface PlayersDict {
       cashHours: string;
       cashedTournaments: string;
       tournamentsCount: PluralText;
+      highHand: string;
+      sevenTwo: PluralText;
     };
     payHandles: {
       label: string;
@@ -93,6 +95,9 @@ export interface PlayersDict {
       rakeBox: string;
       seatFee: string;
       settleUp: string;
+      bombPots: PluralText;
+      sevenTwo: string;
+      highHand: string;
       settleLine: string;
       bankOff: string;
     };
@@ -113,6 +118,7 @@ export interface PlayersDict {
       game: string;
       player: string;
       boughtIn: string;
+      highHand: string;
       cashedOut: string;
       seatFee: string;
       net: string;
@@ -172,6 +178,8 @@ export const players: Record<Lang, PlayersDict> = {
         cashHours: "{h} hours in cash games",
         cashedTournaments: "Cashed {itm} of {tournaments}",
         tournamentsCount: { one: "{n} tournament", other: "{n} tournaments" },
+        highHand: "high hand {amount}",
+        sevenTwo: { one: "{count} 7-2 win", other: "{count} 7-2 wins" },
       },
       payHandles: {
         label: "Gets Paid On",
@@ -213,6 +221,9 @@ export const players: Record<Lang, PlayersDict> = {
         rakeBox: "Rake box: {amount}, to {house}",
         seatFee: "Seat fee: {amount} a player, to {house}",
         settleUp: "Settle up:",
+        bombPots: { one: "{count} bomb pot", other: "{count} bomb pots" },
+        sevenTwo: "Won with 7-2: {list}",
+        highHand: "High hand: {name}, {hand}, {amount} (paid by {house})",
         settleLine: "{from} pays {to} {amount}{where}",
         bankOff: "(The bank is off by {amount}.)",
       },
@@ -233,6 +244,7 @@ export const players: Record<Lang, PlayersDict> = {
         game: "Game",
         player: "Player",
         boughtIn: "Bought In",
+        highHand: "High Hand",
         cashedOut: "Cashed Out",
         seatFee: "Seat Fee",
         net: "Net",
@@ -290,6 +302,8 @@ export const players: Record<Lang, PlayersDict> = {
         cashHours: "现金局共 {h} 小时",
         cashedTournaments: "{tournaments}中有 {itm} 次进入奖金圈",
         tournamentsCount: { one: "{n} 场锦标赛", other: "{n} 场锦标赛" },
+        highHand: "最大牌奖 {amount}",
+        sevenTwo: { one: "7-2 赢 {count} 次", other: "7-2 赢 {count} 次" },
       },
       payHandles: {
         label: "收款方式",
@@ -331,6 +345,9 @@ export const players: Record<Lang, PlayersDict> = {
         rakeBox: "抽水箱：{amount}，归 {house}",
         seatFee: "座位费：每人 {amount}，归 {house}",
         settleUp: "结算：",
+        bombPots: { one: "{count} 次炸弹底池", other: "{count} 次炸弹底池" },
+        sevenTwo: "用 7-2 赢过：{list}",
+        highHand: "最大牌：{name}，{hand}，{amount}（{house} 支付）",
         settleLine: "{from} 付给 {to} {amount}{where}",
         bankOff: "（账目有 {amount} 的误差。）",
       },
@@ -351,6 +368,7 @@ export const players: Record<Lang, PlayersDict> = {
         game: "比赛",
         player: "选手",
         boughtIn: "买入",
+        highHand: "最大牌奖",
         cashedOut: "兑现",
         seatFee: "座位费",
         net: "净额",
@@ -408,6 +426,8 @@ export const players: Record<Lang, PlayersDict> = {
         cashHours: "कैश गेम में {h} घंटे",
         cashedTournaments: "{tournaments} में से {itm} बार पैसा जीता",
         tournamentsCount: { one: "{n} टूर्नामेंट", other: "{n} टूर्नामेंट" },
+        highHand: "हाई हैंड {amount}",
+        sevenTwo: { one: "{count} बार 7-2 जीत", other: "{count} बार 7-2 जीत" },
       },
       payHandles: {
         label: "भुगतान कहाँ मिलेगा",
@@ -449,6 +469,9 @@ export const players: Record<Lang, PlayersDict> = {
         rakeBox: "रेक बॉक्स: {amount}, {house} के लिए",
         seatFee: "सीट फीस: प्रति खिलाड़ी {amount}, {house} के लिए",
         settleUp: "हिसाब चुकाएं:",
+        bombPots: { one: "{count} बॉम्ब पॉट", other: "{count} बॉम्ब पॉट" },
+        sevenTwo: "7-2 से जीते: {list}",
+        highHand: "हाई हैंड: {name}, {hand}, {amount} ({house} ने दिया)",
         settleLine: "{from} ने {to} को {amount} दिए{where}",
         bankOff: "(हिसाब में {amount} का अंतर है।)",
       },
@@ -469,6 +492,7 @@ export const players: Record<Lang, PlayersDict> = {
         game: "गेम",
         player: "खिलाड़ी",
         boughtIn: "बाय-इन",
+        highHand: "हाई हैंड",
         cashedOut: "कैश आउट",
         seatFee: "सीट फीस",
         net: "नेट",
@@ -526,6 +550,8 @@ export const players: Record<Lang, PlayersDict> = {
         cashHours: "{h} horas en partidas de cash",
         cashedTournaments: "Cobró en {itm} de {tournaments}",
         tournamentsCount: { one: "{n} torneo", other: "{n} torneos" },
+        highHand: "mano más alta {amount}",
+        sevenTwo: { one: "{count} victoria con 7-2", other: "{count} victorias con 7-2" },
       },
       payHandles: {
         label: "Recibe Pagos En",
@@ -567,6 +593,9 @@ export const players: Record<Lang, PlayersDict> = {
         rakeBox: "Caja de rake: {amount}, para {house}",
         seatFee: "Cuota de mesa: {amount} por jugador, para {house}",
         settleUp: "Saldar cuentas:",
+        bombPots: { one: "{count} bomb pot", other: "{count} bomb pots" },
+        sevenTwo: "Ganaron con 7-2: {list}",
+        highHand: "Mano más alta: {name}, {hand}, {amount} (pagado por {house})",
         settleLine: "{from} le paga a {to} {amount}{where}",
         bankOff: "(La caja tiene una diferencia de {amount}.)",
       },
@@ -587,6 +616,7 @@ export const players: Record<Lang, PlayersDict> = {
         game: "Partida",
         player: "Jugador",
         boughtIn: "Buy-in",
+        highHand: "Mano más alta",
         cashedOut: "Cobrado",
         seatFee: "Cuota de Mesa",
         net: "Neto",
@@ -644,6 +674,8 @@ export const players: Record<Lang, PlayersDict> = {
         cashHours: "{h} heures en cash",
         cashedTournaments: "Dans les gains {itm} fois sur {tournaments}",
         tournamentsCount: { one: "{n} tournoi", other: "{n} tournois" },
+        highHand: "meilleure main {amount}",
+        sevenTwo: { one: "{count} gain au 7-2", other: "{count} gains au 7-2" },
       },
       payHandles: {
         label: "Reçoit les Paiements Sur",
@@ -685,6 +717,9 @@ export const players: Record<Lang, PlayersDict> = {
         rakeBox: "Boîte de rake : {amount}, pour {house}",
         seatFee: "Frais de table : {amount} par joueur, pour {house}",
         settleUp: "Régler les comptes :",
+        bombPots: { one: "{count} bomb pot", other: "{count} bomb pots" },
+        sevenTwo: "Gagné avec 7-2 : {list}",
+        highHand: "Meilleure main : {name}, {hand}, {amount} (payé par {house})",
         settleLine: "{from} paie {amount} à {to}{where}",
         bankOff: "(La caisse a un écart de {amount}.)",
       },
@@ -705,6 +740,7 @@ export const players: Record<Lang, PlayersDict> = {
         game: "Partie",
         player: "Joueur",
         boughtIn: "Buy-in",
+        highHand: "Meilleure main",
         cashedOut: "Encaissé",
         seatFee: "Frais de Table",
         net: "Net",
@@ -762,6 +798,8 @@ export const players: Record<Lang, PlayersDict> = {
         cashHours: "{h} ساعة في الكاش",
         cashedTournaments: "حقق جوائز في {itm} من {tournaments}",
         tournamentsCount: { one: "بطولة واحدة", other: "{n} بطولة" },
+        highHand: "أعلى يد {amount}",
+        sevenTwo: { one: "فوز واحد بـ 7-2", two: "فوزان بـ 7-2", few: "{count} انتصارات بـ 7-2", other: "{count} فوزًا بـ 7-2" },
       },
       payHandles: {
         label: "يستلم الدفعات على",
@@ -803,6 +841,9 @@ export const players: Record<Lang, PlayersDict> = {
         rakeBox: "صندوق العمولة: {amount}، إلى {house}",
         seatFee: "رسوم المقعد: {amount} لكل لاعب، إلى {house}",
         settleUp: "تسوية الحسابات:",
+        bombPots: { one: "بومب بوت واحد", two: "بومب بوت مرتان", few: "{count} بومب بوت", other: "{count} بومب بوت" },
+        sevenTwo: "فازوا بـ 7-2: {list}",
+        highHand: "أعلى يد: {name}، {hand}، {amount} (دفعها {house})",
         settleLine: "{from} يدفع لـ {to} {amount}{where}",
         bankOff: "(هناك فرق قدره {amount} في الحساب.)",
       },
@@ -823,6 +864,7 @@ export const players: Record<Lang, PlayersDict> = {
         game: "الجولة",
         player: "اللاعب",
         boughtIn: "الدخول",
+        highHand: "أعلى يد",
         cashedOut: "الصرف",
         seatFee: "رسوم المقعد",
         net: "الصافي",
@@ -880,6 +922,8 @@ export const players: Record<Lang, PlayersDict> = {
         cashHours: "ক্যাশ গেমে {h} ঘণ্টা",
         cashedTournaments: "{tournaments}-এর মধ্যে {itm} বার পুরস্কার জিতেছেন",
         tournamentsCount: { one: "{n}টি টুর্নামেন্ট", other: "{n}টি টুর্নামেন্ট" },
+        highHand: "হাই হ্যান্ড {amount}",
+        sevenTwo: { one: "{count}বার 7-2 জয়", other: "{count}বার 7-2 জয়" },
       },
       payHandles: {
         label: "যেভাবে পেমেন্ট পাবেন",
@@ -921,6 +965,9 @@ export const players: Record<Lang, PlayersDict> = {
         rakeBox: "রেক বক্স: {amount}, {house}-কে দেওয়া",
         seatFee: "সিট ফি: প্রতি খেলোয়াড় {amount}, {house}-কে দেওয়া",
         settleUp: "হিসাব মেটানো:",
+        bombPots: { one: "{count}টি বম্ব পট", other: "{count}টি বম্ব পট" },
+        sevenTwo: "7-2 দিয়ে জিতেছেন: {list}",
+        highHand: "হাই হ্যান্ড: {name}, {hand}, {amount} ({house} দিয়েছে)",
         settleLine: "{from}, {to}-কে {amount} দেবেন{where}",
         bankOff: "(হিসাবে {amount} গরমিল আছে।)",
       },
@@ -941,6 +988,7 @@ export const players: Record<Lang, PlayersDict> = {
         game: "গেম",
         player: "খেলোয়াড়",
         boughtIn: "বাই-ইন",
+        highHand: "হাই হ্যান্ড",
         cashedOut: "ক্যাশ আউট",
         seatFee: "সিট ফি",
         net: "নেট",
@@ -998,6 +1046,8 @@ export const players: Record<Lang, PlayersDict> = {
         cashHours: "{h} horas em cash",
         cashedTournaments: "Premiado em {itm} de {tournaments}",
         tournamentsCount: { one: "{n} torneio", other: "{n} torneios" },
+        highHand: "mão mais alta {amount}",
+        sevenTwo: { one: "{count} vitória com 7-2", other: "{count} vitórias com 7-2" },
       },
       payHandles: {
         label: "Recebe Pagamento Em",
@@ -1039,6 +1089,9 @@ export const players: Record<Lang, PlayersDict> = {
         rakeBox: "Caixa de rake: {amount}, para {house}",
         seatFee: "Taxa de mesa: {amount} por jogador, para {house}",
         settleUp: "Acertar as contas:",
+        bombPots: { one: "{count} bomb pot", other: "{count} bomb pots" },
+        sevenTwo: "Ganharam com 7-2: {list}",
+        highHand: "Mão mais alta: {name}, {hand}, {amount} (pago por {house})",
         settleLine: "{from} paga {amount} para {to}{where}",
         bankOff: "(O caixa está com uma diferença de {amount}.)",
       },
@@ -1059,6 +1112,7 @@ export const players: Record<Lang, PlayersDict> = {
         game: "Partida",
         player: "Jogador",
         boughtIn: "Buy-in",
+        highHand: "Mão mais alta",
         cashedOut: "Sacado",
         seatFee: "Taxa de Mesa",
         net: "Saldo",

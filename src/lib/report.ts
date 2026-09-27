@@ -1,7 +1,7 @@
 // the game written down: a plain-text recap to paste anywhere and a csv for
 // spreadsheets. both come from the same numbers the dealer screen shows.
 import type { Game } from "./types";
-import { cashRake, cashSettle, cashStats, HOUSE, koCount, tourneyStats } from "./game";
+import { cashRake, cashSettle, cashStats, HOUSE, highHandPrizes, koCount, tourneyStats } from "./game";
 import { handlesFor } from "./store";
 import { settings } from "./settings.svelte";
 import { cashElapsed, derive } from "./clock";
@@ -38,6 +38,18 @@ export function recap(game: Game) {
     const house = game.house?.trim() || HOUSE();
     if (s.rakeBox) lines.push("", t("players.report.cash.rakeBox", { amount: money(s.rakeBox), house }));
     if (s.seatFees) lines.push("", t("players.report.cash.seatFee", { amount: money(r.fee), house }));
+    // the side games: bomb pots, 7-2 wins and every high hand the house paid
+    const sides = game.sides ?? [];
+    const name = (id?: string) => game.players.find((p) => p.id === id)?.name ?? "?";
+    const bombs = sides.filter((e) => e.kind === "bomb").length;
+    const sevenTwos = new Map<string, number>();
+    for (const e of sides) if (e.kind === "sevenTwo") sevenTwos.set(name(e.playerId), (sevenTwos.get(name(e.playerId)) ?? 0) + 1);
+    const sideLines = [
+      bombs ? tp("players.report.cash.bombPots", bombs) : "",
+      sevenTwos.size ? t("players.report.cash.sevenTwo", { list: [...sevenTwos].map(([n, k]) => (k > 1 ? `${n} ×${k}` : n)).join(", ") }) : "",
+      ...sides.filter((e) => e.kind === "highHandPaid").map((e) => t("players.report.cash.highHand", { name: name(e.playerId), hand: e.hand ?? "", amount: money(e.amount ?? 0), house })),
+    ].filter(Boolean);
+    if (sideLines.length) lines.push("", ...sideLines);
     const moves = cashSettle(game);
     if (moves.length) {
       lines.push("", t("players.report.cash.settleUp"));
@@ -87,6 +99,8 @@ export function gameCsv(game: Game) {
     // a seat fee is part of the night's net, same as on the Players page
     const r = cashRake(game);
     const fee = r.mode === "seat" ? r.fee : 0;
+    const prizes = highHandPrizes(game);
+    const hh = Object.keys(prizes).length > 0;
     return csv([
       [
         t("players.report.csv.date"),
@@ -95,6 +109,7 @@ export function gameCsv(game: Game) {
         t("players.report.csv.boughtIn"),
         t("players.report.csv.cashedOut"),
         ...(fee ? [t("players.report.csv.seatFee")] : []),
+        ...(hh ? [t("players.report.csv.highHand")] : []),
         t("players.report.csv.net"),
         t("players.report.csv.satDown"),
         t("players.report.csv.left"),
@@ -106,7 +121,8 @@ export function gameCsv(game: Game) {
         p.cashIn,
         p.cashOut ?? "",
         ...(fee ? [fee] : []),
-        p.cashOut === null ? "" : round2(p.cashOut - p.cashIn - fee),
+        ...(hh ? [prizes[p.id] ?? ""] : []),
+        p.cashOut === null ? "" : round2(p.cashOut - p.cashIn - fee + (prizes[p.id] ?? 0)),
         p.joinedAt ? timeOfDay(Math.max(p.joinedAt, game.clock.startedAt ?? 0)) : "",
         p.leftAt ? timeOfDay(p.leftAt) : "",
       ]),

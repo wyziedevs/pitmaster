@@ -162,7 +162,7 @@ export const legal: Record<Lang, LegalDict> = {
       dealing: {
         cashTitle: "Cash Games",
         cashBody:
-          "Set the blinds and buy-in range, then add players as they sit down. Rebuys and cash-outs are a tap each, and the bank keeps count of every chip on the table. When the game's over, Settle Up works out who pays whom, with Venmo, Cash App and PayPal links if you want them.",
+          "Set the blinds and buy-in range, then add players as they sit down. Rebuys and cash-outs are a tap each, and the bank keeps count of every chip on the table. When the game's over, Settle Up works out who pays whom, with Venmo, Cash App and PayPal links if you want them. Side games have their own switches too: bomb pots on a timer or when called, the 7-2 game, and a high hand prize the house pays in settle-up.",
         tourneyTitle: "Tournaments",
         tourneyBody:
           "Pick how long you want to play and PitMaster builds the blind structure to fit: starting stacks, breaks, antes, rebuys, add-ons and bounties. Bust players as they go and the payouts, average stack and table balancing follow along. At the final table the deal calculator splits the prize pool by chip count or ICM. Bounties can be flat, progressive (PKO) or mystery envelopes, and Start From has ready-made setups like Turbo, Deepstack and Sit & Go.",
@@ -412,7 +412,7 @@ export const legal: Record<Lang, LegalDict> = {
       dealing: {
         cashTitle: "现金局",
         cashBody:
-          "设置盲注和买入范围,然后在玩家入座时把他们加进来。补码和兑现都只需轻点一下,账房会记录桌上每一枚筹码。牌局结束后,「结算」会算出谁该付给谁,如果需要,还带有 Venmo、Cash App 和 PayPal 的收款链接。",
+          "设置盲注和买入范围,然后在玩家入座时把他们加进来。补码和兑现都只需轻点一下,账房会记录桌上每一枚筹码。牌局结束后,「结算」会算出谁该付给谁,如果需要,还带有 Venmo、Cash App 和 PayPal 的收款链接。附加玩法也各有开关：定时或手动叫的炸弹底池、7-2 玩法，以及由主办方在结算时支付的最大牌奖。",
         tourneyTitle: "锦标赛",
         tourneyBody:
           "选好想玩多久,PitMaster 就会据此搭建盲注结构:起始筹码、休息时间、前注、补码、加购和奖金。玩家出局时随手记录,奖金分配、平均筹码量和并桌都会自动跟上。到了决赛桌,分牌计算器可以按筹码量或 ICM 分配奖池。赏金可以是固定、累进（PKO）或神秘信封；“从这里开始”里还有快速赛、深筹码赛、坐满即玩等现成设置。",
@@ -658,7 +658,7 @@ export const legal: Record<Lang, LegalDict> = {
       dealing: {
         cashTitle: "कैश गेम्स",
         cashBody:
-          "ब्लाइंड्स और बाय-इन की सीमा तय करें, फिर खिलाड़ी बैठते ही उन्हें जोड़ें. रीबाय और कैश-आउट एक टैप में हो जाते हैं, और बैंक मेज़ पर मौजूद हर चिप का हिसाब खुद रखता है. गेम खत्म होने पर, Settle Up यह हिसाब लगा देता है कि किसे किसको पैसे देने हैं, और अगर चाहें तो Venmo, Cash App और PayPal के लिंक भी साथ में देता है.",
+          "ब्लाइंड्स और बाय-इन की सीमा तय करें, फिर खिलाड़ी बैठते ही उन्हें जोड़ें. रीबाय और कैश-आउट एक टैप में हो जाते हैं, और बैंक मेज़ पर मौजूद हर चिप का हिसाब खुद रखता है. गेम खत्म होने पर, Settle Up यह हिसाब लगा देता है कि किसे किसको पैसे देने हैं, और अगर चाहें तो Venmo, Cash App और PayPal के लिंक भी साथ में देता है. साइड गेम के भी अपने स्विच हैं: टाइमर पर या बुलाने पर बॉम्ब पॉट, 7-2 गेम, और हाई हैंड का इनाम जो हाउस सेटल-अप में देता है।",
         tourneyTitle: "टूर्नामेंट",
         tourneyBody:
           "आप कितनी देर खेलना चाहते हैं यह चुनें, और PitMaster उसी हिसाब से ब्लाइंड स्ट्रक्चर बना देगा: शुरुआती स्टैक, ब्रेक, एंटी, रीबाय, ऐड-ऑन और बाउंटी. जैसे-जैसे खिलाड़ी बाहर होते जाएं, पेआउट, औसत स्टैक और टेबल बैलेंसिंग खुद-ब-खुद अपडेट होते रहते हैं. फाइनल टेबल पर डील कैलकुलेटर प्राइज़ पूल को चिप काउंट या ICM के हिसाब से बांट देता है. बाउंटी फ़्लैट, प्रोग्रेसिव (PKO) या मिस्ट्री लिफ़ाफ़े हो सकती है, और \"यहाँ से शुरू करें\" में टर्बो, डीपस्टैक और सिट एंड गो जैसे तैयार सेटअप हैं।",
@@ -904,7 +904,7 @@ export const legal: Record<Lang, LegalDict> = {
       dealing: {
         cashTitle: "Partidas de Efectivo",
         cashBody:
-          "Define las ciegas y el rango de entrada, y luego añade a los jugadores a medida que se sientan. Las recompras y los retiros son un toque cada uno, y la banca lleva la cuenta de cada ficha en la mesa. Cuando la partida termina, Settle Up calcula quién le paga a quién, con enlaces de Venmo, Cash App y PayPal si los quieres.",
+          "Define las ciegas y el rango de entrada, y luego añade a los jugadores a medida que se sientan. Las recompras y los retiros son un toque cada uno, y la banca lleva la cuenta de cada ficha en la mesa. Cuando la partida termina, Settle Up calcula quién le paga a quién, con enlaces de Venmo, Cash App y PayPal si los quieres. Los juegos extra también tienen su propio interruptor: bomb pots con temporizador o cuando se pidan, el juego del 7-2 y un premio a la mano más alta que la casa paga en la liquidación.",
         tourneyTitle: "Torneos",
         tourneyBody:
           "Elige cuánto tiempo quieres jugar y PitMaster arma la estructura de ciegas a medida: pilas iniciales, descansos, antes, recompras, add-ons y bounties. Elimina jugadores a medida que caen y los pagos, la pila promedio y el balanceo de mesas se ajustan solos. En la mesa final, la calculadora de reparto divide el pozo por número de fichas o por ICM. Los bounties pueden ser fijos, progresivos (PKO) o sobres misteriosos, y Empezar desde trae configuraciones listas como Turbo, Deepstack y Sit & Go.",
@@ -1150,7 +1150,7 @@ export const legal: Record<Lang, LegalDict> = {
       dealing: {
         cashTitle: "Parties en Cash",
         cashBody:
-          "Réglez les blinds et la fourchette de buy-in, puis ajoutez les joueurs à mesure qu'ils s'installent. Recaves et cash-outs se font en un geste, et la banque compte chaque jeton sur la table. Une fois la partie terminée, Settle Up calcule qui doit payer qui, avec des liens Venmo, Cash App et PayPal si vous le souhaitez.",
+          "Réglez les blinds et la fourchette de buy-in, puis ajoutez les joueurs à mesure qu'ils s'installent. Recaves et cash-outs se font en un geste, et la banque compte chaque jeton sur la table. Une fois la partie terminée, Settle Up calcule qui doit payer qui, avec des liens Venmo, Cash App et PayPal si vous le souhaitez. Les jeux annexes ont aussi leur interrupteur : bomb pots sur minuteur ou à la demande, le jeu du 7-2, et un prix pour la meilleure main que la maison paie au règlement.",
         tourneyTitle: "Tournois",
         tourneyBody:
           "Choisissez la durée de jeu souhaitée et PitMaster construit la structure de blinds en conséquence : tapis de départ, pauses, antes, recaves, add-ons et bounties. Éliminez les joueurs au fil de l'eau, et les gains, le tapis moyen et l'équilibrage des tables suivent automatiquement. À la table finale, le calculateur de deal répartit le prize pool selon le nombre de jetons ou l'ICM. Les bounties peuvent être fixes, progressifs (PKO) ou en enveloppes mystère, et Partir de propose des formats tout prêts comme Turbo, Deepstack et Sit & Go.",
@@ -1396,7 +1396,7 @@ export const legal: Record<Lang, LegalDict> = {
       dealing: {
         cashTitle: "ألعاب الكاش",
         cashBody:
-          "حدد قيمة البلايند ونطاق الشراء، ثم أضف اللاعبين بمجرد جلوسهم. عمليات إعادة الشراء والتصفية تتم بنقرة واحدة لكل منها، ويحتفظ البنك بعدّ كل رقاقة على الطاولة. عند انتهاء اللعبة، تحسب Settle Up من يدفع لمن، مع روابط Venmo وCash App وPayPal إذا أردت ذلك.",
+          "حدد قيمة البلايند ونطاق الشراء، ثم أضف اللاعبين بمجرد جلوسهم. عمليات إعادة الشراء والتصفية تتم بنقرة واحدة لكل منها، ويحتفظ البنك بعدّ كل رقاقة على الطاولة. عند انتهاء اللعبة، تحسب Settle Up من يدفع لمن، مع روابط Venmo وCash App وPayPal إذا أردت ذلك. للألعاب الجانبية مفاتيحها أيضًا: بومب بوت بمؤقت أو عند الطلب، ولعبة 7-2، وجائزة لأعلى يد تدفعها الجهة المنظمة عند التسوية.",
         tourneyTitle: "البطولات",
         tourneyBody:
           "اختر المدة التي تريد اللعب خلالها، ويبني PitMaster هيكل البلايند المناسب: الرصيد الابتدائي، فترات الراحة، الأنتي، عمليات إعادة الشراء، الإضافات والمكافآت. أخرج اللاعبين المستبعدين أولاً بأول، وتتبع الجوائز ومتوسط الرصيد وتوازن الطاولات ذلك تلقائياً. عند الطاولة الأخيرة، توزّع حاسبة التقسيم الجائزة حسب عدد الرقائق أو ICM. يمكن أن تكون مكافآت الإقصاء ثابتة أو تصاعدية (PKO) أو أظرفًا غامضة، وفي «ابدأ من» إعدادات جاهزة مثل توربو ورصيد عميق وسيت آند غو.",
@@ -1642,7 +1642,7 @@ export const legal: Record<Lang, LegalDict> = {
       dealing: {
         cashTitle: "ক্যাশ গেম",
         cashBody:
-          "ব্লাইন্ড আর বাই-ইনের পরিসীমা ঠিক করুন, তারপর খেলোয়াড়রা বসার সাথে সাথে তাদের যোগ করুন। রিবাই আর ক্যাশ-আউট প্রতিটিই এক ট্যাপে হয়ে যায়, আর ব্যাংক টেবিলের প্রতিটি চিপের হিসাব রাখে। গেম শেষ হলে, Settle Up হিসাব করে দেয় কে কাকে টাকা দেবে, চাইলে Venmo, Cash App আর PayPal-এর লিংকসহ।",
+          "ব্লাইন্ড আর বাই-ইনের পরিসীমা ঠিক করুন, তারপর খেলোয়াড়রা বসার সাথে সাথে তাদের যোগ করুন। রিবাই আর ক্যাশ-আউট প্রতিটিই এক ট্যাপে হয়ে যায়, আর ব্যাংক টেবিলের প্রতিটি চিপের হিসাব রাখে। গেম শেষ হলে, Settle Up হিসাব করে দেয় কে কাকে টাকা দেবে, চাইলে Venmo, Cash App আর PayPal-এর লিংকসহ। সাইড গেমেরও নিজস্ব সুইচ আছে: টাইমারে বা ডাকলে বম্ব পট, 7-2 গেম, আর হাউসের দেওয়া হাই হ্যান্ড পুরস্কার, যা সেটল-আপে আসে।",
         tourneyTitle: "টুর্নামেন্ট",
         tourneyBody:
           "আপনি কতক্ষণ খেলতে চান তা বেছে নিন, আর PitMaster সেই অনুযায়ী ব্লাইন্ড স্ট্রাকচার তৈরি করবে: শুরুর স্ট্যাক, বিরতি, অ্যান্টি, রিবাই, অ্যাড-অন আর বাউন্টি। খেলোয়াড়রা বাদ পড়ার সাথে সাথে তাদের বাদ দিন, আর পেআউট, গড় স্ট্যাক আর টেবিল ব্যালান্সিং নিজে থেকেই চলতে থাকে। ফাইনাল টেবিলে ডিল ক্যালকুলেটর প্রাইজ পুল চিপ সংখ্যা বা ICM অনুযায়ী ভাগ করে দেয়। বাউন্টি ফ্ল্যাট, প্রগ্রেসিভ (PKO) বা মিস্ট্রি খাম হতে পারে, আর \"এখান থেকে শুরু করুন\"-এ টার্বো, ডিপস্ট্যাক, সিট অ্যান্ড গো-র মতো তৈরি সেটআপ আছে।",
@@ -1888,7 +1888,7 @@ export const legal: Record<Lang, LegalDict> = {
       dealing: {
         cashTitle: "Partidas em Dinheiro",
         cashBody:
-          "Defina as blinds e a faixa de buy-in, depois adicione os jogadores conforme se sentarem. Recompras e cash-outs levam um toque cada, e o banco mantém a contagem de cada ficha na mesa. Quando a partida termina, o Settle Up calcula quem paga a quem, com links do Venmo, Cash App e PayPal caso você queira.",
+          "Defina as blinds e a faixa de buy-in, depois adicione os jogadores conforme se sentarem. Recompras e cash-outs levam um toque cada, e o banco mantém a contagem de cada ficha na mesa. Quando a partida termina, o Settle Up calcula quem paga a quem, com links do Venmo, Cash App e PayPal caso você queira. Os jogos extras também têm seus interruptores: bomb pots com cronômetro ou quando pedido, o jogo do 7-2 e um prêmio para a mão mais alta que a casa paga no acerto.",
         tourneyTitle: "Torneios",
         tourneyBody:
           "Escolha por quanto tempo quer jogar e o PitMaster monta a estrutura de blinds sob medida: pilhas iniciais, intervalos, antes, recompras, add-ons e bounties. Elimine jogadores conforme saem e os pagamentos, a pilha média e o balanceamento de mesas acompanham sozinhos. Na mesa final, a calculadora de acordo divide o prêmio por contagem de fichas ou por ICM. Os bounties podem ser fixos, progressivos (PKO) ou envelopes misteriosos, e Começar de traz formatos prontos como Turbo, Deepstack e Sit & Go.",

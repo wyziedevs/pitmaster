@@ -1,6 +1,20 @@
 /** what a flash toast is about: the tv picks its icon, sound and color by
  *  this, not by matching words in the (now translated) text */
-export type EventKind = "win" | "deal" | "money" | "bounty" | "bust" | "chips" | "rack" | "shuffle" | "draw" | "seat" | "note";
+export type EventKind =
+  | "win"
+  | "deal"
+  | "money"
+  | "bounty"
+  | "bust"
+  | "chips"
+  | "rack"
+  | "shuffle"
+  | "draw"
+  | "seat"
+  | "bomb"
+  | "sevenTwo"
+  | "highHand"
+  | "note";
 
 /** how a chip is drawn. matches the real chip families. */
 export type ChipStyle = "basic" | "montecarlo" | "delsol";
@@ -167,6 +181,51 @@ export interface CashSettings {
   defaultBuyIn: number;
   plannedMinutes: number;
   rake: CashRake;
+  /** the side games: each is its own switch (Settings > Your Game) */
+  bomb: BombPots;
+  sevenTwo: SevenTwo;
+  highHand: HighHand;
+}
+
+/** everyone antes, the flop comes with no betting before it */
+export interface BombPots {
+  on: boolean;
+  /** what each player puts in */
+  ante: number;
+  doubleBoard: boolean;
+  /** one comes due every this many minutes of play, 0 = only when the host calls one */
+  everyMinutes: number;
+}
+
+/** winning a hand with 7-2 collects this from everyone dealt in (in chips, at the table) */
+export interface SevenTwo {
+  on: boolean;
+  amount: number;
+}
+
+/** the best hand in each window of play wins a prize the house pays */
+export interface HighHand {
+  on: boolean;
+  prize: number;
+  /** a new window every this many minutes of play, 0 = one for the whole game */
+  everyMinutes: number;
+}
+
+/**
+ * one thing that happened in a cash side game.
+ *  bomb:         a bomb pot was called
+ *  sevenTwo:     playerId won a hand with 7-2 and collected amount from each player
+ *  highHand:     playerId has the high hand now (hand is what the host typed)
+ *  highHandPaid: playerId was paid amount for the high hand; the next window starts clean
+ */
+export interface SideEvent {
+  kind: "bomb" | "sevenTwo" | "highHand" | "highHandPaid";
+  at: number;
+  playerId?: string;
+  amount?: number;
+  hand?: string;
+  /** high hand: which window of play it was set in (see HighHand.everyMinutes) */
+  window?: number;
 }
 
 export type GameType = "cash" | "tournament";
@@ -208,6 +267,8 @@ export interface Game {
   deal?: { kind: "icm" | "chop"; amounts: Record<string, number>; at: number };
   /** mystery bounties, once they've started */
   mystery?: Mystery;
+  /** cash: the side games' bomb pots, 7-2 wins and high hands, in order */
+  sides?: SideEvent[];
   /** only on published snapshots: the host's display prefs, so a tv on another device matches */
   prefs?: HostPrefs;
   /** cash: what's been dropped in the rake box so far */

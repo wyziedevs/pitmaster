@@ -67,6 +67,9 @@ export interface SettingsDict {
       seats: { label: string; hint: string };
       deals: { label: string; hint: string };
       payLinks: { label: string; hint: string };
+      bombPots: { label: string; hint: string };
+      sevenTwo: { label: string; hint: string };
+      highHand: { label: string; hint: string };
     };
   };
   house: {
@@ -120,6 +123,9 @@ export interface SettingsDict {
       buyIn: { label: string; hint: string; min: string; standard: string; max: string };
       length: { hint: string };
       straddles: { label: string; checkbox: string };
+      bomb: { label: string; hint: string; anteBB: string; every: string };
+      sevenTwo: { label: string; hint: string };
+      highHand: { label: string; hint: string };
     };
     both: {
       heading: string;
@@ -354,6 +360,9 @@ export const settings: Record<Lang, SettingsDict> = {
         seats: { label: "Seat Draw & Tables", hint: "Drawing seats, and balancing tables as players bust." },
         deals: { label: "Final Table Deals", hint: "The ICM and chip-chop calculator." },
         payLinks: { label: "Pay Links", hint: "Venmo, Cash App and PayPal links in settle-up and payouts." },
+        bombPots: { label: "Bomb Pots", hint: "Cash games: everyone antes and the flop comes with no betting first. Called by hand or on a timer." },
+        sevenTwo: { label: "The 7-2 Game", hint: "Cash games: winning a hand with 7-2 collects a set amount from everyone dealt in." },
+        highHand: { label: "High Hand", hint: "Cash games: the best hand in each stretch of play wins a prize the house pays." },
       },
     },
     house: {
@@ -425,6 +434,9 @@ export const settings: Record<Lang, SettingsDict> = {
         },
         length: { hint: "For the end time and chip math. Cash games can always run long." },
         straddles: { label: "Straddles", checkbox: "Straddles Allowed" },
+        bomb: { label: "Bomb Pots", hint: "The ante in big blinds, and how often one comes due.", anteBB: "Ante (Big Blinds)", every: "Every How Many Minutes (0 = When Called)" },
+        sevenTwo: { label: "The 7-2 Game (Big Blinds)", hint: "What a 7-2 win collects from each player." },
+        highHand: { label: "High Hand", hint: "The prize, and how long each window runs." },
       },
       both: {
         heading: "Both",
@@ -703,6 +715,9 @@ export const settings: Record<Lang, SettingsDict> = {
         seats: { label: "抽座与分桌", hint: "抽取座位,并在玩家出局时重新分配桌次。" },
         deals: { label: "决赛桌协议", hint: "ICM 和筹码分配计算器。" },
         payLinks: { label: "收款链接", hint: "在结算和派奖中使用的 Venmo、Cash App 和 PayPal 链接。" },
+        bombPots: { label: "炸弹底池", hint: "现金局：每人下底注，翻牌前不下注直接发翻牌。可手动叫或定时。" },
+        sevenTwo: { label: "7-2 玩法", hint: "现金局：用 7-2 赢下一手，向每位发到牌的玩家收取固定金额。" },
+        highHand: { label: "最大牌奖", hint: "现金局：每个时段里最大的牌赢得主办方支付的奖金。" },
       },
     },
     house: {
@@ -774,6 +789,9 @@ export const settings: Record<Lang, SettingsDict> = {
         },
         length: { hint: "用于计算结束时间和筹码分配。现金局总是可以打得更久。" },
         straddles: { label: "抢盲", checkbox: "允许抢盲" },
+        bomb: { label: "炸弹底池", hint: "底注（以大盲计）以及多久来一次。", anteBB: "底注（大盲）", every: "每隔几分钟一次（0 = 手动叫）" },
+        sevenTwo: { label: "7-2 玩法（大盲）", hint: "7-2 获胜时向每位玩家收取的金额。" },
+        highHand: { label: "最大牌奖", hint: "奖金，以及每个时段多长。" },
       },
       both: {
         heading: "通用",
@@ -1051,6 +1069,9 @@ export const settings: Record<Lang, SettingsDict> = {
         seats: { label: "सीट ड्रॉ और टेबल्स", hint: "सीटें बांटना, और खिलाड़ियों के बस्ट होने पर टेबल्स को बैलेंस करना।" },
         deals: { label: "फाइनल टेबल डील्स", hint: "ICM और चिप-चॉप कैलकुलेटर।" },
         payLinks: { label: "पे लिंक्स", hint: "सेटल-अप और पेआउट्स में Venmo, Cash App और PayPal के लिंक्स।" },
+        bombPots: { label: "बॉम्ब पॉट", hint: "कैश गेम: सब एंटी डालते हैं और बिना बेटिंग के फ़्लॉप आता है। हाथ से बुलाएँ या टाइमर पर।" },
+        sevenTwo: { label: "7-2 गेम", hint: "कैश गेम: 7-2 से हाथ जीतने पर हर खिलाड़ी से तय रकम मिलती है।" },
+        highHand: { label: "हाई हैंड", hint: "कैश गेम: हर राउंड का सबसे अच्छा हाथ हाउस से इनाम जीतता है।" },
       },
     },
     house: {
@@ -1122,6 +1143,9 @@ export const settings: Record<Lang, SettingsDict> = {
         },
         length: { hint: "खत्म होने के समय और चिप के हिसाब के लिए। कैश गेम्स हमेशा लंबे चल सकते हैं।" },
         straddles: { label: "स्ट्रैडल्स", checkbox: "स्ट्रैडल्स की अनुमति है" },
+        bomb: { label: "बॉम्ब पॉट", hint: "बिग ब्लाइंड में एंटी, और कितनी बार आता है।", anteBB: "एंटी (बिग ब्लाइंड)", every: "हर कितने मिनट में (0 = बुलाने पर)" },
+        sevenTwo: { label: "7-2 गेम (बिग ब्लाइंड)", hint: "7-2 की जीत पर हर खिलाड़ी से कितना मिलता है।" },
+        highHand: { label: "हाई हैंड", hint: "इनाम, और हर राउंड कितना लंबा है।" },
       },
       both: {
         heading: "दोनों",
@@ -1399,6 +1423,9 @@ export const settings: Record<Lang, SettingsDict> = {
         seats: { label: "Sorteo de Asientos y Mesas", hint: "Sortear asientos, y equilibrar mesas cuando los jugadores quedan eliminados." },
         deals: { label: "Acuerdos de Mesa Final", hint: "La calculadora de ICM y reparto de fichas." },
         payLinks: { label: "Enlaces de Pago", hint: "Enlaces de Venmo, Cash App y PayPal en el saldo final y los premios." },
+        bombPots: { label: "Bomb pots", hint: "Partidas de cash: todos ponen un ante y el flop sale sin apuestas antes. A mano o con temporizador." },
+        sevenTwo: { label: "El juego del 7-2", hint: "Partidas de cash: ganar una mano con 7-2 cobra una cantidad fija a cada jugador con cartas." },
+        highHand: { label: "Mano más alta", hint: "Partidas de cash: la mejor mano de cada tramo gana un premio que paga la casa." },
       },
     },
     house: {
@@ -1470,6 +1497,9 @@ export const settings: Record<Lang, SettingsDict> = {
         },
         length: { hint: "Para la hora de fin y el cálculo de fichas. Los cash games siempre pueden alargarse." },
         straddles: { label: "Straddles", checkbox: "Straddles Permitidos" },
+        bomb: { label: "Bomb pots", hint: "El ante en ciegas grandes y cada cuánto toca uno.", anteBB: "Ante (ciegas grandes)", every: "Cada cuántos minutos (0 = cuando se pida)" },
+        sevenTwo: { label: "El juego del 7-2 (ciegas grandes)", hint: "Lo que cobra un 7-2 ganador a cada jugador." },
+        highHand: { label: "Mano más alta", hint: "El premio y cuánto dura cada tramo." },
       },
       both: {
         heading: "Ambos",
@@ -1747,6 +1777,9 @@ export const settings: Record<Lang, SettingsDict> = {
         seats: { label: "Tirage des Places et Tables", hint: "Tirer les places, et équilibrer les tables à mesure que les joueurs sont éliminés." },
         deals: { label: "Accords de Table Finale", hint: "Le calculateur d'ICM et de partage des jetons." },
         payLinks: { label: "Liens de Paiement", hint: "Liens Venmo, Cash App et PayPal dans les règlements et les gains." },
+        bombPots: { label: "Bomb pots", hint: "Parties cash : tout le monde met une ante et le flop sort sans enchères avant. À la demande ou sur minuteur." },
+        sevenTwo: { label: "Le jeu du 7-2", hint: "Parties cash : gagner un coup avec 7-2 rapporte un montant fixe de chaque joueur servi." },
+        highHand: { label: "Meilleure main", hint: "Parties cash : la meilleure main de chaque période gagne un prix payé par la maison." },
       },
     },
     house: {
@@ -1818,6 +1851,9 @@ export const settings: Record<Lang, SettingsDict> = {
         },
         length: { hint: "Pour l'heure de fin et le calcul des jetons. Les cash games peuvent toujours durer plus longtemps." },
         straddles: { label: "Straddles", checkbox: "Straddles Autorisés" },
+        bomb: { label: "Bomb pots", hint: "L'ante en grosses blinds, et la fréquence.", anteBB: "Ante (grosses blinds)", every: "Toutes les combien de minutes (0 = sur demande)" },
+        sevenTwo: { label: "Le jeu du 7-2 (grosses blinds)", hint: "Ce qu'un gain au 7-2 rapporte de chaque joueur." },
+        highHand: { label: "Meilleure main", hint: "Le prix, et la durée de chaque période." },
       },
       both: {
         heading: "Les Deux",
@@ -2095,6 +2131,9 @@ export const settings: Record<Lang, SettingsDict> = {
         seats: { label: "توزيع المقاعد والطاولات", hint: "توزيع المقاعد، وموازنة الطاولات مع خروج اللاعبين." },
         deals: { label: "اتفاقات الطاولة الأخيرة", hint: "حاسبة ICM وتقسيم الرقائق." },
         payLinks: { label: "روابط الدفع", hint: "روابط Venmo وCash App وPayPal في التسوية والجوائز." },
+        bombPots: { label: "بومب بوت", hint: "ألعاب الكاش: الجميع يدفع رهانًا إجباريًا ويُكشف الفلوب بلا رهان قبله. عند الطلب أو بمؤقت." },
+        sevenTwo: { label: "لعبة 7-2", hint: "ألعاب الكاش: الفوز بيد بـ 7-2 يجمع مبلغًا ثابتًا من كل لاعب وُزعت عليه الأوراق." },
+        highHand: { label: "أعلى يد", hint: "ألعاب الكاش: أفضل يد في كل فترة تربح جائزة تدفعها الجهة المنظمة." },
       },
     },
     house: {
@@ -2166,6 +2205,9 @@ export const settings: Record<Lang, SettingsDict> = {
         },
         length: { hint: "لتحديد وقت الانتهاء وحساب الرقائق. يمكن للألعاب النقدية أن تستمر طويلًا دائمًا." },
         straddles: { label: "الستراديل", checkbox: "الستراديل مسموح به" },
+        bomb: { label: "بومب بوت", hint: "الرهان الإجباري بالبلايند الكبير، وكل كم يحين واحد.", anteBB: "الرهان الإجباري (بلايند كبير)", every: "كل كم دقيقة (0 = عند الطلب)" },
+        sevenTwo: { label: "لعبة 7-2 (بلايند كبير)", hint: "ما يجمعه الفوز بـ 7-2 من كل لاعب." },
+        highHand: { label: "أعلى يد", hint: "الجائزة، ومدة كل فترة." },
       },
       both: {
         heading: "كلاهما",
@@ -2450,6 +2492,9 @@ export const settings: Record<Lang, SettingsDict> = {
         seats: { label: "সিট ড্র ও টেবিল", hint: "সিট বণ্টন করা, আর খেলোয়াড় আউট হলে টেবিল সমান করা।" },
         deals: { label: "ফাইনাল টেবিল চুক্তি", hint: "ICM ও চিপ-চপ ক্যালকুলেটর।" },
         payLinks: { label: "পে লিংক", hint: "সেটল-আপ আর পেআউটে Venmo, Cash App আর PayPal লিংক।" },
+        bombPots: { label: "বম্ব পট", hint: "ক্যাশ গেম: সবাই অ্যান্টি দেন আর আগে বেটিং ছাড়াই ফ্লপ আসে। হাতে ডাকুন বা টাইমারে।" },
+        sevenTwo: { label: "7-2 গেম", hint: "ক্যাশ গেম: 7-2 দিয়ে হাত জিতলে কার্ড পাওয়া প্রত্যেকের কাছ থেকে নির্দিষ্ট অঙ্ক মেলে।" },
+        highHand: { label: "হাই হ্যান্ড", hint: "ক্যাশ গেম: প্রতি পর্বের সেরা হাত হাউসের দেওয়া পুরস্কার জেতে।" },
       },
     },
     house: {
@@ -2521,6 +2566,9 @@ export const settings: Record<Lang, SettingsDict> = {
         },
         length: { hint: "শেষ হওয়ার সময় আর চিপের হিসাবের জন্য। ক্যাশ গেম সবসময় বেশি সময় ধরে চলতে পারে।" },
         straddles: { label: "স্ট্র্যাডল", checkbox: "স্ট্র্যাডল অনুমোদিত" },
+        bomb: { label: "বম্ব পট", hint: "বিগ ব্লাইন্ডে অ্যান্টি, আর কত ঘন ঘন আসে।", anteBB: "অ্যান্টি (বিগ ব্লাইন্ড)", every: "কত মিনিট পরপর (0 = ডাকলে)" },
+        sevenTwo: { label: "7-2 গেম (বিগ ব্লাইন্ড)", hint: "7-2 জিতলে প্রত্যেকের কাছ থেকে কত মেলে।" },
+        highHand: { label: "হাই হ্যান্ড", hint: "পুরস্কার, আর প্রতি পর্ব কতক্ষণ।" },
       },
       both: {
         heading: "উভয়",
@@ -2798,6 +2846,9 @@ export const settings: Record<Lang, SettingsDict> = {
         seats: { label: "Sorteio de Assentos e Mesas", hint: "Sortear assentos, e equilibrar mesas conforme os jogadores são eliminados." },
         deals: { label: "Acordos de Mesa Final", hint: "A calculadora de ICM e divisão de fichas." },
         payLinks: { label: "Links de Pagamento", hint: "Links de Venmo, Cash App e PayPal no acerto de contas e nos pagamentos." },
+        bombPots: { label: "Bomb pots", hint: "Jogos a dinheiro: todos põem um ante e o flop sai sem apostas antes. Na hora ou com cronômetro." },
+        sevenTwo: { label: "O jogo do 7-2", hint: "Jogos a dinheiro: ganhar uma mão com 7-2 cobra um valor fixo de cada jogador com cartas." },
+        highHand: { label: "Mão mais alta", hint: "Jogos a dinheiro: a melhor mão de cada período ganha um prêmio pago pela casa." },
       },
     },
     house: {
@@ -2869,6 +2920,9 @@ export const settings: Record<Lang, SettingsDict> = {
         },
         length: { hint: "Para o horário de término e o cálculo de fichas. Jogos em dinheiro sempre podem se estender." },
         straddles: { label: "Straddles", checkbox: "Straddles Permitidos" },
+        bomb: { label: "Bomb pots", hint: "O ante em big blinds e a cada quanto tempo sai um.", anteBB: "Ante (big blinds)", every: "A cada quantos minutos (0 = quando pedido)" },
+        sevenTwo: { label: "O jogo do 7-2 (big blinds)", hint: "O que uma vitória com 7-2 cobra de cada jogador." },
+        highHand: { label: "Mão mais alta", hint: "O prêmio e quanto dura cada período." },
       },
       both: {
         heading: "Ambos",

@@ -44,7 +44,7 @@ const player = (p: unknown) =>
 
 const level = (l: unknown) => obj(l) && num(l.sb) && num(l.bb) && num(l.ante) && num(l.minutes) && maybe(list(str))(l.colorUp);
 const said = orNull((n) => obj(n) && str(n.text) && num(n.at));
-const EVENT_KINDS: EventKind[] = ["win", "deal", "money", "bounty", "bust", "chips", "rack", "shuffle", "draw", "seat", "note"];
+const EVENT_KINDS: EventKind[] = ["win", "deal", "money", "bounty", "bust", "chips", "rack", "shuffle", "draw", "seat", "bomb", "sevenTwo", "highHand", "note"];
 const flashed = orNull((n) => obj(n) && str(n.text) && num(n.at) && (EVENT_KINDS as string[]).includes(n.kind as string));
 const clock = (c: unknown) =>
   obj(c) && ["idle", "running", "paused"].includes(c.status as string) && num(c.levelIndex) && num(c.levelElapsedMs) && num(c.elapsedMs);
@@ -60,7 +60,26 @@ const tourney = (t: unknown) =>
 /** one elimination, and (mystery bounties) the envelope it opened */
 const knockout = (k: unknown) => obj(k) && id(k.out) && orNull(id)(k.by) && num(k.at) && maybe(num)(k.prize);
 const mystery = (m: unknown) => obj(m) && num(m.at) && list(num)(m.prizes) && obj(m.own) && Object.values(m.own).every(num);
-const cash = (c: unknown) => obj(c) && num(c.sb) && num(c.bb) && obj(c.rake);
+const bombs = (b: unknown) => obj(b) && bool(b.on) && num(b.ante) && bool(b.doubleBoard) && num(b.everyMinutes);
+const sevenTwo = (s: unknown) => obj(s) && bool(s.on) && num(s.amount);
+const highHand = (h: unknown) => obj(h) && bool(h.on) && num(h.prize) && num(h.everyMinutes);
+const cash = (c: unknown) =>
+  obj(c) &&
+  num(c.sb) &&
+  num(c.bb) &&
+  obj(c.rake) &&
+  bombs(c.bomb) &&
+  sevenTwo(c.sevenTwo) &&
+  highHand(c.highHand);
+/** one bomb pot, 7-2 win or high hand in a cash game */
+const side = (e: unknown) =>
+  obj(e) &&
+  ["bomb", "sevenTwo", "highHand", "highHandPaid"].includes(e.kind as string) &&
+  num(e.at) &&
+  maybe(id)(e.playerId) &&
+  maybe(num)(e.amount) &&
+  maybe(str)(e.hand) &&
+  maybe(num)(e.window);
 /** a line of the game's log: when, and what happened (game.ts keeps the latest 300) */
 const entry = (e: unknown) => obj(e) && num(e.t) && str(e.text);
 
@@ -86,6 +105,7 @@ export function isGame(g: unknown): g is Game {
     bool(g.finished) &&
     maybe(list(knockout))(g.kos) &&
     maybe(mystery)(g.mystery) &&
+    maybe(list(side))(g.sides) &&
     // a tournament's clock needs at least one level to count down
     (g.type === "cash" ? cash(g.cash) : g.type === "tournament" && tourney(g.tourney) && (g.levels as unknown[]).length > 0)
   );

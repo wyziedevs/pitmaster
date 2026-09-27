@@ -68,6 +68,19 @@ export interface GameSetupDict {
       defaultHouseName: string;
     };
     chipMath: string;
+    sides: {
+      legend: string;
+      bombPots: string;
+      ante: string;
+      bombEvery: string;
+      doubleBoard: string;
+      sevenTwo: string;
+      eachPays: string;
+      highHand: string;
+      prize: string;
+      highHandEvery: string;
+      note: string;
+    };
   };
   tournament: {
     buyInStacks: {
@@ -245,6 +258,19 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
         defaultHouseName: "The House",
       },
       chipMath: "How Many Players for Chip Math",
+      sides: {
+        legend: "Side Games",
+        bombPots: "Bomb Pots",
+        ante: "Ante {sym}",
+        bombEvery: "Every How Many Minutes (0 = When Called)",
+        doubleBoard: "Double Board",
+        sevenTwo: "The 7-2 Game",
+        eachPays: "Each Player Pays {sym}",
+        highHand: "High Hand",
+        prize: "Prize {sym}",
+        highHandEvery: "Minutes per Window (0 = Whole Game)",
+        note: "Bomb pots and 7-2 wins are paid in chips at the table. A high hand prize is paid by the house in settle-up.",
+      },
     },
     tournament: {
       buyInStacks: {
@@ -424,6 +450,19 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
         defaultHouseName: "庄家",
       },
       chipMath: "用于筹码计算的人数",
+      sides: {
+        legend: "附加玩法",
+        bombPots: "炸弹底池",
+        ante: "底注 {sym}",
+        bombEvery: "每隔几分钟一次（0 = 手动叫）",
+        doubleBoard: "双公共牌",
+        sevenTwo: "7-2 玩法",
+        eachPays: "每位玩家付 {sym}",
+        highHand: "最大牌奖",
+        prize: "奖金 {sym}",
+        highHandEvery: "每个时段的分钟数（0 = 整场）",
+        note: "炸弹底池和 7-2 奖励在桌上用筹码支付。最大牌奖金由主办方在结算时支付。",
+      },
     },
     tournament: {
       buyInStacks: {
@@ -603,6 +642,19 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
         defaultHouseName: "हाउस",
       },
       chipMath: "चिप गणना के लिए कितने खिलाड़ी",
+      sides: {
+        legend: "साइड गेम",
+        bombPots: "बॉम्ब पॉट",
+        ante: "एंटी {sym}",
+        bombEvery: "हर कितने मिनट में (0 = बुलाने पर)",
+        doubleBoard: "डबल बोर्ड",
+        sevenTwo: "7-2 गेम",
+        eachPays: "हर खिलाड़ी देता है {sym}",
+        highHand: "हाई हैंड",
+        prize: "इनाम {sym}",
+        highHandEvery: "हर राउंड के मिनट (0 = पूरा गेम)",
+        note: "बॉम्ब पॉट और 7-2 की जीत टेबल पर चिप्स में दी जाती है। हाई हैंड का इनाम हाउस सेटल-अप में देता है।",
+      },
     },
     tournament: {
       buyInStacks: {
@@ -782,6 +834,19 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
         defaultHouseName: "La casa",
       },
       chipMath: "Cuántos jugadores para calcular las fichas",
+      sides: {
+        legend: "Juegos extra",
+        bombPots: "Bomb pots",
+        ante: "Ante {sym}",
+        bombEvery: "Cada cuántos minutos (0 = cuando se pida)",
+        doubleBoard: "Doble board",
+        sevenTwo: "El juego del 7-2",
+        eachPays: "Cada jugador paga {sym}",
+        highHand: "Mano más alta",
+        prize: "Premio {sym}",
+        highHandEvery: "Minutos por tramo (0 = toda la partida)",
+        note: "Los bomb pots y el 7-2 se pagan en fichas en la mesa. El premio a la mano más alta lo paga la casa en la liquidación.",
+      },
     },
     tournament: {
       buyInStacks: {
@@ -961,6 +1026,19 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
         defaultHouseName: "La maison",
       },
       chipMath: "Nombre de joueurs pour le calcul des jetons",
+      sides: {
+        legend: "Jeux annexes",
+        bombPots: "Bomb pots",
+        ante: "Ante {sym}",
+        bombEvery: "Toutes les combien de minutes (0 = sur demande)",
+        doubleBoard: "Double board",
+        sevenTwo: "Le jeu du 7-2",
+        eachPays: "Chaque joueur paie {sym}",
+        highHand: "Meilleure main",
+        prize: "Prix {sym}",
+        highHandEvery: "Minutes par période (0 = toute la partie)",
+        note: "Les bomb pots et le 7-2 se paient en jetons à la table. Le prix de la meilleure main est payé par la maison au règlement.",
+      },
     },
     tournament: {
       buyInStacks: {
@@ -1140,6 +1218,19 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
         defaultHouseName: "النادي",
       },
       chipMath: "عدد اللاعبين لحساب الرقائق",
+      sides: {
+        legend: "ألعاب جانبية",
+        bombPots: "بومب بوت",
+        ante: "الرهان الإجباري {sym}",
+        bombEvery: "كل كم دقيقة (0 = عند الطلب)",
+        doubleBoard: "لوحتان",
+        sevenTwo: "لعبة 7-2",
+        eachPays: "كل لاعب يدفع {sym}",
+        highHand: "أعلى يد",
+        prize: "الجائزة {sym}",
+        highHandEvery: "دقائق كل فترة (0 = اللعبة كلها)",
+        note: "البومب بوت وربح 7-2 يُدفعان بالرقائق على الطاولة. جائزة أعلى يد تدفعها الجهة المنظمة عند التسوية.",
+      },
     },
     tournament: {
       buyInStacks: {
@@ -1326,6 +1417,19 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
         defaultHouseName: "হাউস",
       },
       chipMath: "চিপ হিসাবের জন্য কতজন খেলোয়াড়",
+      sides: {
+        legend: "সাইড গেম",
+        bombPots: "বম্ব পট",
+        ante: "অ্যান্টি {sym}",
+        bombEvery: "কত মিনিট পরপর (0 = ডাকলে)",
+        doubleBoard: "ডাবল বোর্ড",
+        sevenTwo: "7-2 গেম",
+        eachPays: "প্রত্যেক খেলোয়াড় দেন {sym}",
+        highHand: "হাই হ্যান্ড",
+        prize: "পুরস্কার {sym}",
+        highHandEvery: "প্রতি পর্বের মিনিট (0 = পুরো গেম)",
+        note: "বম্ব পট আর 7-2 জয় টেবিলে চিপসে দেওয়া হয়। হাই হ্যান্ডের পুরস্কার হাউস সেটল-আপে দেয়।",
+      },
     },
     tournament: {
       buyInStacks: {
@@ -1505,6 +1609,19 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
         defaultHouseName: "A casa",
       },
       chipMath: "Quantos jogadores para o cálculo das fichas",
+      sides: {
+        legend: "Jogos extras",
+        bombPots: "Bomb pots",
+        ante: "Ante {sym}",
+        bombEvery: "A cada quantos minutos (0 = quando pedido)",
+        doubleBoard: "Board duplo",
+        sevenTwo: "O jogo do 7-2",
+        eachPays: "Cada jogador paga {sym}",
+        highHand: "Mão mais alta",
+        prize: "Prêmio {sym}",
+        highHandEvery: "Minutos por período (0 = jogo todo)",
+        note: "Bomb pots e o 7-2 são pagos em fichas na mesa. O prêmio da mão mais alta é pago pela casa no acerto.",
+      },
     },
     tournament: {
       buyInStacks: {

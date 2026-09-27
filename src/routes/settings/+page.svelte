@@ -210,12 +210,16 @@
   }
 
   // the extras a host can switch off; a game that already uses one keeps it
-  const EXTRAS = $derived<{ key: "useBounties" | "useRebuys" | "useSeats" | "useDeals" | "usePayLinks"; label: string; hint: string }[]>([
+  type Extra = "useBounties" | "useRebuys" | "useSeats" | "useDeals" | "usePayLinks" | "useBombPots" | "useSevenTwo" | "useHighHand";
+  const EXTRAS = $derived<{ key: Extra; label: string; hint: string }[]>([
     { key: "useBounties", label: t("settings.game.extras.bounties.label"), hint: t("settings.game.extras.bounties.hint") },
     { key: "useRebuys", label: t("settings.game.extras.rebuys.label"), hint: t("settings.game.extras.rebuys.hint") },
     { key: "useSeats", label: t("settings.game.extras.seats.label"), hint: t("settings.game.extras.seats.hint") },
     { key: "useDeals", label: t("settings.game.extras.deals.label"), hint: t("settings.game.extras.deals.hint") },
     { key: "usePayLinks", label: t("settings.game.extras.payLinks.label"), hint: t("settings.game.extras.payLinks.hint") },
+    { key: "useBombPots", label: t("settings.game.extras.bombPots.label"), hint: t("settings.game.extras.bombPots.hint") },
+    { key: "useSevenTwo", label: t("settings.game.extras.sevenTwo.label"), hint: t("settings.game.extras.sevenTwo.hint") },
+    { key: "useHighHand", label: t("settings.game.extras.highHand.label"), hint: t("settings.game.extras.highHand.hint") },
   ]);
 
   function pickMotion(m: "system" | "reduced") {
@@ -712,6 +716,31 @@
     <div class="what flex flex-col gap-px"><b class="inline-flex items-center gap-1.5 font-normal text-fg">{t("settings.defaults.cash.straddles.label")}</b></div>
     <label class="across m-0"><input type="checkbox" bind:checked={settings.cashStraddle} onchange={saveSettings} /><span>{t("settings.defaults.cash.straddles.checkbox")}</span></label>
   </div>
+  {#if settings.useBombPots}
+    <div class="set grid grid-cols-[minmax(0,280px)_minmax(0,1fr)] gap-x-7 gap-y-1.5 py-3 px-0 border-b-[length:var(--hair)] border-solid border-line last:border-b-0 max-[600px]:grid-cols-[1fr] items-center" transition:slide={reveal()}>
+      <div class="what flex flex-col gap-px"><b class="inline-flex items-center gap-1.5 font-normal text-fg">{t("settings.defaults.cash.bomb.label")}</b><span class="small muted">{t("settings.defaults.cash.bomb.hint")}</span></div>
+      <div class="row">
+        <label class="m-0"><span>{t("settings.defaults.cash.bomb.anteBB")}</span><input type="number" min="0" step="any" bind:value={settings.cashBombBB} onchange={saveSettings} /></label>
+        <label class="m-0"><span>{t("settings.defaults.cash.bomb.every")}</span><input type="number" min="0" step="1" bind:value={settings.cashBombEvery} onchange={saveSettings} /></label>
+        <label class="across m-0"><input type="checkbox" bind:checked={settings.cashBombDouble} onchange={saveSettings} /><span>{t("gameSetup.cash.sides.doubleBoard")}</span></label>
+      </div>
+    </div>
+  {/if}
+  {#if settings.useSevenTwo}
+    <div class="set grid grid-cols-[minmax(0,280px)_minmax(0,1fr)] gap-x-7 gap-y-1.5 py-3 px-0 border-b-[length:var(--hair)] border-solid border-line last:border-b-0 max-[600px]:grid-cols-[1fr] items-center" transition:slide={reveal()}>
+      <label class="what flex flex-col gap-px m-0" for="c-72"><b class="inline-flex items-center gap-1.5 font-normal text-fg">{t("settings.defaults.cash.sevenTwo.label")}</b><span class="small muted">{t("settings.defaults.cash.sevenTwo.hint")}</span></label>
+      <input id="c-72" type="number" min="0" step="any" bind:value={settings.cashSevenTwoBB} onchange={saveSettings} />
+    </div>
+  {/if}
+  {#if settings.useHighHand}
+    <div class="set grid grid-cols-[minmax(0,280px)_minmax(0,1fr)] gap-x-7 gap-y-1.5 py-3 px-0 border-b-[length:var(--hair)] border-solid border-line last:border-b-0 max-[600px]:grid-cols-[1fr] items-center" transition:slide={reveal()}>
+      <div class="what flex flex-col gap-px"><b class="inline-flex items-center gap-1.5 font-normal text-fg">{t("settings.defaults.cash.highHand.label")}</b><span class="small muted">{t("settings.defaults.cash.highHand.hint")}</span></div>
+      <div class="row">
+        <label class="m-0"><span>{t("gameSetup.cash.sides.prize", { sym })}</span><input type="number" min="0" step="any" bind:value={settings.cashHighHandPrize} onchange={saveSettings} /></label>
+        <label class="m-0"><span>{t("gameSetup.cash.sides.highHandEvery")}</span><input type="number" min="0" step="1" bind:value={settings.cashHighHandEvery} onchange={saveSettings} /></label>
+      </div>
+    </div>
+  {/if}
 
   {#if settings.useSeats}
     <h3 class="mt-[22px]" transition:slide={reveal()}>{t("settings.defaults.both.heading")}</h3>

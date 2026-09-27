@@ -9,7 +9,7 @@
   import { bump, reveal, leave, slide } from "$lib/motion";
   import type { Game } from "$lib/types";
   import { cashElapsed, cashToggle } from "$lib/clock";
-  import { addPlayer, cashStats, cashSettle, cashRake, logEvent, flash, reseat, seatsDrawn, seatLabel, tableCounts } from "$lib/game";
+  import { addPlayer, cashStats, cashSettle, cashRake, logEvent, flash, reseat, seatsDrawn, seatLabel, tableCounts, highHandPrizes } from "$lib/game";
   import { getHandles } from "$lib/store";
   import { distribute, faceText } from "$lib/chips";
   import { clock, clockFace, currencySymbol, duration, money, nameKey, payLinks, round2, signed, timeOfDay } from "$lib/util";
@@ -20,6 +20,7 @@
   import Breakdown from "./Breakdown.svelte";
   import Chip from "./Chip.svelte";
   import SeatTools from "./SeatTools.svelte";
+  import SideGames from "./SideGames.svelte";
   import { settings } from "$lib/settings.svelte";
   import Count from "./Count.svelte";
   import RemoveButton from "./RemoveButton.svelte";
@@ -309,6 +310,8 @@
   <p class="small muted rakebox flex flex-wrap items-center gap-x-4 gap-y-1.5 -mt-1 mx-0 mb-5">{t("gamePlay.cash.seatFeeNote", { fee: money(r.fee), house })}</p>
 {/if}
 
+{#if c.bomb.on || c.sevenTwo.on || c.highHand.on}<SideGames bind:game {persist} {elapsed} />{/if}
+
 <!-- the players table is where the night is run, so it gets the full width -->
 <section class="players mb-[26px]">
     <h2>{t("gamePlay.shared.groupPlayers")}</h2>
@@ -403,6 +406,7 @@
         {/each}
       </ul>
       {#if r.mode === "seat"}<p class="small muted">{t("gamePlay.cash.includesSeatFeeNote", { fee: money(r.fee), house })}</p>{/if}
+      {#if Object.keys(highHandPrizes(game)).length}<p class="small muted">{t("gamePlay.cash.sides.settleNote", { house })}</p>{/if}
       {#if !s.allOut}<p class="small muted" in:slide={reveal()} out:slide={leave()}>{t("gamePlay.cash.countsOnlyCashedOut")}</p>{/if}
       {#if !anyHandles && settings.usePayLinks}<p class="small muted">{t("gamePlay.cash.savePlayersNoteBefore")} <a href="/players">{t("gamePlay.shared.groupPlayers")}</a> {t("gamePlay.cash.savePlayersNoteAfter")}</p>{/if}
     {:else}
