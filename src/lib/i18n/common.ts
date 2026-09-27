@@ -56,6 +56,30 @@ export interface CommonDict {
       plural: string;
       newLabel: string;
     };
+    lives: {
+      label: string;
+      plural: string;
+      newLabel: string;
+      presets: {
+        scat: string;
+        screw: string;
+        whist: string;
+        ship: string;
+        custom: string;
+      };
+    };
+    pot: {
+      label: string;
+      plural: string;
+      newLabel: string;
+      presets: {
+        inbetween: string;
+        guts: string;
+        bourre: string;
+        pigs: string;
+        custom: string;
+      };
+    };
   };
   ok: string;
   on: string;
@@ -118,6 +142,30 @@ export const common: Record<Lang, CommonDict> = {
         plural: "Liar's Dice",
         newLabel: "New Liar's Dice",
       },
+      lives: {
+        label: "Lives Game",
+        plural: "Lives Games",
+        newLabel: "New Lives Game",
+        presets: {
+          scat: "31",
+          screw: "Screw Your Neighbor",
+          whist: "Knock-Out Whist",
+          ship: "Ship, Captain and Crew",
+          custom: "Lives Game",
+        },
+      },
+      pot: {
+        label: "Pot Game",
+        plural: "Pot Games",
+        newLabel: "New Pot Game",
+        presets: {
+          inbetween: "In-Between",
+          guts: "Guts",
+          bourre: "Bourré",
+          pigs: "Pass the Pigs",
+          custom: "Pot Game",
+        },
+      },
     },
     ok: "OK",
     on: "On",
@@ -177,6 +225,30 @@ export const common: Record<Lang, CommonDict> = {
         label: "大话骰",
         plural: "大话骰",
         newLabel: "新建大话骰",
+      },
+      lives: {
+        label: "扣命游戏",
+        plural: "扣命游戏",
+        newLabel: "新建扣命游戏",
+        presets: {
+          scat: "31 点",
+          screw: "Screw Your Neighbor",
+          whist: "Knock-Out Whist",
+          ship: "Ship, Captain and Crew",
+          custom: "扣命游戏",
+        },
+      },
+      pot: {
+        label: "奖池游戏",
+        plural: "奖池游戏",
+        newLabel: "新建奖池游戏",
+        presets: {
+          inbetween: "射龙门",
+          guts: "Guts",
+          bourre: "Bourré",
+          pigs: "Pass the Pigs",
+          custom: "奖池游戏",
+        },
       },
     },
     ok: "确定",
@@ -238,6 +310,30 @@ export const common: Record<Lang, CommonDict> = {
         plural: "लायर्स डाइस",
         newLabel: "नया लायर्स डाइस",
       },
+      lives: {
+        label: "जान वाला गेम",
+        plural: "जान वाले गेम",
+        newLabel: "नया जान वाला गेम",
+        presets: {
+          scat: "31",
+          screw: "स्क्रू योर नेबर",
+          whist: "नॉक-आउट व्हिस्ट",
+          ship: "शिप, कैप्टन एंड क्रू",
+          custom: "जान वाला गेम",
+        },
+      },
+      pot: {
+        label: "पॉट गेम",
+        plural: "पॉट गेम्स",
+        newLabel: "नया पॉट गेम",
+        presets: {
+          inbetween: "इन-बिटवीन",
+          guts: "गट्स",
+          bourre: "Bourré",
+          pigs: "पास द पिग्स",
+          custom: "पॉट गेम",
+        },
+      },
     },
     ok: "ठीक है",
     on: "चालू",
@@ -297,6 +393,30 @@ export const common: Record<Lang, CommonDict> = {
         label: "Perudo",
         plural: "Perudo",
         newLabel: "Nuevo Perudo",
+      },
+      lives: {
+        label: "Juego de Vidas",
+        plural: "Juegos de Vidas",
+        newLabel: "Nuevo Juego de Vidas",
+        presets: {
+          scat: "Treinta y Uno",
+          screw: "Screw Your Neighbor",
+          whist: "Knock-Out Whist",
+          ship: "Ship, Captain and Crew",
+          custom: "Juego de Vidas",
+        },
+      },
+      pot: {
+        label: "Juego de Bote",
+        plural: "Juegos de Bote",
+        newLabel: "Nuevo Juego de Bote",
+        presets: {
+          inbetween: "Entre Medias",
+          guts: "Guts",
+          bourre: "Bourré",
+          pigs: "Pass the Pigs",
+          custom: "Juego de Bote",
+        },
       },
     },
     ok: "Aceptar",
@@ -358,6 +478,30 @@ export const common: Record<Lang, CommonDict> = {
         plural: "Perudo",
         newLabel: "Nouveau Perudo",
       },
+      lives: {
+        label: "Jeu à Vies",
+        plural: "Jeux à Vies",
+        newLabel: "Nouveau Jeu à Vies",
+        presets: {
+          scat: "Trente et Un",
+          screw: "Screw Your Neighbor",
+          whist: "Knock-Out Whist",
+          ship: "Ship, Captain and Crew",
+          custom: "Jeu à Vies",
+        },
+      },
+      pot: {
+        label: "Jeu de Pot",
+        plural: "Jeux de Pot",
+        newLabel: "Nouveau Jeu de Pot",
+        presets: {
+          inbetween: "In-Between",
+          guts: "Guts",
+          bourre: "Bourré",
+          pigs: "Pass the Pigs",
+          custom: "Jeu de Pot",
+        },
+      },
     },
     ok: "OK",
     on: "Activé",
@@ -417,6 +561,30 @@ export const common: Record<Lang, CommonDict> = {
         label: "نرد الكذاب",
         plural: "نرد الكذاب",
         newLabel: "لعبة نرد كذاب جديدة",
+      },
+      lives: {
+        label: "لعبة الأرواح",
+        plural: "ألعاب الأرواح",
+        newLabel: "لعبة أرواح جديدة",
+        presets: {
+          scat: "31",
+          screw: "سكرو يور نيبور",
+          whist: "نوك آوت ويست",
+          ship: "شيب، كابتن آند كرو",
+          custom: "لعبة الأرواح",
+        },
+      },
+      pot: {
+        label: "لعبة البوت",
+        plural: "ألعاب البوت",
+        newLabel: "لعبة بوت جديدة",
+        presets: {
+          inbetween: "إن بيتوين",
+          guts: "غتس",
+          bourre: "Bourré",
+          pigs: "باس ذا بيغز",
+          custom: "لعبة البوت",
+        },
       },
     },
     ok: "حسنًا",
@@ -478,6 +646,30 @@ export const common: Record<Lang, CommonDict> = {
         plural: "লায়ার্স ডাইস",
         newLabel: "নতুন লায়ার্স ডাইস",
       },
+      lives: {
+        label: "লাইফ গেম",
+        plural: "লাইফ গেম",
+        newLabel: "নতুন লাইফ গেম",
+        presets: {
+          scat: "31",
+          screw: "স্ক্রু ইয়োর নেইবার",
+          whist: "নক-আউট হুইস্ট",
+          ship: "শিপ, ক্যাপ্টেন অ্যান্ড ক্রু",
+          custom: "লাইফ গেম",
+        },
+      },
+      pot: {
+        label: "পট গেম",
+        plural: "পট গেম",
+        newLabel: "নতুন পট গেম",
+        presets: {
+          inbetween: "ইন-বিটুইন",
+          guts: "গাটস",
+          bourre: "Bourré",
+          pigs: "পাস দ্য পিগস",
+          custom: "পট গেম",
+        },
+      },
     },
     ok: "ঠিক আছে",
     on: "চালু",
@@ -537,6 +729,30 @@ export const common: Record<Lang, CommonDict> = {
         label: "Dado Mentiroso",
         plural: "Dado Mentiroso",
         newLabel: "Novo Dado Mentiroso",
+      },
+      lives: {
+        label: "Jogo de Vidas",
+        plural: "Jogos de Vidas",
+        newLabel: "Novo Jogo de Vidas",
+        presets: {
+          scat: "Trinta e Um",
+          screw: "Screw Your Neighbor",
+          whist: "Knock-Out Whist",
+          ship: "Ship, Captain and Crew",
+          custom: "Jogo de Vidas",
+        },
+      },
+      pot: {
+        label: "Jogo de Pote",
+        plural: "Jogos de Pote",
+        newLabel: "Novo Jogo de Pote",
+        presets: {
+          inbetween: "In-Between",
+          guts: "Guts",
+          bourre: "Bourré",
+          pigs: "Pass the Pigs",
+          custom: "Jogo de Pote",
+        },
       },
     },
     ok: "OK",

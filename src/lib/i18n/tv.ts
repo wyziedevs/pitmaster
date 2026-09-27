@@ -227,6 +227,10 @@ export interface TvDict {
     bidWas: string;
     thereWere: Plural;
   };
+  pot: {
+    turn: string;
+    standings: string;
+  };
   cup: {
     title: string;
     badLink: string;
@@ -490,6 +494,10 @@ export const tv: Record<Lang, TvDict> = {
       bidWas: "The bid: {bid}",
       thereWere: { one: "There was {count}", other: "There were {count}" },
     },
+    pot: {
+      turn: "{name}'s turn",
+      standings: "Up and Down",
+    },
     cup: {
       title: "Your Cup",
       badLink: "This link isn't a whole cup. Scan your code on the host's screen again.",
@@ -750,6 +758,10 @@ export const tv: Record<Lang, TvDict> = {
       spotOn: "刚好！",
       bidWas: "叫的是：{bid}",
       thereWere: { other: "实际有 {count} 个" },
+    },
+    pot: {
+      turn: "轮到 {name}",
+      standings: "输赢",
     },
     cup: {
       title: "你的骰盅",
@@ -1012,6 +1024,10 @@ export const tv: Record<Lang, TvDict> = {
       bidWas: "बोली: {bid}",
       thereWere: { one: "असल में {count} था", other: "असल में {count} थे" },
     },
+    pot: {
+      turn: "{name} की बारी",
+      standings: "नफ़ा-नुकसान",
+    },
     cup: {
       title: "आपका कप",
       badLink: "यह लिंक पूरा कप नहीं है। होस्ट की स्क्रीन पर अपना कोड फिर से स्कैन करें।",
@@ -1272,6 +1288,10 @@ export const tv: Record<Lang, TvDict> = {
       spotOn: "¡Calzo!",
       bidWas: "La apuesta: {bid}",
       thereWere: { one: "Había {count}", other: "Había {count}" },
+    },
+    pot: {
+      turn: "Turno de {name}",
+      standings: "Ganado y Perdido",
     },
     cup: {
       title: "Tu Cubilete",
@@ -1534,6 +1554,10 @@ export const tv: Record<Lang, TvDict> = {
       bidWas: "L'annonce : {bid}",
       thereWere: { one: "Il y en avait {count}", other: "Il y en avait {count}" },
     },
+    pot: {
+      turn: "Au tour de {name}",
+      standings: "Gains et Pertes",
+    },
     cup: {
       title: "Votre Gobelet",
       badLink: "Ce lien n'est pas un gobelet complet. Scannez à nouveau votre code sur l'écran de l'hôte.",
@@ -1794,6 +1818,10 @@ export const tv: Record<Lang, TvDict> = {
       spotOn: "بالضبط!",
       bidWas: "المزايدة: {bid}",
       thereWere: { zero: "لم يكن هناك أي حجر", one: "كان هناك حجر واحد", two: "كان هناك حجران", few: "كان هناك {count} أحجار", many: "كان هناك {count} حجرًا", other: "كان هناك {count} حجر" },
+    },
+    pot: {
+      turn: "دور {name}",
+      standings: "الربح والخسارة",
     },
     cup: {
       title: "كوبك",
@@ -2056,6 +2084,10 @@ export const tv: Record<Lang, TvDict> = {
       bidWas: "ডাক: {bid}",
       thereWere: { one: "ছিল {count}টি", other: "ছিল {count}টি" },
     },
+    pot: {
+      turn: "{name}-এর পালা",
+      standings: "লাভ-ক্ষতি",
+    },
     cup: {
       title: "আপনার কাপ",
       badLink: "এই লিংকে পুরো কাপ নেই। হোস্টের স্ক্রিনে আপনার কোডটি আবার স্ক্যান করুন।",
@@ -2316,6 +2348,10 @@ export const tv: Record<Lang, TvDict> = {
       spotOn: "Na Mosca!",
       bidWas: "A aposta: {bid}",
       thereWere: { one: "Havia {count}", other: "Havia {count}" },
+    },
+    pot: {
+      turn: "Vez de {name}",
+      standings: "Ganhos e Perdas",
     },
     cup: {
       title: "Seu Copo",

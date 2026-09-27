@@ -2,11 +2,9 @@
 // left, who's out, places, whose turn it is and what everyone owes all come
 // from them every time, so undoing a round (or fixing one) fixes the rest.
 // the "last one standing" part (lives lost until one is left) is shared by
-// every lives game (kinds/lives.ts); the dice part is here.
+// every lives game (kinds/standing.ts); the dice part is here.
 import type { DiceRound, DiceSettings, Game } from "$lib/types";
-import { defaultPayouts, payoutAmounts } from "$lib/blinds";
-import { round2 } from "$lib/util";
-import { standing } from "../lives";
+import { standing, stakeMoney } from "../standing";
 
 /** what a round did to each player's dice: -1 lost one, +1 got one back */
 export function roundEffect(r: DiceRound): Record<string, number> {
@@ -64,45 +62,12 @@ export function diceState(game: Game) {
   return { ...st, alive, total, palifico, starter, wild, money, over: alive.length <= 1 && ids.length > 1 };
 }
 
-/**
- * what each player paid in and took home.
- *  pot:    everyone's buy-in goes in, paid out by place from the payout table
- *  perDie: every die lost costs a set amount, into a pot the last one standing
- *          takes, or straight to whoever won that round's challenge
- */
-export function diceMoney(game: Game, lost: Record<string, number>, places: Record<string, number | null>) {
-  const s = game.dice!;
-  const ids = game.players.map((p) => p.id);
-  const paid: Record<string, number> = {};
-  const won: Record<string, number> = {};
-  for (const id of ids) (paid[id] = 0), (won[id] = 0);
-  let pool = 0;
-  let payouts: number[] = [];
-  if (s.stakes.mode === "pot") {
-    for (const id of ids) paid[id] = s.stakes.buyIn;
-    pool = round2(s.stakes.buyIn * ids.length);
-    payouts = payoutAmounts(pool, s.stakes.payouts.length ? s.stakes.payouts : defaultPayouts(ids.length), s.stakes.payoutRound || 1);
-    // everyone out at once shares those places' payouts
-    const at: Record<number, string[]> = {};
-    for (const id of ids) if (places[id]) (at[places[id]!] ??= []).push(id);
-    for (const [place, who] of Object.entries(at)) {
-      const from = Number(place);
-      const share = payouts.slice(from - 1, from - 1 + who.length).reduce((a, v) => a + v, 0);
-      for (const id of who) won[id] = round2(share / who.length);
-    }
-  } else {
-    const per = s.stakes.perDie;
-    for (const id of ids) paid[id] = round2((lost[id] ?? 0) * per);
-    if (s.stakes.perDieTo === "pot") {
-      pool = round2(Object.values(paid).reduce((a, v) => a + v, 0));
-      const champ = ids.find((id) => places[id] === 1);
-      if (champ) won[champ] = pool;
-    } else
-      for (const r of game.rounds ?? []) {
-        if (!r.winner) continue;
-        const n = r.losers.filter((id) => id !== r.winner).length;
-        won[r.winner] = round2((won[r.winner] ?? 0) + n * per);
-      }
-  }
-  return { paid, won, pool, payouts };
-}
+/** what each player paid in and took home (see stakeMoney): a die is a life */
+export const diceMoney = (game: Game, lost: Record<string, number>, places: Record<string, number | null>) =>
+  stakeMoney(
+    game.dice!.stakes,
+    game.players.map((p) => p.id),
+    lost,
+    places,
+    (game.rounds ?? []).map((r) => ({ winner: r.winner, lost: Object.fromEntries(r.losers.map((id) => [id, 1])) }))
+  );

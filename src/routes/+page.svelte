@@ -14,7 +14,7 @@
   import { vault } from "$lib/lock.svelte";
   import { rerun } from "$lib/game";
   import { headline, leaderboard } from "$lib/stats";
-  import { KINDS, kind as kindOf } from "$lib/kinds";
+  import { listedKinds, offeredKinds, kind as kindOf } from "$lib/kinds";
   import { ago, amt, day, money, signed } from "$lib/util";
   import { totalCount } from "$lib/chips";
   import { calc, CALC_KEY } from "$lib/calcbox.svelte";
@@ -124,7 +124,7 @@
   <h1>{t("toys.hero.title")}</h1>
   <p class="mt-0 mx-0 mb-4 max-w-[60ch]">{t("toys.hero.subtitle")}</p>
   <div class="row">
-    {#each KINDS as k (k.id)}<a class="btn big max-[480px]:flex-[1_1_100%]" href="/new?type={k.id}"><Icon icon={Plus} />{k.newLabel()}</a>{/each}
+    {#each offeredKinds() as k (k.id)}<a class="btn big max-[480px]:flex-[1_1_100%]" href="/new?type={k.id}"><Icon icon={Plus} />{k.newLabel()}</a>{/each}
   </div>
 </section>
 
@@ -173,7 +173,7 @@
       <input class="w-[min(280px,100%)]" type="search" bind:value={q} placeholder={t("toys.past.searchPlaceholder")} aria-label={t("toys.past.searchAria")} />
       <select bind:value={kind} aria-label={t("toys.past.typeAria")}>
         <option value="all">{t("toys.past.allGames")}</option>
-        {#each KINDS as k (k.id)}<option value={k.id}>{k.plural()}</option>{/each}
+        {#each listedKinds(done.map((g) => g.type)) as k (k.id)}<option value={k.id}>{k.plural()}</option>{/each}
       </select>
       <span class="small muted">{t("toys.past.countOf", { shown: String(found.length), total: String(done.length) })}</span>
     </div>

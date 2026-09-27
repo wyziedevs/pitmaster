@@ -92,6 +92,40 @@ export interface GameSetupDict {
     eachPlayer: string;
     howItPlays: string;
   };
+  lives: {
+    game: string;
+    livesEach: string;
+    stakesPerLife: string;
+    perLife: string;
+    toWinner: string;
+    toWinnerHint: string;
+    toPotHint: string;
+    rules: {
+      scat: string;
+      screw: string;
+      whist: string;
+      ship: string;
+      custom: string;
+    };
+  };
+  pot: {
+    potLegend: string;
+    ante: string;
+    limit: string;
+    limitHint: string;
+    leftover: string;
+    leftoverSplit: string;
+    leftoverBack: string;
+    eachRound: string;
+    firstPot: string;
+    rules: {
+      inbetween: string;
+      guts: string;
+      bourre: string;
+      pigs: string;
+      custom: string;
+    };
+  };
   cash: {
     blinds: {
       legend: string;
@@ -349,6 +383,40 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       entryQuickHint: "Just tap who lost a die. You can switch any time on the dealer screen.",
       eachPlayer: "Each Player Starts With",
       howItPlays: "Everyone rolls under a cup and bids on how many of a face there are on the whole table. Call a bid a liar and the cups come up: whoever was wrong loses a die. The last one with dice wins.",
+    },
+    lives: {
+      game: "Game",
+      livesEach: "Lives Each",
+      stakesPerLife: "Money per Life Lost",
+      perLife: "Per Life Lost {sym}",
+      toWinner: "Whoever Won the Round",
+      toWinnerHint: "Each life lost pays whoever won that round. The most anyone can lose is {most}.",
+      toPotHint: "Each life lost goes in the pot, and the last one standing takes it. The most anyone can lose is {most}.",
+      rules: {
+        scat: "Everyone gets three cards and draws to get closest to 31 in one suit. Knock to end it: everyone gets one more turn, then the lowest hand loses a life, and a knocker caught lowest loses two. A 31 wins at once, and everyone else loses one.",
+        screw: "Everyone gets one card and can swap it with the player on their left, or keep it. A king stops a swap. After the dealer's turn, the lowest card loses a life.",
+        whist: "Seven cards each, then one fewer every round, with a trump suit. Anyone who takes no tricks is out.",
+        ship: "Roll five dice up to three times. You need a 6 (the ship), a 5 (the captain) and a 4 (the crew), in that order, and the other two dice are your score. The lowest score loses a life.",
+        custom: "Everyone starts with the same lives. Each round, take away the ones they lost. The last one with any left wins.",
+      },
+    },
+    pot: {
+      potLegend: "Pot",
+      ante: "Ante {sym}",
+      limit: "Pot Limit {sym}",
+      limitHint: "The most one bet can win or cost, and the most matching the pot costs. 0 means the whole pot.",
+      leftover: "What's Left at the End",
+      leftoverSplit: "Split Evenly",
+      leftoverBack: "Back to Whoever Put It In",
+      eachRound: "The First Pot",
+      firstPot: "{n} players, {ante} each",
+      rules: {
+        inbetween: "Two cards go up, and you bet up to the pot that the next one lands between them. Win and take your bet from the pot; lose and pay it in; hit either card (the post) and pay double.",
+        guts: "Everyone antes and gets their cards, then says in or out. Of those in, the best hand takes the pot and the rest match it. When only one player is in, they take it.",
+        bourre: "Five cards each, and one suit is trumps. Win the most tricks and take the pot. Take no tricks and you're bourréd: match the pot.",
+        pigs: "Everyone antes. Roll the pigs and score by how they land; pig out and pay in. The first to 100 takes the pot.",
+        custom: "A pot everyone antes into, pays into and takes from, however your table plays it.",
+      },
     },
     cash: {
       blinds: {
@@ -610,6 +678,40 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       eachPlayer: "每人起始骰子",
       howItPlays: "每个人把骰子摇在骰盅里，然后叫全桌某个点数一共有几个。有人喊开，就揭开骰盅：错的一方输一颗骰子。最后还有骰子的人获胜。",
     },
+    lives: {
+      game: "游戏",
+      livesEach: "每人几条命",
+      stakesPerLife: "每丢一条命付钱",
+      perLife: "每丢一条命 {sym}",
+      toWinner: "那一轮的赢家",
+      toWinnerHint: "每丢一条命，就付给那一轮的赢家。每人最多输 {most}。",
+      toPotHint: "每丢一条命就放进奖池，最后活下来的人拿走。每人最多输 {most}。",
+      rules: {
+        scat: "每人发三张牌，轮流换牌，争取同一花色的点数最接近 31。有人敲桌就结束：其他人各再轮一次，然后点数最低的扣一条命，敲桌的人如果最低就扣两条。凑到 31 立刻获胜，其他人各扣一条命。",
+        screw: "每人一张牌，可以和左边的玩家交换，也可以留着。有 K 就不能换。庄家轮完后，牌最小的扣一条命。",
+        whist: "每人七张牌，之后每轮少发一张，并有一门将牌。一墩都没赢的人出局。",
+        ship: "五颗骰子最多掷三次。你要按顺序凑出 6（船）、5（船长）和 4（船员），另外两颗骰子就是你的分数。分数最低的扣一条命。",
+        custom: "每人开始时命数相同。每轮扣掉各自丢的命。最后还有命的人获胜。",
+      },
+    },
+    pot: {
+      potLegend: "奖池",
+      ante: "底注 {sym}",
+      limit: "奖池上限 {sym}",
+      limitHint: "一次下注最多能赢或输多少，以及赔奖池最多赔多少。0 表示整个奖池。",
+      leftover: "最后剩下的钱",
+      leftoverSplit: "平分",
+      leftoverBack: "退还给出钱的人",
+      eachRound: "第一个奖池",
+      firstPot: "{n} 名玩家，每人 {ante}",
+      rules: {
+        inbetween: "翻开两张牌，你押不超过奖池的钱，赌下一张落在两张之间。赢了从奖池拿走你的注；输了把注放进奖池；和任一张相同（撞柱）要赔双倍。",
+        guts: "每人下底注拿牌，然后说进还是不进。进的人里牌最好的拿走奖池，其余的人各赔一个奖池。只有一个人进时，他直接拿走。",
+        bourre: "每人五张牌，一门花色是将牌。赢墩最多的人拿走奖池。一墩都没赢就是被 Bourré 了：要赔一个奖池。",
+        pigs: "每人下底注。掷小猪，按落地的姿势计分；掷出 Pig Out 就往奖池付钱。先到 100 分的人拿走奖池。",
+        custom: "一个大家下底注、往里付钱、从里拿钱的奖池，按你们桌上的玩法来。",
+      },
+    },
     cash: {
       blinds: {
         legend: "盲注",
@@ -869,6 +971,40 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       entryQuickHint: "बस उस पर टैप करें जिसने पासा हारा। गेम स्क्रीन पर कभी भी बदल सकते हैं।",
       eachPlayer: "हर खिलाड़ी के शुरुआती पासे",
       howItPlays: "सब अपने कप के नीचे पासे फेंकते हैं और बोली लगाते हैं कि पूरी टेबल पर किसी अंक के कितने पासे हैं। किसी बोली को झूठ कहें तो कप उठते हैं: जो गलत था वह एक पासा हारता है। जिसके पास आखिर तक पासे बचें, वह जीतता है।",
+    },
+    lives: {
+      game: "गेम",
+      livesEach: "हर किसी की जानें",
+      stakesPerLife: "हर गई जान पर पैसे",
+      perLife: "हर गई जान पर {sym}",
+      toWinner: "जिसने राउंड जीता",
+      toWinnerHint: "हर गई जान का पैसा उस राउंड के विजेता को जाता है। कोई भी ज़्यादा से ज़्यादा {most} हार सकता है।",
+      toPotHint: "हर गई जान का पैसा पॉट में जाता है, और आखिर तक बचा खिलाड़ी पूरा पॉट ले जाता है। कोई भी ज़्यादा से ज़्यादा {most} हार सकता है।",
+      rules: {
+        scat: "सबको तीन पत्ते मिलते हैं, और सब पत्ते खींचकर एक ही सूट में 31 के सबसे करीब पहुंचने की कोशिश करते हैं। नॉक करके राउंड खत्म करें: बाकी सबको एक और चाल मिलती है, फिर सबसे कम हाथ वाले की एक जान जाती है, और अगर नॉक करने वाला सबसे कम निकले तो उसकी दो। 31 बनते ही जीत होती है, और बाकी सबकी एक-एक जान जाती है।",
+        screw: "सबको एक पत्ता मिलता है, और हर कोई उसे अपने बाएं वाले खिलाड़ी से बदल सकता है या रख सकता है। बादशाह हो तो अदला-बदली नहीं होती। डीलर की बारी के बाद, सबसे छोटे पत्ते वाले की एक जान जाती है।",
+        whist: "सबको सात पत्ते, फिर हर राउंड एक कम, और एक तुरुप का सूट। जो एक भी हाथ न बनाए, वह बाहर।",
+        ship: "पांच पासे तीन बार तक फेंकें। आपको इसी क्रम में 6 (शिप), 5 (कैप्टन) और 4 (क्रू) चाहिए, और बाकी दो पासे आपका स्कोर हैं। सबसे कम स्कोर वाले की एक जान जाती है।",
+        custom: "सब बराबर जानों से शुरू करते हैं। हर राउंड, जिसकी जितनी जानें गईं उतनी घटाएं। जिसके पास आखिर तक जान बचे, वह जीतता है।",
+      },
+    },
+    pot: {
+      potLegend: "पॉट",
+      ante: "एंटी {sym}",
+      limit: "पॉट लिमिट {sym}",
+      limitHint: "एक बेट ज़्यादा से ज़्यादा कितना जीत या हार सकती है, और पॉट के बराबर भरने में ज़्यादा से ज़्यादा कितना लगता है। 0 का मतलब पूरा पॉट।",
+      leftover: "आखिर में जो बचे",
+      leftoverSplit: "बराबर बांटें",
+      leftoverBack: "जिसने डाला उसे वापस",
+      eachRound: "पहला पॉट",
+      firstPot: "{n} खिलाड़ी, हर एक {ante}",
+      rules: {
+        inbetween: "दो पत्ते खुलते हैं, और आप पॉट तक की बेट लगाते हैं कि अगला पत्ता इनके बीच आएगा। जीतें तो अपनी बेट पॉट से लें; हारें तो उतना पॉट में डालें; किसी भी पत्ते से मेल खाए (पोस्ट) तो दोगुना भरें।",
+        guts: "सब एंटी डालते हैं और पत्ते लेते हैं, फिर बताते हैं कि अंदर हैं या बाहर। अंदर वालों में सबसे अच्छा हाथ पॉट ले जाता है और बाकी पॉट के बराबर भरते हैं। अगर सिर्फ एक खिलाड़ी अंदर हो, तो वही पॉट ले जाता है।",
+        bourre: "सबको पांच पत्ते, और एक सूट तुरुप होता है। सबसे ज़्यादा हाथ बनाएं और पॉट ले जाएं। एक भी हाथ न बने तो आप Bourré हो गए: पॉट के बराबर भरें।",
+        pigs: "सब एंटी डालते हैं। सूअर फेंकें और वे जैसे गिरें उस हिसाब से अंक पाएं; पिग आउट हो तो पॉट में भरें। जो सबसे पहले 100 तक पहुंचे, वह पॉट ले जाता है।",
+        custom: "एक पॉट जिसमें सब एंटी डालते हैं, पैसे डालते हैं और निकालते हैं, जैसे भी आपकी टेबल खेले।",
+      },
     },
     cash: {
       blinds: {
@@ -1130,6 +1266,40 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       eachPlayer: "Cada Jugador Empieza Con",
       howItPlays: "Todos tiran los dados bajo un cubilete y apuestan cuántos dados de un número hay en toda la mesa. Si alguien dice \"dudo\", se levantan los cubiletes: quien se equivocó pierde un dado. El último que tenga dados gana.",
     },
+    lives: {
+      game: "Juego",
+      livesEach: "Vidas por Jugador",
+      stakesPerLife: "Dinero por Vida Perdida",
+      perLife: "Por Vida Perdida {sym}",
+      toWinner: "Quien Ganó la Ronda",
+      toWinnerHint: "Cada vida perdida se le paga a quien ganó esa ronda. Lo máximo que puede perder alguien es {most}.",
+      toPotHint: "Cada vida perdida va al bote, y se lo lleva el último que quede en pie. Lo máximo que puede perder alguien es {most}.",
+      rules: {
+        scat: "Cada uno recibe tres cartas y roba para acercarse lo más posible a 31 en un solo palo. Toca la mesa para cerrar: los demás juegan un turno más, y luego la mano más baja pierde una vida; si quien tocó queda más bajo, pierde dos. Un 31 gana al instante y todos los demás pierden una.",
+        screw: "Cada uno recibe una carta y puede cambiarla con el jugador de su izquierda o quedársela. Un rey bloquea el cambio. Tras el turno del repartidor, la carta más baja pierde una vida.",
+        whist: "Siete cartas cada uno, luego una menos cada ronda, con un palo de triunfo. Quien no gane ninguna baza queda fuera.",
+        ship: "Tira cinco dados hasta tres veces. Necesitas un 6 (el barco), un 5 (el capitán) y un 4 (la tripulación), en ese orden, y los otros dos dados son tu puntuación. La puntuación más baja pierde una vida.",
+        custom: "Todos empiezan con las mismas vidas. En cada ronda, quita las que perdió cada uno. Gana el último al que le quede alguna.",
+      },
+    },
+    pot: {
+      potLegend: "Bote",
+      ante: "Ante {sym}",
+      limit: "Límite del Bote {sym}",
+      limitHint: "Lo máximo que una apuesta puede ganar o costar, y lo máximo que cuesta igualar el bote. 0 significa todo el bote.",
+      leftover: "Lo Que Quede al Final",
+      leftoverSplit: "Repartir a Partes Iguales",
+      leftoverBack: "Devolver a Quien lo Puso",
+      eachRound: "El Primer Bote",
+      firstPot: "{n} jugadores, {ante} cada uno",
+      rules: {
+        inbetween: "Se destapan dos cartas y apuestas, hasta el valor del bote, a que la siguiente cae entre ellas. Si ganas, te llevas tu apuesta del bote; si pierdes, la pagas al bote; si sale igual a una de las dos (el poste), pagas el doble.",
+        guts: "Todos ponen el ante y reciben sus cartas, y luego dicen si entran o no. De los que entran, la mejor mano se lleva el bote y los demás lo igualan. Si solo entra un jugador, se lo lleva.",
+        bourre: "Cinco cartas cada uno, y un palo es triunfo. Gana más bazas que nadie y llévate el bote. Si no ganas ninguna baza, te hacen bourré: igualas el bote.",
+        pigs: "Todos ponen el ante. Tira los cerditos y puntúa según cómo caigan; si sale Pig Out, pagas al bote. El primero en llegar a 100 se lleva el bote.",
+        custom: "Un bote al que todos ponen el ante, pagan y del que sacan, como se juegue en tu mesa.",
+      },
+    },
     cash: {
       blinds: {
         legend: "Ciegas",
@@ -1390,6 +1560,40 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       eachPlayer: "Chaque Joueur Commence avec",
       howItPlays: "Chacun lance ses dés sous un gobelet et annonce combien de dés d'une valeur il y a sur toute la table. Si quelqu'un crie menteur, on lève les gobelets : celui qui s'est trompé perd un dé. Le dernier à avoir des dés gagne.",
     },
+    lives: {
+      game: "Jeu",
+      livesEach: "Vies par Joueur",
+      stakesPerLife: "De l'Argent par Vie Perdue",
+      perLife: "Par Vie Perdue {sym}",
+      toWinner: "Celui Qui a Gagné la Manche",
+      toWinnerHint: "Chaque vie perdue est payée à celui qui a gagné cette manche. On peut perdre au maximum {most}.",
+      toPotHint: "Chaque vie perdue va dans le pot, et le dernier encore en jeu le remporte. On peut perdre au maximum {most}.",
+      rules: {
+        scat: "Chacun reçoit trois cartes et pioche pour s'approcher le plus possible de 31 dans une seule couleur. Frappez pour finir : chacun joue encore un tour, puis la main la plus faible perd une vie, et celui qui a frappé en perd deux s'il est le plus bas. Un 31 gagne tout de suite, et tous les autres perdent une vie.",
+        screw: "Chacun reçoit une carte et peut l'échanger avec le joueur à sa gauche, ou la garder. Un roi bloque l'échange. Après le tour du donneur, la carte la plus basse perd une vie.",
+        whist: "Sept cartes chacun, puis une de moins à chaque manche, avec une couleur d'atout. Celui qui ne fait aucun pli est éliminé.",
+        ship: "Lancez cinq dés jusqu'à trois fois. Il vous faut un 6 (le bateau), un 5 (le capitaine) et un 4 (l'équipage), dans cet ordre, et les deux autres dés font votre score. Le score le plus bas perd une vie.",
+        custom: "Tout le monde commence avec le même nombre de vies. À chaque manche, retirez celles que chacun a perdues. Le dernier à qui il en reste gagne.",
+      },
+    },
+    pot: {
+      potLegend: "Pot",
+      ante: "Ante {sym}",
+      limit: "Limite du Pot {sym}",
+      limitHint: "Le maximum qu'une mise peut gagner ou coûter, et le maximum à payer pour égaler le pot. 0 signifie tout le pot.",
+      leftover: "Ce Qui Reste à la Fin",
+      leftoverSplit: "Partagé à Parts Égales",
+      leftoverBack: "Rendu à Ceux Qui l'Ont Mis",
+      eachRound: "Le Premier Pot",
+      firstPot: "{n} joueurs, {ante} chacun",
+      rules: {
+        inbetween: "Deux cartes sont retournées, et vous misez, jusqu'au montant du pot, que la suivante tombera entre les deux. Gagnez et prenez votre mise dans le pot ; perdez et payez-la au pot ; tombez sur l'une des deux cartes (le poteau) et payez le double.",
+        guts: "Chacun paie l'ante et reçoit ses cartes, puis dit s'il reste ou s'il sort. Parmi ceux qui restent, la meilleure main prend le pot et les autres l'égalent. Si un seul joueur reste, il le prend.",
+        bourre: "Cinq cartes chacun, et une couleur est atout. Faites le plus de plis et prenez le pot. Aucun pli et vous êtes bourré : égalez le pot.",
+        pigs: "Chacun paie l'ante. Lancez les cochons et marquez selon leur chute ; un Pig Out et vous payez au pot. Le premier à 100 prend le pot.",
+        custom: "Un pot où chacun met l'ante, paie et se sert, comme on le joue à votre table.",
+      },
+    },
     cash: {
       blinds: {
         legend: "Blindes",
@@ -1649,6 +1853,40 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       entryQuickHint: "فقط اضغط على من خسر حجرًا. يمكنك التبديل في أي وقت من شاشة اللعبة.",
       eachPlayer: "يبدأ كل لاعب بـ",
       howItPlays: "يرمي الجميع النرد تحت كوب ويزايدون على عدد الأحجار التي تُظهر رقمًا معينًا على الطاولة كلها. إذا كذّب أحد مزايدة تُرفع الأكواب: من كان مخطئًا يخسر حجرًا. آخر من يبقى معه نرد يفوز.",
+    },
+    lives: {
+      game: "اللعبة",
+      livesEach: "الأرواح لكل لاعب",
+      stakesPerLife: "مبلغ عن كل روح تُخسَر",
+      perLife: "عن كل روح تُخسَر {sym}",
+      toWinner: "الفائز بالجولة",
+      toWinnerHint: "كل روح تُخسَر يُدفع ثمنها للفائز بتلك الجولة. أقصى ما يمكن أن يخسره أي لاعب هو {most}.",
+      toPotHint: "كل روح تُخسَر يذهب ثمنها إلى البوت، ويأخذه آخر من يبقى في اللعبة. أقصى ما يمكن أن يخسره أي لاعب هو {most}.",
+      rules: {
+        scat: "يحصل كل لاعب على ثلاث أوراق ويسحب ليقترب قدر الإمكان من 31 في نوع واحد. اطرق الطاولة لإنهاء الجولة: يلعب الجميع دورًا أخيرًا، ثم تخسر أضعف يد روحًا، وإن كان من طرق هو الأضعف يخسر روحين. من يجمع 31 يفوز فورًا، ويخسر كل الباقين روحًا.",
+        screw: "يحصل كل لاعب على ورقة واحدة، ويمكنه تبديلها مع اللاعب الذي على يساره أو الاحتفاظ بها. الملك يمنع التبديل. بعد دور الموزّع، تخسر أصغر ورقة روحًا.",
+        whist: "سبع أوراق لكل لاعب، ثم ورقة أقل في كل جولة، مع نوع طرنيب. من لا يأخذ أي لمّة يخرج.",
+        ship: "ارمِ خمسة أحجار نرد حتى ثلاث مرات. تحتاج إلى 6 (السفينة) و5 (القبطان) و4 (الطاقم) بهذا الترتيب، والحجران الباقيان هما نتيجتك. أقل نتيجة تخسر روحًا.",
+        custom: "يبدأ الجميع بعدد الأرواح نفسه. في كل جولة، اطرح ما خسره كل لاعب. آخر من يبقى معه روح يفوز.",
+      },
+    },
+    pot: {
+      potLegend: "البوت",
+      ante: "الأنتي {sym}",
+      limit: "حد البوت {sym}",
+      limitHint: "أقصى ما يمكن أن يربحه أو يكلّفه رهان واحد، وأقصى ما يكلّفه دفع مثل البوت. 0 يعني البوت كله.",
+      leftover: "ما يتبقى في النهاية",
+      leftoverSplit: "يُقسَّم بالتساوي",
+      leftoverBack: "يعود لمن دفعه",
+      eachRound: "البوت الأول",
+      firstPot: "عدد اللاعبين {n}، و{ante} لكل لاعب",
+      rules: {
+        inbetween: "تُكشف ورقتان، وتراهن بما لا يزيد على البوت أن الورقة التالية ستقع بينهما. إن فزت تأخذ رهانك من البوت، وإن خسرت تدفعه فيه، وإن طابقت إحدى الورقتين (العمود) تدفع الضعف.",
+        guts: "يدفع الجميع الأنتي ويأخذون أوراقهم، ثم يقول كل لاعب إنه داخل أو خارج. من بين الداخلين، تأخذ أفضل يد البوت ويدفع الباقون مثله. إذا دخل لاعب واحد فقط، يأخذ البوت.",
+        bourre: "خمس أوراق لكل لاعب، ونوع واحد هو الطرنيب. خذ أكثر اللمّات لتأخذ البوت. إن لم تأخذ أي لمّة صرت Bourré: ادفع مثل البوت.",
+        pigs: "يدفع الجميع الأنتي. ارمِ الخنازير واحسب النقاط حسب طريقة وقوعها، وإن جاءت بيغ آوت تدفع في البوت. أول من يصل إلى 100 يأخذ البوت.",
+        custom: "بوت يدفع فيه الجميع الأنتي، ويدفعون فيه ويأخذون منه، بالطريقة التي تلعبون بها.",
+      },
     },
     cash: {
       blinds: {
@@ -1917,6 +2155,40 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       eachPlayer: "প্রত্যেক খেলোয়াড়ের শুরুর পাশা",
       howItPlays: "সবাই একটি কাপের নিচে পাশা চালে আর ডাক দেয় পুরো টেবিলে কোনো একটি সংখ্যা কয়টি আছে। কেউ কোনো ডাককে মিথ্যা বললে কাপ তোলা হয়: যে ভুল, সে একটি পাশা হারায়। যার কাছে শেষ পর্যন্ত পাশা থাকে, সে জেতে।",
     },
+    lives: {
+      game: "গেম",
+      livesEach: "প্রত্যেকের লাইফ",
+      stakesPerLife: "প্রতি হারানো লাইফে টাকা",
+      perLife: "প্রতি হারানো লাইফ {sym}",
+      toWinner: "যে রাউন্ড জিতেছে",
+      toWinnerHint: "প্রতিটি হারানো লাইফের টাকা পায় সেই রাউন্ডের বিজয়ী। কেউ সর্বোচ্চ {most} হারাতে পারে।",
+      toPotHint: "প্রতিটি হারানো লাইফের টাকা পটে যায়, আর শেষ পর্যন্ত যে টিকে থাকে সে পুরোটা নেয়। কেউ সর্বোচ্চ {most} হারাতে পারে।",
+      rules: {
+        scat: "সবাই তিনটি তাস পায় আর তাস টেনে এক রঙে 31-এর যত কাছে সম্ভব যেতে চায়। নক করে শেষ করুন: বাকি সবাই আর একটি চাল পায়, তারপর সবচেয়ে কম হাত একটি লাইফ হারায়, আর নক করা খেলোয়াড় সবচেয়ে কম হলে হারায় দুটি। 31 হলে সঙ্গে সঙ্গে জয়, আর বাকি সবাই একটি করে লাইফ হারায়।",
+        screw: "সবাই একটি তাস পায়, আর বাঁ পাশের খেলোয়াড়ের সঙ্গে বদলাতে পারে বা রেখে দিতে পারে। সাহেব থাকলে বদল হয় না। ডিলারের পালার পর, সবচেয়ে ছোট তাস একটি লাইফ হারায়।",
+        whist: "প্রত্যেকে সাতটি তাস, তারপর প্রতি রাউন্ডে একটি করে কম, আর একটি তুরুপের রং। যে একটিও পিঠ পায় না, সে আউট।",
+        ship: "পাঁচটি পাশা তিনবার পর্যন্ত চালুন। আপনার চাই এই ক্রমে একটি 6 (শিপ), একটি 5 (ক্যাপ্টেন) আর একটি 4 (ক্রু), আর বাকি দুটি পাশা আপনার স্কোর। সবচেয়ে কম স্কোর একটি লাইফ হারায়।",
+        custom: "সবাই সমান লাইফ নিয়ে শুরু করে। প্রতি রাউন্ডে, যে যতগুলো হারাল তা কেটে দিন। শেষ পর্যন্ত যার লাইফ বাকি থাকে, সে জেতে।",
+      },
+    },
+    pot: {
+      potLegend: "পট",
+      ante: "অ্যান্টি {sym}",
+      limit: "পট লিমিট {sym}",
+      limitHint: "একটি বেট সর্বোচ্চ কত জিততে বা হারাতে পারে, আর পটের সমান দিতে সর্বোচ্চ কত লাগে। 0 মানে পুরো পট।",
+      leftover: "শেষে যা বাকি থাকে",
+      leftoverSplit: "সমান ভাগ",
+      leftoverBack: "যে দিয়েছে তাকে ফেরত",
+      eachRound: "প্রথম পট",
+      firstPot: "{n} জন খেলোয়াড়, প্রত্যেকে {ante}",
+      rules: {
+        inbetween: "দুটি তাস খোলা হয়, আর আপনি পট পর্যন্ত বেট ধরেন যে পরের তাসটি এ দুটির মাঝে পড়বে। জিতলে বেটের টাকা পট থেকে নিন; হারলে পটে দিন; কোনো একটির সঙ্গে মিললে (পোস্ট) দ্বিগুণ দিন।",
+        guts: "সবাই অ্যান্টি দেয় আর তাস পায়, তারপর বলে ইন নাকি আউট। যারা ইন, তাদের মধ্যে সেরা হাত পট নেয় আর বাকিরা পটের সমান দেয়। শুধু একজন ইন থাকলে সে-ই পট নেয়।",
+        bourre: "প্রত্যেকে পাঁচটি তাস, আর একটি রং তুরুপ। সবচেয়ে বেশি পিঠ নিন আর পট জিতুন। একটিও পিঠ না পেলে আপনি Bourré: পটের সমান দিন।",
+        pigs: "সবাই অ্যান্টি দেয়। শূকরগুলো চালুন আর সেগুলো কীভাবে পড়ে সেই অনুযায়ী পয়েন্ট পান; পিগ আউট হলে পটে দিন। যে প্রথম 100-তে পৌঁছায়, সে পট নেয়।",
+        custom: "একটি পট যাতে সবাই অ্যান্টি দেয়, টাকা দেয় আর তা থেকে নেয়, আপনার টেবিল যেভাবে খেলে।",
+      },
+    },
     cash: {
       blinds: {
         legend: "ব্লাইন্ড",
@@ -2176,6 +2448,40 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       entryQuickHint: "Só toque em quem perdeu um dado. Dá para trocar a qualquer momento na tela do jogo.",
       eachPlayer: "Cada Jogador Começa Com",
       howItPlays: "Todos rolam os dados sob um copo e apostam quantos dados de um número há na mesa inteira. Se alguém chamar uma aposta de mentira, os copos são levantados: quem errou perde um dado. O último com dados vence.",
+    },
+    lives: {
+      game: "Jogo",
+      livesEach: "Vidas por Jogador",
+      stakesPerLife: "Dinheiro por Vida Perdida",
+      perLife: "Por Vida Perdida {sym}",
+      toWinner: "Quem Ganhou a Rodada",
+      toWinnerHint: "Cada vida perdida paga quem ganhou aquela rodada. O máximo que alguém pode perder é {most}.",
+      toPotHint: "Cada vida perdida vai para o pote, e o último que sobrar leva tudo. O máximo que alguém pode perder é {most}.",
+      rules: {
+        scat: "Cada um recebe três cartas e compra para chegar o mais perto de 31 em um só naipe. Bata para encerrar: todos jogam mais uma vez, e então a mão mais baixa perde uma vida; se quem bateu ficar com a mais baixa, perde duas. Um 31 vence na hora, e todos os outros perdem uma.",
+        screw: "Cada um recebe uma carta e pode trocá-la com o jogador à esquerda, ou ficar com ela. Um rei bloqueia a troca. Depois da vez de quem deu as cartas, a carta mais baixa perde uma vida.",
+        whist: "Sete cartas para cada um, depois uma a menos a cada rodada, com um naipe de trunfo. Quem não fizer nenhuma vaza está fora.",
+        ship: "Role cinco dados até três vezes. Você precisa de um 6 (o navio), um 5 (o capitão) e um 4 (a tripulação), nessa ordem, e os outros dois dados são sua pontuação. A pontuação mais baixa perde uma vida.",
+        custom: "Todos começam com as mesmas vidas. A cada rodada, tire as que cada um perdeu. O último que ainda tiver alguma vence.",
+      },
+    },
+    pot: {
+      potLegend: "Pote",
+      ante: "Ante {sym}",
+      limit: "Limite do Pote {sym}",
+      limitHint: "O máximo que uma aposta pode ganhar ou custar, e o máximo que custa igualar o pote. 0 significa o pote inteiro.",
+      leftover: "O Que Sobrar no Final",
+      leftoverSplit: "Dividir Igualmente",
+      leftoverBack: "Devolver a Quem Colocou",
+      eachRound: "O Primeiro Pote",
+      firstPot: "{n} jogadores, {ante} cada",
+      rules: {
+        inbetween: "Duas cartas são viradas, e você aposta, até o valor do pote, que a próxima cai entre elas. Ganhou, pega sua aposta do pote; perdeu, paga no pote; bateu em uma das duas (a trave), paga o dobro.",
+        guts: "Todos pagam o ante e recebem as cartas, e então dizem se estão dentro ou fora. Entre os que estão dentro, a melhor mão leva o pote e os outros o igualam. Se só um jogador estiver dentro, ele leva.",
+        bourre: "Cinco cartas para cada um, e um naipe é trunfo. Faça mais vazas e leve o pote. Não fez nenhuma vaza, levou bourré: iguale o pote.",
+        pigs: "Todos pagam o ante. Role os porquinhos e pontue pelo jeito que caem; deu Pig Out, paga no pote. O primeiro a chegar a 100 leva o pote.",
+        custom: "Um pote em que todos pagam o ante, colocam e tiram, do jeito que sua mesa joga.",
+      },
     },
     cash: {
       blinds: {

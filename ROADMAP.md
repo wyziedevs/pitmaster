@@ -171,7 +171,7 @@ Move cash and tournament onto this first, with no change in behavior. Then `Game
 
 ## Phase 10: Liar's Dice
 
-**Status: done.** `kinds/dice` (engine, actions, form, dealer screen, tv board) on `kinds/lives.ts`. Players out in the same round (a spot on where everyone else loses a die) share the best of their places, and share those places' payouts. A buy-in pot is paid by the house once it's over; money per die is owed as the dice go, player to player. In quick mode with money going to the winner of each call, the host says who won it. The TV hides its usual toast for a call and shows the call itself instead.
+**Status: done.** `kinds/dice` (engine, actions, form, dealer screen, tv board) on `kinds/lives.ts` (now `kinds/standing.ts`). Players out in the same round (a spot on where everyone else loses a die) share the best of their places, and share those places' payouts. A buy-in pot is paid by the house once it's over; money per die is owed as the dice go, player to player. In quick mode with money going to the winner of each call, the host says who won it. The TV hides its usual toast for a call and shows the call itself instead.
 
 The first game that isn't poker. It's built on a **last one standing** engine, where players lose lives (here, dice) until one is left, so the other lives games in Phase 11 reuse it.
 
@@ -240,6 +240,8 @@ All randomness comes from `crypto.getRandomValues`.
 - The server's KV and Durable Object logs show only ids, key hashes and ciphertext.
 
 ## Phase 11: Table and pot games
+
+**Status: done.** Two kinds: `lives` (one kind, with 31, Screw Your Neighbor, Knock-Out Whist, Ship, Captain and Crew and a custom preset, each with its lives, its token on the TV and its rules; a round records the lives each player lost, and 31's knocker caught lowest loses two by tapping twice) and `pot` (In-Between, Guts, Bourré, Pass the Pigs and a custom preset). The last-one-standing engine moved to `kinds/standing.ts` with the stakes (`stakeMoney`), shared with liar's dice. A pot game's events are all that's saved; what's left in the pot at the end is split evenly or goes back in proportion to what each put in, and the odd cents fall to the first players. The TV's recent pot events are written from the events, since a remote TV never gets the log.
 
 Two engines cover most other games people play for chips around a table.
 

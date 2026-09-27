@@ -77,6 +77,10 @@ export interface SettingsDict {
         label: string;
         hint: string;
       };
+      otherGames: {
+        label: string;
+        hint: string;
+      };
       waitlist: { label: string; hint: string };
       leagues: {
         label: string;
@@ -386,6 +390,10 @@ export const settings: Record<Lang, SettingsDict> = {
         variants: {
           label: "Other Poker Games",
           hint: "Omaha, stud, draw and mixed games like HORSE, and dealer's choice for cash games.",
+        },
+        otherGames: {
+          label: "Games Besides Poker",
+          hint: "Liar's dice, lives games like 31, and pot games like In-Between, each with its own screens and TV board.",
         },
         waitlist: { label: "Waitlist", hint: "Cash games: who's next for a seat, on the TV and on phones." },
         leagues: {
@@ -759,6 +767,10 @@ export const settings: Record<Lang, SettingsDict> = {
           label: "其他扑克玩法",
           hint: "奥马哈、梭哈、换牌和 HORSE 等混合玩法，现金局还可以玩庄家选择。",
         },
+        otherGames: {
+          label: "扑克以外的游戏",
+          hint: "吹牛骰子、31 点这类生命值游戏，以及 In-Between 这类奖池游戏，各有自己的页面和电视画面。",
+        },
         waitlist: { label: "候补名单", hint: "现金局：谁下一个入座，显示在电视和手机上。" },
         leagues: {
           label: "联赛",
@@ -1129,6 +1141,10 @@ export const settings: Record<Lang, SettingsDict> = {
         variants: {
           label: "दूसरे पोकर गेम्स",
           hint: "ओमाहा, स्टड, ड्रॉ और HORSE जैसे मिक्स्ड गेम्स, और कैश गेम्स के लिए डीलर्स चॉइस।",
+        },
+        otherGames: {
+          label: "पोकर के अलावा गेम",
+          hint: "लायर्स डाइस, 31 जैसे लाइव्स गेम और इन-बिटवीन जैसे पॉट गेम, हर एक की अपनी स्क्रीन और टीवी बोर्ड के साथ।",
         },
         waitlist: { label: "वेटलिस्ट", hint: "कैश गेम: अगली सीट किसकी है, टीवी और फ़ोन पर।" },
         leagues: {
@@ -1501,6 +1517,10 @@ export const settings: Record<Lang, SettingsDict> = {
           label: "Otros Juegos de Póker",
           hint: "Omaha, stud, draw y juegos mixtos como HORSE, y elección del dealer en las partidas de cash.",
         },
+        otherGames: {
+          label: "Juegos Además del Póker",
+          hint: "Perudo, juegos de vidas como el 31 y juegos de bote como In-Between, cada uno con sus propias pantallas y su tablero en la TV.",
+        },
         waitlist: { label: "Lista de espera", hint: "Partidas de cash: quién sigue para sentarse, en la TV y en los teléfonos." },
         leagues: {
           label: "Ligas",
@@ -1872,6 +1892,10 @@ export const settings: Record<Lang, SettingsDict> = {
           label: "Autres Jeux de Poker",
           hint: "Omaha, stud, draw et jeux mixtes comme le HORSE, plus le choix du donneur en cash game.",
         },
+        otherGames: {
+          label: "Jeux Autres que le Poker",
+          hint: "Le Perudo, les jeux à vies comme le 31 et les jeux de pot comme In-Between, chacun avec ses écrans et son tableau sur la TV.",
+        },
         waitlist: { label: "Liste d'attente", hint: "Parties cash : qui est le prochain à s'asseoir, sur la TV et les téléphones." },
         leagues: {
           label: "Ligues",
@@ -2242,6 +2266,10 @@ export const settings: Record<Lang, SettingsDict> = {
         variants: {
           label: "ألعاب بوكر أخرى",
           hint: "أوماها وستاد ودرو وألعاب مختلطة مثل HORSE، واختيار الموزّع في ألعاب الكاش.",
+        },
+        otherGames: {
+          label: "ألعاب غير البوكر",
+          hint: "نرد الكذاب، وألعاب الأرواح مثل 31، وألعاب الوعاء مثل In-Between، لكل منها شاشاتها ولوحتها على التلفاز.",
         },
         waitlist: { label: "قائمة الانتظار", hint: "ألعاب الكاش: من التالي للجلوس، على التلفاز والهواتف." },
         leagues: {
@@ -2621,6 +2649,10 @@ export const settings: Record<Lang, SettingsDict> = {
           label: "অন্যান্য পোকার গেম",
           hint: "ওমাহা, স্টাড, ড্র আর HORSE-এর মতো মিক্সড গেম, আর ক্যাশ গেমের জন্য ডিলার্স চয়েস।",
         },
+        otherGames: {
+          label: "পোকার ছাড়া অন্য গেম",
+          hint: "লায়ার্স ডাইস, 31-এর মতো লাইভস গেম আর ইন-বিটুইনের মতো পট গেম, প্রতিটির নিজস্ব স্ক্রিন আর টিভি বোর্ডসহ।",
+        },
         waitlist: { label: "ওয়েটলিস্ট", hint: "ক্যাশ গেম: পরের সিট কার, টিভিতে আর ফোনে।" },
         leagues: {
           label: "লিগ",
@@ -2991,6 +3023,10 @@ export const settings: Record<Lang, SettingsDict> = {
         variants: {
           label: "Outros Jogos de Pôquer",
           hint: "Omaha, stud, draw e jogos mistos como HORSE, e escolha do dealer nos jogos a dinheiro.",
+        },
+        otherGames: {
+          label: "Jogos Além do Pôquer",
+          hint: "Dado Mentiroso, jogos de vidas como o 31 e jogos de pote como In-Between, cada um com suas próprias telas e seu painel na TV.",
         },
         waitlist: { label: "Lista de espera", hint: "Jogos a dinheiro: quem é o próximo a sentar, na TV e nos celulares." },
         leagues: {

@@ -1,6 +1,6 @@
 <script lang="ts">
-  // a new liar's dice game: who's playing, the house's rules, and what it's
-  // played for. there are no chips or blinds; the dice are the lives.
+  // a new lives game: which one (31, screw your neighbor...), how many lives,
+  // who's playing, and what it's played for
   import Icon from "$lib/components/Icon.svelte";
   import ArrowRight from "@lucide/svelte/icons/arrow-right";
   import Plus from "@lucide/svelte/icons/plus";
@@ -11,29 +11,33 @@
   import { currentLeague } from "$lib/stats";
   import { settings, houseRules } from "$lib/settings.svelte";
   import { nameKey } from "$lib/util";
-  import { reveal, slide } from "$lib/motion";
   import StakesFields from "../StakesFields.svelte";
-  import Die from "$lib/components/Die.svelte";
-  import type { DiceSettings, GameType } from "$lib/types";
-  import { DICE_DEFAULTS, rulesLine } from "./index";
+  import Life from "./Life.svelte";
+  import type { GameType, LivesSettings } from "$lib/types";
+  import { LIVES_DEFAULTS } from "./index";
+  import { LIVES_PRESETS, livesPreset } from "./presets";
   import { t, tp } from "$lib/i18n";
 
-  // (this form is only ever liar's dice)
+  // (this form is only ever a lives game)
   let {}: { type: GameType } = $props();
-  const type: GameType = "dice";
+  const type: GameType = "lives";
 
-  const d = DICE_DEFAULTS();
+  const d = LIVES_DEFAULTS();
   const day = new Date().toLocaleDateString(settings.language, { weekday: "long" });
-  let name = $state(`${day} ${t("common.kinds.dice.label")}`);
+  let preset = $state<LivesSettings["preset"]>(d.preset);
+  let name = $state("");
+  let named = false;
+  // the name follows the game picked until the host types their own
+  $effect(() => {
+    if (!named) name = `${day} ${t(`common.kinds.lives.presets.${preset}`)}`;
+  });
+  let lives = $state(d.lives);
+  $effect(() => {
+    lives = livesPreset(preset).lives;
+  });
+  let stakes = $state({ ...d.stakes, payoutRound: settings.payoutRound || 1 });
   let playerNames = $state("");
   let notes = $state(settings.rulesOnNew ? houseRules().join("\n") : "");
-  let dice = $state(d.dice);
-  let onesWild = $state(d.onesWild);
-  let spotOn = $state(d.spotOn);
-  let palifico = $state(d.palifico);
-  let entry = $state(d.entry);
-  let stakes = $state({ ...d.stakes, payoutRound: settings.payoutRound || 1 });
-
   const names = $derived(
     playerNames
       .split(/\n|,/)
@@ -41,45 +45,40 @@
       .filter(Boolean)
   );
 
-  const rules = (): DiceSettings => ({
-    dice: Math.max(1, Math.min(20, Math.round(dice || 5))),
-    onesWild,
-    spotOn,
-    palifico,
-    stakes: { ...$state.snapshot(stakes), buyIn: Math.max(0, stakes.buyIn || 0), perDie: Math.max(0, stakes.perDie || 0) },
-    entry,
-  });
-
-  // the league that's on for this kind of game, if there is one
   const leagues = getLeagues().filter((l) => l.types.includes(type));
   let leagueId = $state(currentLeague(leagues, type)?.id ?? "");
-
-  // regulars one click away, most games first
   const regulars = knownPlayers().slice(0, 16);
   const unlisted = $derived(regulars.filter((r) => !names.some((n) => nameKey(n) === nameKey(r.name))));
   const addRegular = (n: string) => (playerNames = (playerNames.trim() ? playerNames.trim() + "\n" : "") + n);
 
   function create() {
     if (names.length < 2 && !confirm(t("gameSetup.dice.fewPlayersConfirm"))) return;
-    const g = newGame({ name: name.trim() || `${day} ${t("common.kinds.dice.label")}`, type, chipSetName: "", multiplier: 1, chips: [], notes, players: names, levels: [] });
-    g.dice = rules();
+    const g = newGame({ name: name.trim() || `${day} ${t(`common.kinds.lives.presets.${preset}`)}`, type, chipSetName: "", multiplier: 1, chips: [], notes, players: names, levels: [] });
+    g.lives = { preset, lives: Math.max(1, Math.min(50, Math.round(lives || 1))), stakes: { ...$state.snapshot(stakes), buyIn: Math.max(0, stakes.buyIn || 0), perDie: Math.max(0, stakes.perDie || 0) } };
     if (leagueId && leagues.some((l) => l.id === leagueId)) g.leagueId = leagueId;
     saveGame(g);
     goto(`/game/${g.id}`);
   }
 </script>
 
-<svelte:head><title>{t("common.kinds.dice.newLabel")} · PitMaster</title></svelte:head>
+<svelte:head><title>{t("common.kinds.lives.newLabel")} · PitMaster</title></svelte:head>
 
 <div class="spread" use:pagehead>
-  <h1>{t("common.kinds.dice.newLabel")}</h1>
+  <h1>{t("common.kinds.lives.newLabel")}</h1>
 </div>
 
 <div class="cols">
   <div>
     <fieldset class="border-0 mt-0 mx-0 mb-[22px] p-0 min-w-0">
       <legend class="ruled w-full px-0">{t("gameSetup.basics.legend")}</legend>
-      <label><span>{t("gameSetup.basics.name")}</span><input type="text" bind:value={name} style="width:100%" /></label>
+      <label>
+        <span>{t("gameSetup.lives.game")}</span>
+        <select bind:value={preset}>
+          {#each LIVES_PRESETS as p (p.id)}<option value={p.id}>{t(`common.kinds.lives.presets.${p.id}`)}</option>{/each}
+        </select>
+      </label>
+      <p class="small muted -mt-1 mx-0 mb-[10px]">{t(`gameSetup.lives.rules.${preset}`)}</p>
+      <label><span>{t("gameSetup.basics.name")}</span><input type="text" bind:value={name} oninput={() => (named = true)} style="width:100%" /></label>
       {#if leagues.length}
         <label>
           <span class="links">{t("gameSetup.basics.league")} <a href="/players#leagues">{t("gameSetup.basics.editLeagues")}</a></span>
@@ -89,38 +88,14 @@
           </select>
         </label>
       {/if}
-    </fieldset>
-
-    <fieldset class="border-0 mt-0 mx-0 mb-[22px] p-0 min-w-0">
-      <legend class="ruled w-full px-0">{t("gameSetup.dice.rulesLegend")}</legend>
       <div class="row">
-        <label><span>{t("gameSetup.dice.dicePerPlayer")}</span><input type="number" min="1" max="20" step="1" bind:value={dice} /></label>
+        <label><span>{t("gameSetup.lives.livesEach")}</span><input type="number" min="1" max="50" step="1" bind:value={lives} /></label>
       </div>
-      <label class="across"><input type="checkbox" bind:checked={onesWild} /><span>{t("gameSetup.dice.onesWild")}</span></label>
-      <label class="across"><input type="checkbox" bind:checked={palifico} /><span>{t("gameSetup.dice.palifico")}</span></label>
-      {#if palifico}<p class="small muted -mt-1 mx-0 mb-[10px]" transition:slide={reveal()}>{t("gameSetup.dice.palificoHint")}</p>{/if}
-      <label>
-        <span>{t("gameSetup.dice.spotOn")}</span>
-        <select bind:value={spotOn}>
-          <option value="others">{t("gameSetup.dice.spotOnOthers")}</option>
-          <option value="gain">{t("gameSetup.dice.spotOnGain")}</option>
-          <option value="off">{t("gameSetup.dice.spotOnOff")}</option>
-        </select>
-      </label>
     </fieldset>
 
     <fieldset class="border-0 mt-0 mx-0 mb-[22px] p-0 min-w-0">
       <legend class="ruled w-full px-0">{t("gameSetup.dice.stakesLegend")}</legend>
-      <StakesFields bind:stakes players={names.length} lives={dice} unit="die" />
-    </fieldset>
-
-    <fieldset class="border-0 mt-0 mx-0 mb-[22px] p-0 min-w-0">
-      <legend class="ruled w-full px-0">{t("gameSetup.dice.entryLegend")}</legend>
-      <div class="row" role="radiogroup" aria-label={t("gameSetup.dice.entryLegend")}>
-        <label class="across"><input type="radio" name="entry" value="full" bind:group={entry} /><span>{t("gameSetup.dice.entryFull")}</span></label>
-        <label class="across"><input type="radio" name="entry" value="quick" bind:group={entry} /><span>{t("gameSetup.dice.entryQuick")}</span></label>
-      </div>
-      <p class="small muted -mt-1 mx-0 mb-0">{t(entry === "full" ? "gameSetup.dice.entryFullHint" : "gameSetup.dice.entryQuickHint")}</p>
+      <StakesFields bind:stakes players={names.length} {lives} unit="life" />
     </fieldset>
 
     <fieldset class="border-0 mt-0 mx-0 mb-[22px] p-0 min-w-0">
@@ -144,9 +119,8 @@
 
   <div class="preview">
     <h2>{t("gameSetup.dice.eachPlayer")}</h2>
-    <div class="felt flex flex-wrap gap-2 items-center">{#each Array.from({ length: Math.max(1, Math.min(20, dice || 1)) }) as _, i (i)}<Die value={(i % 6) + 1} size="30px" />{/each}</div>
-    <p class="small">{rulesLine(rules())}</p>
-    <p class="small muted">{t("gameSetup.dice.howItPlays")}</p>
+    <div class="felt flex flex-wrap gap-2 items-center">{#each Array.from({ length: Math.max(1, Math.min(50, lives || 1)) }) as _, i (i)}<Life token={livesPreset(preset).token} size="28px" />{/each}</div>
+    <p class="small">{tp("gamePlay.lives.livesEach", lives || 1)}</p>
   </div>
 </div>
 

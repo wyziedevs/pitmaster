@@ -5,7 +5,7 @@
   import ArrowDown from "@lucide/svelte/icons/arrow-down";
   import Seg from "$lib/components/Seg.svelte";
   import Leagues from "$lib/components/Leagues.svelte";
-  import { KINDS, kind } from "$lib/kinds";
+  import { listedKinds, kind } from "$lib/kinds";
   import { flip as flipRows } from "svelte/animate";
   import { bump, reorder, reveal, slide } from "$lib/motion";
   import { getGame, getGames, getHandles, getLeagues, saveGame, saveHandles } from "$lib/store";
@@ -58,6 +58,8 @@
     type !== "tournament" && board.some((l) => l.cashGames),
   );
   const hasTourney = $derived(type !== "cash" && board.some((l) => l.tourneys));
+  // wins count in any game with places (liar's dice, a lives game), not just tournaments
+  const hasWins = $derived(hasTourney || board.some((l) => l.wins));
   const moved = $derived(
     round2(
       board.reduce((s, l) => s + l.results.reduce((a, r) => a + r.cost, 0), 0),
@@ -250,7 +252,7 @@
     value={type}
     options={[
       { id: "all", label: t("players.page.filter.allGames") },
-      ...KINDS.map((k) => ({ id: k.id, label: k.plural() })),
+      ...listedKinds(games.map((g) => g.type)).map((k) => ({ id: k.id, label: k.plural() })),
     ]}
     onpick={(v) => (type = v)}
     labelledby="type-l"
@@ -305,7 +307,9 @@
               t("players.page.table.tournaments"),
               true,
               "hide-sm",
-            )}{@render th("wins", t("players.page.table.wins"), true)}{@render th(
+            )}{/if}
+          {#if hasWins}{@render th("wins", t("players.page.table.wins"), true)}{/if}
+          {#if hasTourney}{@render th(
               "itm",
               t("players.page.table.itm"),
               true,
@@ -350,7 +354,9 @@
               <td class="num hide-sm {cls(l.tourneyNet)}"
                 >{l.tourneys ? signed(l.tourneyNet) : ""}</td
               >
-              <td class="num">{l.wins || ""}</td>
+            {/if}
+            {#if hasWins}<td class="num">{l.wins || ""}</td>{/if}
+            {#if hasTourney}
               <td class="num hide-sm"
                 >{itmPct(l) === null ? "" : `${itmPct(l)}%`}</td
               >

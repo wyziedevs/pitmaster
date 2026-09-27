@@ -11,7 +11,7 @@
   import { toast } from "$lib/toast.svelte";
   import { reveal, slide } from "$lib/motion";
   import type { Game, GameType, League, LeaguePoints } from "$lib/types";
-  import { KINDS, kind } from "$lib/kinds";
+  import { KINDS, kind, listedKinds } from "$lib/kinds";
   import { t, tp } from "$lib/i18n";
 
   // games: everything saved, for the standings. reload: read them again after linking some
@@ -223,7 +223,7 @@
     </div>
     <div class="row">
       <span class="small muted">{t("players.leagues.form.counts")}</span>
-      {#each KINDS as k (k.id)}<label class="across"><input type="checkbox" bind:group={draft.types} value={k.id} /><span>{k.plural()}</span></label>{/each}
+      {#each listedKinds([...draft.types, ...games.map((g) => g.type)]) as k (k.id)}<label class="across"><input type="checkbox" bind:group={draft.types} value={k.id} /><span>{k.plural()}</span></label>{/each}
     </div>
     <label>
       <span>{t("players.leagues.form.points")}</span>

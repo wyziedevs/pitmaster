@@ -1,7 +1,7 @@
 // liar's dice: everyone starts with the same dice under a cup, bids go round
 // the table on how many of a face there are in all, and a bid called a liar
 // (or spot on) costs someone a die. the last one with dice wins. played on the
-// "last one standing" engine (kinds/lives.ts) the other lives games share.
+// "last one standing" engine (kinds/standing.ts) the other lives games share.
 import type { DiceSettings, Game, Player } from "$lib/types";
 import type { Kind, Line } from "../kind";
 import type { Result } from "$lib/stats";

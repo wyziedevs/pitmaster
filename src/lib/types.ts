@@ -294,7 +294,7 @@ export interface Payment {
   at: number;
 }
 
-export type GameType = "cash" | "tournament" | "dice";
+export type GameType = "cash" | "tournament" | "dice" | "lives" | "pot";
 
 /**
  * what a liar's dice game is played for.
@@ -310,6 +310,53 @@ export interface DiceStakes {
   payoutRound: number;
   perDie: number;
   perDieTo: "pot" | "winner";
+}
+
+/**
+ * a lives game (31, screw your neighbor, knock-out whist, ship captain and
+ * crew): everyone starts with the same lives, rounds take them away, and the
+ * last one with any wins. played for what liar's dice is (DiceStakes, a life
+ * being a die).
+ */
+export interface LivesSettings {
+  preset: "scat" | "screw" | "whist" | "ship" | "custom";
+  lives: number;
+  stakes: DiceStakes;
+}
+
+/** one round of a lives game: the lives each player lost in it, and who won it (for money per life lost) */
+export interface LivesRound {
+  lost: Record<string, number>;
+  winner?: string;
+  at: number;
+}
+
+/**
+ * a pot game (in-between, guts, bourre, pass the pigs): a running pot that
+ * players ante into, pay into and take from.
+ */
+export interface PotSettings {
+  preset: "inbetween" | "guts" | "bourre" | "pigs" | "custom";
+  /** what each player puts in to start a round */
+  ante: number;
+  /** the most one bet can win or cost, and what matching the pot pays at most (0 = the whole pot) */
+  limit: number;
+  /** what's left in the pot at the end: split evenly, or back to whoever put it in */
+  leftover: "split" | "back";
+}
+
+/**
+ * one thing that happened to a pot. ante: everyone listed puts `amount` in;
+ * pay and match: they put `amount` in (a lost bet, or matching the pot);
+ * take: they take `amount` out (a won bet, or the whole pot)
+ */
+export interface PotEvent {
+  kind: "ante" | "pay" | "match" | "take";
+  players: string[];
+  amount: number;
+  at: number;
+  /** in-between: how a bet went (a post pays double) */
+  note?: "win" | "lose" | "post";
 }
 
 /** how a liar's dice game is played */
@@ -427,6 +474,12 @@ export interface Game {
   cups?: CupState;
   /** each player's seat key: only on the host's own device, never in a snapshot */
   cupKeys?: Record<string, string>;
+  /** a lives game: how it's played, and every round so far */
+  lives?: LivesSettings;
+  lifeRounds?: LivesRound[];
+  /** a pot game: how it's played, and everything that's happened to the pot */
+  pot?: PotSettings;
+  potEvents?: PotEvent[];
   /** cash: the side games' bomb pots, 7-2 wins and high hands, in order */
   sides?: SideEvent[];
   /** shared costs: they go into settle-up, not into anyone's results */
