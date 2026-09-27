@@ -5,6 +5,7 @@ import type { BountyKind, CashRake, HostPrefs } from "./types";
 import { DEFAULT_PALETTE_KEY } from "./keys";
 import { onSaved, readSlot, save } from "./vault";
 import { detectLanguage, isRtl } from "./i18n/langs";
+import { oneOf, type Is } from "./shape";
 
 export type Theme = "system" | "light" | "dark";
 
@@ -234,13 +235,23 @@ export function saveSettings() {
 // brings the house rules, money and defaults, but not these
 const THIS_SCREEN: (keyof Settings)[] = ["theme", "motion", "language", "sounds", "volume", "paletteKey", "autoLock", "intro"];
 
-/** take on the settings from another device's backup (unknown or mistyped keys are skipped) */
+// what a backup's value has to be past its type: one of a few words, or a number in range
+// (every other number is a count, an amount or minutes, so never below 0)
+const ALLOWED: Partial<Record<keyof Settings, Is>> = {
+  clock: oneOf("12h", "24h"),
+  tBountyKind: oneOf("flat", "progressive", "mystery"),
+  cashRakeMode: oneOf("none", "pot", "seat"),
+  tvVolume: (v) => (v as number) <= 100,
+};
+const fits = (k: keyof Settings, v: unknown) =>
+  typeof v === typeof defaults[k] && (typeof v !== "number" || (Number.isFinite(v) && v >= 0)) && (ALLOWED[k]?.(v) ?? true);
+
+/** take on the settings from another device's backup (unknown, mistyped or out-of-range values are skipped) */
 export function adoptSettings(from: Record<string, unknown>) {
   for (const k of Object.keys(defaults) as (keyof Settings)[]) {
-    if (THIS_SCREEN.includes(k) || typeof from[k] !== typeof defaults[k]) continue;
+    if (THIS_SCREEN.includes(k) || !fits(k, from[k])) continue;
     (settings as unknown as Record<string, unknown>)[k] = from[k];
   }
-  if (!["flat", "progressive", "mystery"].includes(settings.tBountyKind)) settings.tBountyKind = "flat";
   saveSettings();
 }
 
