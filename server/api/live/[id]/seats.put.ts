@@ -3,9 +3,7 @@
 // the host's write key.
 export default defineEventHandler(async (event) => {
   const id = liveId(event);
-  await ownLive(event, id);
   const { seats } = await smallBody<{ seats: Record<string, string> }>(event);
-  if (!isSeats(seats)) throw createError({ statusCode: 400, statusMessage: "bad seats" });
-  await putSeats(id, seats);
+  orThrow(await putSeatHashes(event, id, getHeader(event, "x-live-key"), seats));
   return { ok: true };
 });

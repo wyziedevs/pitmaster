@@ -1,6 +1,7 @@
 // a tv code session. the code itself never reaches the server: the host's
 // browser turns it into an id (to find the game) and a key (to lock it), and
 // sends only the id and the locked game. nothing stored here can be read.
+// (who may read and write what is utils/relay.ts)
 import type { H3Event } from "h3";
 
 export interface LiveRecord {
@@ -22,6 +23,9 @@ export interface SeatMail {
   updatedAt: number;
 }
 
+/** a seat's mailbox, with the seat it's for */
+export type Mailbox = SeatMail & { seat: string };
+
 const TTL = 60 * 60 * 24 * 2; // copies are deleted 2 days after their last update
 export const MAX_BODY = 1_000_000; // bytes; a big tournament's snapshot is well under this
 
@@ -40,59 +44,46 @@ export const putSeats = (id: string, seats: Record<string, string>) => seatsStor
 /** a seat's mailbox: "s:<id>:<seat>" (apart from the games, which are bare ids) */
 const mailKey = (id: string, seat: string) => `s:${id}:${seat}`;
 
+/** a game's id: 32 hex characters, made from its code in the host's browser */
+export const isLiveId = (s: unknown): s is string => typeof s === "string" && /^[0-9a-f]{32}$/.test(s);
+
 /** a seat id: 16 url-safe characters, made by the host */
 export const isSeat = (s: unknown): s is string => typeof s === "string" && /^[A-Za-z0-9_-]{16}$/.test(s);
 
-export async function putMail(id: string, seat: string, data: string) {
+export async function putMail(id: string, seat: string, data: string): Promise<SeatMail> {
   const mail = { data, updatedAt: Date.now() };
   await mailStorage().setItem(mailKey(id, seat), mail, { ttl: TTL });
   return mail;
 }
 
 /** every seat's mailbox for a game */
-export async function allMail(id: string) {
+export async function allMail(id: string): Promise<Mailbox[]> {
   const keys = await mailStorage().getKeys(`s:${id}`);
-  const out: { seat: string; data: string; updatedAt: number }[] = [];
-  for (const k of keys) {
-    const m = await mailStorage().getItem(k);
-    const seat = k.split(":").at(-1)!;
-    if (m && isSeat(seat)) out.push({ seat, ...m });
-  }
-  return out;
+  const all = await Promise.all(
+    keys.map(async (k) => {
+      const seat = k.split(":").at(-1)!;
+      const m = isSeat(seat) ? await mailStorage().getItem(k) : null;
+      return m && { seat, ...m };
+    })
+  );
+  return all.filter((m) => m !== null);
 }
 
 /** stop sharing takes the mailboxes (and the seats) too */
 export async function dropMail(id: string) {
-  for (const k of await mailStorage().getKeys(`s:${id}`)) await mailStorage().removeItem(k);
-  await seatsStorage().removeItem(`h:${id}`);
+  const keys = await mailStorage().getKeys(`s:${id}`);
+  await Promise.all([...keys.map((k) => mailStorage().removeItem(k)), seatsStorage().removeItem(`h:${id}`)]);
 }
 
-/** a seat's own key, checked against the hash the host left for it */
-export async function ownSeat(id: string, seat: unknown, key: unknown) {
-  if (!isSeat(seat) || !isKey(key)) return false;
-  const hash = (await getSeats(id))[seat];
-  return !!hash && same(await hashKey(key), hash);
+/** a seat's own key, checked against the hash the host left for it in `seats` */
+export async function ownSeat(seats: Record<string, string>, seat: string, key: unknown) {
+  const hash = seats[seat];
+  return !!hash && isKey(key) && same(await hashKey(key), hash);
 }
 
 /** the seats a host may name: up to 40, each an id and a sha-256 */
 export const isSeats = (s: unknown): s is Record<string, string> =>
-  !!s && typeof s === "object" && Object.keys(s).length <= 40 && Object.entries(s).every(([k, h]) => isSeat(k) && typeof h === "string" && /^[0-9a-f]{64}$/.test(h));
-
-/** a wrong code or key. each one counts toward the address's limit (see middleware/limit.ts) */
-export function missing(event: H3Event, statusCode = 404) {
-  count(event, "miss");
-  return createError({ statusCode, statusMessage: statusCode === 403 ? "wrong key" : "no game with that code" });
-}
-
-/** sharing stopped: the tv can stop asking */
-export const stopped = () => createError({ statusCode: 410, statusMessage: "the host stopped sharing" });
-
-/** the id in the url: 32 hex characters, or it can't be one of ours */
-export function liveId(event: H3Event) {
-  const id = getRouterParam(event, "id") ?? "";
-  if (!/^[0-9a-f]{32}$/.test(id)) throw missing(event);
-  return id;
-}
+  isPlain(s) && Object.keys(s).length <= 40 && Object.entries(s).every(([k, h]) => isSeat(k) && typeof h === "string" && /^[0-9a-f]{64}$/.test(h));
 
 export async function hashKey(key: string) {
   const d = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(key)));
@@ -100,16 +91,6 @@ export async function hashKey(key: string) {
 }
 
 export const isKey = (k: unknown): k is string => typeof k === "string" && /^[A-Za-z0-9_-]{32,128}$/.test(k);
-
-/** the record for this id, if the request carries its write key */
-export async function ownLive(event: H3Event, id: string) {
-  const rec = await liveStorage().getItem(id);
-  if (!rec) throw missing(event);
-  if (!rec.keyHash) throw stopped();
-  const key = getHeader(event, "x-live-key");
-  if (!isKey(key) || !same(await hashKey(key), rec.keyHash)) throw missing(event, 403);
-  return rec;
-}
 
 /** compare two hashes in the same time whatever they hold */
 export function same(a: string, b: string) {
@@ -119,16 +100,28 @@ export function same(a: string, b: string) {
   return diff === 0;
 }
 
-/** the json body, refused when it's oversized */
+/** a json object (not null, not an array): what every body and socket message has to be */
+export const isPlain = (v: unknown): v is Record<string, unknown> => !!v && typeof v === "object" && !Array.isArray(v);
+
+const tooBig = () => createError({ statusCode: 413, statusMessage: "too big" });
+
+/** the raw body, refused when it's oversized (by its header first, before it's read into memory) */
+export async function readSmallRaw(event: H3Event) {
+  if (Number(getHeader(event, "content-length") || 0) > MAX_BODY) throw tooBig();
+  const raw = await readRawBody(event, false);
+  if (raw && raw.byteLength > MAX_BODY) throw tooBig();
+  return raw;
+}
+
+/** the json body, refused when it's oversized or isn't an object */
 export async function smallBody<T>(event: H3Event) {
-  if (Number(getHeader(event, "content-length") || 0) > MAX_BODY) throw createError({ statusCode: 413, statusMessage: "too big" });
-  const raw = (await readRawBody(event)) ?? "";
-  if (raw.length > MAX_BODY) throw createError({ statusCode: 413, statusMessage: "too big" });
+  const raw = await readSmallRaw(event);
+  let body: unknown = null;
   try {
-    return JSON.parse(raw) as Partial<T>;
-  } catch {
-    throw createError({ statusCode: 400, statusMessage: "not json" });
-  }
+    body = JSON.parse(raw ? new TextDecoder().decode(raw) : "");
+  } catch {}
+  if (!isPlain(body)) throw createError({ statusCode: 400, statusMessage: "not json" });
+  return body as { [K in keyof T]?: unknown };
 }
 
 /** a snapshot as the host's browser sealed it (see src/lib/crypto.ts): version, zip flag, 12-byte iv, ciphertext */

@@ -14,7 +14,7 @@ import { API } from "./api";
 import { myPrefs } from "./settings.svelte";
 import { canEncrypt, codeKeys, newCode, seal, token, unseal } from "./crypto";
 import { isGame } from "./check";
-import { follow, onSocket, relay, socketOpen, type RelayMsg } from "./socket";
+import { follow, hears, onSocket, relay } from "./socket";
 import { leagueBoardFor } from "./boards";
 import { t } from "./i18n";
 
@@ -33,22 +33,28 @@ const remoteSnapshot = (g: Game): Game => ({ ...publicSnapshot(g), live: null, l
 // the host follows its own game on the socket: that keeps the socket up to send
 // snapshots down, and brings in its players' phones' mailboxes
 const hosting = new Map<string, () => void>();
-const seatListeners = new Map<string, Set<(seat: string, text: string) => void>>();
 async function host(code: string) {
   if (hosting.has(code)) return;
   hosting.set(code, () => {});
-  const { id, key } = await codeKeys(code);
-  // stopped sharing meanwhile: don't follow it after all
-  if (!hosting.has(code)) return;
-  hosting.set(
-    code,
-    follow(id, async (m) => {
-      if (m.t !== "seat" || !m.seat || !m.data) return;
-      const text = await unseal(key, m.data).catch(() => null);
-      if (text !== null) for (const cb of seatListeners.get(code) ?? []) cb(m.seat, text);
-    })
-  );
+  try {
+    const { id, key } = await codeKeys(code);
+    // stopped sharing meanwhile: don't follow it after all
+    if (!hosting.has(code)) return;
+    hosting.set(
+      code,
+      follow(id, (m) => {
+        if (m.t === "seat") void hear(code, key, m.seat, m.data, m.at);
+      })
+    );
+  } catch {
+    hosting.delete(code);
+  }
 }
+
+const unhost = (code: string) => {
+  hosting.get(code)?.();
+  hosting.delete(code);
+};
 
 // cloudflare kv takes one write a second per code, so a code's writes go out
 // at least that far apart: the first right away, then the newest of whatever
@@ -94,7 +100,8 @@ async function push({ code, key }: Live, snap: Game) {
   try {
     const { id, key: lock } = await codeKeys(code);
     const data = await seal(lock, JSON.stringify(snap));
-    if (await relay({ t: "put", id, key, data })) return 200;
+    const status = await relay({ t: "put", id, key, data });
+    if (status) return status;
     const r = await fetch(`${API}/api/live/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json", "X-Live-Key": key },
@@ -171,8 +178,7 @@ export async function flushLive(maxMs = 3000) {
 export async function endLive({ code, key }: Live) {
   const p = pushes.get(code);
   pushes.delete(code);
-  hosting.get(code)?.();
-  hosting.delete(code);
+  unhost(code);
   if (p) {
     p.next = null;
     await p.run;
@@ -203,14 +209,17 @@ export function pollLive(code: string, cb: (g: Game) => void, onError: (msg: str
     return () => {};
   }
   const keys = codeKeys(code);
+  let id = ""; // once the code's been made into one
   let since = 0;
   let stopped = false;
   let timer: ReturnType<typeof setTimeout> | undefined;
 
   async function take(data: string, at: number) {
     if (at && at <= since) return;
-    const { key } = await keys;
-    const game = await unseal(key, data).then(JSON.parse, () => null);
+    const game = await keys
+      .then(({ key }) => unseal(key, data))
+      .then(JSON.parse)
+      .catch(() => null);
     // a newer one landed while this was being opened
     if (stopped || (at && at <= since)) return;
     if (!isGame(game)) return onError(t("tv.connect.cantUnlock"));
@@ -220,12 +229,12 @@ export function pollLive(code: string, cb: (g: Game) => void, onError: (msg: str
 
   async function tick() {
     timer = undefined;
-    // the socket's back: it'll bring what's new
-    if (stopped || socketOpen()) return;
+    // the socket's back (and has this game): it'll bring what's new
+    if (stopped || hears(id)) return;
     let wait = everyMs;
     try {
-      const { id } = await keys;
-      const r = await fetch(`${API}/api/live/${id}?since=${since}`, { cache: "no-store" });
+      const k = await keys;
+      const r = await fetch(`${API}/api/live/${k.id}?since=${since}`, { cache: "no-store" });
       if (r.status === 410) {
         stopped = true;
         onError(t("tv.connect.stopped"));
@@ -244,23 +253,28 @@ export function pollLive(code: string, cb: (g: Game) => void, onError: (msg: str
     } catch {
       onError(t("tv.connect.cantReach"));
     }
-    if (!stopped && !socketOpen()) timer = setTimeout(tick, wait);
+    if (!stopped && !hears(id)) timer = setTimeout(tick, wait);
   }
   const poll = () => {
-    if (!stopped && !timer && !socketOpen()) timer = setTimeout(tick, 0);
+    if (!stopped && !timer && !hears(id)) timer = setTimeout(tick, 0);
   };
 
   let unfollow = () => {};
-  keys.then(({ id }) => {
-    if (stopped) return;
-    unfollow = follow(id, (m: RelayMsg) => {
-      if (m.t === "snap" && m.data) take(m.data, m.at ?? 0);
-      else if (m.t === "gone") {
-        stopped = true;
-        onError(t("tv.connect.stopped"));
-      } else if (m.t === "none") onError(t("tv.connect.noGame"));
-    });
-  });
+  keys
+    .then((k) => {
+      id = k.id;
+      if (stopped) return;
+      unfollow = follow(id, (m) => {
+        if (m.t === "snap") void take(m.data, m.at);
+        else if (m.t === "gone") {
+          stopped = true;
+          onError(t("tv.connect.stopped"));
+        } else if (m.t === "none") onError(t("tv.connect.noGame"));
+        // the relay won't follow it on this socket: ask over http instead
+        else if (m.t === "err") poll();
+      });
+    })
+    .catch(() => onError(t("tv.connect.cantUnlock")));
   // no socket (yet, or any more): ask over http until there is one
   const stopWatch = onSocket((open) => !open && poll());
   const first = setTimeout(poll, 2500);
@@ -278,9 +292,22 @@ export function pollLive(code: string, cb: (g: Game) => void, onError: (msg: str
 /** the host: which seats may write, by the sha-256 of each seat's key */
 export async function registerSeats({ code, key }: Live, seats: Record<string, string>) {
   const { id } = await codeKeys(code);
-  if (await relay({ t: "seats", id, key, seats })) return true;
+  const status = await relay({ t: "seats", id, key, seats });
+  if (status) return status === 200;
   const r = await fetch(`${API}/api/live/${id}/seats`, { method: "PUT", headers: { "Content-Type": "application/json", "X-Live-Key": key }, body: JSON.stringify({ seats }) }).catch(() => null);
   return !!r?.ok;
+}
+
+/** each hosted game's seat watchers, and the newest mailbox each seat's been heard with */
+const seatWatch = new Map<string, { cbs: Set<(seat: string, text: string) => void>; seen: Map<string, number> }>();
+
+/** a seat's mailbox, however it came (pushed down the socket, or asked for): each one's heard once */
+async function hear(code: string, key: CryptoKey, seat: string, data: string, at: number) {
+  const w = seatWatch.get(code);
+  if (!w || (w.seen.get(seat) ?? 0) >= at) return;
+  w.seen.set(seat, at);
+  const text = await unseal(key, data).catch(() => null);
+  if (text !== null) for (const cb of w.cbs) cb(seat, text);
 }
 
 /**
@@ -289,30 +316,37 @@ export async function registerSeats({ code, key }: Live, seats: Record<string, s
  * of seconds. returns stop
  */
 export function watchSeats(code: string, cb: (seat: string, text: string) => void, everyMs = 2000) {
-  let set = seatListeners.get(code);
-  if (!set) seatListeners.set(code, (set = new Set()));
-  set.add(cb);
+  const w = seatWatch.get(code) ?? { cbs: new Set(), seen: new Map() };
+  seatWatch.set(code, w);
+  w.cbs.add(cb);
   void host(code);
-  const seen = new Map<string, number>();
-  let timer: ReturnType<typeof setInterval> | undefined;
+  let asking = false;
   const ask = async () => {
-    if (socketOpen()) return;
-    const { id, key } = await codeKeys(code);
-    const r = await fetch(`${API}/api/live/${id}/mail`, { cache: "no-store" }).catch(() => null);
-    if (!r?.ok) return;
-    const { mail } = (await r.json()) as { mail: { seat: string; data: string; updatedAt: number }[] };
-    for (const m of mail) {
-      if ((seen.get(m.seat) ?? 0) >= m.updatedAt) continue;
-      seen.set(m.seat, m.updatedAt);
-      const text = await unseal(key, m.data).catch(() => null);
-      if (text !== null) cb(m.seat, text);
+    // one ask at a time: a slow answer isn't asked over
+    if (asking) return;
+    asking = true;
+    try {
+      const { id, key } = await codeKeys(code);
+      if (hears(id)) return;
+      const r = await fetch(`${API}/api/live/${id}/mail`, { cache: "no-store" });
+      if (!r.ok) return;
+      const { mail } = (await r.json()) as { mail: { seat: string; data: string; updatedAt: number }[] };
+      for (const m of mail) await hear(code, key, m.seat, m.data, m.updatedAt);
+    } catch {
+      // out of reach: asked again next time
+    } finally {
+      asking = false;
     }
   };
-  timer = setInterval(ask, everyMs);
-  ask();
+  const timer = setInterval(ask, everyMs);
+  void ask();
   return () => {
-    set!.delete(cb);
     clearInterval(timer);
+    w.cbs.delete(cb);
+    if (w.cbs.size || seatWatch.get(code) !== w) return;
+    seatWatch.delete(code);
+    // hosted only to hear the phones (nothing's shared from here): stop
+    if (!pushes.has(code)) unhost(code);
   };
 }
 
@@ -320,7 +354,8 @@ export function watchSeats(code: string, cb: (seat: string, text: string) => voi
 export async function sendSeat(code: string, seat: string, seatKey: string, text: string) {
   const { id, key } = await codeKeys(code);
   const data = await seal(key, text);
-  if (await relay({ t: "seat", id, seat, key: seatKey, data })) return true;
+  const status = await relay({ t: "seat", id, seat, key: seatKey, data });
+  if (status) return status === 200;
   const r = await fetch(`${API}/api/live/${id}/seat/${seat}`, { method: "PUT", headers: { "Content-Type": "application/json", "X-Seat-Key": seatKey }, body: JSON.stringify({ data }) }).catch(() => null);
   return !!r?.ok;
 }

@@ -3,12 +3,28 @@
 // this slows one noisy address down; a cloudflare rate limiting rule is the
 // real guard (see README).
 import type { H3Event } from "h3";
+import type { Peer } from "crossws";
 
 const MINUTE = 60_000;
 const counts = new Map<string, { n: number; until: number }>();
 
-/** the address a request came from. cloudflare sets cf-connecting-ip itself, so a client can't fake it */
-export const ipOf = (event: H3Event) => getHeader(event, "cf-connecting-ip") || getRequestIP(event) || "unknown";
+/** how many of each an address may do in a minute */
+export const LIMITS = {
+  // a room full of tvs behind one address polls every 2 seconds each
+  any: 3000,
+  // wrong codes and wrong keys: this is what guessing looks like
+  miss: 120,
+  new: 20,
+  socket: 60,
+} as const;
+
+/**
+ * the address a request or a websocket came from. cloudflare sets
+ * cf-connecting-ip itself, so a client can't fake it. a socket's is gone once
+ * the durable object has slept, and there's none in dev: then it's blank
+ */
+export const ipOf = (who: H3Event | Peer) =>
+  "publish" in who ? ((who.request as Request | undefined)?.headers?.get?.("cf-connecting-ip") ?? "") : getHeader(who, "cf-connecting-ip") || getRequestIP(who) || "unknown";
 
 // by a request, or (for a websocket, which has none) by its address
 function tally(who: H3Event | string, kind: string) {
@@ -23,18 +39,18 @@ function tally(who: H3Event | string, kind: string) {
   return c;
 }
 
-/** refuse the request once this address has done `kind` `max` times this minute */
-export function slowDown(event: H3Event, kind: string, max: number) {
+/** refuse the request once this address has done `kind` its limit's worth this minute */
+export function slowDown(event: H3Event, kind: keyof typeof LIMITS) {
   const c = tally(event, kind);
-  if (c.n < max) return;
-  setResponseHeader(event, "Retry-After", String(Math.ceil((c.until - Date.now()) / 1000)));
+  if (c.n < LIMITS[kind]) return;
+  setResponseHeader(event, "Retry-After", Math.ceil((c.until - Date.now()) / 1000));
   throw createError({ statusCode: 429, statusMessage: "too many requests" });
 }
 
 /** count one `kind` for this address */
-export function count(who: H3Event | string, kind: string) {
+export function count(who: H3Event | string, kind: keyof typeof LIMITS) {
   tally(who, kind).n++;
 }
 
-/** whether this address has done `kind` `max` times this minute (for a websocket, which can't be answered 429) */
-export const tooMany = (ip: string, kind: string, max: number) => tally(ip, kind).n >= max;
+/** whether this address has used up `kind` this minute (for a websocket, which can't be answered 429) */
+export const tooMany = (ip: string, kind: keyof typeof LIMITS) => tally(ip, kind).n >= LIMITS[kind];
