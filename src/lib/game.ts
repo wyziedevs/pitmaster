@@ -19,7 +19,8 @@ export function finish(game: Game, at = Date.now()) {
 
 /** back on: the end was taken back */
 export function reopen(game: Game) {
-  reopen(game);
+  game.finished = false;
+  game.endedAt = undefined;
 }
 
 /** the rules only its kind reads: a tournament's structure, a cash game's stakes, the other kinds' own */
