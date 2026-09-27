@@ -5,8 +5,8 @@
 import type { Game } from "$lib/types";
 import { MediaQuery } from "svelte/reactivity";
 import { derive, cashElapsed } from "$lib/clock";
-import { tourneyStats } from "$lib/game";
-import { currentRound, payGroups } from "$lib/bracket";
+import { tourneyBook } from "$lib/kinds/tournament/engine";
+import { currentRound } from "$lib/kinds/tournament/bracket";
 import { cashGameNow, cashStakes, gameLine, rotationName, stakesText, variantName } from "$lib/variants";
 import { kind as kindOf } from "$lib/kinds";
 import { money } from "$lib/util";
@@ -62,21 +62,16 @@ export class TvState {
   // ---------- a tournament ----------
   // only a running clock needs the time: paused or not started, the board sits still
   readonly d = $derived(!this.isCash && this.game.levels.length ? derive(this.game, this.game.clock.status === "running" ? time.now : 0) : null);
-  readonly stats = $derived(!this.isCash && this.game.tourney ? tourneyStats(this.game) : null);
-  readonly levelNum = $derived.by(() => {
-    const d = this.d;
-    if (!d) return 0;
-    return d.level.isBreak ? this.game.levels.slice(0, d.index).filter((l) => !l.isBreak).length : (d.level.num ?? 0);
-  });
+  /** the tournament's book: its numbers, paid places and bounties */
+  readonly stats = $derived(!this.isCash && this.game.tourney ? tourneyBook(this.game, this.game.tourney) : null);
+  readonly levelNum = $derived(this.d?.levelNum ?? 0);
   readonly winner = $derived(this.game.finished && !this.isCash ? this.game.players.find((p) => p.place === 1) : null);
   /** a satellite's places pay seats */
-  readonly seats = $derived(this.game.tourney?.satellite && this.stats ? this.stats.seats : 0);
+  readonly seats = $derived(this.stats?.seats ?? 0);
 
   // a heads-up bracket
   readonly bracket = $derived(!this.isCash && this.game.tourney?.format === "bracket" && !!this.game.matches?.length);
   readonly round = $derived(this.bracket ? currentRound(this.game) : null);
-  /** its paid places, a round's losers sharing theirs */
-  readonly groups = $derived(this.bracket && this.stats && !this.game.deal ? payGroups(this.stats.entrants, this.stats.payouts.length) : []);
   // the whole bracket starts at the first round of eight matches or fewer, so
   // every name can be read across the room. until the one being played gets
   // there, the matches in the left column are the bracket.

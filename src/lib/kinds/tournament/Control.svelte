@@ -14,11 +14,12 @@
   import Ticket from "@lucide/svelte/icons/ticket";
   import type { Game } from "$lib/types";
   import * as clk from "$lib/clock";
-  import { addPlayer, bust, unbust, tourneyStats, creditKo, koCount, paidFor, bountyBook, envelopesLeft, mysteryStartsAt, fitEnvelopes, setEnvelopes } from "$lib/game";
-  import { logEvent, flash, houseName, playerName } from "$lib/events";
+  import { houseName, playerName } from "$lib/events";
   import { settleUp } from "$lib/settle";
   import { seatsDrawn, seatLabel, tableCounts, shootout, drawFinalTable } from "$lib/seats";
-  import { drawBracket, decideMatch, lostMatch, undoMatch, matchesPlayed, currentRound, roundName, bracketSize, payGroups, placeRange } from "$lib/bracket";
+  import { tourneyBook } from "./engine";
+  import { addOn, bust, creditKo, decideMatch, drawBracket, rebuy, register, removePlayer, setEnvelopes, unbust, undoMatch } from "./actions";
+  import { lostMatch, matchesPlayed, currentRound, roundName, bracketSize, placeRange } from "./bracket";
   import { annotate } from "$lib/blinds";
   import { isLimit, isStud, gameLine, stakePair, variantName } from "$lib/variants";
   import { Dealer, onRise } from "../poker/control.svelte";
@@ -52,13 +53,12 @@
   const t = $derived(game.tourney!);
   // only a running clock needs the time: paused or not started, nothing here ticks
   const d = $derived(clk.derive(game, game.clock.status === "running" ? time.now : 0));
-  const s = $derived(tourneyStats(game));
+  const s = $derived(tourneyBook(game, t));
   const dealer = new Dealer(() => game, () => persist());
   const { act } = dealer;
   const running = $derived(dealer.running);
-  const levelNum = $derived(d.level.isBreak ? game.levels.slice(0, d.index).filter((l) => !l.isBreak).length : (d.level.num ?? 0));
-  const lateRegOpen = $derived(levelNum <= t.lateRegLevel);
-  const rebuyOpen = $derived(t.rebuy.on && levelNum <= t.rebuy.untilLevel);
+  const lateRegOpen = $derived(d.levelNum <= t.lateRegLevel);
+  const rebuyOpen = $derived(t.rebuy.on && d.levelNum <= t.rebuy.untilLevel);
   const ranked = $derived(
     [...game.players].sort((a, b) => (a.out === b.out ? (a.out ? (a.place ?? 0) - (b.place ?? 0) : 0) : a.out ? 1 : -1))
   );
@@ -84,27 +84,21 @@
   const tables = $derived(tableCounts(game).length);
   let seatTools = $state<SeatTools>();
   const lastKo = (id: string) => game.kos?.findLast((k) => k.out === id)?.by ?? "";
-  // payout rows: the table's places, or (after a deal) everyone who took a share
-  const payRows = $derived(
-    Array.from({ length: game.deal ? Object.keys(game.deal.amounts).length : s.payouts.length }, (_, i) => i)
-  );
   // settle-up: the payouts once there's a winner, and shared costs (the switch, unless this game has some)
   const costsOn = $derived(settings.useCosts || !!game.costs?.length);
   const moves = $derived(settleUp(game));
   const settleShown = $derived(game.finished || !!game.costs?.length);
   // a shootout plays each table down to one winner, then a final table
   const shoot = $derived(shootout(game));
-  // the satellite's seats, and the game each ticket holder won theirs in
-  const seats = $derived(t.satellite ? s.seats : 0);
+  // the game each ticket holder won their satellite seat in
   const ticketFrom = (id: string) => getGame(id)?.name ?? "";
   // no chop in a satellite (the seats are the prize), or before a shootout's final table
   const canDeal = $derived(!game.finished && alive.length >= 2 && alive.length <= 9 && game.clock.status !== "idle" && !t.satellite && (!shoot || shoot.final));
 
-  // bounties: who's taken what, and (progressive) what's on each head now
-  const book = $derived(bountyBook(game));
+  // bounties: (progressive) what's on each head now, and the envelopes (mystery)
   const pko = $derived(!!t.bounty && t.bountyKind === "progressive");
   const mystery = $derived(!!t.bounty && t.bountyKind === "mystery");
-  const left = $derived(envelopesLeft(game));
+  const left = $derived(s.envelopes);
   const openedList = $derived.by(() => {
     return [
       ...(game.kos ?? []).filter((k) => k.by && k.prize !== undefined).map((k) => ({ at: k.at, name: playerName(game, k.by), prize: k.prize! })),
@@ -134,8 +128,6 @@
     if (game.flash?.kind === "bounty" && Date.now() - game.flash.at < 1000) play(mystery ? "jackpot" : "chips");
   }
   const bracketRound = $derived(bracket ? currentRound(game) : null);
-  // payouts by round: 1st, 2nd, then 3rd to 4th, 5th to 8th ... sharing
-  const groups = $derived(bracket && !game.deal ? payGroups(s.entrants, s.payouts.length) : null);
 
   function finalTable() {
     play("seats", { n: alive.length });
@@ -168,11 +160,11 @@
 
   function addNamed(name: string) {
     if (!name.trim()) return;
-    // a bracket takes a new player only until its first match is played, and draws again to fit them
-    if (bracket && game.matches && matchesPlayed(game) > 0) return void alert(tt("gamePlay.bracket.startedAlert"));
-    if (bracket && game.matches) return act(() => (addPlayer(game, name), drawBracket(game)));
-    if (!lateRegOpen && game.clock.status !== "idle" && !confirm(tt("gamePlay.tournament.lateRegClosedConfirm"))) return;
-    act(() => addPlayer(game, name));
+    // a bracket takes a new player only until its first match is played (it's drawn again to fit them)
+    const redraw = bracket && !!game.matches;
+    if (redraw && matchesPlayed(game) > 0) return void alert(tt("gamePlay.bracket.startedAlert"));
+    if (!redraw && !lateRegOpen && game.clock.status !== "idle" && !confirm(tt("gamePlay.tournament.lateRegClosedConfirm"))) return;
+    act(() => register(game, name));
   }
 
   function add(e: SubmitEvent) {
@@ -181,41 +173,10 @@
     newName = "";
   }
 
-  function rebuy(id: string, delta: number) {
-    const p = game.players.find((x) => x.id === id)!;
-    act(() => {
-      p.rebuys = Math.max(0, p.rebuys + delta);
-      fitEnvelopes(game);
-      if (delta > 0) {
-        if (p.out) unbust(game, id, true);
-        logEvent(game, tt("gamePlay.tournament.reboughtLog", { name: p.name, cost: money(t.rebuy.cost) }));
-        flash(game, tt("gamePlay.tournament.rebuysFlash", { name: p.name }), "chips");
-      }
-    });
-  }
-
-  function addOn(id: string, delta: number) {
-    const p = game.players.find((x) => x.id === id)!;
-    act(() => {
-      p.addOns = Math.max(0, p.addOns + delta);
-      if (delta > 0) logEvent(game, tt("gamePlay.tournament.addOnLog", { name: p.name }));
-    });
-  }
-
-  function removePlayer(id: string) {
-    const p = game.players.find((x) => x.id === id)!;
+  function remove(id: string, name: string) {
     if (bracket && game.matches && matchesPlayed(game) > 0) return void alert(tt("gamePlay.bracket.startedAlert"));
-    if (!confirm(tt("gamePlay.tournament.removeConfirm", { name: p.name }))) return;
-    act(() => {
-      game.players = game.players.filter((x) => x.id !== id);
-      // the bracket's drawn again without them, or put away if there's no one left to play
-      if (bracket && game.matches) {
-        if (game.players.filter((x) => !x.out).length >= 2) drawBracket(game);
-        else delete game.matches;
-      }
-      fitEnvelopes(game);
-      logEvent(game, tt("gamePlay.shared.removedLog", { name: p.name }));
-    });
+    if (!confirm(tt("gamePlay.tournament.removeConfirm", { name }))) return;
+    act(() => removePlayer(game, id));
   }
 
   // the palette (ctrl k) knows this game while it's on screen. each command
@@ -239,8 +200,8 @@
           : []
       ),
       ...(bracket ? [] : alive).map((p) => ({ id: `t:bust:${p.id}`, label: tt("gamePlay.tournament.bustCommandLabel", { name: p.name }), group: tt("gamePlay.shared.groupPlayers"), keywords: "out eliminate", run: () => (play("bust"), act(() => bust(game, p.id))) })),
-      ...(t.rebuy.on && rebuyOpen ? game.players.map((p) => ({ id: `t:rebuy:${p.id}`, label: tt("gamePlay.tournament.rebuyCommandLabel", { name: p.name }), group: tt("gamePlay.shared.groupPlayers"), hint: money(t.rebuy.cost), run: () => (play("chips"), rebuy(p.id, 1)) })) : []),
-      ...(t.addOn.on ? alive.map((p) => ({ id: `t:addon:${p.id}`, label: tt("gamePlay.tournament.addOnCommandLabel", { name: p.name }), group: tt("gamePlay.shared.groupPlayers"), hint: money(t.addOn.cost), run: () => (play("chips"), addOn(p.id, 1)) })) : []),
+      ...(t.rebuy.on && rebuyOpen ? game.players.map((p) => ({ id: `t:rebuy:${p.id}`, label: tt("gamePlay.tournament.rebuyCommandLabel", { name: p.name }), group: tt("gamePlay.shared.groupPlayers"), hint: money(t.rebuy.cost), run: () => (play("chips"), act(() => rebuy(game, p.id, 1))) })) : []),
+      ...(t.addOn.on ? alive.map((p) => ({ id: `t:addon:${p.id}`, label: tt("gamePlay.tournament.addOnCommandLabel", { name: p.name }), group: tt("gamePlay.shared.groupPlayers"), hint: money(t.addOn.cost), run: () => (play("chips"), act(() => addOn(game, p.id, 1))) })) : []),
       ...game.players.filter((p) => p.out && !game.deal && (!bracket || lostMatch(game, p.id))).map((p) => ({ id: `t:unbust:${p.id}`, label: tt("gamePlay.tournament.undoBustCommandLabel", { name: p.name }), group: tt("gamePlay.shared.groupPlayers"), run: () => (play("rewind"), act(() => (bracket ? undoMatch(game, p.id) : unbust(game, p.id)))) })),
     ])
   );
@@ -277,7 +238,7 @@
   <div class="spread">
     <div>
       <div class="lvl">
-        <span use:bump={d.index}>{#if d.level.isBreak}<Icon icon={Coffee} /> {tt("gamePlay.shared.breakLabel")}{:else}{tt("gamePlay.tournament.level", { n: String(levelNum) })}{#if d.level.game}{` · ${variantName(d.level.game)}`}{/if}{/if}</span>
+        <span use:bump={d.index}>{#if d.level.isBreak}<Icon icon={Coffee} /> {tt("gamePlay.shared.breakLabel")}{:else}{tt("gamePlay.tournament.level", { n: String(d.levelNum) })}{#if d.level.game}{` · ${variantName(d.level.game)}`}{/if}{/if}</span>
         <span class="pill" data-s={game.clock.status}>{dealer.status}</span>
       </div>
       <div class="clockface" dir="ltr"><Digits value={clockFace(d.remainingMs)} /></div>
@@ -325,7 +286,7 @@
   <div class="warn pop won my-[14px] flex items-end flex-wrap gap-x-4 gap-y-1.5">
     <p class="m-0 self-center">
       {#if game.deal}<Icon icon={Handshake} /> {tt("gamePlay.tournament.dealBanner", { names: game.players.filter((p) => p.id in game.deal!.amounts).map((p) => p.name).join(", ") })}
-      {:else if seats > 1}<Icon icon={Ticket} /> {tt("gameEvents.seatsWonFlash", { names: game.players.filter((p) => p.place && p.place <= seats).map((p) => p.name).join(", ") })}
+      {:else if s.seats > 1}<Icon icon={Ticket} /> {tt("gameEvents.seatsWonFlash", { names: game.players.filter((p) => s.takes[p.id].seat).map((p) => p.name).join(", ") })}
       {:else}<Icon icon={Trophy} /> <b>{game.players.find((p) => p.place === 1)?.name}</b> {tt("gamePlay.tournament.winnerSuffix")}{/if}
       {tt("gamePlay.tournament.tvShowingResults")}
     </p>
@@ -365,26 +326,26 @@
           <tr class:dim={p.out} in:fade={reveal()} animate:flip={reorder()}>
             {#if drawn}<td class="num seat"><span class:dealt={dealer.dealing} style:--i={i}>{p.out ? "" : seatLabel(p.seat, tables)}</span></td>{/if}
             <td class="nowrap who">
-              {#if p.out}<span class="num place inline-block min-w-[2.2em] text-muted" use:fresh={[p.bustedAt, "stamp"]}>{ordinal(p.place ?? 0)}</span>{:else if p.place && p.place <= seats}<Icon icon={Ticket} label={tt("gamePlay.tournament.seatWonLabel")} />{:else if p.place === 1}<Icon icon={Trophy} label={tt("gamePlay.tournament.winnerLabel")} />{/if}
+              {#if p.out}<span class="num place inline-block min-w-[2.2em] text-muted" use:fresh={[p.bustedAt, "stamp"]}>{ordinal(p.place ?? 0)}</span>{:else if s.takes[p.id].seat}<Icon icon={Ticket} label={tt("gamePlay.tournament.seatWonLabel")} />{:else if p.place === 1}<Icon icon={Trophy} label={tt("gamePlay.tournament.winnerLabel")} />{/if}
               <input type="text" bind:value={p.name} onchange={persist} class="edit-name" aria-label={tt("gamePlay.shared.nameHeader")} />
               {#if p.ticket}<span class="muted inline-flex align-middle" title={tt("gamePlay.tournament.ticketTitle", { game: ticketFrom(p.ticket) })}><Icon icon={Ticket} size="1em" label={tt("gamePlay.tournament.ticketTitle", { game: ticketFrom(p.ticket) })} /></span>{/if}
             </td>
             {#if t.rebuy.on}
               <td class="num nowrap" data-l={tt("gamePlay.tournament.rebuysHeader")}>
-                <button class="link" data-sound="rewind" onclick={() => rebuy(p.id, -1)} disabled={!p.rebuys} aria-label={tt("gamePlay.tournament.takeBackRebuyAria")} title={p.rebuys ? tt("gamePlay.tournament.takeBackRebuyTitleYes") : tt("gamePlay.tournament.takeBackRebuyTitleNo")}><Icon icon={Minus} size="1em" /></button>
+                <button class="link" data-sound="rewind" onclick={() => act(() => rebuy(game, p.id, -1))} disabled={!p.rebuys} aria-label={tt("gamePlay.tournament.takeBackRebuyAria")} title={p.rebuys ? tt("gamePlay.tournament.takeBackRebuyTitleYes") : tt("gamePlay.tournament.takeBackRebuyTitleNo")}><Icon icon={Minus} size="1em" /></button>
                 {p.rebuys}
-                <button class="link" data-sound="chips" onclick={() => rebuy(p.id, 1)} aria-label={tt("gamePlay.tournament.addRebuyAria")}><Icon icon={Plus} size="1em" /></button>
+                <button class="link" data-sound="chips" onclick={() => act(() => rebuy(game, p.id, 1))} aria-label={tt("gamePlay.tournament.addRebuyAria")}><Icon icon={Plus} size="1em" /></button>
               </td>
             {/if}
             {#if t.addOn.on}
               <td class="num nowrap" data-l={tt("gamePlay.tournament.addOnHeader")}>
-                <button class="link" data-sound="rewind" onclick={() => addOn(p.id, -1)} disabled={!p.addOns} aria-label={tt("gamePlay.tournament.takeBackAddOnAria")} title={p.addOns ? tt("gamePlay.tournament.takeBackAddOnTitleYes") : tt("gamePlay.tournament.takeBackAddOnTitleNo")}><Icon icon={Minus} size="1em" /></button>
+                <button class="link" data-sound="rewind" onclick={() => act(() => addOn(game, p.id, -1))} disabled={!p.addOns} aria-label={tt("gamePlay.tournament.takeBackAddOnAria")} title={p.addOns ? tt("gamePlay.tournament.takeBackAddOnTitleYes") : tt("gamePlay.tournament.takeBackAddOnTitleNo")}><Icon icon={Minus} size="1em" /></button>
                 {p.addOns}
-                <button class="link" data-sound="chips" onclick={() => addOn(p.id, 1)} aria-label={tt("gamePlay.tournament.addAddOnAria")}><Icon icon={Plus} size="1em" /></button>
+                <button class="link" data-sound="chips" onclick={() => act(() => addOn(game, p.id, 1))} aria-label={tt("gamePlay.tournament.addAddOnAria")}><Icon icon={Plus} size="1em" /></button>
               </td>
             {/if}
-            {#if showKos}<td class="num" class:blank={!koCount(game, p.id)} data-l={tt("gamePlay.tournament.kosHeader")}>{koCount(game, p.id) || ""}</td>{/if}
-            {#if pko}<td class="num" class:blank={p.out} data-l={tt("gamePlay.tournament.bountyHeader")}>{#if !p.out}<span use:bump={book.head[p.id]}>{money(book.head[p.id] ?? 0)}</span>{/if}</td>{/if}
+            {#if showKos}<td class="num" class:blank={!s.takes[p.id].kos} data-l={tt("gamePlay.tournament.kosHeader")}>{s.takes[p.id].kos || ""}</td>{/if}
+            {#if pko}<td class="num" class:blank={p.out} data-l={tt("gamePlay.tournament.bountyHeader")}>{#if !p.out}<span use:bump={s.head[p.id]}>{money(s.head[p.id] ?? 0)}</span>{/if}</td>{/if}
             <!-- a busted row's actions may wrap to a second line rather than push the table wider -->
             <td class="acts leading-[30px]">
               {#if bracket}
@@ -399,7 +360,7 @@
               {:else if !game.finished}
                 <button class="danger" data-sound="bust" onclick={() => act(() => bust(game, p.id))}><Icon icon={Skull} />{tt("gamePlay.tournament.bust")}</button>
               {/if}
-              <RemoveButton label={tt("gamePlay.shared.removePlayer", { name: p.name })} onclick={() => removePlayer(p.id)} />
+              <RemoveButton label={tt("gamePlay.shared.removePlayer", { name: p.name })} onclick={() => remove(p.id, p.name)} />
             </td>
           </tr>
         {:else}
@@ -448,15 +409,14 @@
     {/if}
 
     <h2 class="part mt-[22px]">{tt("gamePlay.tournament.payoutsHeading")}{#if game.deal} <span class="pill">{tt("gamePlay.shared.dealPill")}</span>{/if}</h2>
-    {#if groups}
+    {#if s.byRound}
     <table>
       <tbody>
-        {#each groups as g (g.from)}
-          {@const who = game.players.filter((p) => p.place === g.from)}
+        {#each s.places as r (r.from)}
           <tr>
-            <td class="nowrap">{placeRange(g)}</td>
-            <td class="num"><b>{money(s.payouts[g.from - 1] ?? 0)}</b>{#if g.to > g.from} <span class="small muted">{tt("gamePlay.bracket.each")}</span>{/if}</td>
-            <td>{#each who as w (w.id)}<span class="paid inline-block me-2" use:fresh={[w.bustedAt ?? game.endedAt, "stamp"]}>{w.name}</span>{/each}</td>
+            <td class="nowrap">{placeRange(r)}</td>
+            <td class="num"><b>{money(r.amount)}</b>{#if r.to > r.from} <span class="small muted">{tt("gamePlay.bracket.each")}</span>{/if}</td>
+            <td>{#each r.players as w (w.id)}<span class="paid inline-block me-2" use:fresh={[w.bustedAt ?? game.endedAt, "stamp"]}>{w.name}</span>{/each}</td>
           </tr>
         {/each}
       </tbody>
@@ -464,16 +424,14 @@
     {:else}
     <table>
       <tbody>
-        {#each payRows as i (i)}
-          {@const who = game.players.find((p) => p.place === i + 1)}
-          {@const owed = paidFor(game, who?.id, i + 1, s.payouts)}
+        {#each s.places as r, i (r.from)}
           <tr>
-            <td>{ordinal(i + 1)}</td>
-            <td class="num muted">{game.deal || seats ? "" : `${s.pcts[i]}%`}</td>
-            <td class="num">{#if i < seats}<b>{tt("gamePlay.tournament.seat")}</b> <span class="small muted">{money(owed)}</span>{:else}<b>{money(owed)}</b>{/if}</td>
+            <td>{placeRange(r)}</td>
+            <td class="num muted">{game.deal || s.seats ? "" : `${s.pcts[i]}%`}</td>
+            <td class="num">{#if r.seat}<b>{tt("gamePlay.tournament.seat")}</b> <span class="small muted">{money(r.amount)}</span>{:else}<b>{money(r.amount)}</b>{/if}</td>
             <td>
               <!-- a name lands in its place like the busted player's stamp -->
-              {#if who}<span class="paid inline-block" use:fresh={[who.bustedAt ?? game.endedAt, "stamp"]}>{who.name}</span>{/if}
+              {#each r.players as w (w.id)}<span class="paid inline-block" use:fresh={[w.bustedAt ?? game.endedAt, "stamp"]}>{w.name}</span>{/each}
             </td>
           </tr>
         {/each}
@@ -484,8 +442,8 @@
       {s.entrants} × {money(t.buyIn)}{#if s.rebuys} + {tp("gamePlay.tournament.rebuysCount", s.rebuys)}{/if}{#if s.addOns} + {tp("gamePlay.tournament.addOnsCount", s.addOns)}{/if} = {money(s.gross)}{#if s.bounties} − {tt(pko ? "gamePlay.tournament.bountiesNotePko" : mystery ? "gamePlay.tournament.bountiesNoteMystery" : "gamePlay.tournament.bountiesNote", { bounties: money(s.bounties), bounty: money(s.bounty) })}{/if}{#if s.rake} − {tt("gamePlay.tournament.rakeNote", { rake: money(s.rake) })}{/if}
     </p>
     {#if t.satellite}<p class="small muted">{tt("gamePlay.tournament.satelliteNote", { value: money(t.satellite.seatValue) })}</p>{/if}
-    {#if book.unclaimed > 0.004 && (game.finished || !mystery)}
-      <p class="small warn" transition:slide={reveal()}>{tt(mystery ? "gamePlay.tournament.unopenedNote" : "gamePlay.tournament.uncreditedNote", { amount: money(book.unclaimed) })}</p>
+    {#if s.unclaimed > 0.004 && (game.finished || !mystery)}
+      <p class="small warn" transition:slide={reveal()}>{tt(mystery ? "gamePlay.tournament.unopenedNote" : "gamePlay.tournament.uncreditedNote", { amount: money(s.unclaimed) })}</p>
     {/if}
 
     {#if mystery}
@@ -497,7 +455,7 @@
           {/if}
         </div>
         {#if !game.mystery}
-          <p class="small muted">{tt("gamePlay.tournament.mysteryWaiting", { n: String(mysteryStartsAt(game)), pool: money(s.bounties) })}</p>
+          <p class="small muted">{tt("gamePlay.tournament.mysteryWaiting", { n: String(s.mysteryAt), pool: money(s.bounties) })}</p>
         {:else}
           {#if editingEnvelopes}
             <form autocomplete="off" class="row" onsubmit={saveEnvelopes} transition:slide={reveal()}>
@@ -543,7 +501,7 @@
           <h2>{tt("gamePlay.tournament.dealHeading")}</h2>
           <button class="link small" data-sound={showDeal ? "close" : "open"} aria-expanded={showDeal} onclick={() => (showDeal = !showDeal)}>{showDeal ? tt("gamePlay.tournament.hide") : tt("gamePlay.tournament.runTheNumbers")}</button>
         </div>
-        {#if showDeal}<div transition:slide={reveal()}><DealCalc bind:game {persist} /></div>{/if}
+        {#if showDeal}<div transition:slide={reveal()}><DealCalc bind:game {persist} book={s} /></div>{/if}
       </div>
     {/if}
   </section>

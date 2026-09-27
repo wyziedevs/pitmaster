@@ -6,7 +6,7 @@
   import Icon from "./Icon.svelte";
   import Trophy from "@lucide/svelte/icons/trophy";
   import type { Game } from "$lib/types";
-  import { currentRound, roundName } from "$lib/bracket";
+  import { currentRound, roundName } from "$lib/kinds/tournament/bracket";
   import { t } from "$lib/i18n";
   import { playerName } from "$lib/events";
 

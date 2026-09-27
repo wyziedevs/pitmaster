@@ -4,16 +4,16 @@
   import Icon from "./Icon.svelte";
   import Handshake from "@lucide/svelte/icons/handshake";
   import type { Game } from "$lib/types";
-  import { tourneyStats, takeDeal } from "$lib/game";
+  import type { TourneyBook } from "$lib/kinds/tournament/engine";
+  import { takeDeal } from "$lib/kinds/tournament/actions";
   import { icm, chipChop, roundDeal } from "$lib/deal";
   import { amt, money } from "$lib/util";
   import { bump, reveal, slide } from "$lib/motion";
   import { toast } from "$lib/toast.svelte";
   import { t } from "$lib/i18n";
 
-  let { game = $bindable(), persist }: { game: Game; persist: () => void } = $props();
+  let { game = $bindable(), persist, book: s }: { game: Game; persist: () => void; book: TourneyBook } = $props();
 
-  const s = $derived(tourneyStats(game));
   const alive = $derived(game.players.filter((p) => !p.out));
   // what's left to win: the payout spots the survivors are still playing for
   const prizes = $derived(s.payouts.slice(0, alive.length).concat(Array(Math.max(0, alive.length - s.payouts.length)).fill(0)));

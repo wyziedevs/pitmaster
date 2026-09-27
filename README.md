@@ -78,7 +78,11 @@ src/lib/
   presets.ts      built-in tournament presets (turbo, deepstack, pko...)
   blinds.ts       structure generator, color-ups, payouts
   clock.ts        pure clock math (derive / start / pause / jump)
-  game.ts         new game, bust, rebuy, knockouts, bounties (flat / progressive / mystery envelopes), deals, seats + table balancing, rerun, cash stats, settle-up (cash and tournament), shared costs, payments and what's still owed
+  game.ts         what every kind shares: a new game, a new player, ending a game and taking the end back
+  events.ts       the log, the tv's flash, player and house names
+  settle.ts       settle-up, shared costs, payments and what's still owed
+  seats.ts        the seat draw and table balancing
+  rerun.ts        Tweak and Rerun, Run It Back
   stats.ts        per-game results, the all-time leaderboard and league standings
   variants.ts     the poker games: how each is bet (no limit, pot limit, limit) and dealt (blinds or stud), the mixes, dealer's choice
   report.ts       the plain-text recap and per-game csv
@@ -89,7 +93,7 @@ src/lib/
   vault.ts        IndexedDB: the key and everything sealed with it, saved together; the other-tab messages
   lock.svelte.ts  the passcode lock: unlock, lock now, auto-lock, tabs sharing the lock, tv windows
   check.ts        the shape check for anything from outside (imported files, tv snapshots); shape.ts has its building blocks
-  kinds/          one folder per kind of game (cash/, tournament/, dice/, lives/, pot/, and poker/ for what cash and tournaments share: the new-game form and their settings' checks; standing.ts is the last-one-standing engine and stakes that liar's dice and the lives games share). each gives kinds/index.ts its form, its dealer screen, a tv board if it isn't poker, and its results, settle-up, recap, csv and check (kinds/kind.ts), so the rest of the app asks the kind instead of branching on game.type
+  kinds/          one folder per kind of game (cash/, tournament/, dice/, lives/, pot/, and poker/ for what cash and tournaments share: the new-game form and their settings' checks; standing.ts is the last-one-standing engine and stakes that liar's dice and the lives games share). a kind's money and rules sit in its own engine.ts (what it all comes to, worked out from the game, never changing it: the tournament's tourneyBook, cash's cashNight) and actions.ts (what the dealer screen does to it). each gives kinds/index.ts its form, its dealer screen, a tv board if it isn't poker, and its results, settle-up, recap, csv and check (kinds/kind.ts), so the rest of the app asks the kind instead of branching on game.type
   site.ts         the address, and each page's title and description for search and link previews
   store.ts        the game data (games, chip sets, templates, pay links, leagues), export + import
   sync.ts         BroadcastChannel + the end-to-end encrypted live api client

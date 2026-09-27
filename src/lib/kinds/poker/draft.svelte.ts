@@ -8,7 +8,8 @@ import { getChipSets, getDefaultChipSetId, getGames, getLeagues, getTemplate, kn
 import { currentLeague } from "$lib/stats";
 import { copyFrom, leagueOf, namesOf } from "$lib/rerun";
 import { gameChips, unitOf } from "$lib/chips";
-import { newGame, unusedSeats } from "$lib/game";
+import { newGame } from "$lib/game";
+import { unusedSeats } from "../tournament/engine";
 import { getPreset } from "$lib/presets";
 import { nameKey } from "$lib/util";
 import { toast } from "$lib/toast.svelte";

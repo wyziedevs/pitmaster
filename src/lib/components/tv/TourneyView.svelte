@@ -14,12 +14,11 @@
   import TvFooter from "./TvFooter.svelte";
   import { BANNER, GOOD, HOT } from "./cues.svelte";
   import type { TvState } from "./state.svelte";
-  import { bountyBook, envelopesLeft, mysteryStartsAt } from "$lib/game";
   import { playerName } from "$lib/events";
   import { tableCounts, shootout } from "$lib/seats";
-  import { roundName, placeRange } from "$lib/bracket";
+  import { roundName, placeRange } from "$lib/kinds/tournament/bracket";
   import { gameLine, isLimit, isStud, stakesText, variantName } from "$lib/variants";
-  import { amt, clock, clockFace, money, ordinal } from "$lib/util";
+  import { amt, clock, clockFace, money } from "$lib/util";
   import { sounds } from "$lib/sound";
   import { prefs } from "$lib/settings.svelte";
   import { fade } from "svelte/transition";
@@ -55,20 +54,18 @@
   // the payout ladder fits nine places; a bigger field says how many more get paid
   const LADDER = 9;
   const ladder = $derived(
-    tv.groups.length
-      ? tv.groups.slice(0, LADDER).map((g) => ({ label: placeRange(g), who: game.players.filter((x) => x.out && x.place === g.from), fig: money(stats.payouts[g.from - 1] ?? 0) }))
-      : stats.payouts.slice(0, LADDER).map((p, i) => ({ label: ordinal(i + 1), who: game.players.filter((x) => x.out && x.place === i + 1), fig: i < tv.seats ? t("tv.tourney.seat") : money(p) }))
+    stats.places.slice(0, LADDER).map((r) => ({ label: placeRange(r), who: r.players.filter((x) => x.out), fig: r.seat ? t("tv.tourney.seat") : money(r.amount) }))
   );
 
   // bounties: the biggest head still in (progressive), or the envelopes left (mystery)
   const bountyKind = $derived(tr.bounty ? tr.bountyKind : null);
   const topHead = $derived.by(() => {
     if (bountyKind !== "progressive") return null;
-    const head = bountyBook(game).head;
+    const head = stats.head;
     const top = game.players.filter((p) => !p.out).sort((a, b) => (head[b.id] ?? 0) - (head[a.id] ?? 0))[0];
     return top ? { name: top.name, amount: head[top.id] ?? 0 } : null;
   });
-  const envelopes = $derived(bountyKind === "mystery" ? envelopesLeft(game) : []);
+  const envelopes = $derived(bountyKind === "mystery" ? stats.envelopes : []);
 
   // a shootout says how many tables have their winner
   const shoot = $derived(shootout(game));
@@ -275,7 +272,7 @@
             </li>
           {/each}
         </ol>
-        {#if !tv.groups.length && stats.payouts.length > LADDER}<span class="sub">{tp("tv.tourney.morePaid", stats.payouts.length - LADDER)}</span>{/if}
+        {#if stats.places.length > LADDER}<span class="sub">{tp("tv.tourney.morePaid", stats.places.length - LADDER)}</span>{/if}
       {:else}
         <span class="v">{t("tv.tourney.topN", { n: String(stats.paid) })}</span>
       {/if}
@@ -289,7 +286,7 @@
           {#if game.mystery}
             <span><span use:replay={[envelopes.length, "pop"]}>{tp("tv.tourney.envelopesLeft", envelopes.length)}</span>{#if tv.showMoney && envelopes.length}{" · "}{t("tv.tourney.topEnvelope")}{" "}<span class="fig">{money(envelopes[0])}</span>{/if}</span>
           {:else}
-            <span>{t("tv.tourney.mysteryFrom", { n: String(mysteryStartsAt(game)) })}</span>
+            <span>{t("tv.tourney.mysteryFrom", { n: String(stats.mysteryAt) })}</span>
           {/if}
         {:else}
           <span>{#if tv.showMoney}<span class="fig">{money(tr.bounty)}</span> {/if}{t("tv.tourney.bountyOnEveryHead")}</span>

@@ -43,7 +43,7 @@ Small changes to what already exists.
 
 **Status: done.**
 
-The extras cash tables actually play. Each has its own switch, off to start. Everything is logged in one list of events on the game: `game.sides: { kind, at, playerId?, amount?, hand?, window? }[]`, and `sideStats()` in `game.ts` works out the rest from it. The dealer controls are `SideGames.svelte`.
+The extras cash tables actually play. Each has its own switch, off to start. Everything is logged in one list of events on the game: `game.sides: SideEvent[]` (one shape per kind: a bomb pot, a 7-2 win, a high hand set or paid), and `sideStats()` in `kinds/cash/engine.ts` works out the rest from it. The dealer controls are `SideGames.svelte`.
 
 **2a. Bomb pots.** Everyone antes a set amount and the flop comes with no preflop betting.
 - `CashSettings.bomb: { on; ante; doubleBoard; everyMinutes }`. `everyMinutes: 0` means the host only calls them by hand.
@@ -79,7 +79,7 @@ The extras cash tables actually play. Each has its own switch, off to start. Eve
 
 ## Phase 4: Tournament formats
 
-**Status: done.** Two switches, both off to start: Satellites and Shootouts (one Format section on New Game). A satellite is `TourneySettings.satellite: { seatValue } | null`, and `tourneyStats` turns the pool into seats plus the rest, so the bubble, results and settle-up follow from it (a seat is never paid in cash). Which seats are still unused is worked out from `Player.ticket` across games, so nothing on the satellite changes when its winners sit down. A shootout is `format: "shootout"`; table winners come from who's left at each table, and `game.finalAt` marks the final table.
+**Status: done.** Two switches, both off to start: Satellites and Shootouts (one Format section on New Game). A satellite is `TourneySettings.satellite: { seatValue } | null`, and `tourneyBook` (`kinds/tournament/engine.ts`) turns the pool into seats plus the rest, so the bubble, results and settle-up follow from it (a seat is never paid in cash). Which seats are still unused is worked out from `Player.ticket` across games, so nothing on the satellite changes when its winners sit down. A shootout is `format: "shootout"`; table winners come from who's left at each table, and `game.finalAt` marks the final table.
 
 **4a. Satellites.** The prizes are seats in another game instead of cash.
 - `TourneySettings.prize: { kind: "cash" } | { kind: "seats"; seatValue: number; target?: string }`. The number of seats is `floor(pool / seatValue)`, and the remainder goes to the next place as cash.

@@ -18,6 +18,8 @@ const isRunning = (c: Clock) => c.status === "running";
 export interface Derived {
   index: number;
   level: Level;
+  /** the level's number for the screens: on a break, the level just played */
+  levelNum: number;
   next: Level | null;
   elapsedMs: number;
   remainingMs: number;
@@ -45,6 +47,7 @@ export function derive(game: Game, now = Date.now()): Derived {
   }
 
   const level = levels[i];
+  const levelNum = level.isBreak ? levels.slice(0, i).filter((l) => !l.isBreak).length : (level.num ?? 0);
   const levelMs = level.minutes * 60000;
   const remainingMs = Math.max(0, levelMs - e);
 
@@ -61,7 +64,7 @@ export function derive(game: Game, now = Date.now()): Derived {
   let totalElapsedMs = e;
   for (let j = 0; j < i; j++) totalElapsedMs += levels[j].minutes * 60000;
 
-  return { index: i, level, next, elapsedMs: e, remainingMs, progress: levelMs ? e / levelMs : 0, nextBreakInMs, totalElapsedMs, finished };
+  return { index: i, level, levelNum, next, elapsedMs: e, remainingMs, progress: levelMs ? e / levelMs : 0, nextBreakInMs, totalElapsedMs, finished };
 }
 
 /** freeze the derived position back into the anchor */
