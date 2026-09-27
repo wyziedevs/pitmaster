@@ -35,6 +35,9 @@ export interface GameSetupDict {
     legend: string;
     name: string;
     chipSet: string;
+    league: string;
+    editLeagues: string;
+    noLeague: string;
     editSets: string;
     yours: string;
     chipValues: string;
@@ -240,6 +243,9 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       legend: "The Basics",
       name: "Name",
       chipSet: "Chip Set",
+      league: "League",
+      editLeagues: "Leagues",
+      noLeague: "None",
       editSets: "Edit Sets",
       yours: "Yours",
       chipValues: "Chip Values",
@@ -447,6 +453,9 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       legend: "基本设置",
       name: "名称",
       chipSet: "筹码套装",
+      league: "联赛",
+      editLeagues: "联赛",
+      noLeague: "无",
       editSets: "编辑套装",
       yours: "自有",
       chipValues: "筹码面值",
@@ -654,6 +663,9 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       legend: "मूल सेटिंग्स",
       name: "नाम",
       chipSet: "चिप सेट",
+      league: "लीग",
+      editLeagues: "लीग",
+      noLeague: "कोई नहीं",
       editSets: "सेट संपादित करें",
       yours: "आपका",
       chipValues: "चिप मूल्य",
@@ -861,6 +873,9 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       legend: "Lo básico",
       name: "Nombre",
       chipSet: "Set de fichas",
+      league: "Liga",
+      editLeagues: "Ligas",
+      noLeague: "Ninguna",
       editSets: "Editar sets",
       yours: "Tuyo",
       chipValues: "Valor de las fichas",
@@ -1068,6 +1083,9 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       legend: "Les bases",
       name: "Nom",
       chipSet: "Set de jetons",
+      league: "Ligue",
+      editLeagues: "Ligues",
+      noLeague: "Aucune",
       editSets: "Modifier les sets",
       yours: "à vous",
       chipValues: "Valeur des jetons",
@@ -1275,6 +1293,9 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       legend: "الأساسيات",
       name: "الاسم",
       chipSet: "طقم الرقائق",
+      league: "الدوري",
+      editLeagues: "الدوريات",
+      noLeague: "بدون",
       editSets: "تعديل الأطقم",
       yours: "طقمك",
       chipValues: "قيم الرقائق",
@@ -1489,6 +1510,9 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       legend: "মূল বিষয়",
       name: "নাম",
       chipSet: "চিপ সেট",
+      league: "লিগ",
+      editLeagues: "লিগ",
+      noLeague: "নেই",
       editSets: "সেট সম্পাদনা করুন",
       yours: "আপনার",
       chipValues: "চিপের মূল্য",
@@ -1696,6 +1720,9 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       legend: "O básico",
       name: "Nome",
       chipSet: "Conjunto de fichas",
+      league: "Liga",
+      editLeagues: "Ligas",
+      noLeague: "Nenhuma",
       editSets: "Editar conjuntos",
       yours: "Seu",
       chipValues: "Valor das fichas",

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { page } from "$app/state";
   import { getGame } from "$lib/store";
-  import { askFor, subscribeLocal } from "$lib/sync";
+  import { askFor, publicSnapshot, subscribeLocal } from "$lib/sync";
   import { vault } from "$lib/lock.svelte";
   import type { Game } from "$lib/types";
   import TvView from "$lib/components/TvView.svelte";
@@ -12,7 +12,9 @@
   // reads the saved game when it can; with a passcode set it never holds the
   // key, so it asks the tab running the game instead, and waits while locked.
   const id = page.params.id!;
-  let game = $state<Game | null>(vault.state === "open" ? getGame(id) : null);
+  // (the same snapshot the dealer screen sends: the league's standings ride along)
+  const saved = vault.state === "open" ? getGame(id) : null;
+  let game = $state<Game | null>(saved && publicSnapshot(saved));
 
   $effect(() => subscribeLocal(id, (g) => (game = g)));
   $effect(() => {

@@ -2,7 +2,7 @@
 // checked before anything reads them: the right kind of value everywhere the
 // app looks, ids that are safe in a page address and colors that are only
 // colors. anything else is turned away whole, never half saved.
-import type { ChipSet, EventKind, Game, PayHandles, Template } from "./types";
+import type { ChipSet, EventKind, Game, League, PayHandles, Template } from "./types";
 import { FACE_DEFAULTS } from "./chips";
 
 type Obj = Record<string, unknown>;
@@ -88,6 +88,9 @@ const cost = (c: unknown) => obj(c) && id(c.id) && str(c.label) && num(c.amount)
 const payment = (p: unknown) => obj(p) && str(p.from) && str(p.to) && num(p.amount) && num(p.at);
 const waiting = (w: unknown) => obj(w) && id(w.id) && str(w.name) && num(w.at);
 const entry = (e: unknown) => obj(e) && num(e.t) && str(e.text);
+/** a league's standings on a tv snapshot */
+const board = (b: unknown) =>
+  obj(b) && str(b.name) && num(b.games) && list((r) => obj(r) && str(r.name) && num(r.points) && num(r.games))(b.rows);
 
 export function isGame(g: unknown): g is Game {
   return (
@@ -116,6 +119,8 @@ export function isGame(g: unknown): g is Game {
     maybe(num)(g.finalAt) &&
     maybe(list(payment))(g.paid) &&
     maybe(list(waiting))(g.waitlist) &&
+    maybe(id)(g.leagueId) &&
+    maybe(board)(g.league) &&
     // a tournament's clock needs at least one level to count down
     (g.type === "cash" ? cash(g.cash) : g.type === "tournament" && tourney(g.tourney) && (g.levels as unknown[]).length > 0)
   );
@@ -137,6 +142,22 @@ export const isTemplate = (t: unknown): t is Template =>
   maybe(tourney)(t.tourney) &&
   maybe(cash)(t.cash);
 
+const GAME_TYPES = ["cash", "tournament"];
+export const isLeague = (l: unknown): l is League =>
+  obj(l) &&
+  id(l.id) &&
+  str(l.name) &&
+  num(l.start) &&
+  maybe(num)(l.end) &&
+  list((x) => GAME_TYPES.includes(x as string))(l.types) &&
+  obj(l.points) &&
+  ["table", "beaten", "root"].includes(l.points.kind as string) &&
+  list(num)(l.points.table) &&
+  num(l.points.play) &&
+  num(l.points.ko) &&
+  maybe(num)(l.bestOf) &&
+  num(l.updatedAt);
+
 /** pay handles by player: only the three apps, only text */
 export const isHandles = (h: unknown): h is Record<string, PayHandles> =>
   obj(h) && Object.values(h).every((v) => obj(v) && Object.entries(v).every(([k, s]) => ["venmo", "cashapp", "paypal"].includes(k) && str(s)));
@@ -144,6 +165,7 @@ export const isHandles = (h: unknown): h is Record<string, PayHandles> =>
 /** everything an export file carries (see store.ts) */
 export const isData = (d: unknown) =>
   obj(d) && list(isGame)(d.games) && list(isChipSet)(d.chipSets) && list(isTemplate)(d.templates) && isHandles(d.handles) && str(d.defaultChipSetId) &&
+  maybe(list(isLeague))(d.leagues) &&
   (d.exportedAt === undefined || typeof d.exportedAt === "number");
 
 /** a password-locked export's lock: what crypto.ts needs to try a password */

@@ -44,6 +44,7 @@ export interface Settings {
   useSatellites: boolean; // tournaments whose prizes are seats in another game
   useShootouts: boolean; // tournaments where each table plays down to one winner
   useWaitlist: boolean; // cash games: a list of who's next for a seat
+  useLeagues: boolean; // seasons that score the games linked to them, on Players and the tv
 
   // ---- the house ----
   houseRules: string; // one per line
@@ -125,6 +126,7 @@ const defaults: Settings = {
   useSatellites: false,
   useShootouts: false,
   useWaitlist: false,
+  useLeagues: false,
 
   houseRules: "",
   rulesOnNew: true,

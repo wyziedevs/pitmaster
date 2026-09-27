@@ -95,6 +95,82 @@ export interface PlayersDict {
       last: string;
     };
   };
+  leagues: {
+    tabBoard: string;
+    tabLeagues: string;
+    viewLabel: string;
+    pickAria: string;
+    new: string;
+    edit: string;
+    defaultName: string;
+    dates: string;
+    from: string;
+    gamesCount: PluralText;
+    strays: PluralText;
+    addThem: string;
+    byGame: string;
+    byGameNote: string;
+    byGameNoteBest: string;
+    gameCol: string;
+    noGames: string;
+    none: string;
+    table: {
+      points: string;
+      played: string;
+    };
+    scoring: {
+      table: string;
+      beaten: string;
+      root: string;
+      play: string;
+      ko: string;
+      bestOf: string;
+    };
+    form: {
+      name: string;
+      start: string;
+      end: string;
+      counts: string;
+      points: string;
+      kindTable: string;
+      kindBeaten: string;
+      kindRoot: string;
+      table: string;
+      hint: {
+        table: string;
+        beaten: string;
+        root: string;
+      };
+      sample: string;
+      play: string;
+      ko: string;
+      bestOf: string;
+      cashNote: string;
+      bestOfNote: string;
+      create: string;
+      delete: string;
+      confirmDelete: string;
+      needNameStart: string;
+      needType: string;
+      endBeforeStart: string;
+      needTable: string;
+    };
+    toast: {
+      created: string;
+      saved: string;
+      deleted: string;
+      linked: PluralText;
+    };
+    csv: {
+      place: string;
+      player: string;
+      points: string;
+      played: string;
+      wins: string;
+      knockouts: string;
+      net: string;
+    };
+  };
   report: {
     cash: {
       summary: string;
@@ -232,6 +308,82 @@ export const players: Record<Lang, PlayersDict> = {
         last: "Last Played",
       },
     },
+    leagues: {
+      tabBoard: "Leaderboard",
+      tabLeagues: "Leagues",
+      viewLabel: "View",
+      pickAria: "League",
+      new: "New League",
+      edit: "Edit League",
+      defaultName: "{year} Season",
+      dates: "{start} to {end}",
+      from: "From {start}",
+      gamesCount: { one: "{count} game", other: "{count} games" },
+      strays: { one: "{count} finished game from these dates isn't in a league.", other: "{count} finished games from these dates aren't in a league." },
+      addThem: "Add Them",
+      byGame: "Game by Game",
+      byGameNote: "Each player's points from each game. Hover a number to see the place.",
+      byGameNoteBest: "Each player's points from each game. A struck-through score isn't one of their best, so it doesn't count.",
+      gameCol: "G{n}",
+      noGames: "No finished games in this league yet. Pick it when you start a game, or on a game's page.",
+      none: "No leagues yet. A league scores a season of games as a points race.",
+      table: {
+        points: "Points",
+        played: "Played",
+      },
+      scoring: {
+        table: "Points by place: {table}",
+        beaten: "One point per player beaten",
+        root: "Bigger fields score more",
+        play: "{n} for playing",
+        ko: "{n} per knockout",
+        bestOf: "Best {n} count",
+      },
+      form: {
+        name: "Name",
+        start: "Starts",
+        end: "Ends (Optional)",
+        counts: "Counts:",
+        points: "Points",
+        kindTable: "By Place, From a Table",
+        kindBeaten: "One per Player Beaten",
+        kindRoot: "Bigger Fields Score More",
+        table: "Points for 1st, 2nd, 3rd…",
+        hint: {
+          table: "Places past the end of the table score nothing.",
+          beaten: "Everyone scores one point for each player they finished ahead of, plus one.",
+          root: "10 × √(players ÷ place), so winning a big game is worth more.",
+        },
+        sample: "Of 10 players: 1st {first}, 2nd {second}, last {last}.",
+        play: "Points for Playing",
+        ko: "Points per Knockout",
+        bestOf: "Best Of (0 = Every Game)",
+        cashNote: "Cash games rank everyone by what they won that night.",
+        bestOfNote: "Best of keeps each player's top scores and drops the rest.",
+        create: "Create League",
+        delete: "Delete League",
+        confirmDelete: "Delete {name}? Its games stay, just not in a league.",
+        needNameStart: "Give it a name and a start date",
+        needType: "Pick at least one kind of game",
+        endBeforeStart: "It can't end before it starts",
+        needTable: "Type the points for each place",
+      },
+      toast: {
+        created: "Created {name}",
+        saved: "Saved {name}",
+        deleted: "Deleted {name}",
+        linked: { one: "Added {count} game to {name}", other: "Added {count} games to {name}" },
+      },
+      csv: {
+        place: "Place",
+        player: "Player",
+        points: "Points",
+        played: "Played",
+        wins: "Wins",
+        knockouts: "Knockouts",
+        net: "Net",
+      },
+    },
     report: {
       cash: {
         summary: "{stakes}{played} · {bank} bought in",
@@ -365,6 +517,82 @@ export const players: Record<Lang, PlayersDict> = {
         cashHours: "现金局时长",
         perHour: "每小时",
         last: "最近一次",
+      },
+    },
+    leagues: {
+      tabBoard: "排行榜",
+      tabLeagues: "联赛",
+      viewLabel: "查看",
+      pickAria: "联赛",
+      new: "新建联赛",
+      edit: "编辑联赛",
+      defaultName: "{year} 赛季",
+      dates: "{start} 至 {end}",
+      from: "自 {start} 起",
+      gamesCount: { one: "{count} 场比赛", other: "{count} 场比赛" },
+      strays: { one: "这段日期内有 {count} 场已结束的比赛不在任何联赛中。", other: "这段日期内有 {count} 场已结束的比赛不在任何联赛中。" },
+      addThem: "加入它们",
+      byGame: "逐场成绩",
+      byGameNote: "每位选手在每场比赛中的积分。将鼠标悬停在数字上可查看名次。",
+      byGameNoteBest: "每位选手在每场比赛中的积分。带删除线的分数不在其最佳成绩之列，因此不计入。",
+      gameCol: "第{n}场",
+      noGames: "这个联赛还没有已结束的比赛。开始比赛时或在比赛页面上选择它。",
+      none: "还没有联赛。联赛把一个赛季的比赛按积分排名。",
+      table: {
+        points: "积分",
+        played: "参赛",
+      },
+      scoring: {
+        table: "按名次计分：{table}",
+        beaten: "每胜过一位选手得一分",
+        root: "人数越多，得分越高",
+        play: "参赛得 {n} 分",
+        ko: "每次淘汰得 {n} 分",
+        bestOf: "取最佳 {n} 场",
+      },
+      form: {
+        name: "名称",
+        start: "开始",
+        end: "结束（可选）",
+        counts: "计入：",
+        points: "积分",
+        kindTable: "按名次，依积分表",
+        kindBeaten: "每胜过一位选手得一分",
+        kindRoot: "人数越多，得分越高",
+        table: "第 1、2、3 名的积分…",
+        hint: {
+          table: "超出积分表的名次不得分。",
+          beaten: "每位选手每排在一人之前就得一分，另加一分。",
+          root: "10 × √(人数 ÷ 名次)，所以赢下大场比赛得分更多。",
+        },
+        sample: "10 人参赛时：第 1 名 {first}，第 2 名 {second}，最后一名 {last}。",
+        play: "参赛积分",
+        ko: "每次淘汰积分",
+        bestOf: "取最佳场数（0 = 全部比赛）",
+        cashNote: "现金局按每人当晚赢得的金额排名。",
+        bestOfNote: "取最佳场数会保留每位选手的最高分，其余舍去。",
+        create: "创建联赛",
+        delete: "删除联赛",
+        confirmDelete: "删除 {name}？其中的比赛会保留，只是不再属于任何联赛。",
+        needNameStart: "请填写名称和开始日期",
+        needType: "至少选择一种比赛类型",
+        endBeforeStart: "结束日期不能早于开始日期",
+        needTable: "请输入每个名次的积分",
+      },
+      toast: {
+        created: "已创建 {name}",
+        saved: "已保存 {name}",
+        deleted: "已删除 {name}",
+        linked: { one: "已将 {count} 场比赛加入 {name}", other: "已将 {count} 场比赛加入 {name}" },
+      },
+      csv: {
+        place: "名次",
+        player: "选手",
+        points: "积分",
+        played: "参赛",
+        wins: "夺冠",
+        knockouts: "淘汰数",
+        net: "净额",
       },
     },
     report: {
@@ -502,6 +730,82 @@ export const players: Record<Lang, PlayersDict> = {
         last: "आखिरी बार खेला",
       },
     },
+    leagues: {
+      tabBoard: "लीडरबोर्ड",
+      tabLeagues: "लीग",
+      viewLabel: "देखें",
+      pickAria: "लीग",
+      new: "नई लीग",
+      edit: "लीग बदलें",
+      defaultName: "{year} सीज़न",
+      dates: "{start} से {end}",
+      from: "{start} से",
+      gamesCount: { one: "{count} गेम", other: "{count} गेम" },
+      strays: { one: "इन तारीखों का {count} पूरा हुआ गेम किसी लीग में नहीं है।", other: "इन तारीखों के {count} पूरे हुए गेम किसी लीग में नहीं हैं।" },
+      addThem: "इन्हें जोड़ें",
+      byGame: "गेम-दर-गेम",
+      byGameNote: "हर गेम में हर खिलाड़ी के अंक। स्थान देखने के लिए किसी संख्या पर होवर करें।",
+      byGameNoteBest: "हर गेम में हर खिलाड़ी के अंक। कटा हुआ स्कोर उनके सबसे अच्छे स्कोर में नहीं है, इसलिए गिना नहीं जाता।",
+      gameCol: "गेम {n}",
+      noGames: "इस लीग में अभी कोई पूरा हुआ गेम नहीं है। गेम शुरू करते समय या गेम के पेज पर इसे चुनें।",
+      none: "अभी कोई लीग नहीं। लीग पूरे सीज़न के गेम को अंकों की दौड़ की तरह गिनती है।",
+      table: {
+        points: "अंक",
+        played: "खेले",
+      },
+      scoring: {
+        table: "स्थान के हिसाब से अंक: {table}",
+        beaten: "हराए गए हर खिलाड़ी पर एक अंक",
+        root: "बड़े गेम में ज़्यादा अंक",
+        play: "खेलने के {n}",
+        ko: "हर नॉकआउट पर {n}",
+        bestOf: "सबसे अच्छे {n} गिने जाते हैं",
+      },
+      form: {
+        name: "नाम",
+        start: "शुरू",
+        end: "खत्म (वैकल्पिक)",
+        counts: "गिने जाएं:",
+        points: "अंक",
+        kindTable: "स्थान के हिसाब से, तालिका से",
+        kindBeaten: "हराए गए हर खिलाड़ी पर एक",
+        kindRoot: "बड़े गेम में ज़्यादा अंक",
+        table: "पहले, दूसरे, तीसरे स्थान के अंक…",
+        hint: {
+          table: "तालिका से आगे के स्थानों को कोई अंक नहीं मिलता।",
+          beaten: "हर किसी को अपने से पीछे रहे हर खिलाड़ी पर एक अंक मिलता है, और एक अंक ऊपर से।",
+          root: "10 × √(खिलाड़ी ÷ स्थान), यानी बड़ा गेम जीतना ज़्यादा कीमती है।",
+        },
+        sample: "10 खिलाड़ियों में: पहला {first}, दूसरा {second}, आखिरी {last}।",
+        play: "खेलने के अंक",
+        ko: "हर नॉकआउट के अंक",
+        bestOf: "सबसे अच्छे (0 = हर गेम)",
+        cashNote: "कैश गेम में सबको उस रात की जीत के हिसाब से क्रम दिया जाता है।",
+        bestOfNote: "सबसे अच्छे वाला विकल्प हर खिलाड़ी के ऊपर के स्कोर रखता है और बाकी हटा देता है।",
+        create: "लीग बनाएं",
+        delete: "लीग हटाएं",
+        confirmDelete: "{name} हटाएं? इसके गेम बने रहेंगे, बस किसी लीग में नहीं होंगे।",
+        needNameStart: "नाम और शुरू होने की तारीख दें",
+        needType: "कम से कम एक तरह का गेम चुनें",
+        endBeforeStart: "यह शुरू होने से पहले खत्म नहीं हो सकती",
+        needTable: "हर स्थान के अंक लिखें",
+      },
+      toast: {
+        created: "{name} बनाई गई",
+        saved: "{name} सेव की गई",
+        deleted: "{name} हटाई गई",
+        linked: { one: "{count} गेम {name} में जोड़ा गया", other: "{count} गेम {name} में जोड़े गए" },
+      },
+      csv: {
+        place: "स्थान",
+        player: "खिलाड़ी",
+        points: "अंक",
+        played: "खेले",
+        wins: "जीत",
+        knockouts: "नॉकआउट",
+        net: "नेट",
+      },
+    },
     report: {
       cash: {
         summary: "{stakes}{played} · कुल बाय-इन {bank}",
@@ -635,6 +939,82 @@ export const players: Record<Lang, PlayersDict> = {
         cashHours: "Horas de Cash",
         perHour: "Por Hora",
         last: "Última Vez",
+      },
+    },
+    leagues: {
+      tabBoard: "Clasificación",
+      tabLeagues: "Ligas",
+      viewLabel: "Ver",
+      pickAria: "Liga",
+      new: "Nueva Liga",
+      edit: "Editar Liga",
+      defaultName: "Temporada {year}",
+      dates: "{start} a {end}",
+      from: "Desde {start}",
+      gamesCount: { one: "{count} partida", other: "{count} partidas" },
+      strays: { one: "{count} partida terminada de estas fechas no está en ninguna liga.", other: "{count} partidas terminadas de estas fechas no están en ninguna liga." },
+      addThem: "Añadirlas",
+      byGame: "Partida a Partida",
+      byGameNote: "Los puntos de cada jugador en cada partida. Pasa el ratón sobre un número para ver el puesto.",
+      byGameNoteBest: "Los puntos de cada jugador en cada partida. Una puntuación tachada no está entre sus mejores, así que no cuenta.",
+      gameCol: "P{n}",
+      noGames: "Todavía no hay partidas terminadas en esta liga. Elígela al empezar una partida o en la página de una partida.",
+      none: "Todavía no hay ligas. Una liga puntúa una temporada de partidas como una carrera por puntos.",
+      table: {
+        points: "Puntos",
+        played: "Jugadas",
+      },
+      scoring: {
+        table: "Puntos por puesto: {table}",
+        beaten: "Un punto por jugador superado",
+        root: "Más jugadores, más puntos",
+        play: "{n} por jugar",
+        ko: "{n} por eliminación",
+        bestOf: "Cuentan las {n} mejores",
+      },
+      form: {
+        name: "Nombre",
+        start: "Empieza",
+        end: "Termina (Opcional)",
+        counts: "Cuenta:",
+        points: "Puntos",
+        kindTable: "Por Puesto, Según una Tabla",
+        kindBeaten: "Uno por Jugador Superado",
+        kindRoot: "Más Jugadores, Más Puntos",
+        table: "Puntos para 1º, 2º, 3º…",
+        hint: {
+          table: "Los puestos más allá del final de la tabla no puntúan.",
+          beaten: "Cada uno suma un punto por cada jugador que quedó por detrás, más uno.",
+          root: "10 × √(jugadores ÷ puesto), así que ganar una partida grande vale más.",
+        },
+        sample: "Con 10 jugadores: 1º {first}, 2º {second}, último {last}.",
+        play: "Puntos por Jugar",
+        ko: "Puntos por Eliminación",
+        bestOf: "Mejores (0 = Todas las Partidas)",
+        cashNote: "En las partidas de cash, todos se ordenan por lo que ganaron esa noche.",
+        bestOfNote: "Mejores guarda las puntuaciones más altas de cada jugador y descarta el resto.",
+        create: "Crear Liga",
+        delete: "Eliminar Liga",
+        confirmDelete: "¿Eliminar {name}? Sus partidas se quedan, solo que fuera de una liga.",
+        needNameStart: "Ponle un nombre y una fecha de inicio",
+        needType: "Elige al menos un tipo de partida",
+        endBeforeStart: "No puede terminar antes de empezar",
+        needTable: "Escribe los puntos de cada puesto",
+      },
+      toast: {
+        created: "{name} creada",
+        saved: "{name} guardada",
+        deleted: "{name} eliminada",
+        linked: { one: "{count} partida añadida a {name}", other: "{count} partidas añadidas a {name}" },
+      },
+      csv: {
+        place: "Lugar",
+        player: "Jugador",
+        points: "Puntos",
+        played: "Jugadas",
+        wins: "Victorias",
+        knockouts: "Eliminaciones",
+        net: "Neto",
       },
     },
     report: {
@@ -772,6 +1152,82 @@ export const players: Record<Lang, PlayersDict> = {
         last: "Dernière Partie",
       },
     },
+    leagues: {
+      tabBoard: "Classement",
+      tabLeagues: "Ligues",
+      viewLabel: "Vue",
+      pickAria: "Ligue",
+      new: "Nouvelle Ligue",
+      edit: "Modifier la Ligue",
+      defaultName: "Saison {year}",
+      dates: "Du {start} au {end}",
+      from: "À partir du {start}",
+      gamesCount: { one: "{count} partie", other: "{count} parties" },
+      strays: { one: "{count} partie terminée à ces dates n'est dans aucune ligue.", other: "{count} parties terminées à ces dates ne sont dans aucune ligue." },
+      addThem: "Les Ajouter",
+      byGame: "Partie par Partie",
+      byGameNote: "Les points de chaque joueur à chaque partie. Survolez un nombre pour voir la place.",
+      byGameNoteBest: "Les points de chaque joueur à chaque partie. Un score barré ne fait pas partie de ses meilleurs, donc il ne compte pas.",
+      gameCol: "P{n}",
+      noGames: "Aucune partie terminée dans cette ligue pour l'instant. Choisissez-la en lançant une partie, ou sur la page d'une partie.",
+      none: "Aucune ligue pour l'instant. Une ligue transforme une saison de parties en course aux points.",
+      table: {
+        points: "Points",
+        played: "Jouées",
+      },
+      scoring: {
+        table: "Points par place : {table}",
+        beaten: "Un point par joueur battu",
+        root: "Plus de joueurs, plus de points",
+        play: "{n} pour avoir joué",
+        ko: "{n} par élimination",
+        bestOf: "Les {n} meilleures comptent",
+      },
+      form: {
+        name: "Nom",
+        start: "Début",
+        end: "Fin (Facultatif)",
+        counts: "Compte :",
+        points: "Points",
+        kindTable: "Par Place, Selon un Tableau",
+        kindBeaten: "Un par Joueur Battu",
+        kindRoot: "Plus de Joueurs, Plus de Points",
+        table: "Points pour 1er, 2e, 3e…",
+        hint: {
+          table: "Les places au-delà du tableau ne rapportent rien.",
+          beaten: "Chacun marque un point pour chaque joueur terminé derrière lui, plus un.",
+          root: "10 × √(joueurs ÷ place), donc gagner une grosse partie rapporte plus.",
+        },
+        sample: "Sur 10 joueurs : 1er {first}, 2e {second}, dernier {last}.",
+        play: "Points de Participation",
+        ko: "Points par Élimination",
+        bestOf: "Meilleures (0 = Toutes les Parties)",
+        cashNote: "Les parties cash classent chacun selon ce qu'il a gagné ce soir-là.",
+        bestOfNote: "Meilleures garde les scores les plus hauts de chaque joueur et écarte le reste.",
+        create: "Créer la Ligue",
+        delete: "Supprimer la Ligue",
+        confirmDelete: "Supprimer {name} ? Ses parties restent, simplement hors ligue.",
+        needNameStart: "Donnez-lui un nom et une date de début",
+        needType: "Choisissez au moins un type de partie",
+        endBeforeStart: "Elle ne peut pas finir avant de commencer",
+        needTable: "Saisissez les points de chaque place",
+      },
+      toast: {
+        created: "{name} créée",
+        saved: "{name} enregistrée",
+        deleted: "{name} supprimée",
+        linked: { one: "{count} partie ajoutée à {name}", other: "{count} parties ajoutées à {name}" },
+      },
+      csv: {
+        place: "Place",
+        player: "Joueur",
+        points: "Points",
+        played: "Jouées",
+        wins: "Victoires",
+        knockouts: "Éliminations",
+        net: "Net",
+      },
+    },
     report: {
       cash: {
         summary: "{stakes}{played} · {bank} de buy-ins",
@@ -905,6 +1361,82 @@ export const players: Record<Lang, PlayersDict> = {
         cashHours: "ساعات الكاش",
         perHour: "لكل ساعة",
         last: "آخر مرة",
+      },
+    },
+    leagues: {
+      tabBoard: "لوحة الصدارة",
+      tabLeagues: "الدوريات",
+      viewLabel: "العرض",
+      pickAria: "الدوري",
+      new: "دوري جديد",
+      edit: "تعديل الدوري",
+      defaultName: "موسم {year}",
+      dates: "من {start} إلى {end}",
+      from: "من {start}",
+      gamesCount: { zero: "لا جولات", one: "جولة واحدة", two: "جولتان", few: "{count} جولات", many: "{count} جولة", other: "{count} جولة" },
+      strays: { zero: "لا توجد جولات منتهية من هذه التواريخ خارج الدوريات.", one: "جولة واحدة منتهية من هذه التواريخ ليست في أي دوري.", two: "جولتان منتهيتان من هذه التواريخ ليستا في أي دوري.", few: "{count} جولات منتهية من هذه التواريخ ليست في أي دوري.", many: "{count} جولة منتهية من هذه التواريخ ليست في أي دوري.", other: "{count} جولة منتهية من هذه التواريخ ليست في أي دوري." },
+      addThem: "أضفها",
+      byGame: "جولة بجولة",
+      byGameNote: "نقاط كل لاعب في كل جولة. مرّر المؤشر فوق رقم لترى المركز.",
+      byGameNoteBest: "نقاط كل لاعب في كل جولة. النتيجة المشطوبة ليست من أفضل نتائجه، لذا لا تُحتسب.",
+      gameCol: "ج{n}",
+      noGames: "لا جولات منتهية في هذا الدوري بعد. اختره عند بدء جولة، أو من صفحة الجولة.",
+      none: "لا دوريات بعد. الدوري يحسب موسمًا من الجولات كسباق نقاط.",
+      table: {
+        points: "النقاط",
+        played: "لعب",
+      },
+      scoring: {
+        table: "النقاط حسب المركز: {table}",
+        beaten: "نقطة لكل لاعب تتفوق عليه",
+        root: "الجولات الأكبر تمنح نقاطًا أكثر",
+        play: "{n} للمشاركة",
+        ko: "{n} لكل إقصاء",
+        bestOf: "تُحتسب أفضل {n}",
+      },
+      form: {
+        name: "الاسم",
+        start: "البداية",
+        end: "النهاية (اختياري)",
+        counts: "يُحتسب:",
+        points: "النقاط",
+        kindTable: "حسب المركز، من جدول",
+        kindBeaten: "نقطة لكل لاعب تتفوق عليه",
+        kindRoot: "الجولات الأكبر تمنح نقاطًا أكثر",
+        table: "نقاط المركز الأول والثاني والثالث…",
+        hint: {
+          table: "المراكز بعد نهاية الجدول لا تحصل على نقاط.",
+          beaten: "يحصل كل لاعب على نقطة عن كل لاعب أنهى خلفه، زائد نقطة.",
+          root: "10 × √(اللاعبون ÷ المركز)، لذا الفوز بجولة كبيرة يساوي أكثر.",
+        },
+        sample: "من 10 لاعبين: الأول {first}، الثاني {second}، الأخير {last}.",
+        play: "نقاط المشاركة",
+        ko: "نقاط كل إقصاء",
+        bestOf: "الأفضل من (0 = كل الجولات)",
+        cashNote: "في ألعاب الكاش يُرتَّب الجميع حسب ما ربحوه تلك الليلة.",
+        bestOfNote: "خيار الأفضل يحتفظ بأعلى نتائج كل لاعب ويُسقط الباقي.",
+        create: "إنشاء الدوري",
+        delete: "حذف الدوري",
+        confirmDelete: "حذف {name}؟ تبقى جولاته، لكن خارج أي دوري.",
+        needNameStart: "أعطه اسمًا وتاريخ بداية",
+        needType: "اختر نوعًا واحدًا من الجولات على الأقل",
+        endBeforeStart: "لا يمكن أن ينتهي قبل أن يبدأ",
+        needTable: "اكتب النقاط لكل مركز",
+      },
+      toast: {
+        created: "تم إنشاء {name}",
+        saved: "تم حفظ {name}",
+        deleted: "تم حذف {name}",
+        linked: { zero: "لم تُضف أي جولة إلى {name}", one: "أُضيفت جولة واحدة إلى {name}", two: "أُضيفت جولتان إلى {name}", few: "أُضيفت {count} جولات إلى {name}", many: "أُضيفت {count} جولة إلى {name}", other: "أُضيفت {count} جولة إلى {name}" },
+      },
+      csv: {
+        place: "المركز",
+        player: "اللاعب",
+        points: "النقاط",
+        played: "لعب",
+        wins: "الفوز",
+        knockouts: "الإقصاءات",
+        net: "الصافي",
       },
     },
     report: {
@@ -1042,6 +1574,82 @@ export const players: Record<Lang, PlayersDict> = {
         last: "সর্বশেষ খেলা",
       },
     },
+    leagues: {
+      tabBoard: "লিডারবোর্ড",
+      tabLeagues: "লিগ",
+      viewLabel: "দেখুন",
+      pickAria: "লিগ",
+      new: "নতুন লিগ",
+      edit: "লিগ সম্পাদনা",
+      defaultName: "{year} সিজন",
+      dates: "{start} থেকে {end}",
+      from: "{start} থেকে",
+      gamesCount: { one: "{count}টি গেম", other: "{count}টি গেম" },
+      strays: { one: "এই তারিখগুলোর {count}টি শেষ হওয়া গেম কোনো লিগে নেই।", other: "এই তারিখগুলোর {count}টি শেষ হওয়া গেম কোনো লিগে নেই।" },
+      addThem: "এগুলো যোগ করুন",
+      byGame: "গেম ধরে ধরে",
+      byGameNote: "প্রতিটি গেমে প্রত্যেক খেলোয়াড়ের পয়েন্ট। স্থান দেখতে কোনো সংখ্যার ওপর হোভার করুন।",
+      byGameNoteBest: "প্রতিটি গেমে প্রত্যেক খেলোয়াড়ের পয়েন্ট। কেটে দেওয়া স্কোর তাদের সেরাগুলোর মধ্যে নেই, তাই গোনা হয় না।",
+      gameCol: "গেম {n}",
+      noGames: "এই লিগে এখনো কোনো শেষ হওয়া গেম নেই। গেম শুরু করার সময় বা গেমের পেজে এটা বেছে নিন।",
+      none: "এখনো কোনো লিগ নেই। লিগ একটা সিজনের গেমগুলোকে পয়েন্টের দৌড় হিসেবে গোনে।",
+      table: {
+        points: "পয়েন্ট",
+        played: "খেলেছে",
+      },
+      scoring: {
+        table: "স্থান অনুযায়ী পয়েন্ট: {table}",
+        beaten: "হারানো প্রতি খেলোয়াড়ে এক পয়েন্ট",
+        root: "বড় গেমে বেশি পয়েন্ট",
+        play: "খেলার জন্য {n}",
+        ko: "প্রতি নকআউটে {n}",
+        bestOf: "সেরা {n}টি গোনা হয়",
+      },
+      form: {
+        name: "নাম",
+        start: "শুরু",
+        end: "শেষ (ঐচ্ছিক)",
+        counts: "গোনা হয়:",
+        points: "পয়েন্ট",
+        kindTable: "স্থান অনুযায়ী, টেবিল থেকে",
+        kindBeaten: "হারানো প্রতি খেলোয়াড়ে এক",
+        kindRoot: "বড় গেমে বেশি পয়েন্ট",
+        table: "প্রথম, দ্বিতীয়, তৃতীয়ের পয়েন্ট…",
+        hint: {
+          table: "টেবিলের শেষের পরের স্থানগুলো কোনো পয়েন্ট পায় না।",
+          beaten: "প্রত্যেকে তার পেছনে শেষ করা প্রতিটি খেলোয়াড়ের জন্য এক পয়েন্ট পায়, সঙ্গে আরও এক।",
+          root: "10 × √(খেলোয়াড় ÷ স্থান), তাই বড় গেম জেতার মূল্য বেশি।",
+        },
+        sample: "10 জন খেলোয়াড়ে: প্রথম {first}, দ্বিতীয় {second}, শেষ {last}।",
+        play: "খেলার পয়েন্ট",
+        ko: "প্রতি নকআউটের পয়েন্ট",
+        bestOf: "সেরা কয়টি (0 = সব গেম)",
+        cashNote: "ক্যাশ গেমে সবাইকে সেই রাতে জেতা টাকার হিসেবে সাজানো হয়।",
+        bestOfNote: "সেরা কয়টি প্রত্যেক খেলোয়াড়ের সবচেয়ে ভালো স্কোরগুলো রাখে, বাকিগুলো বাদ দেয়।",
+        create: "লিগ তৈরি করুন",
+        delete: "লিগ মুছুন",
+        confirmDelete: "{name} মুছবেন? এর গেমগুলো থাকবে, শুধু কোনো লিগে থাকবে না।",
+        needNameStart: "একটা নাম আর শুরুর তারিখ দিন",
+        needType: "অন্তত এক ধরনের গেম বেছে নিন",
+        endBeforeStart: "শুরুর আগে শেষ হতে পারে না",
+        needTable: "প্রতিটি স্থানের পয়েন্ট লিখুন",
+      },
+      toast: {
+        created: "{name} তৈরি হয়েছে",
+        saved: "{name} সেভ হয়েছে",
+        deleted: "{name} মুছে ফেলা হয়েছে",
+        linked: { one: "{name}-এ {count}টি গেম যোগ হয়েছে", other: "{name}-এ {count}টি গেম যোগ হয়েছে" },
+      },
+      csv: {
+        place: "স্থান",
+        player: "খেলোয়াড়",
+        points: "পয়েন্ট",
+        played: "খেলেছে",
+        wins: "জয়",
+        knockouts: "নকআউট",
+        net: "নেট",
+      },
+    },
     report: {
       cash: {
         summary: "{stakes}{played} · মোট বাই-ইন {bank}",
@@ -1175,6 +1783,82 @@ export const players: Record<Lang, PlayersDict> = {
         cashHours: "Horas de Cash",
         perHour: "Por Hora",
         last: "Última Vez",
+      },
+    },
+    leagues: {
+      tabBoard: "Classificação",
+      tabLeagues: "Ligas",
+      viewLabel: "Ver",
+      pickAria: "Liga",
+      new: "Nova Liga",
+      edit: "Editar Liga",
+      defaultName: "Temporada {year}",
+      dates: "{start} a {end}",
+      from: "Desde {start}",
+      gamesCount: { one: "{count} partida", other: "{count} partidas" },
+      strays: { one: "{count} partida terminada nessas datas não está em nenhuma liga.", other: "{count} partidas terminadas nessas datas não estão em nenhuma liga." },
+      addThem: "Adicionar Todas",
+      byGame: "Partida a Partida",
+      byGameNote: "Os pontos de cada jogador em cada partida. Passe o mouse sobre um número para ver a posição.",
+      byGameNoteBest: "Os pontos de cada jogador em cada partida. Uma pontuação riscada não está entre as melhores dele, então não conta.",
+      gameCol: "P{n}",
+      noGames: "Ainda não há partidas terminadas nesta liga. Escolha-a ao começar uma partida ou na página de uma partida.",
+      none: "Ainda não há ligas. Uma liga pontua uma temporada de partidas como uma corrida por pontos.",
+      table: {
+        points: "Pontos",
+        played: "Jogadas",
+      },
+      scoring: {
+        table: "Pontos por posição: {table}",
+        beaten: "Um ponto por jogador superado",
+        root: "Mais jogadores, mais pontos",
+        play: "{n} por jogar",
+        ko: "{n} por eliminação",
+        bestOf: "Contam as {n} melhores",
+      },
+      form: {
+        name: "Nome",
+        start: "Início",
+        end: "Fim (Opcional)",
+        counts: "Conta:",
+        points: "Pontos",
+        kindTable: "Por Posição, de uma Tabela",
+        kindBeaten: "Um por Jogador Superado",
+        kindRoot: "Mais Jogadores, Mais Pontos",
+        table: "Pontos para 1º, 2º, 3º…",
+        hint: {
+          table: "Posições além do fim da tabela não pontuam.",
+          beaten: "Cada um ganha um ponto por jogador que terminou atrás dele, mais um.",
+          root: "10 × √(jogadores ÷ posição), então ganhar uma partida grande vale mais.",
+        },
+        sample: "Com 10 jogadores: 1º {first}, 2º {second}, último {last}.",
+        play: "Pontos por Jogar",
+        ko: "Pontos por Eliminação",
+        bestOf: "Melhores (0 = Todas as Partidas)",
+        cashNote: "Nos jogos a dinheiro, todos são ordenados pelo que ganharam naquela noite.",
+        bestOfNote: "Melhores guarda as maiores pontuações de cada jogador e descarta o resto.",
+        create: "Criar Liga",
+        delete: "Excluir Liga",
+        confirmDelete: "Excluir {name}? As partidas continuam, só que fora de uma liga.",
+        needNameStart: "Dê um nome e uma data de início",
+        needType: "Escolha pelo menos um tipo de partida",
+        endBeforeStart: "Não pode terminar antes de começar",
+        needTable: "Digite os pontos de cada posição",
+      },
+      toast: {
+        created: "{name} criada",
+        saved: "{name} salva",
+        deleted: "{name} excluída",
+        linked: { one: "{count} partida adicionada a {name}", other: "{count} partidas adicionadas a {name}" },
+      },
+      csv: {
+        place: "Posição",
+        player: "Jogador",
+        points: "Pontos",
+        played: "Jogadas",
+        wins: "Vitórias",
+        knockouts: "Eliminações",
+        net: "Saldo",
       },
     },
     report: {

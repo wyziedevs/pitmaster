@@ -176,6 +176,7 @@ export interface TvDict {
     placeholder: string;
     which: string;
     noMatch: string;
+    league: string;
     tableSeat: string;
     seat: string;
     noSeat: string;
@@ -197,6 +198,11 @@ export interface TvDict {
   phone: {
     follow: string;
     qrLabel: string;
+  };
+  league: {
+    standings: string;
+    points: string;
+    afterGames: Plural;
   };
   rules: {
     houseRules: string;
@@ -380,6 +386,7 @@ export const tv: Record<Lang, TvDict> = {
       placeholder: "Your Name",
       which: "Which one are you?",
       noMatch: "No one by that name yet.",
+      league: "{place} in {name} · {points} pts",
       tableSeat: "Table {table}, Seat {seat}",
       seat: "Seat {seat}",
       noSeat: "No seat yet",
@@ -401,6 +408,11 @@ export const tv: Record<Lang, TvDict> = {
     phone: {
       follow: "Follow on your phone",
       qrLabel: "QR code for this game's live link",
+    },
+    league: {
+      standings: "League Standings",
+      points: "{n} pts",
+      afterGames: { one: "After {count} game", other: "After {count} games" },
     },
     rules: {
       houseRules: "House Rules",
@@ -582,6 +594,7 @@ export const tv: Record<Lang, TvDict> = {
       placeholder: "你的名字",
       which: "你是哪一位？",
       noMatch: "还没有这个名字。",
+      league: "{name}{place}名 · {points} 分",
       tableSeat: "第 {table} 桌，{seat} 号座",
       seat: "{seat} 号座",
       noSeat: "还没有座位",
@@ -603,6 +616,11 @@ export const tv: Record<Lang, TvDict> = {
     phone: {
       follow: "用手机跟看",
       qrLabel: "本局直播链接的二维码",
+    },
+    league: {
+      standings: "联赛排名",
+      points: "{n} 分",
+      afterGames: { one: "已赛 {count} 场", other: "已赛 {count} 场" },
     },
     rules: {
       houseRules: "场地规则",
@@ -784,6 +802,7 @@ export const tv: Record<Lang, TvDict> = {
       placeholder: "आपका नाम",
       which: "आप कौन से हैं?",
       noMatch: "इस नाम से अभी कोई नहीं।",
+      league: "{name} में {place} · {points} अंक",
       tableSeat: "टेबल {table}, सीट {seat}",
       seat: "सीट {seat}",
       noSeat: "अभी सीट नहीं",
@@ -805,6 +824,11 @@ export const tv: Record<Lang, TvDict> = {
     phone: {
       follow: "फ़ोन पर देखें",
       qrLabel: "इस गेम के लाइव लिंक का QR कोड",
+    },
+    league: {
+      standings: "लीग तालिका",
+      points: "{n} अंक",
+      afterGames: { one: "{count} गेम के बाद", other: "{count} गेम के बाद" },
     },
     rules: {
       houseRules: "हाउस रूल्स",
@@ -986,6 +1010,7 @@ export const tv: Record<Lang, TvDict> = {
       placeholder: "Tu Nombre",
       which: "¿Cuál eres?",
       noMatch: "Nadie con ese nombre todavía.",
+      league: "{place} en {name} · {points} pts",
       tableSeat: "Mesa {table}, Asiento {seat}",
       seat: "Asiento {seat}",
       noSeat: "Sin asiento todavía",
@@ -1007,6 +1032,11 @@ export const tv: Record<Lang, TvDict> = {
     phone: {
       follow: "Síguela en tu teléfono",
       qrLabel: "Código QR del enlace en vivo de esta partida",
+    },
+    league: {
+      standings: "Clasificación de la Liga",
+      points: "{n} pts",
+      afterGames: { one: "Tras {count} partida", other: "Tras {count} partidas" },
     },
     rules: {
       houseRules: "Reglas de la Casa",
@@ -1188,6 +1218,7 @@ export const tv: Record<Lang, TvDict> = {
       placeholder: "Votre Nom",
       which: "Lequel êtes-vous ?",
       noMatch: "Personne à ce nom pour l'instant.",
+      league: "{place} dans {name} · {points} pts",
       tableSeat: "Table {table}, Place {seat}",
       seat: "Place {seat}",
       noSeat: "Pas encore de place",
@@ -1209,6 +1240,11 @@ export const tv: Record<Lang, TvDict> = {
     phone: {
       follow: "Suivez sur votre téléphone",
       qrLabel: "QR code du lien en direct de cette partie",
+    },
+    league: {
+      standings: "Classement de la Ligue",
+      points: "{n} pts",
+      afterGames: { one: "Après {count} partie", other: "Après {count} parties" },
     },
     rules: {
       houseRules: "Règles de la Maison",
@@ -1390,6 +1426,7 @@ export const tv: Record<Lang, TvDict> = {
       placeholder: "اسمك",
       which: "أيّهم أنت؟",
       noMatch: "لا أحد بهذا الاسم بعد.",
+      league: "المركز {place} في {name} · {points} نقطة",
       tableSeat: "الطاولة {table}، المقعد {seat}",
       seat: "المقعد {seat}",
       noSeat: "لا مقعد بعد",
@@ -1411,6 +1448,11 @@ export const tv: Record<Lang, TvDict> = {
     phone: {
       follow: "تابع على هاتفك",
       qrLabel: "رمز QR للرابط المباشر لهذه اللعبة",
+    },
+    league: {
+      standings: "ترتيب الدوري",
+      points: "{n} نقطة",
+      afterGames: { zero: "قبل أي جولة", one: "بعد جولة واحدة", two: "بعد جولتين", few: "بعد {count} جولات", many: "بعد {count} جولة", other: "بعد {count} جولة" },
     },
     rules: {
       houseRules: "قواعد المكان",
@@ -1592,6 +1634,7 @@ export const tv: Record<Lang, TvDict> = {
       placeholder: "আপনার নাম",
       which: "আপনি কোনজন?",
       noMatch: "এই নামে এখনো কেউ নেই।",
+      league: "{name}-এ {place} · {points} পয়েন্ট",
       tableSeat: "টেবিল {table}, আসন {seat}",
       seat: "আসন {seat}",
       noSeat: "এখনো আসন নেই",
@@ -1613,6 +1656,11 @@ export const tv: Record<Lang, TvDict> = {
     phone: {
       follow: "ফোনে দেখুন",
       qrLabel: "এই গেমের লাইভ লিংকের QR কোড",
+    },
+    league: {
+      standings: "লিগ টেবিল",
+      points: "{n} পয়েন্ট",
+      afterGames: { one: "{count}টি গেমের পর", other: "{count}টি গেমের পর" },
     },
     rules: {
       houseRules: "হাউস রুলস",
@@ -1794,6 +1842,7 @@ export const tv: Record<Lang, TvDict> = {
       placeholder: "Seu Nome",
       which: "Qual deles é você?",
       noMatch: "Ninguém com esse nome ainda.",
+      league: "{place} em {name} · {points} pts",
       tableSeat: "Mesa {table}, Assento {seat}",
       seat: "Assento {seat}",
       noSeat: "Sem assento ainda",
@@ -1815,6 +1864,11 @@ export const tv: Record<Lang, TvDict> = {
     phone: {
       follow: "Acompanhe no celular",
       qrLabel: "QR code do link ao vivo deste jogo",
+    },
+    league: {
+      standings: "Classificação da Liga",
+      points: "{n} pts",
+      afterGames: { one: "Após {count} partida", other: "Após {count} partidas" },
     },
     rules: {
       houseRules: "Regras da Casa",

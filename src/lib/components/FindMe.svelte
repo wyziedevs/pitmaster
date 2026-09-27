@@ -46,7 +46,7 @@
         out.push({ text: seatText || t("tv.find.playing"), tone: "good" });
         if (showMoney) out.push({ text: t("tv.find.inFor", { amount: money(p.cashIn) }) });
       } else out.push({ text: showMoney ? t("tv.find.cashedOutFor", { amount: money(p.cashOut) }) : t("tv.find.cashedOut") });
-      return out;
+      return withLeague(out, p.name);
     }
     const s = stats!;
     const seatWon = !!p.place && p.place <= s.seats;
@@ -65,6 +65,14 @@
     else if (!p.out && showMoney && kind === "flat") out.push({ text: t("tv.find.bountyOn", { amount: money(game.tourney!.bounty) }) });
     const kos = koCount(game, p.id);
     if (kos) out.push({ text: tp("tv.find.knockouts", kos) });
+    return withLeague(out, p.name);
+  }
+
+  // a league game: where they stand in it, if they're on the board the host sent
+  function withLeague(out: { text: string; tone?: "good" | "hot" }[], name: string) {
+    const rows = game.league?.rows ?? [];
+    const i = rows.findIndex((r) => nameKey(r.name) === nameKey(name));
+    if (i >= 0) out.push({ text: t("tv.find.league", { place: ordinal(i + 1), name: game.league!.name, points: String(rows[i].points) }) });
     return out;
   }
 </script>

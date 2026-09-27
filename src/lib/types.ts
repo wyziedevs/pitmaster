@@ -318,6 +318,49 @@ export interface Game {
   rakeBox?: number;
   /** who the rake and fees are paid to in settle-up (a player's name, or "The House") */
   house?: string;
+  /** the league this game counts toward */
+  leagueId?: string;
+  /** only on published snapshots: the league's top standings, worked out by the host */
+  league?: LeagueBoard;
+}
+
+/**
+ * how a league scores a game.
+ *  table:  points by finishing place, from `table` (1st, 2nd, ...)
+ *  beaten: one point for every player you finished ahead of, plus one
+ *  root:   10 x the square root of (entrants / place): bigger fields are worth more
+ * cash games rank everyone by what they won that night.
+ */
+export interface LeaguePoints {
+  kind: "table" | "beaten" | "root";
+  table: number[];
+  /** points just for playing a game */
+  play: number;
+  /** points for each knockout (tournaments) */
+  ko: number;
+}
+
+/** a season: the games linked to it, scored the same way */
+export interface League {
+  id: string;
+  name: string;
+  /** when the season runs (new games pick the league that's on) */
+  start: number;
+  end?: number;
+  /** which kinds of game count */
+  types: GameType[];
+  points: LeaguePoints;
+  /** keep each player's best this many results, 0 or missing = all of them */
+  bestOf?: number;
+  updatedAt: number;
+}
+
+/** a league's top standings, as a tv gets them */
+export interface LeagueBoard {
+  name: string;
+  /** games that count so far */
+  games: number;
+  rows: { name: string; points: number; games: number }[];
 }
 
 /** where a regular gets paid, for settle-up links */

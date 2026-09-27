@@ -7,7 +7,8 @@
   import Plus from "@lucide/svelte/icons/plus";
   import { page } from "$app/state";
   import { goto } from "$app/navigation";
-  import { getChipSets, getDefaultChipSetId, saveGame, getTemplates, getTemplate, saveTemplate, getGame, getGames, knownPlayers } from "$lib/store";
+  import { getChipSets, getDefaultChipSetId, saveGame, getTemplates, getTemplate, saveTemplate, getGame, getGames, getLeagues, knownPlayers } from "$lib/store";
+  import { currentLeague } from "$lib/stats";
   import { gameChips, distribute, maxStack } from "$lib/chips";
   import { generateStructure, defaultPayouts, payoutAmounts, plannedMinutes, structureMinutes } from "$lib/blinds";
   import { newGame, unusedSeats } from "$lib/game";
@@ -57,6 +58,17 @@
       .map((s) => s.trim())
       .filter(Boolean)
   );
+
+  // ---- the league it counts toward: the one that's on for this kind of game ----
+  const leagues = getLeagues();
+  const leagueChoices = $derived(leagues.filter((l) => l.types.includes(type)));
+  let leagueId = $state("");
+  let leagueFor = "";
+  $effect(() => {
+    if (leagueFor === type) return;
+    leagueFor = type;
+    leagueId = currentLeague(leagues, type)?.id ?? "";
+  });
 
   // ---- cash ----
   let sb = $state(0.25);
@@ -396,6 +408,7 @@
         name: g.name,
       });
       if (g.house) houseName = g.house;
+      if (g.leagueId && leagues.some((l) => l.id === g.leagueId && l.types.includes(type))) leagueId = g.leagueId;
       toast(t("gameSetup.alerts.copiedSetup", { name: g.name }), "info");
     }
   });
@@ -475,6 +488,7 @@
     if (from) g.from = from;
     if (type === "cash" && useRake !== "none") g.house = houseName.trim() || t("gameSetup.cash.rake.defaultHouseName");
     if (settings.seatsPerTable !== 9) g.seatsPerTable = settings.seatsPerTable;
+    if (leagueId && leagueChoices.some((l) => l.id === leagueId)) g.leagueId = leagueId;
     for (const p of g.players) if (type === "tournament" && tickets[nameKey(p.name)]) p.ticket = tickets[nameKey(p.name)];
     // cash players named up front get the default buy-in
     saveGame(g);
@@ -522,6 +536,15 @@
     <fieldset class="border-0 mt-0 mx-0 mb-[22px] p-0 min-w-0">
       <legend class="ruled w-full px-0">{t("gameSetup.basics.legend")}</legend>
       <label><span>{t("gameSetup.basics.name")}</span><input type="text" bind:value={name} style="width:100%" /></label>
+      {#if leagueChoices.length}
+        <label>
+          <span class="links">{t("gameSetup.basics.league")} <a href="/players#leagues">{t("gameSetup.basics.editLeagues")}</a></span>
+          <select bind:value={leagueId}>
+            <option value="">{t("gameSetup.basics.noLeague")}</option>
+            {#each leagueChoices as l (l.id)}<option value={l.id}>{l.name}</option>{/each}
+          </select>
+        </label>
+      {/if}
       <label>
         <span class="links">{t("gameSetup.basics.chipSet")} <a href="/settings#chips">{t("gameSetup.basics.editSets")}</a></span>
         <select bind:value={chipSetId}>

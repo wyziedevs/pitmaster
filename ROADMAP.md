@@ -110,6 +110,8 @@ The extras cash tables actually play. Each has its own switch, off to start. Eve
 
 ## Phase 6: Leagues and seasons
 
+**Status: done.** One switch, off to start: Leagues. The points presets are a table by place (25, 18, 15, 12, 10, 8, 6, 4, 2, 1 to start), one per player beaten, and 10 × √(entrants ÷ place). Cash games rank by net that night, and level money shares the better place. Games are linked on /new (the league that's on is picked for you) or on the game page, and a league can pull in finished games from its dates that aren't in one yet. The TV rotates the standings in every 15 seconds before the start, on breaks and at the end, and Find Me shows a player's place in the league.
+
 - A new encrypted store list: `leagues: League[]` with `{ id; name; start; end?; types: GameType[]; points; bestOf? }`. `Game.leagueId` links a game to a league. Export/import and `check.ts` carry it.
 - Points: pick a preset (a fixed table by place, or a formula based on entrants and place), plus points for playing and for knockouts. `bestOf` keeps each player's best N results.
 - Standings are worked out in `stats.ts` (`leagueStandings`), like the leaderboard, and are never stored.

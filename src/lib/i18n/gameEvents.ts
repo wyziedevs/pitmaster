@@ -22,6 +22,8 @@ export interface GameEventsDict {
   satDownFlash: string;
   waitlistJoinedLog: string;
   waitlistLeftLog: string;
+  leagueLog: string;
+  noLeagueLog: string;
   seatOpenFlash: string;
   isInFlash: string;
   bustedLog: string;
@@ -75,6 +77,8 @@ export const gameEvents: Record<Lang, GameEventsDict> = {
     satDownFlash: "{name} sat down",
     waitlistJoinedLog: "{name} joined the waitlist",
     waitlistLeftLog: "{name} left the waitlist",
+    leagueLog: "Now counts toward {name}",
+    noLeagueLog: "Taken out of its league",
     seatOpenFlash: "Seat open: {name} is next.",
     isInFlash: "{name} is in",
     bustedLog: "{name} busted in {place}",
@@ -126,6 +130,8 @@ export const gameEvents: Record<Lang, GameEventsDict> = {
     satDownFlash: "{name} 入座",
     waitlistJoinedLog: "{name} 加入了候补名单",
     waitlistLeftLog: "{name} 离开了候补名单",
+    leagueLog: "现在计入 {name}",
+    noLeagueLog: "已移出所在联赛",
     seatOpenFlash: "有空位了：下一位是 {name}。",
     isInFlash: "{name} 已加入",
     bustedLog: "{name} 第 {place} 出局",
@@ -177,6 +183,8 @@ export const gameEvents: Record<Lang, GameEventsDict> = {
     satDownFlash: "{name} बैठे",
     waitlistJoinedLog: "{name} वेटलिस्ट में जुड़े",
     waitlistLeftLog: "{name} वेटलिस्ट से हटे",
+    leagueLog: "अब {name} में गिना जाता है",
+    noLeagueLog: "अपनी लीग से हटाया गया",
     seatOpenFlash: "सीट खाली: अगली बारी {name} की।",
     isInFlash: "{name} शामिल हुए",
     bustedLog: "{name} {place} स्थान पर आउट हुए",
@@ -228,6 +236,8 @@ export const gameEvents: Record<Lang, GameEventsDict> = {
     satDownFlash: "{name} se sentó",
     waitlistJoinedLog: "{name} se apuntó a la lista de espera",
     waitlistLeftLog: "{name} salió de la lista de espera",
+    leagueLog: "Ahora cuenta para {name}",
+    noLeagueLog: "Sacada de su liga",
     seatOpenFlash: "Asiento libre: sigue {name}.",
     isInFlash: "{name} ya está",
     bustedLog: "{name} eliminado en el puesto {place}",
@@ -279,6 +289,8 @@ export const gameEvents: Record<Lang, GameEventsDict> = {
     satDownFlash: "{name} s'est assis",
     waitlistJoinedLog: "{name} s'est inscrit sur la liste d'attente",
     waitlistLeftLog: "{name} a quitté la liste d'attente",
+    leagueLog: "Compte maintenant pour {name}",
+    noLeagueLog: "Retirée de sa ligue",
     seatOpenFlash: "Place libre : {name} est le prochain.",
     isInFlash: "{name} est là",
     bustedLog: "{name} éliminé en {place} place",
@@ -330,6 +342,8 @@ export const gameEvents: Record<Lang, GameEventsDict> = {
     satDownFlash: "جلس {name}",
     waitlistJoinedLog: "انضم {name} إلى قائمة الانتظار",
     waitlistLeftLog: "غادر {name} قائمة الانتظار",
+    leagueLog: "تُحتسب الآن ضمن {name}",
+    noLeagueLog: "أُخرجت من دوريها",
     seatOpenFlash: "مقعد شاغر: {name} هو التالي.",
     isInFlash: "انضم {name}",
     bustedLog: "خرج {name} في المركز {place}",
@@ -388,6 +402,8 @@ export const gameEvents: Record<Lang, GameEventsDict> = {
     satDownFlash: "{name} বসেছেন",
     waitlistJoinedLog: "{name} ওয়েটলিস্টে যোগ দিলেন",
     waitlistLeftLog: "{name} ওয়েটলিস্ট থেকে সরে গেলেন",
+    leagueLog: "এখন {name}-এ গোনা হয়",
+    noLeagueLog: "লিগ থেকে সরানো হয়েছে",
     seatOpenFlash: "সিট খালি: এরপর {name}।",
     isInFlash: "{name} যোগ দিয়েছেন",
     bustedLog: "{name} {place} স্থানে আউট হয়েছেন",
@@ -439,6 +455,8 @@ export const gameEvents: Record<Lang, GameEventsDict> = {
     satDownFlash: "{name} sentou-se",
     waitlistJoinedLog: "{name} entrou na lista de espera",
     waitlistLeftLog: "{name} saiu da lista de espera",
+    leagueLog: "Agora conta para {name}",
+    noLeagueLog: "Tirada da liga",
     seatOpenFlash: "Lugar livre: {name} é o próximo.",
     isInFlash: "{name} está dentro",
     bustedLog: "{name} eliminado em {place} lugar",

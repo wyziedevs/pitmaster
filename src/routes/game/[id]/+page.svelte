@@ -7,10 +7,10 @@
   import Repeat from "@lucide/svelte/icons/repeat";
   import { page } from "$app/state";
   import { goto } from "$app/navigation";
-  import { getGame, saveGame, deleteGame, exportGame, onOtherTab } from "$lib/store";
+  import { getGame, saveGame, deleteGame, exportGame, onOtherTab, getLeagues } from "$lib/store";
   import type { Game } from "$lib/types";
   import { day, download, fileSlug, MOD, timeOfDay } from "$lib/util";
-  import { rerun } from "$lib/game";
+  import { logEvent, rerun } from "$lib/game";
   import { recap, gameCsv } from "$lib/report";
   import { keyLabel } from "$lib/keys";
   import { settings } from "$lib/settings.svelte";
@@ -94,6 +94,18 @@
     if (["INPUT", "TEXTAREA", "SELECT"].includes(tag)) return;
     e.preventDefault();
     undo();
+  }
+
+  // ---- the league it counts toward ----
+  const leagues = getLeagues();
+  const leagueChoices = $derived(game ? leagues.filter((l) => l.types.includes(game!.type)) : []);
+  function setLeague(id: string) {
+    if (!game) return;
+    const l = leagues.find((x) => x.id === id);
+    if (l) game.leagueId = l.id;
+    else delete game.leagueId;
+    logEvent(game, l ? t("gameEvents.leagueLog", { name: l.name }) : t("gameEvents.noLeagueLog"));
+    persist();
   }
 
   // ---- wrap-up ----
@@ -227,6 +239,15 @@
       </ul>
 
       <h2 class="mt-[22px]">{t("gamePlay.game.thisGameHeading")}</h2>
+      {#if leagueChoices.length}
+        <label class="across small mb-[6px]">
+          <span class="muted">{t("gameSetup.basics.league")}</span>
+          <select value={game.leagueId && leagueChoices.some((l) => l.id === game!.leagueId) ? game.leagueId : ""} onchange={(e) => setLeague(e.currentTarget.value)}>
+            <option value="">{t("gameSetup.basics.noLeague")}</option>
+            {#each leagueChoices as l (l.id)}<option value={l.id}>{l.name}</option>{/each}
+          </select>
+        </label>
+      {/if}
       <p class="small links mt-0 mx-0 mb-[6px]">
         <CopyButton text={recapText} link icon={false} label={t("gamePlay.game.copyRecap")} />
         <button class="link" onclick={csv}>{t("gamePlay.game.downloadSpreadsheet")}</button>

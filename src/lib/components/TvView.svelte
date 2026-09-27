@@ -34,7 +34,7 @@
   import FindMe from "./FindMe.svelte";
   import QrCode from "./QrCode.svelte";
   import { fade, fly } from "svelte/transition";
-  import { replay, fresh, rise, leave, slide } from "$lib/motion";
+  import { replay, fresh, rise, leave, reveal, slide } from "$lib/motion";
   // the local "t" below is tourney stats (t.left, t.pool…), already established
   // through this file, so the translator is imported under another name
   import { t as tr, tp } from "$lib/i18n";
@@ -146,6 +146,19 @@
   const seats = $derived(game.tourney?.satellite && t ? t.seats : 0);
   const shoot = $derived(shootout(game));
   const tablesWon = $derived(shoot ? shoot.tables.filter((x) => x.left.length === 1).length : 0);
+
+  // ---------- league ----------
+  // a league game's standings take turns with a column while nothing's being
+  // played: before the start, on a break, and once it's over
+  const league = $derived(game.league?.rows.length ? game.league : null);
+  const leagueTime = $derived(!!league && (game.clock.status === "idle" || !!d?.level.isBreak || game.finished));
+  let leagueTurn = $state(false);
+  $effect(() => {
+    if (!leagueTime) return void (leagueTurn = false);
+    const id = setInterval(() => (leagueTurn = !leagueTurn), 15000);
+    return () => clearInterval(id);
+  });
+  const pts = (n: number) => tr("tv.league.points", { n: String(Math.round(n * 10) / 10) });
 
   // the winner's pot: a row of stacks from the game's own chips, biggest first
   const pot = $derived([...game.chips].sort((a, b) => b.value - a.value).slice(0, 5));
@@ -439,7 +452,19 @@
       <div class="pot" aria-hidden="true">
         {#each pot as c, i (c.id)}<span style:--d="{500 + i * 160}ms"><ChipStack chip={c} n={[12, 18, 9, 15, 7][i]} width="min(6vw, 10vh)" /></span>{/each}
       </div>
-      {#if t}
+      {#if leagueTurn && league}
+        {@const rows = league.rows.length > 5 ? Math.ceil(league.rows.length / 2) : league.rows.length}
+        <div class="k" in:fade={reveal()}>{tr("tv.league.standings")} · {league.name}</div>
+        <ol class="final" class:split={league.rows.length > 5} style:--rows={rows} in:fade={reveal()}>
+          {#each league.rows as r, i (i)}
+            <li class:top={i % rows === 0}>
+              <span class="place">{ordinal(i + 1)}</span>
+              <b>{r.name}</b>
+              <span class="fig">{pts(r.points)}</span>
+            </li>
+          {/each}
+        </ol>
+      {:else if t}
         {@const places = Math.min(10, game.deal ? Object.keys(game.deal.amounts).length : t.payouts.length)}
         {@const rows = places > 5 ? Math.ceil(places / 2) : places}
         <ol class="final" class:split={places > 5} style:--rows={rows}>
@@ -557,6 +582,9 @@
     </section>
 
     <aside class="col right">
+      {#if leagueTurn && league}
+        {@render standings(league)}
+      {:else}
       {#if showMoney}
         <div class="stat">
           <span class="k">{tr("tv.tourney.prizePool")}</span>
@@ -598,6 +626,7 @@
           {/if}
         </div>
       {/if}
+      {/if}
     </aside>
 
     <footer class="foot">
@@ -608,6 +637,9 @@
   {:else if cash && game.cash}
     <!-- ================= CASH ================= -->
     <aside class="col left">
+      {#if leagueTurn && league && !cashRight}
+        {@render standings(league)}
+      {:else}
       <div class="stat seats" class:many={seated.length > 10}>
         <span class="k">{tr("tv.cash.seatedLabel", { n: String(cash.seated) })}</span>
         {@render seatList(seated)}
@@ -619,6 +651,7 @@
           {#each waitlist.slice(0, WAITLIST) as w, i (w.id)}<div class="seat" use:later={"deal-in"} out:fade={leave()}><span class="fig">{i + 1}</span>{w.name}<span class="waited fig">{waited(w.at)}</span></div>{/each}
           {#if waitlist.length > WAITLIST}<span class="sub">{tp("tv.cash.waitlistMore", waitlist.length - WAITLIST)}</span>{/if}
         </div>
+      {/if}
       {/if}
     </aside>
 
@@ -661,6 +694,9 @@
 
     {#if cashRight}
       <aside class="col right">
+        {#if leagueTurn && league}
+          {@render standings(league)}
+        {:else}
         {#if showMoney}
           <div class="stat">
             <span class="k">{tr("tv.cash.buyIn")}</span>
@@ -675,6 +711,7 @@
           <div class="stat"><span class="k">{tr("tv.cash.rake")}</span><span class="v fig">{rake.pct}%</span><span class="sub">{tr("tv.cash.upToAPot", { amount: money(rake.cap) })}</span></div>
         {:else if rake && rake.mode === "seat"}
           <div class="stat"><span class="k">{tr("tv.cash.seatFee")}</span><span class="v fig">{money(rake.fee)}</span></div>
+        {/if}
         {/if}
       </aside>
     {/if}
@@ -726,6 +763,19 @@
   {:else}
     {#each byTable(list).flatMap((tb) => tb.players) as p, i (p.id)}<div class="seat" style:--i={i} use:later={"deal-in"} out:fade={leave()}>{#if p.seat}<span class="fig">{seatLabel(p.seat, tables)}</span>{/if}{p.name}</div>{/each}
   {/if}
+{/snippet}
+
+{#snippet standings(b: NonNullable<Game["league"]>)}
+  <div class="stat league" in:fade={reveal()}>
+    <span class="k">{tr("tv.league.standings")}</span>
+    <span class="lname">{b.name}</span>
+    <ol class="ladder">
+      {#each b.rows.slice(0, LADDER) as r, i (i)}
+        <li><span class="place">{i + 1}</span><span class="who">{r.name}</span><span class="fig">{pts(r.points)}</span></li>
+      {/each}
+    </ol>
+    <span class="sub">{tp("tv.league.afterGames", b.games)}</span>
+  </div>
 {/snippet}
 
 {#snippet follow()}
@@ -1069,6 +1119,12 @@
   .ladder li:first-child {
     border-top: 0;
     font-weight: 700;
+  }
+  .lname {
+    font: 1.15em / 1.15 var(--font-serif);
+  }
+  .league .who {
+    font-size: 0.9em;
   }
   .ladder li > span:first-child {
     color: var(--tv-muted);

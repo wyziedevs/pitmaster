@@ -4,9 +4,10 @@
   import ChevronRight from "@lucide/svelte/icons/chevron-right";
   import ArrowDown from "@lucide/svelte/icons/arrow-down";
   import Seg from "$lib/components/Seg.svelte";
+  import Leagues from "$lib/components/Leagues.svelte";
   import { flip as flipRows } from "svelte/animate";
   import { bump, reorder, reveal, slide } from "$lib/motion";
-  import { getGame, getGames, getHandles, saveGame, saveHandles } from "$lib/store";
+  import { getGame, getGames, getHandles, getLeagues, saveGame, saveHandles } from "$lib/store";
   import { logEvent, markPaid, netPairs, settled, stillOwed } from "$lib/game";
   import { settings } from "$lib/settings.svelte";
   import {
@@ -32,6 +33,14 @@
 
   // reloaded after the Owed list ticks a payment off in some games
   let games = $state.raw(getGames());
+
+  // leagues get their own view once they're switched on (or there are some)
+  const leaguesOn = settings.useLeagues || getLeagues().length > 0;
+  let view = $state<"board" | "leagues">(leaguesOn && location.hash === "#leagues" ? "leagues" : "board");
+  function pickView(v: typeof view) {
+    view = v;
+    history.replaceState(history.state, "", v === "leagues" ? "#leagues" : location.pathname);
+  }
 
   let period = $state<Period>("all");
   let type = $state<GameType | "all">("all");
@@ -202,7 +211,7 @@
 
 <div class="spread">
   <h1>{t("players.page.title")}</h1>
-  {#if board.length}<button onclick={exportCsv}
+  {#if board.length && view === "board"}<button onclick={exportCsv}
       ><Icon icon={FileSpreadsheet} />{t("players.page.spreadsheetButton")}</button
     >{/if}
 </div>
@@ -210,6 +219,24 @@
   {t("players.page.subtitle")}
 </p>
 
+{#if leaguesOn}
+  <div class="row mt-3 mx-0 mb-[14px]">
+    <Seg
+      value={view}
+      options={[
+        { id: "board", label: t("players.leagues.tabBoard") },
+        { id: "leagues", label: t("players.leagues.tabLeagues") },
+      ]}
+      onpick={pickView}
+      labelledby="view-l"
+    />
+    <span id="view-l" class="sr-only">{t("players.leagues.viewLabel")}</span>
+  </div>
+{/if}
+
+{#if view === "leagues"}
+  <Leagues {games} reload={() => (games = getGames())} />
+{:else}
 <div class="row mt-3 mx-0 mb-[14px] gap-[14px]">
   <Seg
     value={period}
@@ -423,6 +450,7 @@
     >
     <a href="/" class="pt-5">{t("players.page.empty.backLink")}</a>
   </p>
+{/if}
 {/if}
 
 {#snippet th(key: keyof typeof SORTS, label: string, num = false, extra = "")}

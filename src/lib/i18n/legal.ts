@@ -173,7 +173,7 @@ export const legal: Record<Lang, LegalDict> = {
         paletteBody3: "undoes the last change on the dealer screen.",
         everyTitle: "Every Game Is Different",
         everyBody1: "Rake, house cut, bounties, rebuys, seating, deals and pay links each have their own switch in",
-        everyBody2: "so a quiet kitchen game and a forty-player tournament each take only what they need.",
+        everyBody2: "so a quiet kitchen game and a forty-player tournament each take only what they need. Leagues score a season of games in points, with standings on Players and the TV.",
       },
       tv: {
         body1a: "There are two ways to put the game on a big screen. On a laptop hooked up to the TV, hit",
@@ -423,7 +423,7 @@ export const legal: Record<Lang, LegalDict> = {
         paletteBody3: "可以撤销发牌员界面上的最后一次操作。",
         everyTitle: "每一局牌局都不一样",
         everyBody1: "抽水、场地抽成、奖金、补码、座位、分牌和收款链接,每一项都在",
-        everyBody2: "里有自己的开关,这样无论是小规模牌局还是四十人的锦标赛,都只需要用到自己需要的那部分。",
+        everyBody2: "里有自己的开关,这样无论是小规模牌局还是四十人的锦标赛,都只需要用到自己需要的那部分。 联赛按积分为一整季的比赛计分，排名显示在玩家页和电视上。",
       },
       tv: {
         body1a: "把牌局显示到大屏幕上有两种办法。如果笔记本电脑已经接上电视,就在发牌员界面点",
@@ -669,7 +669,7 @@ export const legal: Record<Lang, LegalDict> = {
         paletteBody3: "डीलर स्क्रीन पर हुए आखिरी बदलाव को वापस कर देता है.",
         everyTitle: "हर गेम अलग होता है",
         everyBody1: "रेक, हाउस कट, बाउंटी, रीबाय, सीटिंग, डील और पे लिंक, इन सबके लिए अलग-अलग स्विच",
-        everyBody2: "में मिलते हैं, ताकि एक छोटी-सी गेम और चालीस खिलाड़ियों वाला टूर्नामेंट, दोनों को सिर्फ वही मिले जिसकी उन्हें ज़रूरत है.",
+        everyBody2: "में मिलते हैं, ताकि एक छोटी-सी गेम और चालीस खिलाड़ियों वाला टूर्नामेंट, दोनों को सिर्फ वही मिले जिसकी उन्हें ज़रूरत है. लीग पूरे सीज़न के खेलों को पॉइंट्स में गिनती है, और रैंकिंग खिलाड़ी पेज और टीवी पर दिखती है।",
       },
       tv: {
         body1a: "गेम को बड़ी स्क्रीन पर दिखाने के दो तरीके हैं. अगर लैपटॉप टीवी से जुड़ा है, तो डीलर स्क्रीन पर",
@@ -915,7 +915,7 @@ export const legal: Record<Lang, LegalDict> = {
         paletteBody3: "deshace el último cambio en la pantalla del dealer.",
         everyTitle: "Cada Partida Es Distinta",
         everyBody1: "El rake, la comisión de la casa, los bounties, las recompras, los asientos, los repartos y los enlaces de pago tienen cada uno su propio interruptor en",
-        everyBody2: "así que una partida tranquila y un torneo de cuarenta jugadores solo usan lo que necesitan.",
+        everyBody2: "así que una partida tranquila y un torneo de cuarenta jugadores solo usan lo que necesitan. Las ligas puntúan una temporada de partidas, con la clasificación en Jugadores y en la TV.",
       },
       tv: {
         body1a: "Hay dos formas de poner la partida en una pantalla grande. Si tienes un portátil conectado al televisor, pulsa",
@@ -1161,7 +1161,7 @@ export const legal: Record<Lang, LegalDict> = {
         paletteBody3: "annule le dernier changement effectué sur l'écran du croupier.",
         everyTitle: "Chaque Partie Est Différente",
         everyBody1: "Le rake, la commission de la maison, les bounties, les recaves, les places, les deals et les liens de paiement ont chacun leur propre interrupteur dans",
-        everyBody2: "de sorte qu'une petite partie tranquille et un tournoi de quarante joueurs n'utilisent chacun que ce dont ils ont besoin.",
+        everyBody2: "de sorte qu'une petite partie tranquille et un tournoi de quarante joueurs n'utilisent chacun que ce dont ils ont besoin. Les ligues comptent les points d'une saison de parties, avec le classement dans Joueurs et sur la TV.",
       },
       tv: {
         body1a: "Il y a deux façons d'afficher la partie sur un grand écran. Sur un portable branché à la télévision, appuyez sur",
@@ -1407,7 +1407,7 @@ export const legal: Record<Lang, LegalDict> = {
         paletteBody3: "يتراجع عن آخر تغيير في شاشة الموزّع.",
         everyTitle: "كل لعبة مختلفة",
         everyBody1: "لكل من نسبة البيت والعمولة والمكافآت وإعادة الشراء والجلوس والتقسيم وروابط الدفع مفتاحه الخاص في",
-        everyBody2: "بحيث تأخذ اللعبة الهادئة الصغيرة وبطولة الأربعين لاعباً كل منهما ما تحتاجه فقط.",
+        everyBody2: "بحيث تأخذ اللعبة الهادئة الصغيرة وبطولة الأربعين لاعباً كل منهما ما تحتاجه فقط. تحسب الدوريات نقاط موسم كامل من الألعاب، مع الترتيب في صفحة اللاعبين وعلى التلفاز.",
       },
       tv: {
         body1a: "هناك طريقتان لعرض اللعبة على شاشة كبيرة. على حاسوب محمول متصل بالتلفاز، اضغط",
@@ -1653,7 +1653,7 @@ export const legal: Record<Lang, LegalDict> = {
         paletteBody3: "ডিলার স্ক্রিনে করা শেষ পরিবর্তনটি ফিরিয়ে দেয়।",
         everyTitle: "প্রতিটি গেম আলাদা",
         everyBody1: "রেক, হাউস কাট, বাউন্টি, রিবাই, সিটিং, ডিল আর পে লিংক, প্রতিটিরই নিজস্ব সুইচ আছে",
-        everyBody2: "তে, যাতে একটি ছোট শান্ত গেম আর চল্লিশ খেলোয়াড়ের টুর্নামেন্ট, দুটোই শুধু নিজের প্রয়োজনীয়টুকুই ব্যবহার করে।",
+        everyBody2: "তে, যাতে একটি ছোট শান্ত গেম আর চল্লিশ খেলোয়াড়ের টুর্নামেন্ট, দুটোই শুধু নিজের প্রয়োজনীয়টুকুই ব্যবহার করে। লিগ পুরো মৌসুমের খেলাকে পয়েন্টে গোনে, আর র‍্যাংকিং খেলোয়াড় পেজে ও টিভিতে দেখা যায়।",
       },
       tv: {
         body1a: "গেমকে বড় স্ক্রিনে দেখানোর দুটি উপায় আছে। টিভির সাথে সংযুক্ত ল্যাপটপে, ডিলার স্ক্রিনে চাপুন",
@@ -1899,7 +1899,7 @@ export const legal: Record<Lang, LegalDict> = {
         paletteBody3: "desfaz a última alteração feita na tela do dealer.",
         everyTitle: "Cada Partida É Diferente",
         everyBody1: "Rake, taxa da casa, bounties, recompras, assentos, acordos e links de pagamento têm cada um seu próprio interruptor em",
-        everyBody2: "então uma partida pequena e tranquila e um torneio de quarenta jogadores usam apenas o que precisam.",
+        everyBody2: "então uma partida pequena e tranquila e um torneio de quarenta jogadores usam apenas o que precisam. As ligas pontuam uma temporada de jogos, com a classificação em Jogadores e na TV.",
       },
       tv: {
         body1a: "Há duas formas de colocar a partida em uma tela grande. Em um notebook ligado à TV, toque em",

@@ -1,9 +1,10 @@
 // everything lives in this browser, encrypted with this browser's key (see
 // vault.ts). the api only relays locked tv snapshots and never owns data.
-import type { ChipSet, Game, PayHandles, Template } from "./types";
+import type { ChipSet, Game, League, PayHandles, Template } from "./types";
 import { nameKey } from "./util";
 import { PRESET_CHIP_SETS, presetCopy } from "./chips";
-import { endLive, publish } from "./sync";
+import { endLive, leagueBoards, publish } from "./sync";
+import { leagueBoard } from "./stats";
 import { lockText, unlockText, type Locked } from "./crypto";
 import { onSaved, readSlot, save as saveSlot } from "./vault";
 import { isData, isLocked, obj } from "./check";
@@ -16,6 +17,8 @@ interface Data {
   templates: Template[];
   /** where each regular gets paid, keyed by nameKey */
   handles: Record<string, PayHandles>;
+  /** seasons, each scoring the games linked to it */
+  leagues?: League[];
   /** when everything was last exported, for the backup reminder */
   exportedAt?: number;
 }
@@ -26,6 +29,7 @@ const fresh = (): Data => ({
   defaultChipSetId: PRESET_CHIP_SETS[0].id,
   templates: [],
   handles: {},
+  leagues: [],
 });
 
 // ---------- what's saved ----------
@@ -168,6 +172,39 @@ export function deleteGame(id: string) {
   save(d);
 }
 
+// ---------- leagues ----------
+
+export const getLeagues = () => copy(data().leagues ?? []).sort((a, b) => b.start - a.start);
+export function getLeague(id: string) {
+  const l = data().leagues?.find((l) => l.id === id);
+  return l ? copy(l) : null;
+}
+
+export function saveLeague(l: League) {
+  const d = data();
+  const list = (d.leagues ??= []);
+  l.updatedAt = Date.now();
+  const i = list.findIndex((x) => x.id === l.id);
+  if (i >= 0) list[i] = copy(l);
+  else list.push(copy(l));
+  save(d);
+}
+
+/** the league goes; its games stay, no longer linked to anything */
+export function deleteLeague(id: string) {
+  const d = data();
+  d.leagues = (d.leagues ?? []).filter((l) => l.id !== id);
+  for (const g of d.games) if (g.leagueId === id) delete g.leagueId;
+  save(d);
+}
+
+// a tv of a league game gets the standings with every snapshot (the tv only
+// ever holds the one game, so the host works them out)
+leagueBoards((g) => {
+  const l = g.leagueId ? data().leagues?.find((x) => x.id === g.leagueId) : undefined;
+  return l ? leagueBoard(l, data().games) : undefined;
+});
+
 // ---------- templates ----------
 
 export const getTemplates = () => copy(data().templates).sort((a, b) => a.name.localeCompare(b.name));
@@ -283,7 +320,7 @@ export function exportGame(id: string) {
     pitmaster: 1,
     kind: "game",
     exportedAt: Date.now(),
-    data: { games: [g], chipSets: set ? [set] : [], templates: [], handles, defaultChipSetId: "" },
+    data: { games: [g], chipSets: set ? [set] : [], templates: [], handles, defaultChipSetId: "", leagues: (d.leagues ?? []).filter((l) => l.id === g.leagueId) },
   };
   return JSON.stringify(b, null, 2);
 }
@@ -387,6 +424,7 @@ export function importBackup(b: Backup, mode: ImportMode) {
   d.games = union(d.games, file.games, (f, h) => f.updatedAt >= h.updatedAt);
   d.chipSets = union(d.chipSets, file.chipSets, () => true);
   d.templates = union(d.templates, file.templates, (f, h) => f.createdAt >= h.createdAt);
+  d.leagues = union(d.leagues ?? [], file.leagues ?? [], (f, h) => f.updatedAt >= h.updatedAt);
   d.handles = byName({ ...d.handles, ...file.handles });
   save(d);
 }

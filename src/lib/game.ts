@@ -900,6 +900,7 @@ export function rerun(game: Game, keepPlayers = true): Game {
   g.from = game.id;
   g.seatsPerTable = game.seatsPerTable;
   g.house = game.house;
+  g.leagueId = game.leagueId;
   // cash regulars named up front shouldn't be on the clock before the game starts
   for (const p of g.players) p.joinedAt = undefined;
   return g;
