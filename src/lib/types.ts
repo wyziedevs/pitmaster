@@ -1,6 +1,6 @@
 /** what a flash toast is about: the tv picks its icon, sound and color by
  *  this, not by matching words in the (now translated) text */
-export type EventKind = "win" | "deal" | "money" | "bounty" | "bust" | "chips" | "rack" | "shuffle" | "seat" | "note";
+export type EventKind = "win" | "deal" | "money" | "bounty" | "bust" | "chips" | "rack" | "shuffle" | "draw" | "seat" | "note";
 
 /** how a chip is drawn. matches the real chip families. */
 export type ChipStyle = "basic" | "montecarlo" | "delsol";

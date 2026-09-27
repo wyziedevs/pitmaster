@@ -481,7 +481,7 @@ export function drawSeats(game: Game, perTable = seatsPer(game)) {
   const ids = new Set(ps.map((p) => p.id));
   for (const p of game.players) if (!ids.has(p.id)) p.seat = null;
   logEvent(game, tp("gameEvents.seatsDrawnLog", tables, { n: ps.length }));
-  flash(game, t("gameEvents.seatsDrawnFlash"), "shuffle");
+  flash(game, t("gameEvents.seatsDrawnFlash"), "draw");
 }
 
 export function clearSeats(game: Game) {

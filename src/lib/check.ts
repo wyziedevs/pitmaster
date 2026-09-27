@@ -44,7 +44,7 @@ const player = (p: unknown) =>
 
 const level = (l: unknown) => obj(l) && num(l.sb) && num(l.bb) && num(l.ante) && num(l.minutes) && maybe(list(str))(l.colorUp);
 const said = orNull((n) => obj(n) && str(n.text) && num(n.at));
-const EVENT_KINDS: EventKind[] = ["win", "deal", "money", "bounty", "bust", "chips", "rack", "shuffle", "seat", "note"];
+const EVENT_KINDS: EventKind[] = ["win", "deal", "money", "bounty", "bust", "chips", "rack", "shuffle", "draw", "seat", "note"];
 const flashed = orNull((n) => obj(n) && str(n.text) && num(n.at) && (EVENT_KINDS as string[]).includes(n.kind as string));
 const clock = (c: unknown) =>
   obj(c) && ["idle", "running", "paused"].includes(c.status as string) && num(c.levelIndex) && num(c.levelElapsedMs) && num(c.elapsedMs);

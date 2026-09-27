@@ -79,7 +79,7 @@
   let dealtAt = $state(0);
   $effect(() => {
     const f = game.flash;
-    if (f?.text === "Seats are drawn" && f.at > opened) dealtAt = f.at;
+    if (f?.kind === "draw" && f.at > opened) dealtAt = f.at;
   });
   const dealing = $derived(time.now - dealtAt < 1500);
 

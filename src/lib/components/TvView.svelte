@@ -227,6 +227,7 @@
     chips: { icon: Coins, sound: sounds.chips, color: BANNER, n: 2 },
     rack: { icon: Coins, sound: sounds.rack, color: CHALK, n: 2 },
     shuffle: { icon: Shuffle, sound: sounds.shuffle, color: CHALK, n: 2 },
+    draw: { icon: Shuffle, sound: sounds.shuffle, color: CHALK, n: 2 },
     seat: { icon: Armchair, sound: sounds.ding, color: CHALK, n: 2 },
     note: { icon: Megaphone, sound: sounds.ding, color: BANNER, n: 2 },
   };
@@ -1465,7 +1466,7 @@
       opacity: 0;
     }
   }
-  .tv-toast.is-shuffle {
+  .tv-toast:is(.is-shuffle, .is-draw) {
     animation: deal 0.6s var(--ease-out-expo);
   }
   @keyframes deal {
