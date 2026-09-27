@@ -9,19 +9,18 @@
   import { bump, reveal, leave, slide } from "$lib/motion";
   import type { Game } from "$lib/types";
   import { cashElapsed, cashToggle } from "$lib/clock";
-  import { addPlayer, cashRake, cashStats, finish, highHandPrizes, seatWaiting, waitingReturn } from "$lib/game";
-  import { logEvent, flash } from "$lib/events";
+  import { addPlayer } from "$lib/game";
+  import { houseName } from "$lib/events";
   import { settleUp } from "$lib/settle";
-  import { reseat, seatsDrawn, seatLabel, tableCounts } from "$lib/seats";
+  import { seatsDrawn, seatLabel, tableCounts } from "$lib/seats";
   import { getHandles } from "$lib/store";
-  import { distribute, faceText, unitOf } from "$lib/chips";
-  import { clock, clockFace, currencySymbol, duration, money, nameKey, round2, signed, timeOfDay } from "$lib/util";
+  import { distribute } from "$lib/chips";
+  import { clock, clockFace, duration, money, nameKey, signed, timeOfDay } from "$lib/util";
   import { time } from "$lib/now.svelte";
   import { provide } from "$lib/commands.svelte";
   import { play } from "$lib/sound";
   import ChipLegend from "$lib/components/ChipLegend.svelte";
   import Breakdown from "$lib/components/Breakdown.svelte";
-  import Chip from "$lib/components/Chip.svelte";
   import SeatTools from "$lib/components/SeatTools.svelte";
   import SideGames from "$lib/components/SideGames.svelte";
   import SettleMoves from "$lib/components/SettleMoves.svelte";
@@ -31,8 +30,12 @@
   import Count from "$lib/components/Count.svelte";
   import RemoveButton from "$lib/components/RemoveButton.svelte";
   import { t, tp } from "$lib/i18n";
-  import { cashGameNow, cashGames, cashStakes, isLimit, isStud, stakePair, stakesText, studAmounts, studLine, variant, variantName } from "$lib/variants";
+  import { cashGameNow, cashGames, cashStakes, isLimit, isStud, stakePair, studLine, variant, variantName } from "$lib/variants";
   import { Dealer, onRise } from "../poker/control.svelte";
+  import { cashNight, cashRake, cashStats, highHandPrizes } from "./engine";
+  import * as cash from "./actions";
+  import CashOut from "./CashOut.svelte";
+  import RakeBox from "./RakeBox.svelte";
 
   let { game = $bindable(), persist }: { game: Game; persist: () => void } = $props();
 
@@ -45,7 +48,7 @@
   const running = $derived(dealer.running);
   const moves = $derived(settleUp(game));
   const r = $derived(cashRake(game));
-  const house = $derived(game.house?.trim() || t("gamePlay.shared.house"));
+  const house = $derived(houseName(game));
   // where people get paid (saved on the Players page), for links in settle-up
   const handles = getHandles();
   // shared costs: the switch, unless this game already has some
@@ -57,14 +60,7 @@
   const choice = $derived(games.length > 1);
   const gameNow = $derived(cashGameNow(c, elapsed));
   function pickGame(id: string) {
-    if (id === gameNow.id) return;
-    act(() => {
-      game.cash!.current = id;
-      game.cash!.since = elapsed;
-      const line = stakesText(cashStakes(game.cash!, id), true);
-      logEvent(game, t("gamePlay.variants.gameNowLog", { game: variantName(id) }));
-      flash(game, t("gamePlay.variants.gameNowFlash", { game: variantName(id), line }), "game");
-    });
+    if (id !== gameNow.id) act(() => cash.pickGame(game, id, elapsed));
   }
 
   // the waitlist: the switch, unless someone's already on this game's list
@@ -115,36 +111,12 @@
   }
 
   function buyIn(id: string, amount: number) {
-    const p = game.players.find((x) => x.id === id)!;
     if (!(amount > 0)) return false;
     if (amount < c.minBuyIn || amount > c.maxBuyIn) {
       if (!confirm(t("gamePlay.cash.buyInOutsideRangeConfirm", { amount: money(amount), min: money(c.minBuyIn), max: money(c.maxBuyIn) }))) return false;
     }
-    act(() => addBuyIn(p, amount));
+    act(() => cash.addBuyIn(game, id, amount));
     return true;
-  }
-
-  function addBuyIn(p: (typeof game.players)[number], amount: number) {
-    p.cashIn = round2(p.cashIn + amount);
-    if (p.cashOut !== null) {
-      // back in the game
-      p.cashOut = null;
-      p.leftAt = null;
-      reseat(game, p);
-    }
-    logEvent(game, t("gamePlay.cash.boughtInLog", { name: p.name, amount: money(amount), total: money(p.cashIn) }));
-    flash(game, t("gamePlay.cash.reloadsFlash", { name: p.name, amount: money(amount) }), "chips");
-  }
-
-  // off the waitlist and into a seat. someone who played earlier tonight gets
-  // their own row back with a standard buy-in, so their night adds up as one
-  function seatFromList(id: string) {
-    const back = waitingReturn(game, id);
-    act(() => {
-      if (!back) return void seatWaiting(game, id);
-      game.waitlist = game.waitlist!.filter((w) => w.id !== id);
-      addBuyIn(back, c.defaultBuyIn);
-    });
   }
 
   function addOther(e: SubmitEvent, id: string) {
@@ -155,104 +127,34 @@
   function undoBuyIn(id: string) {
     const p = game.players.find((x) => x.id === id)!;
     const amount = Number(prompt(t("gamePlay.cash.undoBuyInPrompt", { name: p.name }), String(c.defaultBuyIn)));
-    if (!(amount > 0)) return;
-    act(() => {
-      p.cashIn = Math.max(0, round2(p.cashIn - amount));
-      logEvent(game, t("gamePlay.cash.buyInReducedLog", { name: p.name, amount: money(amount) }));
-    });
+    if (amount > 0) act(() => cash.undoBuyIn(game, id, amount));
   }
 
-  // ---- cash out: count their chips by color, or type the total ----
+  // cashing out: whose chips are being counted (CashOut.svelte)
   let counting = $state<string | null>(null);
-  let counts = $state<Record<string, number | null>>({});
-  let typed = $state<number | null>(null);
-  const counted = $derived(round2(game.chips.reduce((sum, c) => sum + (Number(counts[c.id]) || 0) * c.value, 0)));
-  const outTotal = $derived(typed !== null && (typed as unknown) !== "" ? Number(typed) || 0 : counted);
-  const counter = $derived(game.players.find((p) => p.id === counting));
+  const openCount = (id: string) => (counting = counting === id ? null : id);
 
-  function openCount(id: string) {
-    const p = game.players.find((x) => x.id === id)!;
-    counts = {};
-    typed = p.cashOut;
-    counting = counting === id ? null : id;
-  }
-
-  function cashOut(e?: SubmitEvent) {
-    e?.preventDefault();
-    const p = counter;
-    if (!p || !(outTotal >= 0)) return;
-    const amount = round2(outTotal);
-    // a seat opening with people waiting is the news: the tv says who's next
-    const nextUp = p.cashOut === null && game.waitlist?.[0];
-    act(() => {
-      p.cashOut = amount;
-      p.leftAt = Date.now();
-      const net = round2(amount - p.cashIn);
-      logEvent(game, t("gamePlay.cash.cashedOutLog", { name: p.name, amount: money(amount), net: signed(net) }));
-      const racks = t("gamePlay.cash.racksUpFlash", { name: p.name, net: signed(net) });
-      if (nextUp) flash(game, `${racks} · ${t("gameEvents.seatOpenFlash", { name: nextUp.name })}`, "seat");
-      else flash(game, racks, "rack");
-    });
+  function cashOut(id: string, amount: number) {
+    act(() => cash.cashOut(game, id, amount));
     counting = null;
   }
 
   function changeBlinds(e?: SubmitEvent) {
     e?.preventDefault();
-    act(() => {
-      game.cash!.sb = newSb;
-      game.cash!.bb = newBb;
-      // stud's ante and bring-in follow the small bet, like the blinds do
-      if (cashGames(game.cash!).some(isStud)) Object.assign(game.cash!, studAmounts(newBb, Math.min(unitOf(game.chips, newBb), newBb)));
-      logEvent(game, t("gamePlay.cash.blindsNowLog", { sb: money(newSb), bb: money(newBb) }));
-      flash(game, t("gamePlay.cash.blindsAreNowFlash", { sb: money(newSb), bb: money(newBb) }));
-    });
+    act(() => cash.changeBlinds(game, newSb, newBb));
   }
-
-  // ---- the rake box: chips pulled from pots, added up as they go in ----
-  // quick buttons for the chips a pot's rake is usually made of (up to the cap)
-  const rakeSteps = $derived.by(() => {
-    const vals = [...new Set(game.chips.map((ch) => ch.value))].sort((a, b) => a - b);
-    const under = vals.filter((v) => v <= (r.cap || Infinity));
-    return (under.length ? under : vals).slice(0, 3);
-  });
-  let rakeTyped = $state<number | null>(null);
 
   function addRake(amount: number) {
-    if (!amount) return;
-    act(() => (game.rakeBox = Math.max(0, round2((game.rakeBox ?? 0) + amount))));
-  }
-
-  function rakeOther(e: SubmitEvent) {
-    e.preventDefault();
-    addRake(Number(rakeTyped) || 0);
-    rakeTyped = null;
-  }
-
-  function recountRake() {
-    const v = prompt(t("gamePlay.cash.rakeBoxPrompt"), String(game.rakeBox ?? 0));
-    if (v === null || !(Number(v) >= 0)) return;
-    act(() => {
-      game.rakeBox = round2(Number(v));
-      logEvent(game, t("gamePlay.cash.rakeRecountedLog", { amount: money(game.rakeBox) }));
-    });
+    if (amount) act(() => cash.addRake(game, amount));
   }
 
   function removePlayer(id: string) {
     const p = game.players.find((x) => x.id === id)!;
-    if (!confirm(t("gamePlay.cash.removeConfirm", { name: p.name }))) return;
-    act(() => {
-      game.players = game.players.filter((x) => x.id !== id);
-      logEvent(game, t("gamePlay.shared.removedLog", { name: p.name }));
-    });
+    if (confirm(t("gamePlay.cash.removeConfirm", { name: p.name }))) act(() => cash.removePlayer(game, id));
   }
 
   function endGame() {
-    if (!s.allOut && !confirm(t("gamePlay.cash.endGameConfirm"))) return;
-    act(() => {
-      finish(game);
-      if (running) cashToggle(game);
-      logEvent(game, t("gamePlay.cash.gameOverLog"));
-    });
+    if (s.allOut || confirm(t("gamePlay.cash.endGameConfirm"))) act(() => cash.endGame(game));
   }
 
   function blindsFrom(text: string) {
@@ -335,19 +237,7 @@
 </div>
 
 {#if r.mode === "pot"}
-  <!-- the rake box: a running total the host adds to as chips go in -->
-  <div class="rakebox flex flex-wrap items-center gap-x-4 gap-y-1.5 -mt-1 mx-0 mb-5">
-    <span class="rb-total"><span class="small muted">{t("gamePlay.cash.rakeBoxLabel")}</span> <b class="num text-[length:var(--fs-md)]" use:bump={s.rakeBox}><Count value={s.rakeBox} format={money} /></b></span>
-    <span class="row">
-      {#each rakeSteps as v (v)}<button data-sound="drop" onclick={() => addRake(v)} title={t("gamePlay.cash.addToRakeBoxTitle", { amount: money(v) })}>+{money(v)}</button>{/each}
-      <form autocomplete="off" class="joined inline-flex" onsubmit={rakeOther}>
-        <input type="number" step="any" class="w-[72px]" placeholder={t("gamePlay.shared.other")} bind:value={rakeTyped} aria-label={t("gamePlay.cash.otherAmountRakeBoxAria")} />
-        <button data-sound="drop" class="ml-[calc(-1*var(--hair))]" disabled={!rakeTyped} aria-label={t("gamePlay.cash.addThatToRakeBox")} title={rakeTyped ? t("gamePlay.cash.addThatToRakeBox") : t("gamePlay.shared.typeAmountFirst")}><Icon icon={Plus} /></button>
-      </form>
-      <button class="link small muted" data-sound="drop" onclick={recountRake}>{t("gamePlay.cash.recount")}</button>
-    </span>
-    <span class="small muted">{t("gamePlay.cash.rakePctNote", { pct: String(r.pct), cap: money(r.cap), house })}</span>
-  </div>
+  <RakeBox {game} {house} add={addRake} recount={(v) => act(() => cash.recountRake(game, v))} />
 {:else if r.mode === "seat"}
   <p class="small muted rakebox flex flex-wrap items-center gap-x-4 gap-y-1.5 -mt-1 mx-0 mb-5">{t("gamePlay.cash.seatFeeNote", { fee: money(r.fee), house })}</p>
 {/if}
@@ -373,7 +263,7 @@
       </thead>
       <tbody>
         {#each game.players as p, i (p.id)}
-          {@const net = p.cashOut !== null ? round2(p.cashOut - p.cashIn) : null}
+          {@const net = cashNight(game, p)?.net ?? null}
           <tr class:dim={p.cashOut !== null} in:fade={reveal()}>
             {#if drawn}<td class="num seat"><span class:dealt={dealer.dealing} style:--i={i}>{p.cashOut === null ? seatLabel(p.seat, tables) : ""}</span></td>{/if}
             <td class="who"><input type="text" bind:value={p.name} onchange={persist} class="edit-name" aria-label={t("gamePlay.shared.nameHeader")} /></td>
@@ -395,24 +285,7 @@
           {#if counting === p.id}
             <tr class="count-row">
               <td colspan={cols} class="bg-block p-0">
-                <form autocomplete="off" class="counter vstack py-2.5 px-3" onsubmit={cashOut} transition:slide={reveal()}>
-                  <div class="small muted">{t("gamePlay.cash.countChipsPrompt", { name: p.name })}</div>
-                  <div class="stacks flex flex-wrap gap-x-3.5 gap-y-1.5">
-                    {#each game.chips as ch (ch.id)}
-                      <label class="cc inline-flex items-center gap-1.5 m-0">
-                        <Chip chip={ch} size={30} text={faceText(ch, true)} spin={false} />
-                        <input type="number" min="0" step="1" class="w-[60px]" bind:value={counts[ch.id]} oninput={() => (typed = null)} aria-label={t("gamePlay.cash.howManyChipsAria", { amount: money(ch.value) })} />
-                        <span class="small muted num">× {money(ch.value)}</span>
-                      </label>
-                    {/each}
-                  </div>
-                  <div class="row">
-                    <label class="across"><span>{t("gamePlay.cash.orTheTotal")} {currencySymbol()}</span><input type="number" min="0" step="any" bind:value={typed} /></label>
-                    <button data-sound="rack">{t("gamePlay.cash.cashOutAmountButton", { amount: money(outTotal) })}</button>
-                    <span class="small num {outTotal - p.cashIn >= 0 ? 'good' : 'bad'}">{signed(round2(outTotal - p.cashIn))} {t("gamePlay.cash.forTheSession")}</span>
-                    <button type="button" class="link small muted" data-sound="close" onclick={() => (counting = null)}>{t("common.cancel")}</button>
-                  </div>
-                </form>
+                <CashOut {game} {p} done={(amount) => cashOut(p.id, amount)} cancel={() => (counting = null)} />
               </td>
             </tr>
           {/if}
@@ -426,7 +299,7 @@
       <input type="text" bind:value={newName} placeholder={t("gamePlay.shared.playerNamePlaceholder")} list="regulars" autocomplete="off" aria-label={t("gamePlay.shared.playerNamePlaceholder")} />
       <button data-sound="chips"><Icon icon={Plus} />{t("gamePlay.cash.sitDownButton", { amount: money(c.defaultBuyIn) })}</button>
     </form>
-    {#if waitOn}<div class="part mt-[22px]" transition:slide={reveal()}><Waitlist bind:game {persist} seat={seatFromList} /></div>{/if}
+    {#if waitOn}<div class="part mt-[22px]" transition:slide={reveal()}><Waitlist bind:game {persist} /></div>{/if}
 </section>
 
 <div class="cols">

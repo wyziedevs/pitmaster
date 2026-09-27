@@ -17,7 +17,7 @@
   import LeagueTable from "./tv/LeagueTable.svelte";
   import { TvState } from "./tv/state.svelte";
   import { BANNER } from "./tv/cues.svelte";
-  import { cashRake } from "$lib/game";
+  import { cashRake } from "$lib/kinds/cash/engine";
   import { tableCounts } from "$lib/seats";
   import { sounds } from "$lib/sound";
   import { hostPrefs, prefs } from "$lib/settings.svelte";

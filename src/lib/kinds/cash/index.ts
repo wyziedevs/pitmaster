@@ -4,7 +4,8 @@
 import type { Game, HighHandPaid, Player } from "$lib/types";
 import type { Kind, Line } from "../kind";
 import { resultRow, type Result } from "$lib/stats";
-import { cashRake, cashStats, gameDate, highHandPrizes, seatFee } from "$lib/game";
+import { gameDate } from "$lib/game";
+import { cashNight, cashRake, cashStats, highHandPrizes, seatFee } from "./engine";
 import { houseName, playerName } from "$lib/events";
 import { addTo, costNets, squareUp } from "$lib/settle";
 import { cashElapsed } from "$lib/clock";
@@ -29,20 +30,19 @@ function stakes(game: Game) {
 
 /** a player counts once they've cashed out; a seat fee is part of what the night cost them */
 function results(game: Game): Result[] {
-  const fee = seatFee(game);
-  const prizes = highHandPrizes(game);
-  return game.players
-    .filter((p) => p.cashOut !== null)
-    .map((p) => {
-      const start = Math.max(p.joinedAt ?? 0, game.clock.startedAt ?? 0) || null;
-      const hours = start && p.leftAt && p.leftAt > start ? (p.leftAt - start) / 3600000 : null;
-      const highHand = prizes[p.id] ?? 0;
-      return resultRow(game, p, round2(p.cashIn + fee), round2((p.cashOut ?? 0) + highHand), {
+  return game.players.flatMap((p) => {
+    if (p.cashOut === null) return [];
+    const night = cashNight(game, p, p.cashOut);
+    const start = Math.max(p.joinedAt ?? 0, game.clock.startedAt ?? 0) || null;
+    const hours = start && p.leftAt && p.leftAt > start ? (p.leftAt - start) / 3600000 : null;
+    return [
+      resultRow(game, p, round2(p.cashIn + night.fee), round2(p.cashOut + night.prizes), {
         hours,
-        highHand,
+        highHand: night.prizes,
         sevenTwo: (game.sides ?? []).filter((e) => e.kind === "sevenTwo" && e.playerId === p.id).length,
-      });
-    });
+      }),
+    ];
+  });
 }
 
 function recap(game: Game) {
@@ -52,11 +52,10 @@ function recap(game: Game) {
   lines.push(t("players.report.cash.summary", { stakes: stakes(game), played: played >= 1 ? ` · ${duration(played)}` : "", bank: money(s.bank) }));
   lines.push("");
   // biggest winner first, anyone still sitting at the bottom
-  const net = (p: Player) => (p.cashOut === null ? -1e12 : p.cashOut - p.cashIn);
-  const rows = [...game.players].sort((a, b) => net(b) - net(a));
-  const w = Math.max(...rows.map((p) => p.name.length), 4) + 2;
-  for (const p of rows) {
-    const net = p.cashOut === null ? null : round2(p.cashOut - p.cashIn);
+  const rows = game.players.map((p) => ({ p, net: cashNight(game, p)?.net ?? null }));
+  rows.sort((a, b) => (b.net ?? -1e12) - (a.net ?? -1e12));
+  const w = Math.max(...rows.map(({ p }) => p.name.length), 4) + 2;
+  for (const { p, net } of rows) {
     lines.push(`${pad(p.name, w)}${net === null ? t("players.report.cash.stillPlaying", { in: money(p.cashIn) }) : signed(net)}`);
   }
   const house = houseName(game);
@@ -107,7 +106,7 @@ function gameCsv(game: Game) {
       p.cashOut ?? "",
       ...(fee ? [fee] : []),
       ...(hh ? [prizes[p.id] ?? ""] : []),
-      p.cashOut === null ? "" : round2(p.cashOut - p.cashIn - fee + (prizes[p.id] ?? 0)),
+      cashNight(game, p)?.net ?? "",
       ...(game.costs?.length ? [costs[p.id] ?? 0] : []),
       p.joinedAt ? timeOfDay(Math.max(p.joinedAt, game.clock.startedAt ?? 0)) : "",
       p.leftAt ? timeOfDay(p.leftAt) : "",
@@ -132,15 +131,15 @@ function find(game: Game, p: Player): Line[] {
  */
 function cashSettle(game: Game) {
   const r = cashRake(game);
-  const done = game.players.filter((p) => p.cashOut !== null);
-  const house = houseName(game);
   const fee = seatFee(game);
+  const done = game.players.flatMap((p) => {
+    const night = cashNight(game, p);
+    return night ? [{ name: p.name, ...night }] : [];
+  });
   // a high hand prize is the house paying a player, outside the chips
-  const prizes = highHandPrizes(game);
-  const nets = done.map((p) => ({ name: p.name, net: round2((p.cashOut ?? 0) - p.cashIn - fee + (prizes[p.id] ?? 0)) }));
-  const paid = round2(done.reduce((s, p) => s + (prizes[p.id] ?? 0), 0));
+  const paid = round2(done.reduce((s, n) => s + n.prizes, 0));
   const owed = round2((r.mode === "pot" ? (game.rakeBox ?? 0) : 0) + fee * done.length - paid);
-  return squareUp(game, addTo(nets, house, owed));
+  return squareUp(game, addTo(done.map(({ name, net }) => ({ name, net })), houseName(game), owed));
 }
 
 export const cash: Kind = {

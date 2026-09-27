@@ -6,7 +6,7 @@
   import Armchair from "@lucide/svelte/icons/armchair";
   import RemoveButton from "./RemoveButton.svelte";
   import type { Game } from "$lib/types";
-  import { joinWaitlist, leaveWaitlist } from "$lib/game";
+  import { joinWaitlist, leaveWaitlist, seatWaiting } from "$lib/kinds/cash/actions";
   import { duration } from "$lib/util";
   import { time } from "$lib/now.svelte";
   import { provide } from "$lib/commands.svelte";
@@ -14,8 +14,7 @@
   import { reveal, leave, slide } from "$lib/motion";
   import { t } from "$lib/i18n";
 
-  // seat is the dealer screen's: someone who played earlier comes back to their own row
-  let { game = $bindable(), persist, seat }: { game: Game; persist: () => void; seat: (id: string) => void } = $props();
+  let { game = $bindable(), persist }: { game: Game; persist: () => void } = $props();
 
   const list = $derived(game.waitlist ?? []);
   const next = $derived(list[0]);
@@ -37,6 +36,12 @@
 
   function remove(id: string) {
     leaveWaitlist(game, id);
+    persist();
+  }
+
+  // off the list and into a seat (someone who played earlier tonight gets their own row back)
+  function seat(id: string) {
+    seatWaiting(game, id);
     persist();
   }
 

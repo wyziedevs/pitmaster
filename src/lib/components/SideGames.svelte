@@ -7,7 +7,8 @@
   import Spade from "@lucide/svelte/icons/spade";
   import Crown from "@lucide/svelte/icons/crown";
   import type { Game } from "$lib/types";
-  import { callBombPot, sevenTwoWin, setHighHand, payHighHand, sideStats } from "$lib/game";
+  import { sideStats } from "$lib/kinds/cash/engine";
+  import { callBombPot, payHighHand, setHighHand, sevenTwoWin } from "$lib/kinds/cash/actions";
   import { clock, money } from "$lib/util";
   import { provide } from "$lib/commands.svelte";
   import { play } from "$lib/sound";

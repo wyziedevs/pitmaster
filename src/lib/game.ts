@@ -1,9 +1,9 @@
-import type { CashSettings, Cost, EventKind, Game, GameChip, GameType, HighHandSet, Level, Match, Player, Seat, SideEvent, TourneySettings } from "./types";
+import type { Cost, EventKind, Game, GameChip, GameType, Level, Match, Player, Seat, TourneySettings } from "./types";
 import { newClock } from "./clock";
 import { defaultPayouts, payoutAmounts, roundShares } from "./blinds";
 import { money, nameKey, ordinal, round2, uid } from "./util";
 import { t, tp } from "./i18n";
-import { flash, logEvent, playerName } from "./events";
+import { flash, logEvent } from "./events";
 import { reseat, seatNewcomer, shootout } from "./seats";
 
 /** when a game was played: when its clock started, or when it was made */
@@ -83,36 +83,6 @@ export function addPlayer(game: Game, name: string, quiet = false) {
     flash(game, game.cash ? t("gameEvents.satDownFlash", { name: p.name }) : t("gameEvents.isInFlash", { name: p.name }), "chips");
   }
   return p;
-}
-
-// ---------- the waitlist (cash) ----------
-
-export function joinWaitlist(game: Game, name: string) {
-  const w = { id: uid(), name: name.trim(), at: Date.now() };
-  if (!w.name) return;
-  game.waitlist = [...(game.waitlist ?? []), w];
-  logEvent(game, t("gameEvents.waitlistJoinedLog", { name: w.name }));
-}
-
-export function leaveWaitlist(game: Game, id: string) {
-  const w = game.waitlist?.find((x) => x.id === id);
-  if (!w) return;
-  game.waitlist = game.waitlist!.filter((x) => x.id !== id);
-  logEvent(game, t("gameEvents.waitlistLeftLog", { name: w.name }));
-}
-
-/** someone on the list who played earlier tonight comes back to their own row */
-export const waitingReturn = (game: Game, id: string) => {
-  const w = game.waitlist?.find((x) => x.id === id);
-  return w ? game.players.find((p) => p.cashOut !== null && nameKey(p.name) === nameKey(w.name)) : undefined;
-};
-
-/** the next on the list (or anyone on it) sits down, and gets a seat if seats are drawn */
-export function seatWaiting(game: Game, id = game.waitlist?.[0]?.id) {
-  const w = game.waitlist?.find((x) => x.id === id);
-  if (!w) return null;
-  game.waitlist = game.waitlist!.filter((x) => x.id !== id);
-  return addPlayer(game, w.name);
 }
 
 // ---------- tournament ----------
@@ -464,106 +434,6 @@ export function setEnvelopes(game: Game, amounts: number[]) {
   m.prizes = [...opened, ...amounts.map(round2)];
   logEvent(game, t("gameEvents.envelopesEditedLog"));
   return true;
-}
-
-// ---------- cash ----------
-
-/** the cash game's rake setup (a tournament has none) */
-export const cashRake = (game: Game) => game.cash?.rake ?? { mode: "none" as const, pct: 0, cap: 0, fee: 0 };
-/** what each player pays the house to sit, 0 when it rakes the pots instead (or nothing) */
-export function seatFee(game: Game) {
-  const r = cashRake(game);
-  return r.mode === "seat" ? r.fee : 0;
-}
-
-export function cashStats(game: Game) {
-  const bank = round2(game.players.reduce((s, p) => s + p.cashIn, 0));
-  const out = round2(game.players.reduce((s, p) => s + (p.cashOut ?? 0), 0));
-  const seated = game.players.filter((p) => p.cashOut === null).length;
-  const onTable = round2(game.players.filter((p) => p.cashOut === null).reduce((s, p) => s + p.cashIn, 0));
-  const allOut = game.players.length > 0 && seated === 0;
-  const r = cashRake(game);
-  // chips in the rake box left the table, so they count as cashed out for the bank check
-  const rakeBox = r.mode === "pot" ? round2(game.rakeBox ?? 0) : 0;
-  // a seat fee is paid in cash, outside the chips: it never touches the bank
-  const seatFees = round2(seatFee(game) * game.players.length);
-  return { bank, out, seated, onTable, allOut, rakeBox, seatFees, diff: round2(out + rakeBox - bank) };
-}
-
-// ---------- cash side games ----------
-
-function addSide(game: Game, e: SideEvent) {
-  // assign first, then push through game.sides (see bust)
-  if (!game.sides) game.sides = [];
-  game.sides.push(e);
-}
-
-/**
- * where the side games stand after `elapsed` of play, worked out from what's
- * happened: bomb pots called and whether one's due, and the high hand now
- * and its window.
- */
-export function sideStats(game: Game, played: number) {
-  const c = game.cash!;
-  // the screen's clock can trail the session's own start by a moment
-  const elapsed = Math.max(0, played);
-  const list = game.sides ?? [];
-  const bombs = list.filter((e) => e.kind === "bomb").length;
-  // a timed bomb pot comes due each time another stretch of play goes by, and
-  // stays due until the host calls it
-  const bombEvery = c.bomb.on ? c.bomb.everyMinutes * 60000 : 0;
-  const bombDue = !!bombEvery && Math.floor(elapsed / bombEvery) > bombs;
-  const bombIn = bombEvery ? Math.max(0, (bombs + 1) * bombEvery - elapsed) : null;
-  const hhEvery = c.highHand.on ? c.highHand.everyMinutes * 60000 : 0;
-  const window = hhEvery ? Math.floor(elapsed / hhEvery) : 0;
-  const windowLeft = hhEvery ? (window + 1) * hhEvery - elapsed : null;
-  const lastPaid = list.findLastIndex((e) => e.kind === "highHandPaid");
-  const current = list.slice(lastPaid + 1).findLast((e): e is HighHandSet => e.kind === "highHand") ?? null;
-  // the window it was set in is over: time to pay it
-  const hhDue = !!current && !!hhEvery && current.window < window;
-  const sevenTwos = list.filter((e) => e.kind === "sevenTwo").length;
-  return { bombs, bombDue, bombIn, window, windowLeft, current, hhDue, sevenTwos };
-}
-
-export function callBombPot(game: Game) {
-  const b = game.cash!.bomb;
-  addSide(game, { kind: "bomb", at: Date.now() });
-  const text = t(b.doubleBoard ? "gameEvents.bombDoubleFlash" : "gameEvents.bombFlash", { ante: money(b.ante) });
-  logEvent(game, text);
-  flash(game, text, "bomb");
-}
-
-export function sevenTwoWin(game: Game, playerId: string) {
-  const amount = game.cash!.sevenTwo.amount;
-  addSide(game, { kind: "sevenTwo", at: Date.now(), playerId, amount });
-  const text = t("gameEvents.sevenTwoFlash", { name: playerName(game, playerId), amount: money(amount) });
-  logEvent(game, text);
-  flash(game, text, "sevenTwo");
-}
-
-export function setHighHand(game: Game, playerId: string, hand: string, window: number) {
-  addSide(game, { kind: "highHand", at: Date.now(), playerId, hand: hand.trim(), window });
-  const text = t("gameEvents.highHandFlash", { name: playerName(game, playerId), hand: hand.trim() });
-  logEvent(game, text);
-  flash(game, text, "highHand");
-}
-
-/** the house pays whoever holds the high hand; the next window starts with none */
-export function payHighHand(game: Game, elapsed: number) {
-  const cur = sideStats(game, elapsed).current;
-  if (!cur) return;
-  const amount = game.cash!.highHand.prize;
-  addSide(game, { kind: "highHandPaid", at: Date.now(), playerId: cur.playerId, amount, hand: cur.hand });
-  const text = t("gameEvents.highHandPaidFlash", { name: playerName(game, cur.playerId), amount: money(amount) });
-  logEvent(game, text);
-  flash(game, text, "money");
-}
-
-/** high hand prizes paid so far, by player */
-export function highHandPrizes(game: Game) {
-  const won: Record<string, number> = {};
-  for (const e of game.sides ?? []) if (e.kind === "highHandPaid") won[e.playerId] = round2((won[e.playerId] ?? 0) + e.amount);
-  return won;
 }
 
 // ---------- shootouts and satellites ----------

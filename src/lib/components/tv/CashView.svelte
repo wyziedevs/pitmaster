@@ -9,7 +9,7 @@
   import LeagueColumn from "./LeagueColumn.svelte";
   import TvFooter from "./TvFooter.svelte";
   import type { TvState } from "./state.svelte";
-  import { cashStats, cashRake, sideStats } from "$lib/game";
+  import { cashStats, cashRake, sideStats } from "$lib/kinds/cash/engine";
   import { tableCounts } from "$lib/seats";
   import { cashStakes, isLimit, isStud, stakePair, stakesText, studLine, variant, variantName } from "$lib/variants";
   import { clock, duration, money, timeOfDay } from "$lib/util";
