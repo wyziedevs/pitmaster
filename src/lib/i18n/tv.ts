@@ -124,6 +124,11 @@ export interface TvDict {
     topN: string; // {n}
     morePaid: Plural; // {n}
     bountyOnEveryHead: string;
+    progressiveBounties: string;
+    biggestBounty: string;
+    mysteryFrom: string; // {n}
+    envelopesLeft: Plural; // {count}
+    topEnvelope: string;
   };
   cash: {
     seatedLabel: string; // {n}
@@ -279,6 +284,11 @@ export const tv: Record<Lang, TvDict> = {
       topN: "Top {n}",
       morePaid: { one: "+ {n} More Paid", other: "+ {n} More Paid" },
       bountyOnEveryHead: "Bounty on Every Head",
+      progressiveBounties: "Progressive Bounties",
+      biggestBounty: "Biggest Bounty",
+      mysteryFrom: "Mystery Bounties at {n} Left",
+      envelopesLeft: { one: "{count} Envelope Left", other: "{count} Envelopes Left" },
+      topEnvelope: "Top Prize",
     },
     cash: {
       seatedLabel: "Seated · {n}",
@@ -432,6 +442,11 @@ export const tv: Record<Lang, TvDict> = {
       topN: "前 {n} 名",
       morePaid: { other: "另有 {n} 人获奖" },
       bountyOnEveryHead: "每人都有赏金",
+      progressiveBounties: "累进赏金",
+      biggestBounty: "最高赏金",
+      mysteryFrom: "剩 {n} 人时开神秘赏金",
+      envelopesLeft: { other: "剩 {count} 个信封" },
+      topEnvelope: "最大奖",
     },
     cash: {
       seatedLabel: "在座 · {n}",
@@ -585,6 +600,11 @@ export const tv: Record<Lang, TvDict> = {
       topN: "टॉप {n}",
       morePaid: { one: "+ {n} और भुगतान", other: "+ {n} और भुगतान" },
       bountyOnEveryHead: "हर खिलाड़ी पर बाउंटी",
+      progressiveBounties: "प्रोग्रेसिव बाउंटी",
+      biggestBounty: "सबसे बड़ी बाउंटी",
+      mysteryFrom: "{n} बचने पर मिस्ट्री बाउंटी",
+      envelopesLeft: { one: "{count} लिफ़ाफ़ा बचा", other: "{count} लिफ़ाफ़े बचे" },
+      topEnvelope: "सबसे बड़ा इनाम",
     },
     cash: {
       seatedLabel: "बैठे हुए · {n}",
@@ -738,6 +758,11 @@ export const tv: Record<Lang, TvDict> = {
       topN: "Top {n}",
       morePaid: { one: "+ {n} Más Pagado", other: "+ {n} Más Pagados" },
       bountyOnEveryHead: "Recompensa por Cada Cabeza",
+      progressiveBounties: "Recompensas Progresivas",
+      biggestBounty: "Mayor Recompensa",
+      mysteryFrom: "Recompensas Misteriosas con {n} en Juego",
+      envelopesLeft: { one: "Queda {count} Sobre", other: "Quedan {count} Sobres" },
+      topEnvelope: "Premio Mayor",
     },
     cash: {
       seatedLabel: "Sentados · {n}",
@@ -891,6 +916,11 @@ export const tv: Record<Lang, TvDict> = {
       topN: "Top {n}",
       morePaid: { one: "+ {n} Autre Payé", other: "+ {n} Autres Payés" },
       bountyOnEveryHead: "Prime sur Chaque Tête",
+      progressiveBounties: "Primes Progressives",
+      biggestBounty: "Plus Grosse Prime",
+      mysteryFrom: "Primes Mystère à {n} Restants",
+      envelopesLeft: { one: "{count} Enveloppe Restante", other: "{count} Enveloppes Restantes" },
+      topEnvelope: "Gros Lot",
     },
     cash: {
       seatedLabel: "Assis · {n}",
@@ -1044,6 +1074,11 @@ export const tv: Record<Lang, TvDict> = {
       topN: "أفضل {n}",
       morePaid: { zero: "لا فائزين إضافيين", one: "+ فائز واحد إضافي", two: "+ فائزان إضافيان", few: "+ {n} فائزين إضافيين", many: "+ {n} فائزًا إضافيًا", other: "+ {n} فائز إضافي" },
       bountyOnEveryHead: "مكافأة على كل لاعب",
+      progressiveBounties: "مكافآت تصاعدية",
+      biggestBounty: "أكبر مكافأة",
+      mysteryFrom: "المكافآت الغامضة عند بقاء {n}",
+      envelopesLeft: { one: "بقي ظرف واحد", two: "بقي ظرفان", few: "بقيت {count} أظرف", other: "بقي {count} ظرفًا" },
+      topEnvelope: "أكبر جائزة",
     },
     cash: {
       seatedLabel: "الجالسون · {n}",
@@ -1197,6 +1232,11 @@ export const tv: Record<Lang, TvDict> = {
       topN: "শীর্ষ {n}",
       morePaid: { one: "+ {n} জন আরও পেয়েছেন", other: "+ {n} জন আরও পেয়েছেন" },
       bountyOnEveryHead: "প্রতিটি মাথায় বাউন্টি",
+      progressiveBounties: "প্রগ্রেসিভ বাউন্টি",
+      biggestBounty: "সবচেয়ে বড় বাউন্টি",
+      mysteryFrom: "{n} জন বাকি থাকলে মিস্ট্রি বাউন্টি",
+      envelopesLeft: { one: "{count}টি খাম বাকি", other: "{count}টি খাম বাকি" },
+      topEnvelope: "সবচেয়ে বড় পুরস্কার",
     },
     cash: {
       seatedLabel: "বসেছেন · {n}",
@@ -1350,6 +1390,11 @@ export const tv: Record<Lang, TvDict> = {
       topN: "Top {n}",
       morePaid: { one: "+ {n} A Mais Premiado", other: "+ {n} A Mais Premiados" },
       bountyOnEveryHead: "Recompensa em Cada Cabeça",
+      progressiveBounties: "Recompensas Progressivas",
+      biggestBounty: "Maior Recompensa",
+      mysteryFrom: "Recompensas Misteriosas com {n} Restantes",
+      envelopesLeft: { one: "Resta {count} Envelope", other: "Restam {count} Envelopes" },
+      topEnvelope: "Maior Prêmio",
     },
     cash: {
       seatedLabel: "Sentados · {n}",

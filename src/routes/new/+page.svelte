@@ -11,7 +11,8 @@
   import { gameChips, distribute, maxStack } from "$lib/chips";
   import { generateStructure, defaultPayouts, payoutAmounts, plannedMinutes, structureMinutes } from "$lib/blinds";
   import { newGame } from "$lib/game";
-  import type { CashRake, CashSettings, GameType, Level, Template, TourneySettings } from "$lib/types";
+  import type { BountyKind, CashRake, CashSettings, GameType, Level, Template, TourneySettings } from "$lib/types";
+  import { PRESETS, getPreset, type Preset } from "$lib/presets";
   import { amt, currencySymbol, duration, money, nameKey, timeOfDay, uid } from "$lib/util";
   import { toast } from "$lib/toast.svelte";
   import { time } from "$lib/now.svelte";
@@ -95,6 +96,8 @@
   let fee = $state(settings.tFee);
   let payoutRound = $state(settings.payoutRound);
   let bounty = $state(settings.tBounty);
+  let bountyKind = $state<BountyKind>(settings.tBountyKind);
+  let mysteryFrom = $state(0);
   let levels = $state<Level[]>([]);
   let customized = $state(false);
 
@@ -232,6 +235,8 @@
     fee: useFee,
     payoutRound,
     bounty: useBounty,
+    bountyKind,
+    mysteryFrom: Math.max(0, Math.round(mysteryFrom || 0)),
   });
   const cashSettings = (): CashSettings => ({
     sb,
@@ -274,7 +279,7 @@
     }
     const ts = x.tourney;
     if (ts) {
-      ({ buyIn, stack, expected, levelMinutes, breakEvery, breakMinutes, anteFrom, depth, rakePct, bounty, fee, payoutRound } = ts);
+      ({ buyIn, stack, expected, levelMinutes, breakEvery, breakMinutes, anteFrom, depth, rakePct, bounty, bountyKind, mysteryFrom, fee, payoutRound } = ts);
       hours = ts.targetMinutes / 60;
       ({ on: rebuyOn, cost: rebuyCost, chips: rebuyChips, untilLevel: rebuyUntil } = ts.rebuy);
       ({ on: addOnOn, cost: addOnCost, chips: addOnChips } = ts.addOn);
@@ -290,16 +295,43 @@
     } else customized = false;
   }
 
+  /** a built-in preset only changes what makes it what it is; the rest of the form stays as it was */
+  function applyPreset(p: Preset) {
+    if (p.levelMinutes) levelMinutes = p.levelMinutes;
+    if (p.hours) hours = p.hours;
+    if (p.depth) depth = p.depth;
+    if (p.breakEvery !== undefined) breakEvery = p.breakEvery;
+    if (p.lateReg !== undefined) lateReg = p.lateReg;
+    if (p.rebuys !== undefined) rebuyOn = p.rebuys;
+    if (p.addOn !== undefined) addOnOn = p.addOn;
+    if (p.expected) expected = p.expected;
+    if (p.payouts) payoutText = p.payouts.join(", ");
+    if (p.bountyKind) {
+      bountyKind = p.bountyKind;
+      if (p.bountyShare) bounty = Math.round(buyIn * p.bountyShare * 100) / 100;
+      tonight.bounty = true;
+    }
+    customized = false;
+  }
+
   let allTemplates = $state(getTemplates());
   const templates = $derived(allTemplates.filter((tmpl) => tmpl.type === type));
+  // presets are tournament setups; a cash game only lists the host's own templates
+  const presets = $derived(type === "tournament" ? PRESETS : []);
   let loadedFrom = "";
   $effect(() => {
     const tid = page.url.searchParams.get("template");
     const gid = page.url.searchParams.get("from");
-    const key = `${tid}|${gid}`;
-    if (key === loadedFrom || (!tid && !gid)) return;
+    const pid = page.url.searchParams.get("preset");
+    const key = `${tid}|${gid}|${pid}`;
+    if (key === loadedFrom || (!tid && !gid && !pid)) return;
     loadedFrom = key;
-    if (tid) {
+    if (pid) {
+      const p = getPreset(pid);
+      if (!p || type !== "tournament") return void toast(t("gameSetup.alerts.presetGone"), "bad");
+      applyPreset(p);
+      toast(t("gameSetup.alerts.loadedTemplate", { name: t(`gameSetup.header.presets.${p.id}`) }), "info");
+    } else if (tid) {
       const tpl = getTemplate(tid);
       if (!tpl) return void toast(t("gameSetup.alerts.templateGone"), "bad");
       fill(tpl);
@@ -323,9 +355,10 @@
   });
 
   function pickTemplate(e: Event) {
-    const id = (e.target as HTMLSelectElement).value;
+    // "preset:turbo" or "template:<id>"
+    const [kind, id] = (e.target as HTMLSelectElement).value.split(":");
     (e.target as HTMLSelectElement).value = "";
-    if (id) goto(`/new?type=${type}&template=${id}`, { replaceState: true, noScroll: true, keepFocus: true });
+    if (id) goto(`/new?type=${type}&${kind}=${id}`, { replaceState: true, noScroll: true, keepFocus: true });
   }
 
   let naming = $state(false);
@@ -401,10 +434,19 @@
         <button type="button" class="link muted" data-sound="close" onclick={() => (naming = false)}>{t("common.cancel")}</button>
       </form>
     {:else}
-      {#if templates.length}
+      {#if presets.length || templates.length}
         <select onchange={pickTemplate} aria-label={t("gameSetup.header.loadTemplateAria")}>
-          <option value="">{t("gameSetup.header.loadTemplateOption")}</option>
-          {#each templates as tmpl (tmpl.id)}<option value={tmpl.id}>{tmpl.name}</option>{/each}
+          <option value="">{t("gameSetup.header.startFromOption")}</option>
+          {#if templates.length}
+            <optgroup label={t("gameSetup.header.yourTemplates")}>
+              {#each templates as tmpl (tmpl.id)}<option value="template:{tmpl.id}">{tmpl.name}</option>{/each}
+            </optgroup>
+          {/if}
+          {#if presets.length}
+            <optgroup label={t("gameSetup.header.builtIn")}>
+              {#each presets as p (p.id)}<option value="preset:{p.id}">{t(`gameSetup.header.presets.${p.id}`)}</option>{/each}
+            </optgroup>
+          {/if}
         </select>
       {/if}
       <button class="link" data-sound="open" onclick={() => ((naming = true), (templateName = name))}><Icon icon={Bookmark} size="1em" />{t("gameSetup.header.saveAsTemplate")}</button>
@@ -527,6 +569,20 @@
           <label><span>{t("gameSetup.tournament.rebuys.lateRegThroughLevel")}</span><input type="number" min="0" bind:value={lateReg} /></label>
           {#if bountyOn}<label><span>{t("gameSetup.tournament.rebuys.bountyField", { sym })}</span><input type="number" min="0" step="any" max={buyIn} bind:value={bounty} /></label>{/if}
         </div>
+        {#if bountyOn && bounty > 0}
+          <div class="row" transition:slide={reveal()}>
+            <label>
+              <span>{t("gameSetup.tournament.rebuys.bountyKind")}</span>
+              <select bind:value={bountyKind}>
+                <option value="flat">{t("gameSetup.tournament.rebuys.kindFlat")}</option>
+                <option value="progressive">{t("gameSetup.tournament.rebuys.kindProgressive")}</option>
+                <option value="mystery">{t("gameSetup.tournament.rebuys.kindMystery")}</option>
+              </select>
+            </label>
+            {#if bountyKind === "mystery"}<label transition:slide={{ ...reveal(), axis: "x" }}><span>{t("gameSetup.tournament.rebuys.mysteryFrom")}</span><input type="number" min="0" step="1" bind:value={mysteryFrom} /></label>{/if}
+          </div>
+          <p class="small muted -mt-1 mx-0 mb-[10px]">{t(`gameSetup.tournament.rebuys.hint.${bountyKind}`)}</p>
+        {/if}
       </fieldset>
 
       <fieldset class="border-0 mt-0 mx-0 mb-[22px] p-0 min-w-0">

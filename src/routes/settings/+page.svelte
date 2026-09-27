@@ -675,6 +675,14 @@
       <label class="what flex flex-col gap-px m-0" for="t-bounty"><b class="inline-flex items-center gap-1.5 font-normal text-fg">{t("settings.defaults.tournaments.bounty.label", { sym })}</b><span class="small muted">{t("settings.defaults.tournaments.bounty.hint")}</span></label>
       <input id="t-bounty" type="number" min="0" step="any" bind:value={settings.tBounty} onchange={saveSettings} />
     </div>
+    <div class="set grid grid-cols-[minmax(0,280px)_minmax(0,1fr)] gap-x-7 gap-y-1.5 py-3 px-0 border-b-[length:var(--hair)] border-solid border-line last:border-b-0 max-[600px]:grid-cols-[1fr] items-center" transition:slide={reveal()}>
+      <label class="what flex flex-col gap-px m-0" for="t-bounty-kind"><b class="inline-flex items-center gap-1.5 font-normal text-fg">{t("settings.defaults.tournaments.bountyKind.label")}</b><span class="small muted">{t("settings.defaults.tournaments.bountyKind.hint")}</span></label>
+      <select id="t-bounty-kind" bind:value={settings.tBountyKind} onchange={saveSettings}>
+        <option value="flat">{t("gameSetup.tournament.rebuys.kindFlat")}</option>
+        <option value="progressive">{t("gameSetup.tournament.rebuys.kindProgressive")}</option>
+        <option value="mystery">{t("gameSetup.tournament.rebuys.kindMystery")}</option>
+      </select>
+    </div>
   {/if}
   <div class="set grid grid-cols-[minmax(0,280px)_minmax(0,1fr)] gap-x-7 gap-y-1.5 py-3 px-0 border-b-[length:var(--hair)] border-solid border-line last:border-b-0 max-[600px]:grid-cols-[1fr] items-center">
     <label class="what flex flex-col gap-px m-0" for="t-payouts"><b class="inline-flex items-center gap-1.5 font-normal text-fg">{t("settings.defaults.tournaments.payouts.label")}</b><span class="small muted">{t("settings.defaults.tournaments.payouts.hint")}</span></label>

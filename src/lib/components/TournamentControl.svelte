@@ -26,6 +26,11 @@
     seatsDrawn,
     seatLabel,
     tableCounts,
+    bountyBook,
+    envelopesLeft,
+    mysteryStartsAt,
+    fitEnvelopes,
+    setEnvelopes,
   } from "$lib/game";
   import { annotate } from "$lib/blinds";
   import { distribute } from "$lib/chips";
@@ -88,7 +93,37 @@
     Array.from({ length: game.deal ? Object.keys(game.deal.amounts).length : s.payouts.length }, (_, i) => i)
   );
   const canDeal = $derived(!game.finished && alive.length >= 2 && alive.length <= 9 && game.clock.status !== "idle");
-  const cols = $derived(2 + +drawn + +t.rebuy.on + +t.addOn.on + +showKos);
+
+  // bounties: who's taken what, and (progressive) what's on each head now
+  const book = $derived(bountyBook(game));
+  const pko = $derived(!!t.bounty && t.bountyKind === "progressive");
+  const mystery = $derived(!!t.bounty && t.bountyKind === "mystery");
+  const left = $derived(envelopesLeft(game));
+  const openedList = $derived.by(() => {
+    const name = (id: string | null) => game.players.find((p) => p.id === id)?.name ?? "?";
+    return [
+      ...(game.kos ?? []).filter((k) => k.by && k.prize !== undefined).map((k) => ({ at: k.at, name: name(k.by), prize: k.prize! })),
+      ...Object.entries(game.mystery?.own ?? {}).map(([id, prize]) => ({ at: game.endedAt ?? 0, name: name(id), prize })),
+    ].sort((a, b) => b.at - a.at);
+  });
+  let editingEnvelopes = $state(false);
+  let envelopeText = $state("");
+  let envelopeBad = $state(false);
+  function saveEnvelopes(e: SubmitEvent) {
+    e.preventDefault();
+    const amounts = envelopeText.split(/[\s,]+/).filter(Boolean).map(Number);
+    envelopeBad = !setEnvelopes(game, amounts);
+    if (envelopeBad) return;
+    persist();
+    editingEnvelopes = false;
+  }
+  function credit(outId: string, byId: string | null) {
+    act(() => creditKo(game, outId, byId));
+    // an envelope opened or a bounty collected, right here
+    if (game.flash?.kind === "bounty" && Date.now() - game.flash.at < 1000) play(mystery ? "jackpot" : "chips");
+  }
+
+  const cols = $derived(2 + +drawn + +t.rebuy.on + +t.addOn.on + +showKos + +pko);
   // where the money is: one bust off it, or in it
   const moneyState = $derived(s.bubble ? "bubble" : s.itm ? "itm" : "");
 
@@ -152,6 +187,7 @@
     const p = game.players.find((x) => x.id === id)!;
     act(() => {
       p.rebuys = Math.max(0, p.rebuys + delta);
+      fitEnvelopes(game);
       if (delta > 0) {
         if (p.out) unbust(game, id, true);
         logEvent(game, tt("gamePlay.tournament.reboughtLog", { name: p.name, cost: money(t.rebuy.cost) }));
@@ -173,6 +209,7 @@
     if (!confirm(tt("gamePlay.tournament.removeConfirm", { name: p.name }))) return;
     act(() => {
       game.players = game.players.filter((x) => x.id !== id);
+      fitEnvelopes(game);
       logEvent(game, tt("gamePlay.shared.removedLog", { name: p.name }));
     });
   }
@@ -303,6 +340,7 @@
           {#if t.rebuy.on}<th class="num">{tt("gamePlay.tournament.rebuysHeader")}</th>{/if}
           {#if t.addOn.on}<th class="num">{tt("gamePlay.tournament.addOnHeader")}</th>{/if}
           {#if showKos}<th class="num">{tt("gamePlay.tournament.kosHeader")}</th>{/if}
+          {#if pko}<th class="num">{tt("gamePlay.tournament.bountyHeader")}</th>{/if}
           <th></th>
         </tr>
       </thead>
@@ -329,10 +367,11 @@
               </td>
             {/if}
             {#if showKos}<td class="num" class:blank={!koCount(game, p.id)} data-l={tt("gamePlay.tournament.kosHeader")}>{koCount(game, p.id) || ""}</td>{/if}
+            {#if pko}<td class="num" class:blank={p.out} data-l={tt("gamePlay.tournament.bountyHeader")}>{#if !p.out}<span use:bump={book.head[p.id]}>{money(book.head[p.id] ?? 0)}</span>{/if}</td>{/if}
             <!-- a busted row's actions may wrap to a second line rather than push the table wider -->
             <td class="acts leading-[30px]">
               {#if p.out && !game.deal}
-                {#if kosOn}<select class="ko max-w-[150px]" value={lastKo(p.id)} onchange={(e) => act(() => creditKo(game, p.id, (e.target as HTMLSelectElement).value || null))} aria-label={tt("gamePlay.tournament.whoKnockedOutAria", { name: p.name })}>
+                {#if kosOn}<select class="ko max-w-[150px]" value={lastKo(p.id)} onchange={(e) => credit(p.id, (e.target as HTMLSelectElement).value || null)} aria-label={tt("gamePlay.tournament.whoKnockedOutAria", { name: p.name })}>
                   <option value="">{tt("gamePlay.tournament.koByPlaceholder")}</option>
                   {#each game.players.filter((x) => x.id !== p.id) as x (x.id)}<option value={x.id}>{x.name}</option>{/each}
                 </select>{/if}
@@ -377,8 +416,47 @@
       </tbody>
     </table>
     <p class="small muted">
-      {s.entrants} × {money(t.buyIn)}{#if s.rebuys} + {tp("gamePlay.tournament.rebuysCount", s.rebuys)}{/if}{#if s.addOns} + {tp("gamePlay.tournament.addOnsCount", s.addOns)}{/if} = {money(s.gross)}{#if s.bounties} − {tt("gamePlay.tournament.bountiesNote", { bounties: money(s.bounties), bounty: money(s.bounty) })}{/if}{#if s.rake} − {tt("gamePlay.tournament.rakeNote", { rake: money(s.rake) })}{/if}
+      {s.entrants} × {money(t.buyIn)}{#if s.rebuys} + {tp("gamePlay.tournament.rebuysCount", s.rebuys)}{/if}{#if s.addOns} + {tp("gamePlay.tournament.addOnsCount", s.addOns)}{/if} = {money(s.gross)}{#if s.bounties} − {tt(pko ? "gamePlay.tournament.bountiesNotePko" : mystery ? "gamePlay.tournament.bountiesNoteMystery" : "gamePlay.tournament.bountiesNote", { bounties: money(s.bounties), bounty: money(s.bounty) })}{/if}{#if s.rake} − {tt("gamePlay.tournament.rakeNote", { rake: money(s.rake) })}{/if}
     </p>
+    {#if book.unclaimed > 0.004 && (game.finished || !mystery)}
+      <p class="small warn" transition:slide={reveal()}>{tt(mystery ? "gamePlay.tournament.unopenedNote" : "gamePlay.tournament.uncreditedNote", { amount: money(book.unclaimed) })}</p>
+    {/if}
+
+    {#if mystery}
+      <div class="part mt-[22px]">
+        <div class="spread">
+          <h2>{tt("gamePlay.tournament.mysteryHeading")}</h2>
+          {#if game.mystery && left.length && !game.finished}
+            <button class="link small" data-sound={editingEnvelopes ? "close" : "open"} aria-expanded={editingEnvelopes} onclick={() => ((editingEnvelopes = !editingEnvelopes), (envelopeText = left.join(", ")), (envelopeBad = false))}>{editingEnvelopes ? tt("common.cancel") : tt("common.edit")}</button>
+          {/if}
+        </div>
+        {#if !game.mystery}
+          <p class="small muted">{tt("gamePlay.tournament.mysteryWaiting", { n: String(mysteryStartsAt(game)), pool: money(s.bounties) })}</p>
+        {:else}
+          {#if editingEnvelopes}
+            <form autocomplete="off" class="row" onsubmit={saveEnvelopes} transition:slide={reveal()}>
+              <label class="grow"><span>{tt("gamePlay.tournament.envelopesLabel")}</span><input type="text" bind:value={envelopeText} class="w-full" /></label>
+              <button>{tt("common.save")}</button>
+            </form>
+            {#if envelopeBad}<p class="small warn">{tt("gamePlay.tournament.envelopesSumWarning", { amount: money(left.reduce((a, v) => a + v, 0)) })}</p>{/if}
+          {:else if left.length}
+            <p class="small">
+              <span class="muted">{tp("gamePlay.tournament.envelopesLeft", left.length)}</span>
+              {#each left as v, i (i)}<span class="num ml-2">{money(v)}</span>{/each}
+            </p>
+          {/if}
+          {#if openedList.length}
+            <table>
+              <tbody>
+                {#each openedList as o, i (i)}
+                  <tr><td>{o.name}</td><td class="num"><b>{money(o.prize)}</b></td></tr>
+                {/each}
+              </tbody>
+            </table>
+          {/if}
+        {/if}
+      </div>
+    {/if}
 
     {#if canDeal && dealsOn}
       <div class="part mt-[22px]" transition:slide={reveal()}>

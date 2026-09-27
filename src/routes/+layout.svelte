@@ -20,6 +20,7 @@
   import { goto } from "$app/navigation";
   import { provide, palette } from "$lib/commands.svelte";
   import { getGames, getTemplates, knownPlayers, exportAll } from "$lib/store";
+  import { PRESETS } from "$lib/presets";
   import { vault, lockNow, watchIdle, forgetAll } from "$lib/lock.svelte";
   import { hooks, noKeeper } from "$lib/vault";
   import { play, detent, type UiSound } from "$lib/sound";
@@ -136,6 +137,13 @@
         group: t("nav.commands.templates"),
         keywords: `template ${tpl.type}`,
         run: () => goto(`/new?type=${tpl.type}&template=${tpl.id}`),
+      })),
+      ...PRESETS.map((p) => ({
+        id: `preset:${p.id}`,
+        label: t("nav.commands.newFromTemplate", { name: t(`gameSetup.header.presets.${p.id}`) }),
+        group: t("nav.commands.templates"),
+        keywords: `preset tournament ${p.id}`,
+        run: () => goto(`/new?type=tournament&preset=${p.id}`),
       })),
       {
         id: "theme",

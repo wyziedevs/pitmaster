@@ -111,6 +111,7 @@ export interface SettingsDict {
       antes: { label: string; hint: string; antesFrom: string; lateRegThrough: string };
       rebuys: { label: string; hint: string; checkbox: string; throughLevel: string; addOnCheckbox: string; cost: string }; // cost: {sym}
       bounty: { label: string; hint: string }; // label: {sym}
+      bountyKind: { label: string; hint: string };
       payouts: { label: string; hint: string };
       roundTo: { label: string; hint: string }; // hint: {amount}
     };
@@ -409,6 +410,7 @@ export const settings: Record<Lang, SettingsDict> = {
           cost: "Cost {sym}",
         },
         bounty: { label: "Bounty {sym}", hint: "The part of each buy-in that sits on the player's head. 0 means none." },
+        bountyKind: { label: "Bounty Kind", hint: "Flat pays the whole bounty for a knockout. Progressive (PKO) pays half and adds half to the winner's own bounty. Mystery opens a random envelope for each knockout once the envelopes come out." },
         payouts: { label: "Payouts", hint: "Percentages, 1st place first, like 50, 30, 20. Leave it blank and they're picked by how many play." },
         roundTo: { label: "Round Payouts To", hint: "So no one is paid {amount}. Whatever's left over goes to 1st." },
       },
@@ -757,6 +759,7 @@ export const settings: Record<Lang, SettingsDict> = {
           cost: "费用 {sym}",
         },
         bounty: { label: "赏金 {sym}", hint: "每笔买入中悬赏在该玩家头上的部分。0 表示没有赏金。" },
+        bountyKind: { label: "赏金类型", hint: "固定：淘汰一人拿走全部赏金。累进（PKO）：拿一半，另一半加到自己头上。神秘：信封拿出后，每淘汰一人随机打开一个信封。" },
         payouts: { label: "派奖比例", hint: "百分比,从第一名开始,例如 50、30、20。留空则根据参赛人数自动选择。" },
         roundTo: { label: "派奖金额取整到", hint: "这样就不会有人拿到 {amount} 这样的零头。多出或不足的部分计入第一名。" },
       },
@@ -1104,6 +1107,7 @@ export const settings: Record<Lang, SettingsDict> = {
           cost: "कीमत {sym}",
         },
         bounty: { label: "बाउंटी {sym}", hint: "हर बाय-इन का वह हिस्सा जो खिलाड़ी के सिर पर रहता है। 0 का मतलब है कोई बाउंटी नहीं।" },
+        bountyKind: { label: "बाउंटी का प्रकार", hint: "फ़्लैट में नॉकआउट पर पूरी बाउंटी मिलती है। प्रोग्रेसिव (PKO) में आधी मिलती है और आधी जीतने वाले की अपनी बाउंटी में जुड़ती है। मिस्ट्री में लिफ़ाफ़े निकलने के बाद हर नॉकआउट एक रैंडम लिफ़ाफ़ा खोलता है।" },
         payouts: { label: "पेआउट्स", hint: "प्रतिशत में, पहला स्थान सबसे पहले, जैसे 50, 30, 20। खाली छोड़ने पर खिलाड़ियों की संख्या के हिसाब से खुद चुने जाते हैं।" },
         roundTo: { label: "पेआउट्स इस तक राउंड करें", hint: "ताकि किसी को {amount} जैसी रकम न मिले। जो बचे वह पहले स्थान को चला जाता है।" },
       },
@@ -1451,6 +1455,7 @@ export const settings: Record<Lang, SettingsDict> = {
           cost: "Costo {sym}",
         },
         bounty: { label: "Recompensa {sym}", hint: "La parte de cada buy-in que queda sobre la cabeza del jugador. 0 significa ninguna." },
+        bountyKind: { label: "Tipo de bounty", hint: "Fijo paga el bounty entero por una eliminación. Progresivo (PKO) paga la mitad y suma la otra mitad al bounty de quien elimina. Misterioso abre un sobre al azar por cada eliminación cuando salen los sobres." },
         payouts: { label: "Premios", hint: "Porcentajes, el 1er lugar primero, como 50, 30, 20. Déjalo en blanco y se eligen según cuántos jueguen." },
         roundTo: { label: "Redondear Premios A", hint: "Para que a nadie le paguen {amount}. Lo que sobre va al 1er lugar." },
       },
@@ -1798,6 +1803,7 @@ export const settings: Record<Lang, SettingsDict> = {
           cost: "Coût {sym}",
         },
         bounty: { label: "Prime {sym}", hint: "La part de chaque buy-in posée sur la tête du joueur. 0 signifie aucune." },
+        bountyKind: { label: "Type de bounty", hint: "Fixe rapporte tout le bounty à chaque élimination. Progressif (PKO) en rapporte la moitié et ajoute l'autre moitié au bounty de celui qui élimine. Mystère ouvre une enveloppe au hasard à chaque élimination, une fois les enveloppes sorties." },
         payouts: { label: "Gains", hint: "En pourcentages, la 1re place d'abord, comme 50, 30, 20. Laissez vide et ils sont choisis selon le nombre de joueurs." },
         roundTo: { label: "Arrondir les Gains à", hint: "Pour que personne ne soit payé {amount}. Ce qui reste va à la 1re place." },
       },
@@ -2145,6 +2151,7 @@ export const settings: Record<Lang, SettingsDict> = {
           cost: "التكلفة {sym}",
         },
         bounty: { label: "المكافأة {sym}", hint: "الجزء من كل قيمة دخول الذي يوضع على رأس اللاعب. 0 يعني بلا مكافأة." },
+        bountyKind: { label: "نوع مكافأة الإقصاء", hint: "الثابتة تدفع المكافأة كاملة لكل إقصاء. التصاعدية (PKO) تدفع النصف وتضيف النصف الآخر إلى مكافأة من أقصى. الغامضة تفتح ظرفًا عشوائيًا لكل إقصاء بعد ظهور الأظرف." },
         payouts: { label: "توزيع الجوائز", hint: "نسب مئوية، المركز الأول أولًا، مثل 50، 30، 20. اتركه فارغًا وتُختار حسب عدد اللاعبين." },
         roundTo: { label: "تقريب الجوائز إلى", hint: "حتى لا يُدفع لأحد {amount}. أي فائض يذهب إلى المركز الأول." },
       },
@@ -2499,6 +2506,7 @@ export const settings: Record<Lang, SettingsDict> = {
           cost: "খরচ {sym}",
         },
         bounty: { label: "বাউন্টি {sym}", hint: "প্রতিটি বাই-ইনের যে অংশ খেলোয়াড়ের মাথায় থাকে। ০ মানে কোনো বাউন্টি নেই।" },
+        bountyKind: { label: "বাউন্টির ধরন", hint: "ফ্ল্যাটে নকআউটে পুরো বাউন্টি পাওয়া যায়। প্রগ্রেসিভে (PKO) অর্ধেক পাওয়া যায়, বাকি অর্ধেক নকআউটকারীর নিজের বাউন্টিতে যোগ হয়। মিস্ট্রিতে খাম বেরোনোর পর প্রতিটি নকআউট একটি এলোমেলো খাম খোলে।" },
         payouts: { label: "পেআউট", hint: "শতাংশে, প্রথম স্থান আগে, যেমন ৫০, ৩০, ২০। খালি রাখলে খেলোয়াড় সংখ্যা অনুযায়ী বেছে নেওয়া হয়।" },
         roundTo: { label: "পেআউট রাউন্ড করুন এই পর্যন্ত", hint: "যাতে কাউকে {amount} মতো অঙ্ক দিতে না হয়। বাকি থাকা অংশ প্রথম স্থানে যাবে।" },
       },
@@ -2846,6 +2854,7 @@ export const settings: Record<Lang, SettingsDict> = {
           cost: "Custo {sym}",
         },
         bounty: { label: "Recompensa {sym}", hint: "A parte de cada buy-in que fica sobre a cabeça do jogador. 0 significa nenhuma." },
+        bountyKind: { label: "Tipo de bounty", hint: "Fixo paga o bounty inteiro por eliminação. Progressivo (PKO) paga metade e soma a outra metade ao bounty de quem eliminou. Misterioso abre um envelope aleatório a cada eliminação depois que os envelopes saem." },
         payouts: { label: "Pagamentos", hint: "Porcentagens, o 1º lugar primeiro, tipo 50, 30, 20. Deixe em branco e são escolhidas pelo número de jogadores." },
         roundTo: { label: "Arredondar Pagamentos Para", hint: "Para que ninguém receba {amount}. O que sobrar vai para o 1º lugar." },
       },

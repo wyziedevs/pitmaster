@@ -38,6 +38,16 @@ export interface GameEventsDict {
   movedFlash: string;
   tableBrokeLog: string;
   tableBreakingFlash: string;
+  pkoLog: string;
+  pkoFlash: string;
+  bountyFlash: string;
+  mysteryStartLog: Plural;
+  mysteryStartFlash: Plural;
+  mysteryBubbleFlash: string;
+  mysteryOpenLog: string;
+  mysteryOpenFlash: string;
+  mysteryOwnLog: string;
+  envelopesEditedLog: string;
 }
 
 export const gameEvents: Record<Lang, GameEventsDict> = {
@@ -65,6 +75,16 @@ export const gameEvents: Record<Lang, GameEventsDict> = {
     movedFlash: "{name}: table {table}, seat {seat}",
     tableBrokeLog: "Table {table} broke: {details}",
     tableBreakingFlash: "Table {table} is breaking",
+    pkoLog: "{by} knocked out {out}: {amount} now, {head} on their own head",
+    pkoFlash: "{by} takes {amount}. Their bounty is now {head}",
+    bountyFlash: "{by} collects {amount} for knocking out {out}",
+    mysteryStartLog: { one: "Mystery bounties are on: {count} envelope, {pool}", other: "Mystery bounties are on: {count} envelopes, {pool}" },
+    mysteryStartFlash: { one: "Mystery bounties are on! {count} envelope to open", other: "Mystery bounties are on! {count} envelopes to open" },
+    mysteryBubbleFlash: "{name} is out on the bubble. Everyone left gets paid, and the mystery bounties are on!",
+    mysteryOpenLog: "{by} knocked out {out} and opened a {prize} envelope",
+    mysteryOpenFlash: "{by} opens a mystery bounty: {prize}",
+    mysteryOwnLog: "{name} opened a {prize} envelope",
+    envelopesEditedLog: "Envelope amounts changed",
   },
   zh: {
     defaultHouseName: "主办方",
@@ -90,6 +110,16 @@ export const gameEvents: Record<Lang, GameEventsDict> = {
     movedFlash: "{name}：{table} 号桌 {seat} 号座",
     tableBrokeLog: "{table} 号桌解散：{details}",
     tableBreakingFlash: "{table} 号桌即将解散",
+    pkoLog: "{by} 淘汰了 {out}：现得 {amount}，自身赏金变为 {head}",
+    pkoFlash: "{by} 拿到 {amount}，自身赏金变为 {head}",
+    bountyFlash: "{by} 淘汰 {out}，拿到 {amount}",
+    mysteryStartLog: { other: "神秘赏金开始：{count} 个信封，共 {pool}" },
+    mysteryStartFlash: { other: "神秘赏金开始！共 {count} 个信封" },
+    mysteryBubbleFlash: "{name} 在泡沫圈出局。剩下的人都能拿钱，神秘赏金也开始了！",
+    mysteryOpenLog: "{by} 淘汰了 {out}，打开了 {prize} 的信封",
+    mysteryOpenFlash: "{by} 打开神秘赏金：{prize}",
+    mysteryOwnLog: "{name} 打开了 {prize} 的信封",
+    envelopesEditedLog: "信封金额已修改",
   },
   hi: {
     defaultHouseName: "हाउस",
@@ -115,6 +145,16 @@ export const gameEvents: Record<Lang, GameEventsDict> = {
     movedFlash: "{name}: टेबल {table}, सीट {seat}",
     tableBrokeLog: "टेबल {table} बंद हुई: {details}",
     tableBreakingFlash: "टेबल {table} बंद हो रही है",
+    pkoLog: "{by} ने {out} को नॉकआउट किया: अभी {amount}, अपने सिर पर {head}",
+    pkoFlash: "{by} को {amount} मिले। अब उनकी बाउंटी {head} है",
+    bountyFlash: "{out} को नॉकआउट करने पर {by} को {amount} मिले",
+    mysteryStartLog: { one: "मिस्ट्री बाउंटी शुरू: {count} लिफ़ाफ़ा, {pool}", other: "मिस्ट्री बाउंटी शुरू: {count} लिफ़ाफ़े, {pool}" },
+    mysteryStartFlash: { one: "मिस्ट्री बाउंटी शुरू! खोलने को {count} लिफ़ाफ़ा", other: "मिस्ट्री बाउंटी शुरू! खोलने को {count} लिफ़ाफ़े" },
+    mysteryBubbleFlash: "{name} बबल पर बाहर। बचे सभी को पैसे मिलेंगे, और मिस्ट्री बाउंटी शुरू!",
+    mysteryOpenLog: "{by} ने {out} को नॉकआउट किया और {prize} का लिफ़ाफ़ा खोला",
+    mysteryOpenFlash: "{by} ने मिस्ट्री बाउंटी खोली: {prize}",
+    mysteryOwnLog: "{name} ने {prize} का लिफ़ाफ़ा खोला",
+    envelopesEditedLog: "लिफ़ाफ़ों की रकम बदली गई",
   },
   es: {
     defaultHouseName: "La Casa",
@@ -140,6 +180,16 @@ export const gameEvents: Record<Lang, GameEventsDict> = {
     movedFlash: "{name}: mesa {table}, asiento {seat}",
     tableBrokeLog: "Se cerró la mesa {table}: {details}",
     tableBreakingFlash: "La mesa {table} se está cerrando",
+    pkoLog: "{by} eliminó a {out}: {amount} ahora, {head} sobre su propia cabeza",
+    pkoFlash: "{by} se lleva {amount}. Su recompensa ahora es {head}",
+    bountyFlash: "{by} cobra {amount} por eliminar a {out}",
+    mysteryStartLog: { one: "Empiezan las recompensas misteriosas: {count} sobre, {pool}", other: "Empiezan las recompensas misteriosas: {count} sobres, {pool}" },
+    mysteryStartFlash: { one: "¡Empiezan las recompensas misteriosas! {count} sobre por abrir", other: "¡Empiezan las recompensas misteriosas! {count} sobres por abrir" },
+    mysteryBubbleFlash: "{name} cae en la burbuja. Todos los que quedan cobran, ¡y empiezan las recompensas misteriosas!",
+    mysteryOpenLog: "{by} eliminó a {out} y abrió un sobre de {prize}",
+    mysteryOpenFlash: "{by} abre una recompensa misteriosa: {prize}",
+    mysteryOwnLog: "{name} abrió un sobre de {prize}",
+    envelopesEditedLog: "Se cambiaron los montos de los sobres",
   },
   fr: {
     defaultHouseName: "La Maison",
@@ -165,6 +215,16 @@ export const gameEvents: Record<Lang, GameEventsDict> = {
     movedFlash: "{name} : table {table}, siège {seat}",
     tableBrokeLog: "La table {table} est fermée : {details}",
     tableBreakingFlash: "La table {table} ferme",
+    pkoLog: "{by} a éliminé {out} : {amount} tout de suite, {head} sur sa propre tête",
+    pkoFlash: "{by} empoche {amount}. Sa prime est maintenant de {head}",
+    bountyFlash: "{by} empoche {amount} pour avoir éliminé {out}",
+    mysteryStartLog: { one: "Les primes mystère commencent : {count} enveloppe, {pool}", other: "Les primes mystère commencent : {count} enveloppes, {pool}" },
+    mysteryStartFlash: { one: "Les primes mystère commencent ! {count} enveloppe à ouvrir", other: "Les primes mystère commencent ! {count} enveloppes à ouvrir" },
+    mysteryBubbleFlash: "{name} sort à la bulle. Tous ceux qui restent sont payés, et les primes mystère commencent !",
+    mysteryOpenLog: "{by} a éliminé {out} et ouvert une enveloppe de {prize}",
+    mysteryOpenFlash: "{by} ouvre une prime mystère : {prize}",
+    mysteryOwnLog: "{name} a ouvert une enveloppe de {prize}",
+    envelopesEditedLog: "Montants des enveloppes modifiés",
   },
   ar: {
     defaultHouseName: "الجهة المنظمة",
@@ -197,6 +257,16 @@ export const gameEvents: Record<Lang, GameEventsDict> = {
     movedFlash: "{name}: الطاولة {table}، المقعد {seat}",
     tableBrokeLog: "أُغلقت الطاولة {table}: {details}",
     tableBreakingFlash: "الطاولة {table} تُغلق الآن",
+    pkoLog: "{by} أقصى {out}: {amount} الآن، و{head} على رأسه",
+    pkoFlash: "{by} يأخذ {amount}. مكافأته الآن {head}",
+    bountyFlash: "{by} يأخذ {amount} لإقصاء {out}",
+    mysteryStartLog: { one: "بدأت المكافآت الغامضة: ظرف واحد، {pool}", two: "بدأت المكافآت الغامضة: ظرفان، {pool}", few: "بدأت المكافآت الغامضة: {count} أظرف، {pool}", other: "بدأت المكافآت الغامضة: {count} ظرفًا، {pool}" },
+    mysteryStartFlash: { one: "بدأت المكافآت الغامضة! ظرف واحد لفتحه", two: "بدأت المكافآت الغامضة! ظرفان لفتحهما", few: "بدأت المكافآت الغامضة! {count} أظرف لفتحها", other: "بدأت المكافآت الغامضة! {count} ظرفًا لفتحها" },
+    mysteryBubbleFlash: "خرج {name} على الفقاعة. كل من بقي سيحصل على جائزة، وبدأت المكافآت الغامضة!",
+    mysteryOpenLog: "{by} أقصى {out} وفتح ظرفًا بقيمة {prize}",
+    mysteryOpenFlash: "{by} يفتح مكافأة غامضة: {prize}",
+    mysteryOwnLog: "{name} فتح ظرفًا بقيمة {prize}",
+    envelopesEditedLog: "تم تغيير مبالغ الأظرف",
   },
   bn: {
     defaultHouseName: "আয়োজক",
@@ -222,6 +292,16 @@ export const gameEvents: Record<Lang, GameEventsDict> = {
     movedFlash: "{name}: টেবিল {table}, আসন {seat}",
     tableBrokeLog: "টেবিল {table} ভেঙে গেছে: {details}",
     tableBreakingFlash: "টেবিল {table} ভাঙা হচ্ছে",
+    pkoLog: "{by} {out}-কে নকআউট করেছেন: এখন {amount}, নিজের মাথায় {head}",
+    pkoFlash: "{by} পেলেন {amount}। এখন তাঁর বাউন্টি {head}",
+    bountyFlash: "{out}-কে নকআউট করে {by} পেলেন {amount}",
+    mysteryStartLog: { one: "মিস্ট্রি বাউন্টি শুরু: {count}টি খাম, {pool}", other: "মিস্ট্রি বাউন্টি শুরু: {count}টি খাম, {pool}" },
+    mysteryStartFlash: { one: "মিস্ট্রি বাউন্টি শুরু! খোলার জন্য {count}টি খাম", other: "মিস্ট্রি বাউন্টি শুরু! খোলার জন্য {count}টি খাম" },
+    mysteryBubbleFlash: "{name} বাবলে বাদ পড়লেন। বাকি সবাই টাকা পাবেন, আর মিস্ট্রি বাউন্টি শুরু!",
+    mysteryOpenLog: "{by} {out}-কে নকআউট করে {prize}-এর একটি খাম খুলেছেন",
+    mysteryOpenFlash: "{by} একটি মিস্ট্রি বাউন্টি খুললেন: {prize}",
+    mysteryOwnLog: "{name} {prize}-এর একটি খাম খুলেছেন",
+    envelopesEditedLog: "খামের অঙ্ক বদলানো হয়েছে",
   },
   pt: {
     defaultHouseName: "A Casa",
@@ -247,5 +327,15 @@ export const gameEvents: Record<Lang, GameEventsDict> = {
     movedFlash: "{name}: mesa {table}, lugar {seat}",
     tableBrokeLog: "A mesa {table} fechou: {details}",
     tableBreakingFlash: "A mesa {table} está fechando",
+    pkoLog: "{by} eliminou {out}: {amount} agora, {head} na própria cabeça",
+    pkoFlash: "{by} leva {amount}. A recompensa dele agora é {head}",
+    bountyFlash: "{by} recebe {amount} por eliminar {out}",
+    mysteryStartLog: { one: "Começam as recompensas misteriosas: {count} envelope, {pool}", other: "Começam as recompensas misteriosas: {count} envelopes, {pool}" },
+    mysteryStartFlash: { one: "Começam as recompensas misteriosas! {count} envelope para abrir", other: "Começam as recompensas misteriosas! {count} envelopes para abrir" },
+    mysteryBubbleFlash: "{name} cai na bolha. Todos que restam recebem, e começam as recompensas misteriosas!",
+    mysteryOpenLog: "{by} eliminou {out} e abriu um envelope de {prize}",
+    mysteryOpenFlash: "{by} abre uma recompensa misteriosa: {prize}",
+    mysteryOwnLog: "{name} abriu um envelope de {prize}",
+    envelopesEditedLog: "Valores dos envelopes alterados",
   },
 };

@@ -1,7 +1,7 @@
 // per-browser preferences. kept apart from the game data (store.ts) so a backup
 // restore or a wipe never flips someone's theme. encrypted like the games,
 // except the theme, motion and language, which app.html reads before the page paints.
-import type { CashRake, HostPrefs } from "./types";
+import type { BountyKind, CashRake, HostPrefs } from "./types";
 import { DEFAULT_PALETTE_KEY } from "./keys";
 import { onSaved, readSlot, save } from "./vault";
 import { detectLanguage, isRtl } from "./i18n/langs";
@@ -58,6 +58,7 @@ export interface Settings {
   tAddOn: boolean;
   tAddOnCost: number;
   tBounty: number; // 0 = none
+  tBountyKind: BountyKind; // flat, progressive (PKO) or mystery
   tPayouts: string; // "50, 30, 20"; blank = by how many play
   tRakePct: number;
   tFee: number;
@@ -122,6 +123,7 @@ const defaults: Settings = {
   tAddOn: false,
   tAddOnCost: 10,
   tBounty: 0,
+  tBountyKind: "flat",
   tPayouts: "",
   tRakePct: 0,
   tFee: 0,
@@ -202,6 +204,7 @@ export function adoptSettings(from: Record<string, unknown>) {
     if (THIS_SCREEN.includes(k) || typeof from[k] !== typeof defaults[k]) continue;
     (settings as unknown as Record<string, unknown>)[k] = from[k];
   }
+  if (!["flat", "progressive", "mystery"].includes(settings.tBountyKind)) settings.tBountyKind = "flat";
   saveSettings();
 }
 

@@ -12,9 +12,10 @@
   import Handshake from "@lucide/svelte/icons/handshake";
   import Armchair from "@lucide/svelte/icons/armchair";
   import Megaphone from "@lucide/svelte/icons/megaphone";
+  import Gift from "@lucide/svelte/icons/gift";
   import type { EventKind, Game } from "$lib/types";
   import { derive, cashElapsed } from "$lib/clock";
-  import { tourneyStats, cashStats, cashRake, seatLabel, tableCounts, paidFor } from "$lib/game";
+  import { tourneyStats, cashStats, cashRake, seatLabel, tableCounts, paidFor, bountyBook, envelopesLeft, mysteryStartsAt } from "$lib/game";
   import { amt, clock, clockFace, money, ordinal, timeOfDay } from "$lib/util";
   import { play, sounds, resumeAudio, audioReady, speak } from "$lib/sound";
   import { hostPrefs, prefs } from "$lib/settings.svelte";
@@ -118,6 +119,16 @@
   // the payout ladder fits nine places; a bigger field says how many more get paid
   const LADDER = 9;
 
+  // bounties: the biggest head still in (progressive), or the envelopes left (mystery)
+  const bountyKind = $derived(game.tourney?.bounty ? game.tourney.bountyKind : null);
+  const topHead = $derived.by(() => {
+    if (bountyKind !== "progressive") return null;
+    const head = bountyBook(game).head;
+    const top = game.players.filter((p) => !p.out).sort((a, b) => (head[b.id] ?? 0) - (head[a.id] ?? 0))[0];
+    return top ? { name: top.name, amount: head[top.id] ?? 0 } : null;
+  });
+  const envelopes = $derived(bountyKind === "mystery" ? envelopesLeft(game) : []);
+
   // the winner's pot: a row of stacks from the game's own chips, biggest first
   const pot = $derived([...game.chips].sort((a, b) => b.value - a.value).slice(0, 5));
 
@@ -211,6 +222,7 @@
     win: { icon: Trophy, sound: sounds.ship, color: BANNER, n: 4 },
     deal: { icon: Handshake, sound: sounds.money, color: BANNER, n: 3 },
     money: { icon: HandCoins, sound: sounds.money, color: GOOD, n: 3 },
+    bounty: { icon: Gift, sound: sounds.money, color: BANNER, n: 3 },
     bust: { icon: Skull, sound: sounds.bust, color: HOT, n: 2 },
     chips: { icon: Coins, sound: sounds.chips, color: BANNER, n: 2 },
     rack: { icon: Coins, sound: sounds.rack, color: CHALK, n: 2 },
@@ -538,9 +550,20 @@
           <span class="v">{tr("tv.tourney.topN", { n: String(t.paid) })}</span>
         {/if}
       </div>
-      {#if game.tourney!.bounty}
+      {#if bountyKind}
         <div class="notes-col">
-          <span>{#if showMoney}<span class="fig">{money(game.tourney!.bounty)}</span> {/if}{tr("tv.tourney.bountyOnEveryHead")}</span>
+          {#if bountyKind === "progressive"}
+            <span>{tr("tv.tourney.progressiveBounties")}</span>
+            {#if topHead}<span>{tr("tv.tourney.biggestBounty")} <b>{topHead.name}</b>{#if showMoney}{" "}<span class="fig" use:replay={[topHead.amount, "pop"]}>{money(topHead.amount)}</span>{/if}</span>{/if}
+          {:else if bountyKind === "mystery"}
+            {#if game.mystery}
+              <span><span use:replay={[envelopes.length, "pop"]}>{tp("tv.tourney.envelopesLeft", envelopes.length)}</span>{#if showMoney && envelopes.length}{" · "}{tr("tv.tourney.topEnvelope")}{" "}<span class="fig">{money(envelopes[0])}</span>{/if}</span>
+            {:else}
+              <span>{tr("tv.tourney.mysteryFrom", { n: String(mysteryStartsAt(game)) })}</span>
+            {/if}
+          {:else}
+            <span>{#if showMoney}<span class="fig">{money(game.tourney!.bounty)}</span> {/if}{tr("tv.tourney.bountyOnEveryHead")}</span>
+          {/if}
         </div>
       {/if}
     </aside>
@@ -1429,6 +1452,16 @@
   @keyframes lift {
     from {
       transform: translate(-50%, -20%);
+      opacity: 0;
+    }
+  }
+  /* a bounty is an envelope torn open: it flips up toward the room */
+  .tv-toast.is-bounty {
+    animation: unseal 0.8s var(--ease-out-expo);
+  }
+  @keyframes unseal {
+    from {
+      transform: translate(-50%, -50%) perspective(40em) rotateX(75deg);
       opacity: 0;
     }
   }

@@ -21,7 +21,10 @@ export interface GameSetupDict {
     templateNamePlaceholder: string;
     templateNameAria: string;
     loadTemplateAria: string;
-    loadTemplateOption: string;
+    startFromOption: string;
+    yourTemplates: string;
+    builtIn: string;
+    presets: { turbo: string; hyper: string; deepstack: string; freezeout: string; sitgo: string; pko: string; mystery: string };
     saveAsTemplate: string;
     switchToTournament: string;
     switchToCash: string;
@@ -93,6 +96,12 @@ export interface GameSetupDict {
       addOnLabel: string;
       lateRegThroughLevel: string;
       bountyField: string;
+      bountyKind: string;
+      kindFlat: string;
+      kindProgressive: string;
+      kindMystery: string;
+      mysteryFrom: string;
+      hint: { flat: string; progressive: string; mystery: string };
     };
     payouts: {
       legend: string;
@@ -164,6 +173,7 @@ export interface GameSetupDict {
     makeChipSetFirst: string;
     structureEmpty: string;
     templateGone: string;
+    presetGone: string;
     loadedTemplate: string;
     gameGone: string;
     copiedSetup: string;
@@ -180,7 +190,18 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       templateNamePlaceholder: "Template Name",
       templateNameAria: "Template name",
       loadTemplateAria: "Load a template",
-      loadTemplateOption: "Load a Template…",
+      startFromOption: "Start From…",
+      yourTemplates: "Your Templates",
+      builtIn: "Built In",
+      presets: {
+        turbo: "Turbo (10 Min Levels)",
+        hyper: "Hyper Turbo (5 Min Levels)",
+        deepstack: "Deepstack (200 BB, 30 Min Levels)",
+        freezeout: "Freezeout (No Rebuys)",
+        sitgo: "Sit & Go (One Table, Top 3 Paid)",
+        pko: "Progressive Knockout (PKO)",
+        mystery: "Mystery Bounty",
+      },
       saveAsTemplate: "Save as Template",
       switchToTournament: "Switch to Tournament",
       switchToCash: "Switch to Cash Game",
@@ -252,6 +273,16 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
         addOnLabel: "Add-On (At the First Break)",
         lateRegThroughLevel: "Late Registration Through Level",
         bountyField: "Bounty {sym} (Part of the Buy-In, 0 = None)",
+        bountyKind: "Bounty Kind",
+        kindFlat: "Flat",
+        kindProgressive: "Progressive (PKO)",
+        kindMystery: "Mystery",
+        mysteryFrom: "Envelopes Come Out With Players Left (0 = In the Money)",
+        hint: {
+          flat: "A knockout pays the whole bounty.",
+          progressive: "A knockout pays half the bounty. The other half goes on the winner's own head, so bounties grow as the game goes on.",
+          mystery: "Knockouts pay nothing until the envelopes come out. From then on, every knockout opens a random envelope from all the bounty money.",
+        },
       },
       payouts: {
         legend: "Payouts",
@@ -323,6 +354,7 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       makeChipSetFirst: "Make a chip set first",
       structureEmpty: "The blind structure is empty",
       templateGone: "That template no longer exists",
+      presetGone: "That preset isn't here anymore.",
       loadedTemplate: "Loaded “{name}”",
       gameGone: "That game no longer exists",
       copiedSetup: "Copied the setup from “{name}”. Change what you need, then deal.",
@@ -337,7 +369,18 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       templateNamePlaceholder: "模板名称",
       templateNameAria: "模板名称",
       loadTemplateAria: "加载模板",
-      loadTemplateOption: "加载模板…",
+      startFromOption: "从这里开始…",
+      yourTemplates: "你的模板",
+      builtIn: "内置",
+      presets: {
+        turbo: "快速赛（每级 10 分钟）",
+        hyper: "超快速赛（每级 5 分钟）",
+        deepstack: "深筹码赛（200 BB，每级 30 分钟）",
+        freezeout: "无重购赛",
+        sitgo: "坐满即玩（一桌，前 3 名有奖）",
+        pko: "累进赏金赛（PKO）",
+        mystery: "神秘赏金赛",
+      },
       saveAsTemplate: "保存为模板",
       switchToTournament: "切换到锦标赛",
       switchToCash: "切换到现金局",
@@ -409,6 +452,16 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
         addOnLabel: "增购（在第一次休息时）",
         lateRegThroughLevel: "迟到报名截止级别",
         bountyField: "赏金 {sym}（计入买入，0 = 无）",
+        bountyKind: "赏金类型",
+        kindFlat: "固定",
+        kindProgressive: "累进（PKO）",
+        kindMystery: "神秘",
+        mysteryFrom: "剩几人时拿出信封（0 = 进入钱圈时）",
+        hint: {
+          flat: "淘汰一人拿走全部赏金。",
+          progressive: "淘汰一人拿走一半赏金，另一半加到自己头上，赏金会越滚越大。",
+          mystery: "拿出信封前淘汰没有奖励。之后每淘汰一人，就从全部赏金里随机打开一个信封。",
+        },
       },
       payouts: {
         legend: "奖金分配",
@@ -480,6 +533,7 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       makeChipSetFirst: "请先创建一套筹码",
       structureEmpty: "盲注结构为空",
       templateGone: "该模板已不存在",
+      presetGone: "这个预设已经不在了。",
       loadedTemplate: "已加载“{name}”",
       gameGone: "该对局已不存在",
       copiedSetup: "已复制“{name}”的设置。按需调整后即可开局。",
@@ -494,7 +548,18 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       templateNamePlaceholder: "टेम्पलेट का नाम",
       templateNameAria: "टेम्पलेट का नाम",
       loadTemplateAria: "टेम्पलेट लोड करें",
-      loadTemplateOption: "टेम्पलेट लोड करें…",
+      startFromOption: "यहाँ से शुरू करें…",
+      yourTemplates: "आपके टेम्पलेट",
+      builtIn: "बिल्ट-इन",
+      presets: {
+        turbo: "टर्बो (10 मिनट के लेवल)",
+        hyper: "हाइपर टर्बो (5 मिनट के लेवल)",
+        deepstack: "डीपस्टैक (200 BB, 30 मिनट के लेवल)",
+        freezeout: "फ़्रीज़आउट (कोई रीबाय नहीं)",
+        sitgo: "सिट एंड गो (एक टेबल, टॉप 3 को पैसे)",
+        pko: "प्रोग्रेसिव नॉकआउट (PKO)",
+        mystery: "मिस्ट्री बाउंटी",
+      },
       saveAsTemplate: "टेम्पलेट के रूप में सहेजें",
       switchToTournament: "टूर्नामेंट पर स्विच करें",
       switchToCash: "कैश गेम पर स्विच करें",
@@ -566,6 +631,16 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
         addOnLabel: "ऐड-ऑन (पहले ब्रेक पर)",
         lateRegThroughLevel: "लेट रजिस्ट्रेशन किस लेवल तक",
         bountyField: "बाउंटी {sym} (बाय-इन का हिस्सा, 0 = कोई नहीं)",
+        bountyKind: "बाउंटी का प्रकार",
+        kindFlat: "फ़्लैट",
+        kindProgressive: "प्रोग्रेसिव (PKO)",
+        kindMystery: "मिस्ट्री",
+        mysteryFrom: "कितने खिलाड़ी बचने पर लिफ़ाफ़े निकलें (0 = इन द मनी पर)",
+        hint: {
+          flat: "नॉकआउट पर पूरी बाउंटी मिलती है।",
+          progressive: "नॉकआउट पर आधी बाउंटी मिलती है। बाकी आधी जीतने वाले के अपने सिर पर जुड़ती है, तो बाउंटी बढ़ती जाती है।",
+          mystery: "लिफ़ाफ़े निकलने तक नॉकआउट पर कुछ नहीं मिलता। उसके बाद हर नॉकआउट पूरी बाउंटी रकम में से एक रैंडम लिफ़ाफ़ा खोलता है।",
+        },
       },
       payouts: {
         legend: "पेआउट",
@@ -637,6 +712,7 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       makeChipSetFirst: "पहले एक चिप सेट बनाएं",
       structureEmpty: "ब्लाइंड संरचना खाली है",
       templateGone: "यह टेम्पलेट अब मौजूद नहीं है",
+      presetGone: "यह प्रीसेट अब यहाँ नहीं है।",
       loadedTemplate: "“{name}” लोड हो गया",
       gameGone: "यह गेम अब मौजूद नहीं है",
       copiedSetup: "“{name}” की सेटिंग कॉपी कर दी गई। जो बदलना हो बदलें, फिर शुरू करें।",
@@ -651,7 +727,18 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       templateNamePlaceholder: "Nombre de la plantilla",
       templateNameAria: "Nombre de la plantilla",
       loadTemplateAria: "Cargar una plantilla",
-      loadTemplateOption: "Cargar una plantilla…",
+      startFromOption: "Empezar desde…",
+      yourTemplates: "Tus plantillas",
+      builtIn: "Incluidas",
+      presets: {
+        turbo: "Turbo (niveles de 10 min)",
+        hyper: "Hiper turbo (niveles de 5 min)",
+        deepstack: "Deepstack (200 BB, niveles de 30 min)",
+        freezeout: "Freezeout (sin recompras)",
+        sitgo: "Sit & Go (una mesa, cobran los 3 primeros)",
+        pko: "Knockout progresivo (PKO)",
+        mystery: "Bounty misterioso",
+      },
       saveAsTemplate: "Guardar como plantilla",
       switchToTournament: "Cambiar a torneo",
       switchToCash: "Cambiar a cash game",
@@ -723,6 +810,16 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
         addOnLabel: "Add-on (en el primer descanso)",
         lateRegThroughLevel: "Inscripción tardía hasta el nivel",
         bountyField: "Bounty {sym} (parte del buy-in, 0 = ninguno)",
+        bountyKind: "Tipo de bounty",
+        kindFlat: "Fijo",
+        kindProgressive: "Progresivo (PKO)",
+        kindMystery: "Misterioso",
+        mysteryFrom: "Sobres cuando queden jugadores (0 = al entrar en premios)",
+        hint: {
+          flat: "Una eliminación paga el bounty entero.",
+          progressive: "Una eliminación paga la mitad del bounty. La otra mitad se suma a la cabeza de quien elimina, así los bounties crecen durante el juego.",
+          mystery: "Las eliminaciones no pagan nada hasta que salen los sobres. Desde ahí, cada eliminación abre un sobre al azar con parte del dinero de bounties.",
+        },
       },
       payouts: {
         legend: "Premios",
@@ -794,6 +891,7 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       makeChipSetFirst: "Primero crea un set de fichas",
       structureEmpty: "La estructura de ciegas está vacía",
       templateGone: "Esa plantilla ya no existe",
+      presetGone: "Ese ajuste ya no está aquí.",
       loadedTemplate: "Se cargó «{name}»",
       gameGone: "Esa partida ya no existe",
       copiedSetup: "Se copió la configuración de «{name}». Cambia lo que necesites y reparte.",
@@ -808,7 +906,18 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       templateNamePlaceholder: "Nom du modèle",
       templateNameAria: "Nom du modèle",
       loadTemplateAria: "Charger un modèle",
-      loadTemplateOption: "Charger un modèle…",
+      startFromOption: "Partir de…",
+      yourTemplates: "Vos modèles",
+      builtIn: "Intégrés",
+      presets: {
+        turbo: "Turbo (niveaux de 10 min)",
+        hyper: "Hyper turbo (niveaux de 5 min)",
+        deepstack: "Deepstack (200 BB, niveaux de 30 min)",
+        freezeout: "Freezeout (sans recave)",
+        sitgo: "Sit & Go (une table, 3 premiers payés)",
+        pko: "Knockout progressif (PKO)",
+        mystery: "Bounty mystère",
+      },
       saveAsTemplate: "Enregistrer comme modèle",
       switchToTournament: "Passer au tournoi",
       switchToCash: "Passer au cash game",
@@ -880,6 +989,16 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
         addOnLabel: "Add-on (à la première pause)",
         lateRegThroughLevel: "Inscription tardive jusqu'au niveau",
         bountyField: "Bounty {sym} (inclus dans le buy-in, 0 = aucun)",
+        bountyKind: "Type de bounty",
+        kindFlat: "Fixe",
+        kindProgressive: "Progressif (PKO)",
+        kindMystery: "Mystère",
+        mysteryFrom: "Enveloppes à combien de joueurs restants (0 = dans les places payées)",
+        hint: {
+          flat: "Une élimination rapporte tout le bounty.",
+          progressive: "Une élimination rapporte la moitié du bounty. L'autre moitié s'ajoute à la tête de celui qui élimine, donc les bounties grossissent au fil du jeu.",
+          mystery: "Les éliminations ne rapportent rien avant la sortie des enveloppes. Ensuite, chaque élimination ouvre une enveloppe au hasard prise dans tout l'argent des bounties.",
+        },
       },
       payouts: {
         legend: "Répartition des gains",
@@ -951,6 +1070,7 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       makeChipSetFirst: "Créez d'abord un set de jetons",
       structureEmpty: "La structure des blindes est vide",
       templateGone: "Ce modèle n'existe plus",
+      presetGone: "Ce préréglage n'existe plus.",
       loadedTemplate: "«{name}» chargé",
       gameGone: "Cette partie n'existe plus",
       copiedSetup: "Configuration copiée depuis «{name}». Modifiez ce qu'il faut, puis distribuez.",
@@ -965,7 +1085,18 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       templateNamePlaceholder: "اسم القالب",
       templateNameAria: "اسم القالب",
       loadTemplateAria: "تحميل قالب",
-      loadTemplateOption: "تحميل قالب…",
+      startFromOption: "ابدأ من…",
+      yourTemplates: "قوالبك",
+      builtIn: "مضمّنة",
+      presets: {
+        turbo: "توربو (مستويات 10 دقائق)",
+        hyper: "هايبر توربو (مستويات 5 دقائق)",
+        deepstack: "رصيد عميق (200 BB، مستويات 30 دقيقة)",
+        freezeout: "فريز آوت (بلا إعادة شراء)",
+        sitgo: "سيت آند غو (طاولة واحدة، أول 3 يفوزون)",
+        pko: "إقصاء تصاعدي (PKO)",
+        mystery: "مكافأة غامضة",
+      },
       saveAsTemplate: "حفظ كقالب",
       switchToTournament: "التبديل إلى البطولة",
       switchToCash: "التبديل إلى اللعبة النقدية",
@@ -1037,6 +1168,16 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
         addOnLabel: "إضافة رقائق (في أول استراحة)",
         lateRegThroughLevel: "التسجيل المتأخر حتى المستوى",
         bountyField: "مكافأة الإقصاء {sym} (جزء من قيمة الدخول، 0 = بدون مكافأة)",
+        bountyKind: "نوع مكافأة الإقصاء",
+        kindFlat: "ثابتة",
+        kindProgressive: "تصاعدية (PKO)",
+        kindMystery: "غامضة",
+        mysteryFrom: "تظهر الأظرف عند بقاء عدد اللاعبين (0 = عند دخول الجوائز)",
+        hint: {
+          flat: "الإقصاء يدفع المكافأة كاملة.",
+          progressive: "الإقصاء يدفع نصف المكافأة، ويُضاف النصف الآخر إلى رأس من أقصى، فتكبر المكافآت مع تقدم اللعب.",
+          mystery: "لا يدفع الإقصاء شيئًا حتى تظهر الأظرف. بعدها كل إقصاء يفتح ظرفًا عشوائيًا من مال المكافآت كله.",
+        },
       },
       payouts: {
         legend: "توزيع الجوائز",
@@ -1115,6 +1256,7 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       makeChipSetFirst: "أنشئ طقم رقائق أولًا",
       structureEmpty: "هيكل الرهانات العمياء فارغ",
       templateGone: "هذا القالب لم يعد موجودًا",
+      presetGone: "هذا الإعداد لم يعد موجودًا.",
       loadedTemplate: "تم تحميل «{name}»",
       gameGone: "هذه اللعبة لم تعد موجودة",
       copiedSetup: "تم نسخ إعدادات «{name}». عدّل ما تحتاجه ثم ابدأ.",
@@ -1129,7 +1271,18 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       templateNamePlaceholder: "টেমপ্লেটের নাম",
       templateNameAria: "টেমপ্লেটের নাম",
       loadTemplateAria: "একটি টেমপ্লেট লোড করুন",
-      loadTemplateOption: "একটি টেমপ্লেট লোড করুন…",
+      startFromOption: "এখান থেকে শুরু করুন…",
+      yourTemplates: "আপনার টেমপ্লেট",
+      builtIn: "বিল্ট-ইন",
+      presets: {
+        turbo: "টার্বো (10 মিনিটের লেভেল)",
+        hyper: "হাইপার টার্বো (5 মিনিটের লেভেল)",
+        deepstack: "ডিপস্ট্যাক (200 BB, 30 মিনিটের লেভেল)",
+        freezeout: "ফ্রিজআউট (রিবাই নেই)",
+        sitgo: "সিট অ্যান্ড গো (এক টেবিল, সেরা 3 জন টাকা পান)",
+        pko: "প্রগ্রেসিভ নকআউট (PKO)",
+        mystery: "মিস্ট্রি বাউন্টি",
+      },
       saveAsTemplate: "টেমপ্লেট হিসেবে সংরক্ষণ করুন",
       switchToTournament: "টুর্নামেন্টে পরিবর্তন করুন",
       switchToCash: "ক্যাশ গেমে পরিবর্তন করুন",
@@ -1201,6 +1354,16 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
         addOnLabel: "অ্যাড-অন (প্রথম বিরতিতে)",
         lateRegThroughLevel: "দেরিতে নিবন্ধন কোন লেভেল পর্যন্ত",
         bountyField: "বাউন্টি {sym} (বাই-ইনের অংশ, 0 = নেই)",
+        bountyKind: "বাউন্টির ধরন",
+        kindFlat: "ফ্ল্যাট",
+        kindProgressive: "প্রগ্রেসিভ (PKO)",
+        kindMystery: "মিস্ট্রি",
+        mysteryFrom: "কতজন বাকি থাকলে খাম বেরোবে (0 = ইন দ্য মানি হলে)",
+        hint: {
+          flat: "নকআউটে পুরো বাউন্টি পাওয়া যায়।",
+          progressive: "নকআউটে অর্ধেক বাউন্টি পাওয়া যায়। বাকি অর্ধেক যিনি নকআউট করলেন তাঁর নিজের মাথায় যোগ হয়, তাই বাউন্টি বাড়তে থাকে।",
+          mystery: "খাম বেরোনোর আগে নকআউটে কিছু পাওয়া যায় না। তারপর প্রতিটি নকআউট পুরো বাউন্টির টাকা থেকে একটি এলোমেলো খাম খোলে।",
+        },
       },
       payouts: {
         legend: "পুরস্কার বণ্টন",
@@ -1272,6 +1435,7 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       makeChipSetFirst: "প্রথমে একটি চিপ সেট তৈরি করুন",
       structureEmpty: "ব্লাইন্ড কাঠামো খালি",
       templateGone: "এই টেমপ্লেটটি আর নেই",
+      presetGone: "এই প্রিসেটটি আর নেই।",
       loadedTemplate: "“{name}” লোড হয়েছে",
       gameGone: "এই খেলাটি আর নেই",
       copiedSetup: "“{name}”-এর সেটআপ কপি করা হয়েছে। যা দরকার বদলে নিন, তারপর শুরু করুন।",
@@ -1286,7 +1450,18 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       templateNamePlaceholder: "Nome do modelo",
       templateNameAria: "Nome do modelo",
       loadTemplateAria: "Carregar um modelo",
-      loadTemplateOption: "Carregar um modelo…",
+      startFromOption: "Começar de…",
+      yourTemplates: "Seus modelos",
+      builtIn: "Incluídos",
+      presets: {
+        turbo: "Turbo (níveis de 10 min)",
+        hyper: "Hiper turbo (níveis de 5 min)",
+        deepstack: "Deepstack (200 BB, níveis de 30 min)",
+        freezeout: "Freezeout (sem recompras)",
+        sitgo: "Sit & Go (uma mesa, 3 primeiros pagos)",
+        pko: "Knockout progressivo (PKO)",
+        mystery: "Bounty misterioso",
+      },
       saveAsTemplate: "Salvar como modelo",
       switchToTournament: "Mudar para torneio",
       switchToCash: "Mudar para cash game",
@@ -1358,6 +1533,16 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
         addOnLabel: "Add-on (no primeiro intervalo)",
         lateRegThroughLevel: "Inscrição tardia até o nível",
         bountyField: "Bounty {sym} (parte do buy-in, 0 = nenhum)",
+        bountyKind: "Tipo de bounty",
+        kindFlat: "Fixo",
+        kindProgressive: "Progressivo (PKO)",
+        kindMystery: "Misterioso",
+        mysteryFrom: "Envelopes quando restarem jogadores (0 = ao entrar nos prêmios)",
+        hint: {
+          flat: "Uma eliminação paga o bounty inteiro.",
+          progressive: "Uma eliminação paga metade do bounty. A outra metade vai para a cabeça de quem eliminou, então os bounties crescem durante o jogo.",
+          mystery: "As eliminações não pagam nada até os envelopes saírem. Depois disso, cada eliminação abre um envelope aleatório com o dinheiro dos bounties.",
+        },
       },
       payouts: {
         legend: "Premiação",
@@ -1429,6 +1614,7 @@ export const gameSetup: Record<Lang, GameSetupDict> = {
       makeChipSetFirst: "Crie um conjunto de fichas primeiro",
       structureEmpty: "A estrutura de blinds está vazia",
       templateGone: "Esse modelo não existe mais",
+      presetGone: "Essa predefinição não está mais aqui.",
       loadedTemplate: "“{name}” carregado",
       gameGone: "Essa partida não existe mais",
       copiedSetup: "Configuração copiada de “{name}”. Ajuste o que precisar e distribua.",

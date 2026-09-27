@@ -1,6 +1,6 @@
 /** what a flash toast is about: the tv picks its icon, sound and color by
  *  this, not by matching words in the (now translated) text */
-export type EventKind = "win" | "deal" | "money" | "bust" | "chips" | "rack" | "shuffle" | "seat" | "note";
+export type EventKind = "win" | "deal" | "money" | "bounty" | "bust" | "chips" | "rack" | "shuffle" | "seat" | "note";
 
 /** how a chip is drawn. matches the real chip families. */
 export type ChipStyle = "basic" | "montecarlo" | "delsol";
@@ -82,6 +82,8 @@ export interface Knockout {
   out: string;
   by: string | null;
   at: number;
+  /** mystery bounties: the envelope `by` opened for this knockout */
+  prize?: number;
 }
 
 export type ClockStatus = "idle" | "running" | "paused";
@@ -120,6 +122,28 @@ export interface TourneySettings {
   payoutRound: number;
   /** $ of each entry that sits on the player's head, 0 = no bounties */
   bounty: number;
+  /**
+   * how a knockout pays.
+   *  flat:        the whole bounty goes to whoever knocked them out
+   *  progressive: half goes to them, half is added to their own bounty
+   *  mystery:     from `mysteryFrom` players left, each knockout opens a random
+   *               envelope from the bounty money
+   */
+  bountyKind: BountyKind;
+  /** mystery: how many players are left when the envelopes come out, 0 = when the money is reached */
+  mysteryFrom: number;
+}
+
+export type BountyKind = "flat" | "progressive" | "mystery";
+
+/** a mystery bounty game's envelopes, made when the mystery part starts */
+export interface Mystery {
+  /** when the envelopes came out: knockouts from here on open one */
+  at: number;
+  /** every envelope, opened or not */
+  prizes: number[];
+  /** what each player still standing at the end opened for themselves */
+  own: Record<string, number>;
 }
 
 /**
@@ -182,6 +206,8 @@ export interface Game {
   endedAt?: number;
   /** a final-table chop: what each remaining player took instead of the payout table */
   deal?: { kind: "icm" | "chop"; amounts: Record<string, number>; at: number };
+  /** mystery bounties, once they've started */
+  mystery?: Mystery;
   /** only on published snapshots: the host's display prefs, so a tv on another device matches */
   prefs?: HostPrefs;
   /** cash: what's been dropped in the rake box so far */

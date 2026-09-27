@@ -1,7 +1,7 @@
 // results and all-time numbers, worked out from the saved games every time.
 // nothing here is stored, so fixing a game fixes the leaderboard too.
 import type { Game, GameType } from "./types";
-import { tourneyStats, koCount, paidFor, cashRake } from "./game";
+import { tourneyStats, koCount, paidFor, cashRake, bountyBook } from "./game";
 import { money, nameKey, round2, signed } from "./util";
 
 /** one player's night in one game */
@@ -59,15 +59,12 @@ export function results(game: Game): Result[] {
   if (!game.finished || !game.tourney) return [];
   const t = game.tourney;
   const s = tourneyStats(game);
+  const book = bountyBook(game);
   return game.players.map((p) => {
     const cost = t.buyIn + p.rebuys * t.rebuy.cost + p.addOns * t.addOn.cost;
     const payout = p.place ? paidFor(game, p.id, p.place, s.payouts) : 0;
     const kos = koCount(game, p.id);
-    // the winner keeps the last bounty on their own head; in a deal, everyone
-    // still standing takes their own back
-    const ownHead = p.place === 1 || (game.deal && p.id in game.deal.amounts) ? 1 : 0;
-    const bounties = (kos + ownHead) * s.bounty;
-    const won = round2(payout + bounties);
+    const won = round2(payout + (book.won[p.id] ?? 0));
     return {
       ...base,
       key: nameKey(p.name),

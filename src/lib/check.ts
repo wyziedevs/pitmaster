@@ -44,11 +44,22 @@ const player = (p: unknown) =>
 
 const level = (l: unknown) => obj(l) && num(l.sb) && num(l.bb) && num(l.ante) && num(l.minutes) && maybe(list(str))(l.colorUp);
 const said = orNull((n) => obj(n) && str(n.text) && num(n.at));
-const EVENT_KINDS: EventKind[] = ["win", "deal", "money", "bust", "chips", "rack", "shuffle", "seat", "note"];
+const EVENT_KINDS: EventKind[] = ["win", "deal", "money", "bounty", "bust", "chips", "rack", "shuffle", "seat", "note"];
 const flashed = orNull((n) => obj(n) && str(n.text) && num(n.at) && (EVENT_KINDS as string[]).includes(n.kind as string));
 const clock = (c: unknown) =>
   obj(c) && ["idle", "running", "paused"].includes(c.status as string) && num(c.levelIndex) && num(c.levelElapsedMs) && num(c.elapsedMs);
-const tourney = (t: unknown) => obj(t) && num(t.buyIn) && list(num)(t.payouts) && obj(t.rebuy) && obj(t.addOn);
+const tourney = (t: unknown) =>
+  obj(t) &&
+  num(t.buyIn) &&
+  list(num)(t.payouts) &&
+  obj(t.rebuy) &&
+  obj(t.addOn) &&
+  num(t.bounty) &&
+  ["flat", "progressive", "mystery"].includes(t.bountyKind as string) &&
+  num(t.mysteryFrom);
+/** one elimination, and (mystery bounties) the envelope it opened */
+const knockout = (k: unknown) => obj(k) && id(k.out) && orNull(id)(k.by) && num(k.at) && maybe(num)(k.prize);
+const mystery = (m: unknown) => obj(m) && num(m.at) && list(num)(m.prizes) && obj(m.own) && Object.values(m.own).every(num);
 const cash = (c: unknown) => obj(c) && num(c.sb) && num(c.bb) && obj(c.rake);
 /** a line of the game's log: when, and what happened (game.ts keeps the latest 300) */
 const entry = (e: unknown) => obj(e) && num(e.t) && str(e.text);
@@ -73,6 +84,8 @@ export function isGame(g: unknown): g is Game {
     (g.log as unknown[]).length <= 300 &&
     orNull((l) => obj(l) && str(l.code) && str(l.key))(g.live) &&
     bool(g.finished) &&
+    maybe(list(knockout))(g.kos) &&
+    maybe(mystery)(g.mystery) &&
     // a tournament's clock needs at least one level to count down
     (g.type === "cash" ? cash(g.cash) : g.type === "tournament" && tourney(g.tourney) && (g.levels as unknown[]).length > 0)
   );
