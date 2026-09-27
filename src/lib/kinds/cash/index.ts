@@ -12,7 +12,7 @@ import { settleLines, pad } from "$lib/report";
 import { clock, csv, duration, money, round2, signed, timeOfDay } from "$lib/util";
 import { cashGames, cashStakes, gameLine, gamesLabel } from "$lib/variants";
 import { isCashSettings, isSide, isWaiting } from "../poker/check";
-import { list, maybe } from "$lib/shape";
+import { list, maybe, num } from "$lib/shape";
 import { seatText } from "../poker/seat";
 import { pokerSetup } from "../poker";
 import { prefs } from "$lib/settings.svelte";
@@ -154,7 +154,7 @@ export const cash: Kind = {
   ranks: "net",
   Setup: pokerSetup,
   Control: () => import("./Control.svelte"),
-  check: (g) => isCashSettings(g.cash) && maybe(list(isSide))(g.sides) && maybe(list(isWaiting))(g.waitlist),
+  check: (g) => isCashSettings(g.cash) && maybe(list(isSide))(g.sides) && maybe(list(isWaiting))(g.waitlist) && maybe(num)(g.rakeBox),
   results,
   settle: cashSettle,
   // over once everyone's cashed out, or the host ended it

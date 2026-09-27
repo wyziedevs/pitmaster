@@ -52,5 +52,7 @@ export const isWaiting = (w: unknown) => obj(w) && id(w.id) && str(w.name) && nu
 /** one elimination, and (mystery bounties) the envelope it opened */
 export const isKnockout = (k: unknown) => obj(k) && id(k.out) && orNull(id)(k.by) && num(k.at) && maybe(num)(k.prize);
 export const isMystery = (m: unknown) => obj(m) && num(m.at) && list(num)(m.prizes) && obj(m.own) && Object.values(m.own).every(num);
+/** a final-table chop: what each player took */
+export const isDeal = (d: unknown) => obj(d) && oneOf("icm", "chop")(d.kind) && obj(d.amounts) && Object.values(d.amounts).every(num) && num(d.at);
 /** one heads-up match in a bracket */
 export const isMatch = (m: unknown) => obj(m) && num(m.round) && num(m.slot) && orNull(id)(m.a) && orNull(id)(m.b) && orNull(id)(m.winner) && orNull(num)(m.at);

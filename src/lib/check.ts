@@ -4,7 +4,7 @@
 // colors. anything else is turned away whole, never half saved.
 import type { ChipSet, EventKind, Game, League, PayHandles, Template } from "./types";
 import { FACE_DEFAULTS } from "./chips";
-import { bool, id, list, maybe, num, obj, orNull, str } from "./shape";
+import { bool, id, list, maybe, num, obj, oneOf, orNull, str } from "./shape";
 import { isCashSettings, isLevel, isTourneySettings } from "./kinds/poker/check";
 import { isKind, kind } from "./kinds";
 
@@ -46,6 +46,17 @@ const cost = (c: unknown) => obj(c) && id(c.id) && str(c.label) && num(c.amount)
 const payment = (p: unknown) => obj(p) && str(p.from) && str(p.to) && num(p.amount) && num(p.at);
 /** a line of the game's log: when, and what happened (game.ts keeps the latest 300) */
 const entry = (e: unknown) => obj(e) && num(e.t) && str(e.text);
+/** the host's display prefs on a tv snapshot */
+const prefs = (p: unknown) =>
+  obj(p) &&
+  str(p.currency) &&
+  oneOf("12h", "24h")(p.clock) &&
+  num(p.levelWarning) &&
+  bool(p.tvSound) &&
+  bool(p.tvAwake) &&
+  bool(p.tvVoice) &&
+  bool(p.tvMoney) &&
+  num(p.tvVolume);
 /** a league's standings on a tv snapshot */
 const board = (b: unknown) =>
   obj(b) && str(b.name) && num(b.games) && list((r) => obj(r) && str(r.name) && num(r.points) && num(r.games))(b.rows);
@@ -70,6 +81,11 @@ export function isGame(g: unknown): g is Game {
     (g.log as unknown[]).length <= 300 &&
     orNull((l) => obj(l) && str(l.code) && str(l.key))(g.live) &&
     bool(g.finished) &&
+    maybe(num)(g.endedAt) &&
+    maybe(id)(g.from) &&
+    maybe(num)(g.seatsPerTable) &&
+    maybe(str)(g.house) &&
+    maybe(prefs)(g.prefs) &&
     maybe(list(cost))(g.costs) &&
     maybe(list(payment))(g.paid) &&
     maybe(id)(g.leagueId) &&

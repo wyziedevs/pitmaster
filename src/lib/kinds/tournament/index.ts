@@ -14,7 +14,7 @@ import { derive } from "$lib/clock";
 import { pad, settleLines } from "$lib/report";
 import { amt, clock, csv, duration, money, ordinal, round2, timeOfDay } from "$lib/util";
 import { gameLine, gamesLabel } from "$lib/variants";
-import { isKnockout, isMatch, isMystery, isTourneySettings } from "../poker/check";
+import { isDeal, isKnockout, isMatch, isMystery, isTourneySettings } from "../poker/check";
 import { list, maybe, num } from "$lib/shape";
 import { seatText } from "../poker/seat";
 import { pokerSetup } from "../poker";
@@ -170,7 +170,8 @@ export const tournament: Kind = {
     maybe(list(isKnockout))(g.kos) &&
     maybe(isMystery)(g.mystery) &&
     maybe(num)(g.finalAt) &&
-    maybe(list(isMatch))(g.matches),
+    maybe(list(isMatch))(g.matches) &&
+    maybe(isDeal)(g.deal),
   results,
   settle: tourneySettle,
   settled: (game) => game.finished,
