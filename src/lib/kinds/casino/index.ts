@@ -55,7 +55,7 @@ function results(game: Game): Result[] {
   if (!game.finished || !game.casino) return [];
   const st = casinoState(game);
   const back = (id: string) => (raffle(game) ? 0 : st.back[id]);
-  return game.players.filter((p) => st.bought[p.id] > 0).map((p) => resultRow(game, p, st.bought[p.id], back(p.id), { itm: st.net[p.id] > 0 }));
+  return game.players.filter((p) => st.bought[p.id] > 0 || st.back[p.id] > 0).map((p) => resultRow(game, p, st.bought[p.id], back(p.id), { itm: st.net[p.id] > 0 }));
 }
 
 function recap(game: Game) {

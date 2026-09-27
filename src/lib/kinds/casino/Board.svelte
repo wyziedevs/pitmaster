@@ -2,7 +2,7 @@
   // a casino night on the tv: the last spin, roll or raffle draw, big, with
   // the roulette board of recent numbers under it; beside it every table and
   // its limits, and the raffle's prizes as they're won
-  import type { Game } from "$lib/types";
+  import type { CasinoEvent, Game } from "$lib/types";
   import { money } from "$lib/util";
   import { prefs } from "$lib/settings.svelte";
   import { playerName } from "$lib/events";
@@ -20,22 +20,27 @@
   const st = $derived(casinoState(game));
   const showMoney = $derived(prefs().tvMoney !== false);
   // the newest thing worth watching: a spin, a roll or a draw
-  const latest = $derived((game.casinoEvents ?? []).findLast((e) => e.kind !== "buy" && e.kind !== "cash"));
+  // (keyed by where it is in the game, so buying chips doesn't replay the last reveal)
+  const shown = (e: CasinoEvent): e is Exclude<CasinoEvent, { kind: "buy" | "cash" }> => e.kind !== "buy" && e.kind !== "cash";
+  const at = $derived((game.casinoEvents ?? []).findLastIndex(shown));
+  const latest = $derived.by(() => {
+    const e = game.casinoEvents?.[at];
+    return e && shown(e) ? e : undefined;
+  });
   const table = $derived(latest && "table" in latest ? s.tables.find((x) => x.id === latest.table) : undefined);
   // the roulette board: the last numbers at the table spun most recently (or the first one)
   const wheel = $derived(table?.game === "roulette" ? table : s.tables.find((x) => x.game === "roulette"));
   const board = $derived(wheel ? st.results[wheel.id].slice(-12).reverse() : []);
-  const n = $derived(game.casinoEvents?.length ?? 0);
 </script>
 
 <div class="casino-board" class:narrow>
   <section class="middle">
     {#if latest?.kind === "draw"}
       <span class="k">{t("casino.play.raffleHeading")} · {latest.prize}</span>
-      {#key n}<span class="big winner" in:fade={reveal()}>{playerName(game, latest.player)}</span>{/key}
+      {#key at}<span class="big winner" in:fade={reveal()}>{playerName(game, latest.player)}</span>{/key}
     {:else if latest && table}
       <span class="k">{nameFor(s, table)}</span>
-      {#key n}<span class="big fig {table.game === 'roulette' && latest.kind === 'spin' ? pocketHue(latest.result) : ''}" in:fade={reveal()}>{resultText(latest, table.game)}</span>{/key}
+      {#key at}<span class="big fig {table.game === 'roulette' && latest.kind === 'spin' ? pocketHue(latest.result) : ''}" in:fade={reveal()}>{resultText(latest, table.game)}</span>{/key}
     {:else}
       <span class="k">{game.finished ? t("gamePlay.cash.finishedPill") : t("casino.label")}</span>
       {#if showMoney}<span class="big fig" use:replay={[st.out, "glint"]}><Count value={st.out} format={money} /></span><span class="sub">{t("casino.play.chipsOut")}</span>{/if}

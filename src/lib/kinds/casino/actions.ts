@@ -22,24 +22,19 @@ export function resultText(e: Extract<CasinoEvent, { kind: "spin" | "roll" }>, g
   return `${e.result} ${t(`casino.play.hues.${pocketHue(e.result)}`)}`;
 }
 
-/** what an event was, in words (the tv writes its recent ones from these: it never gets the log) */
-export function eventText(game: Game, e: CasinoEvent) {
+/** what an event was, in words, for the log and the tv's flash */
+function eventText(game: Game, e: CasinoEvent) {
   if (e.kind === "buy") return t("casino.play.buyLog", { name: playerName(game, e.player), amount: money(e.amount) });
-  if (e.kind === "cash") {
-    const s = game.casino!;
-    if (s.finish === "raffle" && s.ticket > 0) return t("casino.play.ticketsLog", { name: playerName(game, e.player), amount: money(e.amount), tickets: tp("casino.play.tickets", Math.floor(e.amount / s.ticket + 1e-9)) });
-    return t("casino.play.cashLog", { name: playerName(game, e.player), amount: money(e.amount) });
-  }
+  if (e.kind === "cash") return t("casino.play.cashLog", { name: playerName(game, e.player), amount: money(e.amount) });
   if (e.kind === "draw") return t("casino.play.drawLog", { name: playerName(game, e.player), prize: e.prize });
   const table = game.casino!.tables.find((x) => x.id === e.table);
   return `${nameOf(game, e.table)}: ${table ? resultText(e, table.game) : "?"}`;
 }
 
-function add(game: Game, e: CasinoEvent, kind: Parameters<typeof flash>[2]) {
+function add(game: Game, e: CasinoEvent, kind: Parameters<typeof flash>[2], text = eventText(game, e)) {
   if (!game.casinoEvents) game.casinoEvents = [];
   game.casinoEvents.push(e);
   if (!game.clock.startedAt) game.clock.startedAt = e.at;
-  const text = eventText(game, e);
   logEvent(game, text);
   flash(game, text, kind);
 }
@@ -50,7 +45,13 @@ function add(game: Game, e: CasinoEvent, kind: Parameters<typeof flash>[2]) {
 export function bank(game: Game, player: string, amount: number, back = false) {
   const a = round2(amount);
   if (game.finished || !(a > 0) || !game.players.some((p) => p.id === player)) return;
-  add(game, { kind: back ? "cash" : "buy", player, amount: a, at: Date.now() }, back ? "rack" : "chips");
+  const e: CasinoEvent = { kind: back ? "cash" : "buy", player, amount: a, at: Date.now() };
+  const s = game.casino!;
+  if (!back || s.finish !== "raffle" || !(s.ticket > 0)) return add(game, e, back ? "rack" : "chips");
+  // a raffle's tickets come from everything they've turned in, so this turn-in earns what it tips over
+  const had = casinoState(game).back[player];
+  const tickets = (x: number) => Math.floor(x / s.ticket + 1e-9);
+  add(game, e, "rack", t("casino.play.ticketsLog", { name: playerName(game, player), amount: money(a), tickets: tp("casino.play.tickets", tickets(had + a) - tickets(had)) }));
 }
 
 // ---------- the tables ----------

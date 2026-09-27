@@ -56,11 +56,11 @@ export function casinoState(game: Game) {
   const draws: Draw[] = [];
   for (const e of game.casinoEvents ?? []) {
     if (e.kind === "buy" || e.kind === "cash") {
-      if (!(e.player in bought)) continue;
+      if (!Object.hasOwn(bought, e.player)) continue;
       const to = e.kind === "buy" ? bought : back;
       to[e.player] = round2(to[e.player] + e.amount);
     } else if (e.kind === "draw") draws.push(e);
-    else results[e.table]?.push(e);
+    else if (Object.hasOwn(results, e.table)) results[e.table].push(e);
   }
   const sold = round2(ids.reduce((a, id) => a + bought[id], 0));
   const returned = round2(ids.reduce((a, id) => a + back[id], 0));
@@ -68,7 +68,7 @@ export function casinoState(game: Game) {
   // a raffle's chips come back as tickets (the odd chips are the house's); each prize won uses up the ticket drawn
   const tickets = Object.fromEntries(ids.map((id) => [id, raffle && s.ticket > 0 ? Math.floor(back[id] / s.ticket + 1e-9) : 0]));
   const won: Record<string, string[]> = Object.fromEntries(ids.map((id) => [id, []]));
-  for (const d of draws) won[d.player]?.push(d.prize);
+  for (const d of draws) if (Object.hasOwn(won, d.player)) won[d.player].push(d.prize);
   const inDrum = Object.fromEntries(ids.map((id) => [id, Math.max(0, tickets[id] - won[id].length)]));
   // chips cashed in are paid out in money; raffle chips aren't, so every buy-in is the night's
   const net = Object.fromEntries(ids.map((id) => [id, round2((raffle ? 0 : back[id]) - bought[id])]));
@@ -78,8 +78,8 @@ export function casinoState(game: Game) {
     net,
     sold,
     returned,
-    /** the chips still on the floor: in hands and in the table trays */
-    out: round2(sold - returned),
+    /** the chips still on the floor, in hands and in the table trays (once players are up overall, the trays paid out more than was sold: none) */
+    out: round2(Math.max(0, sold - returned)),
     /** what the house keeps: the money in less what it's paid out (a raffle keeps it all) */
     house: round2(raffle ? sold : sold - returned),
     results,

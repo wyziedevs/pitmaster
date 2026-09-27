@@ -26,6 +26,8 @@
   let prizes = $state(d.prizes.join("\n"));
   let adding = $state<CasinoTable["game"]>("blackjack");
 
+  // a raffle ticket has to cost something, or nobody ever gets one
+  const ticketCost = $derived(ticket > 0 ? ticket : CASINO_DEFAULTS().ticket);
   const floor = $derived<CasinoSettings>({ tables, finish, ticket, prizes: [] });
   /** a new game at a table brings its usual limits */
   function regame(x: CasinoTable) {
@@ -34,7 +36,7 @@
   const rules = (): CasinoSettings => ({
     tables: tables.map((x) => ({ ...x, dealer: x.dealer.trim(), min: Math.max(0, x.min || 0), max: Math.max(x.min || 0, x.max || 0) })),
     finish,
-    ticket: Math.max(0, ticket || 0),
+    ticket: ticketCost,
     prizes: prizes
       .split("\n")
       .map((s) => s.trim())
@@ -76,7 +78,7 @@
       <label class="across"><input type="radio" name="finish" value="raffle" bind:group={finish} /><span>{t("casino.setup.finishRaffle")}</span></label>
       {#if finish === "raffle"}
         <div class="row mt-2">
-          <label><span>{t("casino.setup.ticket", { sym })}</span><input type="number" min="0" step="any" bind:value={ticket} /></label>
+          <label><span>{t("casino.setup.ticket", { sym })}</span><input type="number" min="0.01" step="any" bind:value={ticket} /></label>
         </div>
         <label>
           <span>{t("casino.setup.prizes")}</span>
@@ -97,6 +99,6 @@
         {/each}
       </tbody>
     </table>
-    <p class="small">{finish === "raffle" ? t("casino.setup.previewRaffle", { amount: money(ticket || 0) }) : t("casino.setup.previewMoney")}</p>
+    <p class="small">{finish === "raffle" ? t("casino.setup.previewRaffle", { amount: money(ticketCost) }) : t("casino.setup.previewMoney")}</p>
   {/snippet}
 </SetupShell>

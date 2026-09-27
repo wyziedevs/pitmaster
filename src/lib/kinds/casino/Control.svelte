@@ -69,7 +69,7 @@
   }
 
   function end() {
-    if (!confirm(t("casino.play.endConfirm", { amount: money(st.out) }))) return;
+    if (!confirm(st.out > 0 ? t("casino.play.endConfirm", { amount: money(st.out) }) : t("casino.play.endConfirmPlain"))) return;
     play("square");
     act(() => endNight(game));
   }

@@ -85,6 +85,7 @@ export interface CasinoDict {
     raffleNote: string;
     moneyNote: string;
     endConfirm: string;
+    endConfirmPlain: string;
     cmdRoll: string;
     cmdSpin: string;
     lastNumbers: string;
@@ -178,6 +179,7 @@ export const casino: Record<Lang, CasinoDict> = {
       raffleNote: "A fundraiser: every chip bought is money raised, and chips come back as raffle tickets.",
       moneyNote: "The bank pays out as players cash in, so nobody owes anybody. Net is what they cashed in less what they bought.",
       endConfirm: "End the night? {amount} in chips is still out.",
+      endConfirmPlain: "End the night?",
       cmdRoll: "Roll at {table}",
       cmdSpin: "Spin at {table}",
       lastNumbers: "Last numbers",
@@ -269,6 +271,7 @@ export const casino: Record<Lang, CasinoDict> = {
       raffleNote: "募款活动：买筹码的每一分钱都是募得的款项，筹码最后换成抽奖券。",
       moneyNote: "玩家兑换时筹码台当场付钱，所以谁也不欠谁。净额是兑换的减去买入的。",
       endConfirm: "结束今晚吗？场上还有 {amount} 筹码。",
+      endConfirmPlain: "结束今晚吗？",
       cmdRoll: "在 {table} 掷骰",
       cmdSpin: "在 {table} 转动",
       lastNumbers: "最近的号码",
@@ -360,6 +363,7 @@ export const casino: Record<Lang, CasinoDict> = {
       raffleNote: "फ़ंडरेज़र: खरीदा गया हर चिप जुटाया गया पैसा है, और चिप्स रैफ़ल टिकट बनकर लौटते हैं.",
       moneyNote: "खिलाड़ी जब भुनाते हैं, बैंक तभी पैसे दे देता है, इसलिए किसी पर किसी का कुछ बाकी नहीं. नेट भुनाए गए में से खरीदे गए घटाकर है.",
       endConfirm: "रात खत्म करें? अभी {amount} के चिप्स बाहर हैं.",
+      endConfirmPlain: "रात खत्म करें?",
       cmdRoll: "{table} पर पासे फेंकें",
       cmdSpin: "{table} पर घुमाएं",
       lastNumbers: "पिछले नंबर",
@@ -451,6 +455,7 @@ export const casino: Record<Lang, CasinoDict> = {
       raffleNote: "Para recaudar fondos: cada ficha comprada es dinero recaudado, y las fichas vuelven como boletos de rifa.",
       moneyNote: "La banca paga cuando cada jugador cambia sus fichas, así que nadie le debe a nadie. El neto es lo cambiado menos lo comprado.",
       endConfirm: "¿Terminar la noche? Todavía hay {amount} en fichas en juego.",
+      endConfirmPlain: "¿Terminar la noche?",
       cmdRoll: "Tirar en {table}",
       cmdSpin: "Girar en {table}",
       lastNumbers: "Últimos números",
@@ -542,6 +547,7 @@ export const casino: Record<Lang, CasinoDict> = {
       raffleNote: "Une collecte de fonds : chaque jeton acheté est de l'argent récolté, et les jetons reviennent en billets de tombola.",
       moneyNote: "La banque paie quand chacun échange ses jetons, donc personne ne doit rien à personne. Le net, c'est l'échangé moins l'acheté.",
       endConfirm: "Terminer la soirée ? Il reste {amount} en jetons en circulation.",
+      endConfirmPlain: "Terminer la soirée ?",
       cmdRoll: "Lancer à {table}",
       cmdSpin: "Tourner à {table}",
       lastNumbers: "Derniers numéros",
@@ -633,6 +639,7 @@ export const casino: Record<Lang, CasinoDict> = {
       raffleNote: "لجمع التبرعات: كل رقاقة تُشترى هي مال مجموع، وتعود الرقائق تذاكر سحب.",
       moneyNote: "يدفع الصندوق حين يصرف كل لاعب رقائقه، فلا أحد مدين لأحد. الصافي هو ما صُرف ناقص ما اشتُري.",
       endConfirm: "إنهاء الليلة؟ لا تزال رقائق بـ {amount} في اللعب.",
+      endConfirmPlain: "إنهاء الليلة؟",
       cmdRoll: "ارمِ على {table}",
       cmdSpin: "أدِر على {table}",
       lastNumbers: "آخر الأرقام",
@@ -724,6 +731,7 @@ export const casino: Record<Lang, CasinoDict> = {
       raffleNote: "তহবিল সংগ্রহ: কেনা প্রতিটা চিপ সংগ্রহ করা টাকা, আর চিপস র‍্যাফেল টিকিট হয়ে ফেরে.",
       moneyNote: "খেলোয়াড়রা ভাঙালেই ব্যাংক টাকা দেয়, তাই কেউ কারও কাছে কিছু পায় না. নেট হলো ভাঙানো থেকে কেনা বাদ দিয়ে.",
       endConfirm: "রাত শেষ করবেন? এখনো {amount}-এর চিপস বাইরে.",
+      endConfirmPlain: "রাত শেষ করবেন?",
       cmdRoll: "{table}-এ ছুড়ুন",
       cmdSpin: "{table}-এ ঘোরান",
       lastNumbers: "শেষ নম্বরগুলো",
@@ -815,6 +823,7 @@ export const casino: Record<Lang, CasinoDict> = {
       raffleNote: "Para arrecadar fundos: cada ficha comprada é dinheiro arrecadado, e as fichas voltam como bilhetes de rifa.",
       moneyNote: "A banca paga quando cada jogador troca as fichas, então ninguém deve nada a ninguém. O líquido é o que trocou menos o que comprou.",
       endConfirm: "Encerrar a noite? Ainda há {amount} em fichas em jogo.",
+      endConfirmPlain: "Encerrar a noite?",
       cmdRoll: "Rolar em {table}",
       cmdSpin: "Girar em {table}",
       lastNumbers: "Últimos números",
