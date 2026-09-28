@@ -7,8 +7,7 @@ export interface ToysDict {
   hero: {
     title: string;
     subtitle: string;
-    newCash: string;
-    newTournament: string;
+    newGame: string;
   };
   evict: {
     /** "Safari deletes a site's saved games after 7 days without a visit." */
@@ -157,8 +156,7 @@ export const toys: Record<Lang, ToysDict> = {
     hero: {
       title: "Run Your Game.",
       subtitle: "Set your chips, blinds and buy-ins, then put the game up on the TV or any screen.",
-      newCash: "New Cash Game",
-      newTournament: "New Tournament",
+      newGame: "New Game",
     },
     evict: {
       text: "Safari deletes a site's saved games after 7 days without a visit.",
@@ -255,8 +253,7 @@ export const toys: Record<Lang, ToysDict> = {
     hero: {
       title: "掌控你的牌局。",
       subtitle: "设置好筹码、盲注和买入，然后把游戏画面投到电视或任意屏幕上。",
-      newCash: "新建现金局",
-      newTournament: "新建锦标赛",
+      newGame: "新游戏",
     },
     evict: {
       text: "Safari 会在网站 7 天无人访问后删除其保存的游戏。",
@@ -353,8 +350,7 @@ export const toys: Record<Lang, ToysDict> = {
     hero: {
       title: "अपना गेम चलाएं।",
       subtitle: "अपने चिप्स, ब्लाइंड्स और बाय-इन सेट करें, फिर गेम को टीवी या किसी भी स्क्रीन पर दिखाएं।",
-      newCash: "नया कैश गेम",
-      newTournament: "नया टूर्नामेंट",
+      newGame: "नया गेम",
     },
     evict: {
       text: "Safari किसी साइट के 7 दिनों तक न खुलने पर उसके सहेजे गए गेम मिटा देता है।",
@@ -451,8 +447,7 @@ export const toys: Record<Lang, ToysDict> = {
     hero: {
       title: "Dirige tu partida.",
       subtitle: "Configura tus fichas, ciegas y buy-ins, y luego pon la partida en la TV o en cualquier pantalla.",
-      newCash: "Nuevo Cash Game",
-      newTournament: "Nuevo Torneo",
+      newGame: "Nuevo Juego",
     },
     evict: {
       text: "Safari elimina las partidas guardadas de un sitio tras 7 días sin visitarlo.",
@@ -549,8 +544,7 @@ export const toys: Record<Lang, ToysDict> = {
     hero: {
       title: "Gérez votre partie.",
       subtitle: "Réglez vos jetons, blinds et buy-ins, puis affichez la partie sur la télé ou tout autre écran.",
-      newCash: "Nouveau Cash Game",
-      newTournament: "Nouveau Tournoi",
+      newGame: "Nouvelle Partie",
     },
     evict: {
       text: "Safari supprime les parties enregistrées d'un site après 7 jours sans visite.",
@@ -647,8 +641,7 @@ export const toys: Record<Lang, ToysDict> = {
     hero: {
       title: "أدر لعبتك.",
       subtitle: "اضبط الرقائق والرهانات العمياء وقيم الدخول، ثم اعرض اللعبة على التلفاز أو أي شاشة.",
-      newCash: "لعبة نقدية جديدة",
-      newTournament: "بطولة جديدة",
+      newGame: "لعبة جديدة",
     },
     evict: {
       text: "يحذف Safari الألعاب المحفوظة لموقع ما بعد مرور 7 أيام دون زيارته.",
@@ -745,8 +738,7 @@ export const toys: Record<Lang, ToysDict> = {
     hero: {
       title: "আপনার গেম পরিচালনা করুন।",
       subtitle: "আপনার চিপস, ব্লাইন্ড এবং বাই-ইন সেট করুন, তারপর গেমটি টিভি বা যেকোনো স্ক্রিনে দেখান।",
-      newCash: "নতুন ক্যাশ গেম",
-      newTournament: "নতুন টুর্নামেন্ট",
+      newGame: "নতুন গেম",
     },
     evict: {
       text: "Safari কোনো সাইট 7 দিন না খুললে তার সংরক্ষিত গেমগুলো মুছে ফেলে।",
@@ -843,8 +835,7 @@ export const toys: Record<Lang, ToysDict> = {
     hero: {
       title: "Comande sua partida.",
       subtitle: "Configure suas fichas, blinds e buy-ins, depois exiba a partida na TV ou em qualquer tela.",
-      newCash: "Novo Cash Game",
-      newTournament: "Novo Torneio",
+      newGame: "Novo Jogo",
     },
     evict: {
       text: "O Safari exclui as partidas salvas de um site após 7 dias sem visita.",

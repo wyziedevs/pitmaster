@@ -1,6 +1,5 @@
 <script lang="ts">
   import Icon from "$lib/components/Icon.svelte";
-  import Plus from "@lucide/svelte/icons/plus";
   import ArrowRight from "@lucide/svelte/icons/arrow-right";
   import ExternalLink from "@lucide/svelte/icons/external-link";
   import CalcIcon from "@lucide/svelte/icons/calculator";
@@ -15,7 +14,7 @@
   import { rerun } from "$lib/rerun";
   import { playedAt } from "$lib/game";
   import { headline, leaderboard } from "$lib/stats";
-  import { listedKinds, offeredKinds, kind as kindOf } from "$lib/kinds";
+  import { listedKinds, kind as kindOf } from "$lib/kinds";
   import { ago, amt, day, money, signed } from "$lib/util";
   import { totalCount } from "$lib/chips";
   import { calc, CALC_KEY } from "$lib/calcbox.svelte";
@@ -28,6 +27,7 @@
   import type { Game } from "$lib/types";
   import Chip from "$lib/components/Chip.svelte";
   import Intro from "$lib/components/Intro.svelte";
+  import NewGameMenu from "$lib/components/NewGameMenu.svelte";
   import Toys from "$lib/components/Toys.svelte";
   import { leave, reveal, slide } from "$lib/motion";
   import { fade } from "svelte/transition";
@@ -132,7 +132,7 @@
   <h1>{t("toys.hero.title")}</h1>
   <p class="mt-0 mx-0 mb-4 max-w-[60ch]">{t("toys.hero.subtitle")}</p>
   <div class="row">
-    {#each offeredKinds() as k (k.id)}<a class="btn big max-[480px]:flex-[1_1_100%]" href="/new?type={k.id}"><Icon icon={Plus} />{k.newLabel()}</a>{/each}
+    <NewGameMenu />
   </div>
 </section>
 
